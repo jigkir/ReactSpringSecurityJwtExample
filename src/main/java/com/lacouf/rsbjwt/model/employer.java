@@ -1,6 +1,6 @@
-package com.lacouf.rsbjwt.model.auth;
+package com.lacouf.rsbjwt.model;
 
-import com.lacouf.rsbjwt.model.UserApp;
+import com.lacouf.rsbjwt.model.auth.Credentials;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Getter;
