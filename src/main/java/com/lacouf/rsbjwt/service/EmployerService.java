@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.service.dto.EmployerDTO;
+import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class EmployerService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void save(EmployerDTO employerDTO){
+    public UserResponseDto save(EmployerDTO employerDTO){
         Credentials credentials = Credentials.builder()
                 .email(employerDTO.email())
                 .password(passwordEncoder.encode(employerDTO.password()))
@@ -33,6 +34,10 @@ public class EmployerService {
                 employerDTO.activitySector(),
                 employerDTO.phoneNumber()
         );
+
+        employerRepository.save(employer);
+
+        return UserResponseDto.of(employer);
 
     }
 
