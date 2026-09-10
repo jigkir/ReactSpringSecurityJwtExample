@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.model;
 
 public enum Discipline {
     COMPUTER_SCIENCE,

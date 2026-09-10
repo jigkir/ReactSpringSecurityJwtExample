@@ -1,7 +1,6 @@
 package com.lacouf.rsbjwt.model;
 
 import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.presentation.Discipline;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
