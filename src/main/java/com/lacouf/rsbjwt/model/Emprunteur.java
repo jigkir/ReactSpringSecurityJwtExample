@@ -18,9 +18,9 @@ public class Emprunteur extends UserApp {
     private LocalDate since;
     @Builder
     public Emprunteur(
-            Long id, String firstName, String lastName, String email, String password,
+            String firstName, String lastName, String email, String password,
             LocalDate since){
-        super(id, firstName, lastName, Credentials.builder().email(email).password(password).role(Role.EMPRUNTEUR).build());
+        super(firstName, lastName, Credentials.builder().email(email).password(password).role(Role.EMPRUNTEUR).build());
         this.since = since;
     }
 }
