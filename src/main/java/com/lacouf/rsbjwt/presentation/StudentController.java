@@ -2,6 +2,9 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.StudentRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +20,9 @@ public class StudentController {
     }
 
     @PostMapping("/register")
-    public void save(@RequestBody StudentRegistrationDto studentRegistrationDto) {
-        studentService.save(studentRegistrationDto);
+    public ResponseEntity<UserResponseDto> save(@RequestBody StudentRegistrationDto studentRegistrationDto) {
+        UserResponseDto registeredStudent = studentService.save(studentRegistrationDto);
+
+        return new ResponseEntity<>(registeredStudent, HttpStatus.CREATED);
     }
 }

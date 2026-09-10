@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.service.dto.StudentRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,20 +19,23 @@ public class StudentService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void save(StudentRegistrationDto studentRegistrationDto) {
+    public UserResponseDto save(StudentRegistrationDto studentRegistrationDto) {
         Credentials credentials = Credentials.builder()
                 .email(studentRegistrationDto.email())
                 .password(passwordEncoder.encode(studentRegistrationDto.password()))
                 .role(Role.STUDENT)
                 .build();
 
-        studentRepository.save(
-                new Student(studentRegistrationDto.firstName(),
-                        studentRegistrationDto.lastName(),
-                        studentRegistrationDto.studentId(),
-                        credentials,
-                        studentRegistrationDto.discipline()
-                )
+        Student student = new Student(
+                studentRegistrationDto.firstName(),
+                studentRegistrationDto.lastName(),
+                studentRegistrationDto.studentId(),
+                credentials,
+                studentRegistrationDto.discipline()
         );
+
+        studentRepository.save(student);
+
+        return UserResponseDto.of(student);
     }
 }
