@@ -2,6 +2,8 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.EmployerDTO;
+import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,11 +20,11 @@ public class EmployerController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<EmployerDTO> save(@RequestBody EmployerDTO employerDTO) {
+    public ResponseEntity<UserResponseDto> save(@RequestBody EmployerDTO employerDTO) {
         if (employerService.employerExists(employerDTO.email())) {
-            throw new IllegalArgumentException("An employer with this email already exists.");
+            throw new IllegalArgumentException("Un employeur avec ce email existe déja.");
         }
-        employerService.save(employerDTO);
-        return ResponseEntity.status(201).build();
+        UserResponseDto userResponseDto = employerService.save(employerDTO);
+        return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }
 }
