@@ -41,6 +41,7 @@ public class UserAppService {
         return switch(user.getRole()){
             case EMPRUNTEUR -> getEmprunteurDto(user.getId());
             case PREPOSE -> getPreposeDto(user.getId());
+            case EMPLOYER -> null;
             case GESTIONNAIRE -> getGestionnaireDto(user.getId());
         };
     }
