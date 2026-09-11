@@ -22,6 +22,7 @@ public record StudentRegistrationDto(
 
         @NotBlank
         @Size(min = 8, max = 50)
+        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9])\\S+$", message = "password must contain uppercase, lowercase, number and special character, with no spaces")
         String password,
 
         @NotNull
