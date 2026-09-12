@@ -22,9 +22,27 @@ public record StudentRegistrationDto(
 
         @NotBlank
         @Size(min = 8, max = 50)
-        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9])\\S+$", message = "password must contain uppercase, lowercase, number and special character, with no spaces")
+        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).+$", message = "password must contain at least one digit, one lowercase, one uppercase, and one special character")
         String password,
 
         @NotNull
         Discipline discipline) {
+
+        public StudentRegistrationDto {
+                if (firstName != null) {
+                        firstName = firstName.trim();
+                }
+
+                if (lastName != null) {
+                        lastName = lastName.trim();
+                }
+
+                if (email != null) {
+                        email = email.trim().toLowerCase();
+                }
+
+                if (studentId != null) {
+                        studentId = studentId.trim().toLowerCase();
+                }
+        }
 }
