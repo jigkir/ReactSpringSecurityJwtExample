@@ -11,13 +11,12 @@ import java.util.Collection;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @ToString
 public abstract class UserApp  {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String firstName;
 
@@ -25,6 +24,12 @@ public abstract class UserApp  {
 
     @Embedded
     private Credentials credentials;
+
+    public UserApp(String firstName, String lastName, Credentials credentials) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.credentials = credentials;
+    }
 
     public String getEmail(){
         return credentials.getEmail();
