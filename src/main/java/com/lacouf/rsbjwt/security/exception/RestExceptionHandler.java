@@ -35,4 +35,9 @@ public class RestExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(StudentAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleStudentAlreadyExistsException(StudentAlreadyExistsException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
+    }
+
 }
