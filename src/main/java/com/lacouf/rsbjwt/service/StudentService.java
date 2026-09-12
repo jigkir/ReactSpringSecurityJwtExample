@@ -7,7 +7,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.exception.StudentAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.StudentRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,21 +25,21 @@ public class StudentService {
         this.userAppRepository = userAppRepository;
     }
 
-    public UserResponseDto save(StudentRegistrationDto studentRegistrationDto) throws StudentAlreadyExistsException {
-        verifyIfStudentExists(studentRegistrationDto.email(), studentRegistrationDto.studentId());
+    public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws StudentAlreadyExistsException {
+        verifyIfStudentExists(studentSignUpDto.email(), studentSignUpDto.studentId());
 
         Credentials credentials = Credentials.builder()
-                .email(studentRegistrationDto.email())
-                .password(passwordEncoder.encode(studentRegistrationDto.password()))
+                .email(studentSignUpDto.email())
+                .password(passwordEncoder.encode(studentSignUpDto.password()))
                 .role(Role.STUDENT)
                 .build();
 
         Student student = new Student(
-                studentRegistrationDto.firstName(),
-                studentRegistrationDto.lastName(),
-                studentRegistrationDto.studentId(),
+                studentSignUpDto.firstName(),
+                studentSignUpDto.lastName(),
+                studentSignUpDto.studentId(),
                 credentials,
-                studentRegistrationDto.discipline()
+                studentSignUpDto.discipline()
         );
 
         studentRepository.save(student);

@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.service.dto;
 import com.lacouf.rsbjwt.model.Discipline;
 import jakarta.validation.constraints.*;
 
-public record StudentRegistrationDto(
+public record StudentSignUpDto(
         @NotBlank
         @Size(min = 2, max = 50)
         String firstName,
@@ -28,7 +28,7 @@ public record StudentRegistrationDto(
         @NotNull
         Discipline discipline) {
 
-        public StudentRegistrationDto {
+        public StudentSignUpDto {
                 if (firstName != null) {
                         firstName = firstName.trim();
                 }
