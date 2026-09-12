@@ -4,10 +4,10 @@ import React, {useEffect, useState} from "react";
 import {Route, Routes, useNavigate} from "react-router-dom";
 import MainContainer from "./components/MainContainer.jsx";
 import About from "./components/About.jsx";
-import LoginForm from "./components/auth/LoginForm.jsx";
+import ConnectionPage from "./components/page/connection/Connection.jsx";
 import fetcher from "./utils/fetcher.js";
 import ErrorPage from "./components/ErrorPage.jsx";
-import Logout from "./components/auth/Logout.jsx";
+import Logout from "./components/page/connection/Logout.jsx";
 import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
@@ -60,7 +60,7 @@ function App() {
         <Route path="/" element={<PageLayout user={user}/>}>
           <Route index element={<MainContainer setError={setError}/>}/>
           <Route path='about' element={<About/>}/>
-          <Route path='login' element={<LoginForm setError={setError}/>}/>
+          <Route path='login' element={<ConnectionPage user={user} setUser={setUser} setError={setError}/>}/>
           <Route path='logout' element={<Logout setUser={setUser}/>}/>
           <Route path='emprunteur' element={<EmprunteurHome/>}/>
           <Route path='prepose' element={<PreposeHome/>}/>
