@@ -11,6 +11,7 @@ import Logout from "./components/auth/Logout.jsx";
 import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
+import EmployeurInscription from "./components/page/EmployeurInscription.jsx"
 function App() {
   const [user, setUser] = useState({})
   const [error, setError] = useState(null)
@@ -62,6 +63,7 @@ function App() {
           <Route path='about' element={<About/>}/>
           <Route path='login' element={<LoginForm setError={setError}/>}/>
           <Route path='logout' element={<Logout setUser={setUser}/>}/>
+          <Route path='employeurinscription' element={<EmployeurInscription/>}/>
           <Route path='emprunteur' element={<EmprunteurHome/>}/>
           <Route path='prepose' element={<PreposeHome/>}/>
           <Route path='gestionnaire' element={<GestionnaireHome/>}/>
