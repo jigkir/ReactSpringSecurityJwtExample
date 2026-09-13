@@ -1,9 +1,11 @@
 import {useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import Student from './singup/Student.jsx';
+import Employeur from './singup/Employeur.jsx';
 
 const ROLE_COMPONENTS = (classes) => ({
-    student: <Student   {...classes} />,
+    // student: <Student   {...classes} />,
+    employeur: <Employeur   {...classes} />,
 });
 
 const SingUp = () => {
@@ -43,7 +45,8 @@ const SingUp = () => {
                         onChange={(e) => setRole(e.target.value)}
                         className={fieldClass}
                     >
-                        <option value="student">Student</option>
+                        {/*<option value="student">Student</option>*/}
+                        <option value="Employeur">Employeur</option>
                     </select>
                 </div>
 
