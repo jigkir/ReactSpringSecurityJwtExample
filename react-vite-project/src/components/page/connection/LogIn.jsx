@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import fetcher from '../../../utils/fetcher';
 
-const LogIn = ({ onShowRegister, user, setError }) => {
+const LogIn = ({ user, setError }) => {
     const navigate = useNavigate();
     const [role, setRole] = useState('');
     const [email, setEmail] = useState('');
@@ -155,7 +155,7 @@ const LogIn = ({ onShowRegister, user, setError }) => {
             </form>
             <p>
                 No account yet?{' '}
-                <button onClick={onShowRegister}>Sign up</button>
+                <button onClick={() => navigate('/signup')}>Sign up</button>
             </p>
         </div>
     );
