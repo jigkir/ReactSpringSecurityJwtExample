@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.UserAppService;
+import com.lacouf.rsbjwt.service.dto.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.LoginDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
+
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -93,5 +98,34 @@ class UserControllerWebMvcTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.tokenType").value("BEARER"))
                 .andExpect(jsonPath("$.accessToken").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
+    void shouldReturnAllDisciplines() throws Exception {
+        // Arrange
+        DisciplineDto disciplines = new DisciplineDto(
+                List.of(
+                    "COMPUTER_SCIENCE",
+                    "CIVIL_ENGINEERING",
+                    "ELECTRICAL_ENGINEERING",
+                    "MARKETING",
+                    "NURSING"
+                ));
+
+        when(userService.getAllDisciplines()).thenReturn(disciplines);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/disciplines"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.disciplines",
+                        contains(
+                                "COMPUTER_SCIENCE",
+                                "CIVIL_ENGINEERING",
+                                "ELECTRICAL_ENGINEERING",
+                                "MARKETING",
+                                "NURSING"
+                        )
+                ));
     }
 }

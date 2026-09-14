@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.service.UserAppService;
+import com.lacouf.rsbjwt.service.dto.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.LoginDTO;
 import com.lacouf.rsbjwt.service.dto.UserDTO;
@@ -12,11 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api")
 public class UserController {
 
 	private final UserAppService userService;
@@ -46,4 +45,8 @@ public class UserController {
 		return ResponseEntity.ok("tout est beau");
 	}
 
+	@GetMapping("/disciplines")
+	public ResponseEntity<DisciplineDto> getAllDisciplines() {
+		return ResponseEntity.ok(userService.getAllDisciplines());
+	}
 }

@@ -76,8 +76,12 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
                         .passeKey("12345")
                         .build()
         );
+<<<<<<< HEAD
 
         final Optional<UserApp> userAppByEmail = userAppRepository.findUserAppByEmail("l@l.com");
+=======
+        final Optional<UserApp> userAppByEmail = userAppRepository.findByCredentialsEmail("l@l.com");
+>>>>>>> 082b4acd5c2a150044fb79bfca79071927644e3b
         userAppByEmail.ifPresent(userApp -> System.out.println("user " + userAppByEmail));
 
     }

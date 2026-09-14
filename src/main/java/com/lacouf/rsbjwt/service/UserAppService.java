@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,7 +38,7 @@ public class UserAppService {
     public UserDTO getMe(String token) {
         token = token.startsWith("Bearer") ? token.substring(7) : token;
         String email = jwtTokenProvider.getEmailFromJWT(token);
-        UserApp user = userAppRepository.findUserAppByEmail(email).orElseThrow(UserNotFoundException::new);
+        UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
         return switch(user.getRole()){
             case EMPRUNTEUR -> getEmprunteurDto(user.getId());
             case PREPOSE -> getPreposeDto(user.getId());
@@ -67,5 +68,9 @@ public class UserAppService {
         return emprunteurOptional.isPresent() ?
                 EmprunteurDto.create(emprunteurOptional.get()) :
                 EmprunteurDto.empty();
+    }
+
+    public DisciplineDto getAllDisciplines() {
+        return DisciplineDto.of(List.of(Discipline.values()));
     }
 }
