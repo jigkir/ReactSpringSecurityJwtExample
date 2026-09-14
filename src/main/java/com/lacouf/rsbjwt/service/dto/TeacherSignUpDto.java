@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.service.dto;
 import com.lacouf.rsbjwt.model.Discipline;
 import jakarta.validation.constraints.*;
 
-public record TeacherRegistrationDto(
+public record TeacherSignUpDto(
         @NotBlank
         @Size(min = 2, max = 50)
         String firstName,
