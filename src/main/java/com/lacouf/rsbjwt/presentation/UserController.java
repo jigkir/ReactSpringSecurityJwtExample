@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.service.UserAppService;
+import com.lacouf.rsbjwt.service.dto.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.LoginDTO;
 import com.lacouf.rsbjwt.service.dto.UserDTO;
@@ -44,4 +45,8 @@ public class UserController {
 		return ResponseEntity.ok("tout est beau");
 	}
 
+	@GetMapping("/disciplines")
+	public ResponseEntity<DisciplineDto> getAllDisciplines() {
+		return ResponseEntity.ok(userService.getAllDisciplines());
+	}
 }
