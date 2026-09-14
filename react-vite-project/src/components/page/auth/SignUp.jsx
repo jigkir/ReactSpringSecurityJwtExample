@@ -1,12 +1,12 @@
 import {useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
-import Student from './singup/Student.jsx';
+import Student from './signup/Student.jsx';
 
 const ROLE_COMPONENTS = (classes) => ({
     student: <Student   {...classes} />,
 });
 
-const SingUp = () => {
+const SignUp = () => {
     const navigate = useNavigate();
     const [role, setRole] = useState('student');
     const {dark} = useOutletContext();
@@ -60,4 +60,4 @@ const SingUp = () => {
     );
 };
 
-export default SingUp;
+export default SignUp;

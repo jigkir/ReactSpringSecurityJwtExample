@@ -85,7 +85,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
         setSubmitting(true);
         try {
-            const response = await fetcher('/user/singup', {
+            const response = await fetcher('/user/signup', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',

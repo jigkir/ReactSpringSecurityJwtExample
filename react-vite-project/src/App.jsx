@@ -5,7 +5,7 @@ import PageLayout from "./components/PageLayout.jsx";
 import MainContainer from "./components/MainContainer.jsx";
 import About from "./components/About.jsx";
 import LogIn from "./components/page/auth/LogIn.jsx";
-import SingUp from "./components/page/auth/SingUp.jsx";
+import SignUp from "./components/page/auth/SignUp.jsx";
 import fetcher from "./utils/fetcher.js";
 import ErrorPage from "./components/ErrorPage.jsx";
 import Logout from "./components/page/auth/Logout.jsx";
@@ -70,7 +70,7 @@ function App() {
                     <Route index element={<MainContainer setError={setError}/>}/>
                     <Route path="about" element={<About/>}/>
                     <Route path="login" element={<LogIn user={user} setError={setError}/>}/>
-                    <Route path="signup" element={<SingUp/>}/>
+                    <Route path="signup" element={<SignUp/>}/>
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
                     <Route path="emprunteur" element={<EmprunteurHome/>}/>
                     <Route path="prepose" element={<PreposeHome/>}/>
