@@ -21,7 +21,7 @@ function isAllFilled(form) {
     return Object.values(form).every(v => v !== "");
 }
 
-const validateNomEntreprise = (value) => value.trim() ? "" : "Ce champ est requis.";
+const validateNomEntreprise = (value) => value.trim() ? "" : "Ce champ aest requis.";
 
 const validateTelephone = (value) => {
     const t = value.trim();

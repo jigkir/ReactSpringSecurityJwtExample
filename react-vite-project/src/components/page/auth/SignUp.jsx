@@ -1,14 +1,14 @@
 import {useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
-import Student from './singup/Student.jsx';
-import Employeur from './singup/Employeur.jsx';
+import Student from './signup/Student.jsx';
+import Employeur from './signup/Employeur.jsx';
 
 const ROLE_COMPONENTS = (classes) => ({
-    // student: <Student   {...classes} />,
+    student: <Student   {...classes} />,
     employeur: <Employeur   {...classes} />,
 });
 
-const SingUp = () => {
+const SignUp = () => {
     const navigate = useNavigate();
     const [role, setRole] = useState('student');
     const {dark} = useOutletContext();
@@ -45,7 +45,7 @@ const SingUp = () => {
                         onChange={(e) => setRole(e.target.value)}
                         className={fieldClass}
                     >
-                        {/*<option value="student">Student</option>*/}
+                        <option value="student">Student</option>
                         <option value="Employeur">Employeur</option>
                     </select>
                 </div>
@@ -63,4 +63,4 @@ const SingUp = () => {
     );
 };
 
-export default SingUp;
+export default SignUp;
