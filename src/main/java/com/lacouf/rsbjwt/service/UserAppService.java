@@ -37,7 +37,7 @@ public class UserAppService {
     public UserDTO getMe(String token) {
         token = token.startsWith("Bearer") ? token.substring(7) : token;
         String email = jwtTokenProvider.getEmailFromJWT(token);
-        UserApp user = userAppRepository.findUserAppByEmail(email).orElseThrow(UserNotFoundException::new);
+        UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
         return switch(user.getRole()){
             case EMPRUNTEUR -> getEmprunteurDto(user.getId());
             case PREPOSE -> getPreposeDto(user.getId());

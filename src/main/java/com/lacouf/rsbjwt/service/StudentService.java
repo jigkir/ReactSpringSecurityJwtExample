@@ -12,6 +12,8 @@ import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
@@ -48,10 +50,10 @@ public class StudentService {
     }
 
     private void verifyIfStudentExists(String email, String studentId) throws StudentAlreadyExistsException {
-        UserApp studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-        Student studentFoundByStudentId = studentRepository.findByStudentId(studentId);
+        Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
+        Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
 
-        if (studentFoundByEmail != null || studentFoundByStudentId != null) {
+        if (studentFoundByEmail.isPresent() || studentFoundByStudentId.isPresent()) {
             throw new StudentAlreadyExistsException();
         }
     }
