@@ -40,7 +40,7 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
-    public boolean employerExists(String email) {
+    public boolean employerEmailAlreadyUsed(String email) {
         return employerRepository.existsByCredentialsEmail(email);
     }
 }

@@ -23,7 +23,7 @@ public class EmployerController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerRegistrationDto employerRegistrationDto) {
-        if (employerService.employerExists(employerRegistrationDto.email())) {
+        if (employerService.employerEmailAlreadyUsed(employerRegistrationDto.email())) {
             throw new IllegalArgumentException("Un employeur avec ce email existe déja.");
         }
         UserResponseDto userResponseDto = employerService.save(employerRegistrationDto);
