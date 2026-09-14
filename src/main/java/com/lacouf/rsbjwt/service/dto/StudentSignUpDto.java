@@ -13,11 +13,13 @@ public record StudentSignUpDto(
         String lastName,
 
         @NotBlank
+        @Size(max = 20)
         @Pattern(regexp = "^[0-9]*$", message = "student ID must contain only digits")
         String studentId,
 
         @NotBlank
         @Email
+        @Size(max = 100)
         String email,
 
         @NotBlank
