@@ -7,7 +7,8 @@ public enum Role{
 	GESTIONNAIRE("GESTIONNAIRE"),
 	PREPOSE("PREPOSE"),
 	EMPRUNTEUR("EMPRUNTEUR"),
-    STUDENT("STUDENT");
+    STUDENT("STUDENT"),
+	EMPLOYER("EMPLOYER");
 
 	private final String string;
 	private final Set<Role> managedRoles = new HashSet<>();
