@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service;
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.security.exception.EmployerEmailAlreadyUsedException;
 import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,12 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.answer;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class EmployerServiceTest {
@@ -44,7 +43,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldSaveEmployer() {
+    void shouldSaveEmployer() throws EmployerEmailAlreadyUsedException {
         when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
 
         when(employerRepository.save(any(Employer.class)))
@@ -68,12 +67,14 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldReturnTrueIfEmailAlreadyUsed() {
+    void shouldThrowExceptionWhenEmailAlreadyUsed() {
         when(employerRepository.existsByCredentialsEmail("email@example.com")).thenReturn(true);
 
-        boolean result = employerService.employerEmailAlreadyUsed("email@example.com");
+        assertThrows(EmployerEmailAlreadyUsedException.class, () ->
+                employerService.employerEmailAlreadyUsed("email@example.com")
+        );
 
-        assertTrue(result);
+        verify(employerRepository, never()).save(any(Employer.class));
     }
 
 }

@@ -40,4 +40,8 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(EmployerEmailAlreadyUsedException.class)
+    public ResponseEntity<Map<String, String>> handleEmployerEmailAlreadyUsedException(EmployerEmailAlreadyUsedException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
+    }
 }

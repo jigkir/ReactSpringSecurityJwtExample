@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 
+import com.lacouf.rsbjwt.security.exception.EmployerEmailAlreadyUsedException;
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -22,10 +23,7 @@ public class EmployerController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerRegistrationDto employerRegistrationDto) {
-        if (employerService.employerEmailAlreadyUsed(employerRegistrationDto.email())) {
-            throw new IllegalArgumentException("Un employeur avec ce email existe déja.");
-        }
+    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerRegistrationDto employerRegistrationDto) throws EmployerEmailAlreadyUsedException {
         UserResponseDto userResponseDto = employerService.save(employerRegistrationDto);
         return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }

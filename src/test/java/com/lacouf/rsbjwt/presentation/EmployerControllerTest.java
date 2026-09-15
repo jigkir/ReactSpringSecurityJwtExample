@@ -80,9 +80,9 @@ public class EmployerControllerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWhenEmployerAlreadyExists() throws Exception {
+    void shouldReturnConflictWhenEmployerAlreadyExists() throws Exception {
         when(employerService.save(any(EmployerRegistrationDto.class)))
-                .thenThrow(new IllegalArgumentException("Un employeur avec ce email existe déja."));
+                .thenThrow(new EmployerEmailAlreadyUsedException());
 
         mockMvc.perform(post("/api/employer/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -97,8 +97,8 @@ public class EmployerControllerTest {
                                 "phoneNumber": "5550199999"
                             }
                             """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Un employeur avec ce email existe déja."));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Un employeur avec ce email existe déjà."));
     }
 
     @ParameterizedTest
