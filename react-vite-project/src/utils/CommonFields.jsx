@@ -24,7 +24,7 @@ export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!
 
 export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
 
-export const validateMatricule = (value) => {
+export const validateId = (value) => {
     const t = value.trim();
     if (!t) return 'ID is required.';
     if (t.length !== 7) return 'ID must be exactly 7 digits.';
@@ -65,7 +65,7 @@ export function validateField(field, value, formValues = {}) {
         default:
             // Dynamically handles any *Id field: studentId, teacherId, employerId, etc.
             if (field.endsWith('Id')) {
-                return validateMatricule(value);
+                return validateId(value);
             }
             return '';
     }
