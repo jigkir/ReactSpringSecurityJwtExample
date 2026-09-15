@@ -20,7 +20,7 @@ function App() {
     const navigate = useNavigate();
     // Tracks the current route so the auth-check effect below can re-run
     // on every navigation (e.g. right after login redirects), instead of
-    // only once when App first mounts.
+    // only once when   App first mounts.
     const location = useLocation();
 
     useEffect(() => {
