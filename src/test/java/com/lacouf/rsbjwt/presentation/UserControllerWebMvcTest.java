@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.LoginDTO;
+import com.lacouf.rsbjwt.service.dto.RoleDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,14 +68,14 @@ class UserControllerWebMvcTest {
     }
 
     @Test
-    @DisplayName("POST /user/login returns 202 and token on success")
+    @DisplayName("POST /api/login returns 202 and token on success")
     void authenticateUser_success_returnsAcceptedAndToken() throws Exception {
         // Arrange
         LoginDTO login = new LoginDTO("user@example.com", "password");
         when(userService.authenticateUser(any(LoginDTO.class))).thenReturn("token123");
 
         // Act + Assert
-        mockMvc.perform(post("/user/login")
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isAccepted())
@@ -84,14 +85,14 @@ class UserControllerWebMvcTest {
     }
 
     @Test
-    @DisplayName("POST /user/login returns 401 on failure")
+    @DisplayName("POST /api/login returns 401 on failure")
     void authenticateUser_failure_returnsUnauthorized() throws Exception {
         // Arrange
         LoginDTO login = new LoginDTO("user@example.com", "wrong");
         when(userService.authenticateUser(any(LoginDTO.class))).thenThrow(new RuntimeException("bad creds"));
 
         // Act + Assert
-        mockMvc.perform(post("/user/login")
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isUnauthorized())
@@ -125,6 +126,35 @@ class UserControllerWebMvcTest {
                                 "ELECTRICAL_ENGINEERING",
                                 "MARKETING",
                                 "NURSING"
+                        )
+                ));
+    }
+
+    @Test
+    void shouldReturnAllRoles() throws Exception {
+        // Arrange
+        RoleDto roles = new RoleDto(
+                List.of(
+                        "GESTIONNAIRE",
+                        "PREPOSE",
+                        "EMPRUNTEUR",
+                        "STUDENT",
+                        "EMPLOYER"
+                ));
+
+        when(userService.getAllRoles()).thenReturn(roles);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/roles"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.roles",
+                        contains(
+                                "GESTIONNAIRE",
+                                "PREPOSE",
+                                "EMPRUNTEUR",
+                                "STUDENT",
+                                "EMPLOYER"
                         )
                 ));
     }

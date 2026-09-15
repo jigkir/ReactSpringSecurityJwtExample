@@ -1,10 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.service.UserAppService;
-import com.lacouf.rsbjwt.service.dto.DisciplineDto;
-import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
-import com.lacouf.rsbjwt.service.dto.LoginDTO;
-import com.lacouf.rsbjwt.service.dto.UserDTO;
+import com.lacouf.rsbjwt.service.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -48,5 +45,10 @@ public class UserController {
 	@GetMapping("/disciplines")
 	public ResponseEntity<DisciplineDto> getAllDisciplines() {
 		return ResponseEntity.ok(userService.getAllDisciplines());
+	}
+
+	@GetMapping("/roles")
+	public ResponseEntity<RoleDto> getAllRoles() {
+		return ResponseEntity.ok(userService.getAllRoles());
 	}
 }
