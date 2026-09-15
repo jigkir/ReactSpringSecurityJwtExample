@@ -1,19 +1,36 @@
+export const RoleField = ({
+    value, onChange, labelClass, errorClass, fieldClass,
+    label = 'Role', options = [], loading = false, fetchError = '',
+}) => (
+    <Field id="role" label={label} warning={fetchError} labelClass={labelClass} errorClass={errorClass}>
+        <select
+            id="role" name="role"
+            value={value} onChange={onChange}
+            className={fieldClass}
+            disabled={loading}
+        >
+            <option value="">
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a role --'}
+            </option>
+            {options.map(({value: v, label: l}) => (
+                <option key={v} value={v}>{l}</option>
+            ))}
+        </select>
+    </Field>
+);
+
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
 
-export const DISCIPLINES = [
-    {value: 'INFORMATIQUE', label: 'Computer Science'},
-    {value: 'GENIE_LOGICIEL', label: 'Software Engineering'},
-    {value: 'RESEAUX', label: 'Network Systems'},
-    {value: 'ADMINISTRATION', label: 'Business Administration'},
-    {value: 'COMPTABILITE', label: 'Accounting'},
-    {value: 'MARKETING', label: 'Marketing'},
-];
-
 export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
 
-// Validates one of the shared fields. `formValues` is only needed for
-// confirmPassword (to compare against the current password value).
+export const validateMatricule = (value) => {
+    const t = value.trim();
+    if (!t) return 'ID is required.';
+    if (t.length !== 7) return 'ID must be exactly 7 digits.';
+    return '';
+};
+
 export function validateField(field, value, formValues = {}) {
     switch (field) {
         case 'firstName':
@@ -46,11 +63,14 @@ export function validateField(field, value, formValues = {}) {
         case 'discipline':
             return validateDiscipline(value);
         default:
+            // Dynamically handles any *Id field: studentId, teacherId, employerId, etc.
+            if (field.endsWith('Id')) {
+                return validateMatricule(value);
+            }
             return '';
     }
 }
 
-// Generic label + input + warning wrapper.
 export const Field = ({id, label, warning, labelClass, errorClass, children}) => (
     <div>
         <label htmlFor={id} className={labelClass}>{label}</label>
@@ -74,15 +94,30 @@ export const EyeIcon = ({open}) => open ? (
     </svg>
 );
 
-export const FirstNameField = ({
-       value,
-       onChange,
-       warning,
-       labelClass,
-       errorClass,
-       fieldClass,
-       label = 'First Name'
-    }) => (
+export const MatriculeField = ({
+    value, onChange, warning, labelClass, errorClass, fieldClass,
+    role = 'Student',
+    name = 'studentId',
+}) => {
+    const handleChange = (e) => {
+        const digits = e.target.value.replace(/\D/g, '').slice(0, 7);
+        onChange({target: {name, value: digits}});
+    };
+
+    return (
+        <Field id={name} label={`${role} ID`} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id={name} name={name} type="text"
+                inputMode="numeric"
+                value={value}
+                onChange={handleChange}
+                required className={fieldClass}
+            />
+        </Field>
+    );
+};
+
+export const FirstNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'First Name'}) => (
     <Field id="firstName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="firstName" name="firstName" type="text"
@@ -113,35 +148,31 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
 );
 
 export const DisciplineField = ({
-        value,
-        onChange,
-        warning,
-        labelClass,
-        errorClass,
-        fieldClass,
-        label = 'Discipline',
-        options = DISCIPLINES
-    }) => (
+    value, onChange, warning, labelClass, errorClass, fieldClass,
+    label = 'Discipline', options = [], loading = false, fetchError = ''
+}) => (
     <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <select
             id="discipline" name="discipline"
             value={value} onChange={onChange}
             required className={fieldClass}
+            disabled={loading}
         >
-            <option value="">-- Select a discipline --</option>
+            <option value="">
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a discipline --'}
+            </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
             ))}
         </select>
+        {fetchError && <p className={errorClass}>{fetchError}</p>}
     </Field>
 );
 
-// `show`/`onToggleShow` let each parent form own its own show/hide state.
-// `hint` (optional) renders the password-rules helper text under the field.
 export const PasswordField = ({
-      value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-      show, onToggleShow, hint, passwordHintClass, label = 'Password',
-    }) => (
+    value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
+    show, onToggleShow, hint, passwordHintClass, label = 'Password',
+}) => (
     <Field id="password" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <div className="flex gap-2">
             <input
@@ -159,20 +190,10 @@ export const PasswordField = ({
     </Field>
 );
 
-export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClass}) => (
-    <button
-        type="submit"
-        disabled={disabled}
-        className={submitClass}
-    >
-        {loading ? loadingLabel : label}
-    </button>
-);
-
 export const ConfirmPasswordField = ({
-         value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-         show, onToggleShow, label = 'Confirm Password',
-     }) => (
+    value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
+    show, onToggleShow, label = 'Confirm Password',
+}) => (
     <Field id="confirmPassword" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <div className="flex gap-2">
             <input
@@ -187,4 +208,14 @@ export const ConfirmPasswordField = ({
             </button>
         </div>
     </Field>
+);
+
+export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClass}) => (
+    <button
+        type="submit"
+        disabled={disabled}
+        className={submitClass}
+    >
+        {loading ? loadingLabel : label}
+    </button>
 );

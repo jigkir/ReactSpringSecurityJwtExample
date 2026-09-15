@@ -20,9 +20,9 @@ public class Prepose extends UserApp {
     private String passeKey;
     @Builder
     public Prepose(
-            Long id, String firstName, String lastName, String email, String password,
+            String firstName, String lastName, String email, String password,
             String passeKey){
-        super(id, firstName, lastName, Credentials.builder().email(email).password(password).role(Role.PREPOSE).build());
+        super(firstName, lastName, Credentials.builder().email(email).password(password).role(Role.PREPOSE).build());
         this.passeKey = passeKey;
     }
 }
