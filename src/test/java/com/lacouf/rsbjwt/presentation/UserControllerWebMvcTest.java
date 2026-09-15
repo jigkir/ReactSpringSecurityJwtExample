@@ -67,14 +67,14 @@ class UserControllerWebMvcTest {
     }
 
     @Test
-    @DisplayName("POST /user/login returns 202 and token on success")
+    @DisplayName("POST /api/login returns 202 and token on success")
     void authenticateUser_success_returnsAcceptedAndToken() throws Exception {
         // Arrange
         LoginDTO login = new LoginDTO("user@example.com", "password");
         when(userService.authenticateUser(any(LoginDTO.class))).thenReturn("token123");
 
         // Act + Assert
-        mockMvc.perform(post("/user/login")
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isAccepted())
@@ -84,14 +84,14 @@ class UserControllerWebMvcTest {
     }
 
     @Test
-    @DisplayName("POST /user/login returns 401 on failure")
+    @DisplayName("POST /api/login returns 401 on failure")
     void authenticateUser_failure_returnsUnauthorized() throws Exception {
         // Arrange
         LoginDTO login = new LoginDTO("user@example.com", "wrong");
         when(userService.authenticateUser(any(LoginDTO.class))).thenThrow(new RuntimeException("bad creds"));
 
         // Act + Assert
-        mockMvc.perform(post("/user/login")
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isUnauthorized())
