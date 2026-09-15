@@ -2,7 +2,7 @@ import {useState} from "react";
 import {useNavigate, useOutletContext} from "react-router-dom";
 import fetcher from "../../../utils/fetcher.js";
 
-const LogIn = ({user, setError}) => {
+const Login = ({user, setError}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
     const [role, setRole] = useState('');
@@ -44,7 +44,7 @@ const LogIn = ({user, setError}) => {
 
     const fetchFunc = async () => {
         try {
-            const response = await fetcher('/user/login', {
+            const response = await fetcher('login', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -68,7 +68,7 @@ const LogIn = ({user, setError}) => {
             const data = await response.json();
             localStorage.setItem('token', data.accessToken);
 
-            const userResponse = await fetcher('user/me', {});
+            const userResponse = await fetcher('me', {});
             if (!userResponse.ok) {
                 throw new Error('Failed to fetch user info');
             }
@@ -164,4 +164,4 @@ const LogIn = ({user, setError}) => {
     );
 };
 
-export default LogIn;
+export default Login;
