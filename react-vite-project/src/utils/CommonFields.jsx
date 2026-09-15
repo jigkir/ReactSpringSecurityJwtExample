@@ -62,11 +62,10 @@ export function validateField(field, value, formValues = {}) {
             return '';
         case 'discipline':
             return validateDiscipline(value);
+        case 'studentId':
+        case 'teacherId':
+            return validateId(value);
         default:
-            // Dynamically handles any *Id field: studentId, teacherId, employerId, etc.
-            if (field.endsWith('Id')) {
-                return validateId(value);
-            }
             return '';
     }
 }
