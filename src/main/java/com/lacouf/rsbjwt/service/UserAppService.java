@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.*;
+import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.EmprunteurRepository;
 import com.lacouf.rsbjwt.repository.GestionnaireRepository;
 import com.lacouf.rsbjwt.repository.PreposeRepository;
@@ -71,5 +72,9 @@ public class UserAppService {
 
     public DisciplineDto getAllDisciplines() {
         return DisciplineDto.of(List.of(Discipline.values()));
+    }
+
+    public RoleDto getAllRoles() {
+        return RoleDto.of(List.of(Role.values()));
     }
 }

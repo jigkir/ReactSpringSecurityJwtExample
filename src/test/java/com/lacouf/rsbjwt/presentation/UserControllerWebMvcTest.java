@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.LoginDTO;
+import com.lacouf.rsbjwt.service.dto.RoleDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +126,35 @@ class UserControllerWebMvcTest {
                                 "ELECTRICAL_ENGINEERING",
                                 "MARKETING",
                                 "NURSING"
+                        )
+                ));
+    }
+
+    @Test
+    void shouldReturnAllRoles() throws Exception {
+        // Arrange
+        RoleDto roles = new RoleDto(
+                List.of(
+                        "GESTIONNAIRE",
+                        "PREPOSE",
+                        "EMPRUNTEUR",
+                        "STUDENT",
+                        "EMPLOYER"
+                ));
+
+        when(userService.getAllRoles()).thenReturn(roles);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/roles"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.roles",
+                        contains(
+                                "GESTIONNAIRE",
+                                "PREPOSE",
+                                "EMPRUNTEUR",
+                                "STUDENT",
+                                "EMPLOYER"
                         )
                 ));
     }
