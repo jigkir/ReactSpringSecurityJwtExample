@@ -45,7 +45,7 @@ public class SecurityConfiguration {
     private static final String EMPRUNTEUR_REGISTER_PATH = "/emprunteur/register";
     private static final String PREPOSE_REGISTER_PATH = "/prepose/register";
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
-    private static final String EMPLOYER_REGISTER_PATH = "/employer/register";
+    private static final String EMPLOYER_REGISTER_PATH = "/api/employer/register";
     private static final String USER_PATH = "/api/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
