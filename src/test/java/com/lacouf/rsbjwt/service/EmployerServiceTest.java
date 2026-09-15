@@ -2,7 +2,6 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.exception.EmployerEmailAlreadyUsedException;
 import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
 import org.junit.jupiter.api.BeforeAll;
