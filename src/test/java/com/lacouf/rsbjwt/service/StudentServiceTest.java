@@ -82,4 +82,15 @@ public class StudentServiceTest {
 
         verify(studentRepository, never()).save(any(Student.class));
     }
+
+    @Test
+    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyExists() {
+        // Arrange
+        when(userAppRepository.findByCredentialsEmail(studentSignUpDto.email())).thenReturn(Optional.of(new Student()));
+
+        // Act + Assert
+        assertThrows(UserAlreadyExistsException.class, () -> studentService.save(studentSignUpDto));
+
+        verify(studentRepository, never()).save(any(Student.class));
+    }
 }
