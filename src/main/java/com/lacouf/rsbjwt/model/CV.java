@@ -3,9 +3,11 @@ package com.lacouf.rsbjwt.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 public class CV {
 
     @Id
