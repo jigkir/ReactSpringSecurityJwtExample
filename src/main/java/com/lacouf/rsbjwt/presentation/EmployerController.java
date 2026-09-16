@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/employer")
+@RequestMapping("api/employer")
 public class EmployerController {
     private final EmployerService employerService;
 
@@ -22,10 +23,7 @@ public class EmployerController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerRegistrationDto employerRegistrationDto) {
-        if (employerService.employerExists(employerRegistrationDto.email())) {
-            throw new IllegalArgumentException("Un employeur avec ce email existe déja.");
-        }
+    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerRegistrationDto employerRegistrationDto) throws UserAlreadyExistsException {
         UserResponseDto userResponseDto = employerService.save(employerRegistrationDto);
         return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }
