@@ -12,7 +12,7 @@ public record CVDto (
     }
 
     public byte[] getContent() {
-        return null;
+        return content;
     }
 
     public CV toCV() {

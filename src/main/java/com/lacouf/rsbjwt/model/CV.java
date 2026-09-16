@@ -24,8 +24,7 @@ public class CV {
     @Column
     private String fileHash;
 
-    @OneToOne
-    @JoinColumn(name = "student_id")
+    @OneToOne(mappedBy = "cv")
     private Student student;
 
     public CV() {

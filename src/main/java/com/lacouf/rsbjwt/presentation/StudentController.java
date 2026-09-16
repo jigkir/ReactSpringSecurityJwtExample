@@ -10,7 +10,9 @@ import com.lacouf.rsbjwt.service.dto.CVDto;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,25 +38,41 @@ public class StudentController {
     }
 
     @PostMapping("/upload-cv")
-    public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, @RequestParam("studentId") Long studentId, @RequestParam("fileName") String fileName) throws CorruptedFileException, InvalidFileTypeException, IOException {
+    public ResponseEntity<String> uploadCV(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("studentId") String studentId,
+            @RequestParam("fileName") String fileName) throws CorruptedFileException, InvalidFileTypeException, IOException {
+
+        if (file == null || file.isEmpty()) {
+            throw new InvalidFileTypeException("Uploaded file is empty or null.");
+        }
+
         Student student = studentService.findByStudentId(studentId);
         if (student == null) {
             return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
         }
-        IO.println("Uploading CV for student: " + student.getStudentId());
-        cvService.saveCV(new CVDto(fileName, file.getBytes()), student);
+
+        byte[] bytes = file.getBytes();
+        if (bytes == null || bytes.length == 0) {
+            throw new InvalidFileTypeException("Uploaded file contains no data.");
+        }
+
+        cvService.saveCV(new CVDto(fileName, bytes), student);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
     @GetMapping("/download-cv/{studentId}")
-    public ResponseEntity<byte[]> downloadCV(@PathVariable Long studentId) throws CorruptedFileException {
+    public ResponseEntity<byte[]> downloadCV(@PathVariable String studentId) throws CorruptedFileException {
         Student student = studentService.findByStudentId(studentId);
         if (student == null || student.getCv() == null) {
             return ResponseEntity.notFound().build();
         }
+
         CVDto cvDto = cvService.getCVByStudent(student);
+
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + cvDto.fileName() + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + cvDto.fileName() + "\"")
                 .body(cvDto.content());
     }
 }

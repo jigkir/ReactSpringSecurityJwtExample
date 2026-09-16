@@ -58,8 +58,8 @@ public class StudentService {
         }
     }
 
-    public Student findByStudentId(Long studentId) {
-        return studentRepository.findById(studentId)
+    public Student findByStudentId(String studentId) {
+        return studentRepository.findByStudentId(studentId)
                 .orElse(null);
     }
 }

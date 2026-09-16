@@ -24,16 +24,17 @@ public class CVService {
     }
 
     public void saveCV(CVDto cvDto, Student student) throws CorruptedFileException, InvalidFileTypeException {
-        String fileType = tika.detect(cvDto.getContent());
-        if (!"application/pdf".equals(fileType)) {
+        IO.println("Saving CV for student: " + student.getStudentId() + ", File name: " + cvDto.fileName() + ", File size: " + (cvDto.content() != null ? cvDto.content().length : 0) + " bytes");
+        if (cvDto == null || cvDto.content() == null || cvDto.content().length == 0) {
+            throw new InvalidFileTypeException("File content cannot be null or empty.");
+        }
+
+        String mimeType = tika.detect(cvDto.content());
+        if (!"application/pdf".equals(mimeType)) {
             throw new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.");
         }
 
-        try {
-            assert cvDto.getContent() != null;
-            try (PDDocument document = PDDocument.load(cvDto.getContent())) {
-                //
-            }
+        try (PDDocument document = PDDocument.load(cvDto.content())) {
         } catch (IOException e) {
             throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
         }
@@ -41,6 +42,8 @@ public class CVService {
         CV cv = new CV();
         cv = cvDto.toCV();
         cv.setStudent(student);
+        student.setCv(cv);
+        assert cvDto.getContent() != null;
         cv.setFileHash(DigestUtils.md5DigestAsHex(cvDto.getContent()));
         cvRepository.save(cv);
     }

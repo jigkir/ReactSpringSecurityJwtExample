@@ -34,4 +34,14 @@ public class RestExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(InvalidFileTypeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidFileTypeException(InvalidFileTypeException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CorruptedFileException.class)
+    public ResponseEntity<Map<String, String>> handleCorruptedFileException(CorruptedFileException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }
