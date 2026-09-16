@@ -135,6 +135,7 @@ public class StudentControllerTest {
                 Arguments.of("password", "test"),
                 Arguments.of("password", "Test100"),
                 Arguments.of("password", "Test10@"),
+                Arguments.of("password", "Test100@   "),
                 Arguments.of("password", "Test10@" + "@".repeat(44)),
                 Arguments.of("discipline", null)
         );
