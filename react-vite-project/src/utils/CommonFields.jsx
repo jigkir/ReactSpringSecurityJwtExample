@@ -116,7 +116,6 @@ export const MatriculeField = ({
                 inputMode="numeric"
                 value={value}
                 onChange={handleChange}
-                onKeyDown={handleSpaceKeyDown}
                 required className={fieldClass}
             />
         </Field>
