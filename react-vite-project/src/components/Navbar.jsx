@@ -107,12 +107,24 @@ function Navbar({user, dark, toggleDark}) {
                                 Déconnexion
                             </Link>
                         ) : (
-                            <Link
-                                to="/login"
-                                className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}
-                            >
-                                Connexion
-                            </Link>
+                            <>
+                                <Link
+                                    to="/login"
+                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    to="/signup"
+                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${
+                                        dark
+                                            ? 'bg-transparent border border-indigo-400 text-indigo-300 hover:bg-indigo-500/20'
+                                            : 'bg-transparent border border-white text-white hover:bg-white/15'
+                                    }`}
+                                >
+                                    Sign Up
+                                </Link>
+                            </>
                         )}
                     </div>
 

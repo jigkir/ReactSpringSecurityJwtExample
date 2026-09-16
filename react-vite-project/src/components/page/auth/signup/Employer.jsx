@@ -1,27 +1,28 @@
-import {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {
     FirstNameField,
     LastNameField,
-    MatriculeField,
     DisciplineField,
     EmailField,
     PasswordField,
     ConfirmPasswordField,
     SubmitButton,
     validateField,
+    Field,
 } from "../../../../utils/CommonFields.jsx";
 
 const DEFAULT_FORM = {
-    firstName: '',
-    lastName: '',
-    studentId: '',
-    discipline: '',
-    email: '',
+    companyName:"",
+    sectorActivity:"",
+    firstName:"",
+    lastName:"",
+    email:"",
+    phoneNumber:"",
     password: '',
     confirmPassword: '',
-};
+}
 
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, '']));
 
@@ -29,7 +30,8 @@ function isAllFilled(form) {
     return Object.values(form).every(v => v !== '');
 }
 
-const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
+const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
+
     const navigate = useNavigate();
 
     const [form, setForm] = useState(DEFAULT_FORM);
@@ -39,9 +41,9 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const [serverError, setServerError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    const [disciplines, setDisciplines] = useState([]);
-    const [disciplinesLoading, setDisciplinesLoading] = useState(true);
-    const [disciplinesFetchError, setDisciplinesFetchError] = useState('');
+    const [sectorActivitys, setsectorActivitys] = useState([]);
+    const [sectorActivitysLoading, setsectorActivitysLoading] = useState(true);
+    const [sectorActivitysFetchError, setsectorActivitysFetchError] = useState('');
 
     useEffect(() => {
         fetcher('disciplines', {})
@@ -49,13 +51,13 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 if (!res.ok) throw new Error(`Error ${res.status}`);
                 const data = await res.json();
                 const list = Array.isArray(data) ? data : (data.disciplines ?? []);
-                setDisciplines(list.map(d => ({
+                setsectorActivitys(list.map(d => ({
                     value: typeof d === 'string' ? d : d.value,
                     label: typeof d === 'string' ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setDisciplinesFetchError('Could not load disciplines.'))
-            .finally(() => setDisciplinesLoading(false));
+            .catch(() => setsectorActivitysFetchError('Could not load sector of Activitys.'))
+            .finally(() => setsectorActivitysLoading(false));
     }, []);
 
     const handleChange = (e) => {
@@ -83,22 +85,22 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         e.preventDefault();
         setServerError('');
         if (!validateAll()) return;
-
         setSubmitting(true);
         try {
-            const response = await fetcher('student/signup', {
+            const response = await fetcher('employer/register', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json;charset=UTF-8',
                 },
                 body: JSON.stringify({
-                    firstName: form.firstName.trim(),
                     lastName: form.lastName.trim(),
-                    studentId: form.studentId,
-                    discipline: form.discipline,
+                    firstName: form.firstName.trim(),
                     email: form.email.trim().toLowerCase(),
                     password: form.password,
+                    companyName: form.companyName.trim(),
+                    activitySector: form.sectorActivity,
+                    phoneNumber: form.phoneNumber
                 }),
             });
 
@@ -136,10 +138,18 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-
             {serverError && (
                 <div className={serverErrorClass}>{serverError}</div>
             )}
+
+            <Field
+                id="companyName" label="Company Name" warning={warnings.companyName} labelClass={labelClass} errorClass={errorClass}>
+                <input
+                    id="companyName" name="companyName" type="text"
+                    value={form.companyName} onChange={handleChange}
+                    required className={fieldClass}
+                />
+            </Field>
 
             <FirstNameField
                 value={form.firstName} onChange={handleChange} warning={warnings.firstName}
@@ -151,23 +161,30 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
-            <MatriculeField
-                value={form.studentId} onChange={handleChange} warning={warnings.studentId}
-                labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
-                name="studentId"
-                role="Student"
-            />
-
             <DisciplineField
-                value={form.discipline} onChange={handleChange} warning={warnings.discipline}
+                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity} label="Sector of Activity" name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
-                options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}
+                options={sectorActivitys} loading={sectorActivitysLoading} fetchError={sectorActivitysFetchError}
             />
 
             <EmailField
                 value={form.email} onChange={handleChange} warning={warnings.email}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
+
+            <Field
+                id="phoneNumber" label="Phone Number" warning={warnings.phoneNumber} labelClass={labelClass} errorClass={errorClass}>
+                <input
+                    id="phoneNumber" name="phoneNumber" type="tel"
+                    inputMode="numeric"
+                    value={form.phoneNumber}
+                    onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        handleChange({target: {name: 'phoneNumber', value: digits}});
+                    }}
+                    maxLength={10} required className={fieldClass}
+                />
+            </Field>
 
             <PasswordField
                 value={form.password} onChange={handleChange} warning={warnings.password}
@@ -190,9 +207,8 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 label="Create account"
                 submitClass={submitClass}
             />
-
         </form>
     );
-};
+}
 
-export default Student;
+export default Employer;

@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.repository.*;
-import com.lacouf.rsbjwt.security.exception.TeacherAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.TeacherService;
 import com.lacouf.rsbjwt.service.dto.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -61,6 +61,7 @@ public class TeacherControllerTest {
                             {
                                 "firstName": "First Name",
                                 "lastName": "Last Name",
+                                "teacherId": "1234567",
                                 "email": "test@claurendeau.qc.ca",
                                 "password": "Test123@",
                                 "discipline": "COMPUTER_SCIENCE"
@@ -77,7 +78,7 @@ public class TeacherControllerTest {
     @Test
     void shouldReturnConflictWhenTeacherAlreadyExists() throws Exception {
         // Arrange
-        when(teacherService.save(any(TeacherSignUpDto.class))).thenThrow(new TeacherAlreadyExistsException());
+        when(teacherService.save(any(TeacherSignUpDto.class))).thenThrow(new UserAlreadyExistsException());
 
         // Act & Assert
         mockMvc.perform(post("/api/teacher/signup")
@@ -86,13 +87,14 @@ public class TeacherControllerTest {
                         {
                             "firstName": "First Name",
                             "lastName": "Last Name",
+                            "teacherId": "1234567",
                             "email": "test@claurendeau.qc.ca",
                             "password": "Test123@",
                             "discipline": "COMPUTER_SCIENCE"
                         }
                         """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Teacher already exists"));
+                .andExpect(jsonPath("$.message").value("user already exists"));
     }
 
     @ParameterizedTest
@@ -103,6 +105,7 @@ public class TeacherControllerTest {
 
         teacher.put("firstName", "First Name");
         teacher.put("lastName", "Last Name");
+        teacher.put("teacherId", "1234567");
         teacher.put("email", "test@claurendeau.qc.ca");
         teacher.put("password", "Test123@");
         teacher.put("discipline", "COMPUTER_SCIENCE");
@@ -126,6 +129,8 @@ public class TeacherControllerTest {
                 Arguments.of("lastName", ""),
                 Arguments.of("lastName", "l"),
                 Arguments.of("lastName", "l".repeat(51)),
+                Arguments.of("teacherId", "no-digits"),
+                Arguments.of("teacherId", "1".repeat(21)),
                 Arguments.of("email", "invalid-email"),
                 Arguments.of("email", "e".repeat(91) + "@gmail.com"),
                 Arguments.of("password", "test"),

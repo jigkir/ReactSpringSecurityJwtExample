@@ -4,6 +4,7 @@ import {getAuthClasses} from './styles/authStyles.jsx';
 import {RoleField} from '../../../utils/CommonFields.jsx';
 import fetcher from '../../../utils/fetcher.js';
 import Student from './signup/Student.jsx';
+import Employer from "./signup/Employer.jsx";
 import Teacher from './signup/Teacher.jsx';
 
 // Roles that are allowed to self-register — MANAGER/GESTIONNAIRE/PREPOSE are login-only
@@ -13,6 +14,7 @@ const SIGNUP_ROLES = ['student', 'employer', 'teacher'];
 // key must match the lowercase role value returned by the backend
 const ROLE_COMPONENTS = (classes) => ({
     student: <Student {...classes} />,
+    employer: <Employer {...classes} />,
     teacher: <Teacher {...classes} />,
 });
 

@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.repository;
 import com.lacouf.rsbjwt.model.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TeacherRepository extends JpaRepository<Teacher, Long> {
+import java.util.Optional;
 
+public interface TeacherRepository extends JpaRepository<Teacher, Long> {
+    Optional<Teacher> findByTeacherId(String teacherId);
 }

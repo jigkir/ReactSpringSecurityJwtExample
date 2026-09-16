@@ -2,13 +2,13 @@ import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {
-    ConfirmPasswordField,
-    DisciplineField,
-    EmailField,
     FirstNameField,
     LastNameField,
     MatriculeField,
+    DisciplineField,
+    EmailField,
     PasswordField,
+    ConfirmPasswordField,
     SubmitButton,
     validateField,
 } from "../../../../utils/CommonFields.jsx";
