@@ -58,4 +58,11 @@ public class CVService {
         String hash = DigestUtils.md5DigestAsHex(cv.getContent());
         return hash.equals(cv.getFileHash());
     }
+
+    public CVDto getCVByStudent(Student student) throws CorruptedFileException {
+        if (student == null || student.getCv() == null) {
+            throw new CorruptedFileException("No CV found for the given student.");
+        }
+        return CVDto.fromCV(student.getCv());
+    }
 }

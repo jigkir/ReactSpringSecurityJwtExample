@@ -57,4 +57,9 @@ public class StudentService {
             throw new UserAlreadyExistsException();
         }
     }
+
+    public Student findByStudentId(Long studentId) {
+        return studentRepository.findById(studentId)
+                .orElse(null);
+    }
 }

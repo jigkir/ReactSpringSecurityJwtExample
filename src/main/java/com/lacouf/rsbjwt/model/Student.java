@@ -33,5 +33,9 @@ public class Student extends UserApp {
         return discipline;
     }
 
+    public CV getCv() {
+        return cv;
+    }
+
     public void setCv(CV cv) { this.cv = cv; }
 }
