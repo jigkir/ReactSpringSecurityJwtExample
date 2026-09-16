@@ -137,7 +137,7 @@ export const LastNameField = ({value, onChange, warning, labelClass, errorClass,
     <Field id="lastName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="lastName" name="lastName" type="text"
-            value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
+            value={value} onChange={onChange}
             maxLength={50} required className={fieldClass}
         />
     </Field>
