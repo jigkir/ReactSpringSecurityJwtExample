@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
-import com.lacouf.rsbjwt.security.exception.EmployerEmailAlreadyUsedException;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldSaveEmployer() throws EmployerEmailAlreadyUsedException {
+    void shouldSaveEmployer() throws UserAlreadyExistsException {
         when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
 
         when(employerRepository.save(any(Employer.class)))
@@ -69,7 +69,7 @@ public class EmployerServiceTest {
     void shouldThrowExceptionWhenEmailAlreadyUsed() {
         when(employerRepository.existsByCredentialsEmail("email@example.com")).thenReturn(true);
 
-        assertThrows(EmployerEmailAlreadyUsedException.class, () ->
+        assertThrows(UserAlreadyExistsException.class, () ->
                 employerService.employerEmailAlreadyUsed("email@example.com")
         );
 

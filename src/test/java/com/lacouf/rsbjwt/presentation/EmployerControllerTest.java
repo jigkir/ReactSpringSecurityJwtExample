@@ -2,8 +2,8 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.security.exception.EmployerEmailAlreadyUsedException;
 import com.lacouf.rsbjwt.security.exception.RestExceptionHandler;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -82,7 +82,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnConflictWhenEmployerAlreadyExists() throws Exception {
         when(employerService.save(any(EmployerRegistrationDto.class)))
-                .thenThrow(new EmployerEmailAlreadyUsedException());
+                .thenThrow(new UserAlreadyExistsException());
 
         mockMvc.perform(post("/api/employer/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -98,7 +98,7 @@ public class EmployerControllerTest {
                             }
                             """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Un employeur avec ce email existe déjà."));
+                .andExpect(jsonPath("$.message").value("user already exists"));
     }
 
     @ParameterizedTest
