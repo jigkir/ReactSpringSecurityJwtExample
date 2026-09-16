@@ -1,6 +1,11 @@
 import {useState} from "react";
 import {useNavigate, useOutletContext} from "react-router-dom";
+import {getAuthClasses} from './styles/authStyles.jsx';
 import fetcher from "../../../utils/fetcher.js";
+import {
+    EmailField,
+    PasswordField,
+} from "../../../utils/CommonFields.jsx";
 
 const Login = ({user, setError}) => {
     const navigate = useNavigate();
