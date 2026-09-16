@@ -36,7 +36,7 @@ public class AuthProvider implements AuthenticationProvider{
 	}
 
 	private UserApp loadUserByEmail(String email) throws UsernameNotFoundException{
-		return userAppRepository.findUserAppByEmail(email)
+		return userAppRepository.findByCredentialsEmail(email)
 			.orElseThrow(UserNotFoundException::new);
 	}
 

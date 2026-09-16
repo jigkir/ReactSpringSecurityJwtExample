@@ -41,13 +41,17 @@ public class SecurityConfiguration {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     private static final String H2_CONSOLE_PATH = "/h2-console/**";
-    private static final String USER_LOGIN_PATH = "/user/login";
+    private static final String USER_LOGIN_PATH = "/api/login";
     private static final String EMPRUNTEUR_REGISTER_PATH = "/emprunteur/register";
     private static final String PREPOSE_REGISTER_PATH = "/prepose/register";
-    private static final String USER_PATH = "/user/**";
+    private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
+    private static final String EMPLOYER_REGISTER_PATH = "/api/employer/register";
+    private static final String USER_PATH = "/api/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
     private static final String GESTIONNAIRE_PATH = "/gestionnaire/**";
+    private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
+    private static final String ROLES_LIST_PATH = "/api/roles";
 
 
 
@@ -60,6 +64,10 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
                         .requestMatchers(POST, EMPRUNTEUR_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, PREPOSE_REGISTER_PATH).permitAll()
+                        .requestMatchers(POST, STUDENT_SIGNUP_PATH).permitAll()
+                        .requestMatchers(POST, EMPLOYER_REGISTER_PATH).permitAll()
+                        .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
+                        .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
 
