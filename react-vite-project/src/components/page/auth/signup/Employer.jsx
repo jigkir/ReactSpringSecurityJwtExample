@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {
-    ConfirmPasswordField,
-    DisciplineField,
-    EmailField,
-    Field,
     FirstNameField,
     LastNameField,
+    DisciplineField,
+    EmailField,
     PasswordField,
+    ConfirmPasswordField,
     SubmitButton,
     validateField,
+    Field,
 } from "../../../../utils/CommonFields.jsx";
 
 const DEFAULT_FORM = {
@@ -80,7 +80,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         setWarnings(newWarnings);
         return valid;
     };
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError('');
@@ -143,7 +143,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             )}
 
             <Field
-                id = "companyName" label= "Company Name" warning={warnings.companyName} labelClass={labelClass} errorClass={errorClass}>
+                id="companyName" label="Company Name" warning={warnings.companyName} labelClass={labelClass} errorClass={errorClass}>
                 <input
                     id="companyName" name="companyName" type="text"
                     value={form.companyName} onChange={handleChange}
@@ -162,7 +162,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <DisciplineField
-                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity} label= "Sector of Activity" name="sectorActivity"
+                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity} label="Sector of Activity" name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
                 options={sectorActivitys} loading={sectorActivitysLoading} fetchError={sectorActivitysFetchError}
             />
@@ -173,10 +173,15 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <Field
-                id = "phoneNumber" label= "Phone Number" warning={warnings.phoneNumber} labelClass={labelClass} errorClass={errorClass}>
+                id="phoneNumber" label="Phone Number" warning={warnings.phoneNumber} labelClass={labelClass} errorClass={errorClass}>
                 <input
                     id="phoneNumber" name="phoneNumber" type="tel"
-                    value={form.phoneNumber} onChange={handleChange}
+                    inputMode="numeric"
+                    value={form.phoneNumber}
+                    onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        handleChange({target: {name: 'phoneNumber', value: digits}});
+                    }}
                     maxLength={10} required className={fieldClass}
                 />
             </Field>
