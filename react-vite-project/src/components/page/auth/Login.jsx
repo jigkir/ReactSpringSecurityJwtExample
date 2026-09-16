@@ -18,6 +18,8 @@ const Login = ({user, setError}) => {
         password: ''
     });
 
+   // const classes = getAuthClasses(dark);
+
     const validateEmail = () => {
         const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         return emailRegex.test(email);
