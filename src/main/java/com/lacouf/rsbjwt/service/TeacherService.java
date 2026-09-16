@@ -27,7 +27,7 @@ public class TeacherService {
     }
 
     public UserResponseDto save(TeacherSignUpDto teacherSignUpDto) throws UserAlreadyExistsException {
-        VerifyIfTeacherExists(teacherSignUpDto);
+        VerifyIfTeacherExists(teacherSignUpDto.email(), teacherSignUpDto.teacherId());
         Credentials credentials = Credentials.builder()
                 .email(teacherSignUpDto.email())
                 .password(passwordEncoder.encode(teacherSignUpDto.password()))
@@ -47,12 +47,12 @@ public class TeacherService {
         return UserResponseDto.of(teacher);
     }
 
-    private void VerifyIfTeacherExists(TeacherSignUpDto teacherSignUpDto) throws UserAlreadyExistsException {
-        Optional<UserApp> teacherFoundByEmail = userAppRepository.findByCredentialsEmail(teacherSignUpDto.email());
+    private void VerifyIfTeacherExists(String email, String teacherId) throws UserAlreadyExistsException {
+        Optional<UserApp> teacherFoundByEmail = userAppRepository.findByCredentialsEmail(email);
+        Optional<Teacher> teacherFoundByTeacherId = teacherRepository.findByTeacherId(teacherId);
 
-        if (teacherFoundByEmail.isPresent()) {
+        if (teacherFoundByEmail.isPresent() || teacherFoundByTeacherId.isPresent()) {
             throw new UserAlreadyExistsException();
         }
     }
-
 }
