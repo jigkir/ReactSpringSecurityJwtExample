@@ -1,59 +1,68 @@
-import "./App.css";
-import PageLayout from "./components/PageLayout.jsx";
 import React, {useEffect, useState} from "react";
-import {Route, Routes, useNavigate} from "react-router-dom";
+import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import {useDarkMode} from "./styles/DarkMode.jsx";
+import PageLayout from "./components/PageLayout.jsx";
 import MainContainer from "./components/MainContainer.jsx";
 import About from "./components/About.jsx";
-import LoginForm from "./components/auth/LoginForm.jsx";
+import Login from "./components/page/auth/Login.jsx";
+import Signup from "./components/page/auth/Signup.jsx";
 import fetcher from "./utils/fetcher.js";
 import ErrorPage from "./components/ErrorPage.jsx";
-import Logout from "./components/auth/Logout.jsx";
+import Logout from "./components/page/auth/Logout.jsx";
 import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
 import EmployeurInscription from "./components/page/EmployeurInscription.jsx"
+
 function App() {
-  const [user, setUser] = useState({})
-  const [error, setError] = useState(null)
-  const navigate = useNavigate();
+    const [user, setUser] = useState({});
+    const [error, setError] = useState(null);
+    const {dark, toggleDark} = useDarkMode();
+    const navigate = useNavigate();
+    // Tracks the current route so the auth-check effect below can re-run
+    // on every navigation (e.g. right after login redirects), instead of
+    // only once when App first mounts.
+    const location = useLocation();
 
-  let token = localStorage.getItem('token')
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setUser({});
+            return;
+        }
 
-  useEffect(() => {
-      if (token) {
+        let cancelled = false;
 
-        try {
-          fetcher('user/me', {})
+        fetcher('user/me', {})
             .then(async (res) => {
                 if (!res.ok) {
-                  switch (res.status) {
-                    case 401:
-                      localStorage.clear();
-                      setUser(null);
-                    case 403:
-                      throw new Error("Forbidden")
-                    case 404:
-                      throw new Error("Nothing here 404");
-                  }
+                    switch (res.status) {
+                        case 401:
+                            localStorage.clear();
+                            if (!cancelled) setUser({});
+                            return;
+                        case 403:
+                            throw new Error('Forbidden');
+                        case 404:
+                            throw new Error('Nothing here 404');
+                        default:
+                            throw new Error(`Erreur API (${res.status})`);
+                    }
                 }
                 const data = await res.json();
-                let newUser = {...data, isLoggedIn: true}
-                setUser(newUser)
-              }
-            ).catch(async (err) => {
-              setError(err)
-              navigate('/error')
-          })
+                if (!cancelled) setUser({...data, isLoggedIn: true});
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setError(err);
+                navigate('/error');
+            });
 
-        } catch (err) {
-          if (!error) {
-            setError(err)
-            navigate('/error')
-          }
-        }
-      }
-    }, [token]
-  );
+        return () => {
+            cancelled = true;
+        };
+        // Re-run on every navigation so state updates right after login/logout, not just once on mount.
+    }, [location.pathname]);
 
   return (
     <div>
@@ -73,6 +82,23 @@ function App() {
 
     </div>
   );
+    return (
+        <div className={`${dark ? 'app-dark' : 'app-light'} flex flex-col min-h-screen`}>
+            <Routes>
+                <Route path="/" element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
+                    <Route index element={<MainContainer setError={setError}/>}/>
+                    <Route path="about" element={<About/>}/>
+                    <Route path="login" element={<Login user={user} setError={setError}/>}/>
+                    <Route path="signup" element={<Signup/>}/>
+                    <Route path="logout" element={<Logout setUser={setUser}/>}/>
+                    <Route path="emprunteur" element={<EmprunteurHome/>}/>
+                    <Route path="prepose" element={<PreposeHome/>}/>
+                    <Route path="gestionnaire" element={<GestionnaireHome/>}/>
+                    <Route path="error" element={<ErrorPage error={error}/>}/>
+                </Route>
+            </Routes>
+        </div>
+    );
 }
 
 export default App;

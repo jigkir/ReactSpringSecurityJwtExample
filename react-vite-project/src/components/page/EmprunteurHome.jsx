@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import fetcher from "../../utils/fetcher.js";
 
 const EmprunteurHome = () => {
   const [message, setMessage] = useState("");
+  const {dark} = useOutletContext();
 
   const handleAccessGestionnaireEndpoint = () => {
     setMessage("");
@@ -23,13 +25,13 @@ const EmprunteurHome = () => {
   };
 
   return(
-    <>
+    <div className={dark ? 'text-white' : 'text-gray-900'}>
       <h1>Page accueil emprunteur</h1>
       <button style={{ width: 'fit-content' }} onClick={handleAccessGestionnaireEndpoint}>
         Accéder à l'endpoint gestionnaire
       </button>
       {message && <p>{message}</p>}
-    </>
+    </div>
   );
 }
 export default EmprunteurHome;

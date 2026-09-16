@@ -1,9 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.service.UserAppService;
-import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
-import com.lacouf.rsbjwt.service.dto.LoginDTO;
-import com.lacouf.rsbjwt.service.dto.UserDTO;
+import com.lacouf.rsbjwt.service.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,11 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api")
 public class UserController {
 
 	private final UserAppService userService;
@@ -46,4 +42,13 @@ public class UserController {
 		return ResponseEntity.ok("tout est beau");
 	}
 
+	@GetMapping("/disciplines")
+	public ResponseEntity<DisciplineDto> getAllDisciplines() {
+		return ResponseEntity.ok(userService.getAllDisciplines());
+	}
+
+	@GetMapping("/roles")
+	public ResponseEntity<RoleDto> getAllRoles() {
+		return ResponseEntity.ok(userService.getAllRoles());
+	}
 }
