@@ -2,8 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.repository.*;
-import com.lacouf.rsbjwt.security.exception.StudentAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -78,7 +77,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnConflictWhenStudentAlreadyExists() throws Exception {
         // Arrange
-        when(studentService.save(any(StudentSignUpDto.class))).thenThrow(new StudentAlreadyExistsException());
+        when(studentService.save(any(StudentSignUpDto.class))).thenThrow(new UserAlreadyExistsException());
 
         // Act & Assert
         mockMvc.perform(post("/api/student/signup")
@@ -94,7 +93,7 @@ public class StudentControllerTest {
                         }
                         """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("student already exists"));
+                .andExpect(jsonPath("$.message").value("user already exists"));
     }
 
     @ParameterizedTest
@@ -136,6 +135,7 @@ public class StudentControllerTest {
                 Arguments.of("password", "test"),
                 Arguments.of("password", "Test100"),
                 Arguments.of("password", "Test10@"),
+                Arguments.of("password", "Test100@   "),
                 Arguments.of("password", "Test10@" + "@".repeat(44)),
                 Arguments.of("discipline", null)
         );

@@ -1,22 +1,22 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {
     ConfirmPasswordField,
     DisciplineField,
     EmailField,
-    Field,
     FirstNameField,
     LastNameField,
+    MatriculeField,
     PasswordField,
     SubmitButton,
     validateField,
-} from "./CommonFields.jsx";
+} from "../../../../utils/CommonFields.jsx";
 
 const DEFAULT_FORM = {
     firstName: '',
     lastName: '',
-    matricule: '',
+    studentId: '',
     discipline: '',
     email: '',
     password: '',
@@ -39,6 +39,25 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const [serverError, setServerError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    const [disciplines, setDisciplines] = useState([]);
+    const [disciplinesLoading, setDisciplinesLoading] = useState(true);
+    const [disciplinesFetchError, setDisciplinesFetchError] = useState('');
+
+    useEffect(() => {
+        fetcher('disciplines', {})
+            .then(async (res) => {
+                if (!res.ok) throw new Error(`Error ${res.status}`);
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.disciplines ?? []);
+                setDisciplines(list.map(d => ({
+                    value: typeof d === 'string' ? d : d.value,
+                    label: typeof d === 'string' ? d : (d.label ?? d.value),
+                })));
+            })
+            .catch(() => setDisciplinesFetchError('Could not load disciplines.'))
+            .finally(() => setDisciplinesLoading(false));
+    }, []);
+
     const handleChange = (e) => {
         const {name, value} = e.target;
         setForm(prev => ({...prev, [name]: value}));
@@ -48,30 +67,12 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         }
     };
 
-    const handleMatricule = (e) => {
-        const digits = e.target.value.replace(/\D/g, '');
-        setForm(prev => ({...prev, matricule: digits}));
-        setServerError('');
-        if (warnings.matricule) {
-            setWarnings(prev => ({...prev, matricule: ''}));
-        }
-    };
-
-    const validateMatricule = (value) => {
-        const t = value.trim();
-        if (!t) return 'Student ID is required.';
-        if (t.length < 5) return 'Student ID must be at least 5 digits.';
-        return '';
-    };
-
     const validateAll = () => {
         const newWarnings = {};
         let valid = true;
-        Object.keys(DEFAULT_FORM).forEach(field => {
-            const msg = field === 'matricule'
-                ? validateMatricule(form[field])
-                : validateField(field, form[field], form);
-            newWarnings[field] = msg;
+        Object.keys(DEFAULT_FORM).forEach(key => {
+            const msg = validateField(key, form[key], form);
+            newWarnings[key] = msg;
             if (msg) valid = false;
         });
         setWarnings(newWarnings);
@@ -85,7 +86,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
         setSubmitting(true);
         try {
-            const response = await fetcher('/user/singup', {
+            const response = await fetcher('student/signup', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -94,11 +95,10 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 body: JSON.stringify({
                     firstName: form.firstName.trim(),
                     lastName: form.lastName.trim(),
-                    matricule: form.matricule,
+                    studentId: form.studentId,
                     discipline: form.discipline,
                     email: form.email.trim().toLowerCase(),
                     password: form.password,
-                    role: 'ROLE_EMPRUNTEUR',
                 }),
             });
 
@@ -110,14 +110,11 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
             switch (response.status) {
                 case 409: {
                     let body = {};
-                    try {
-                        body = await response.json();
-                    } catch {
-                    }
-                    const field = body?.field ?? '';
-                    if (field === 'matricule') {
-                        setWarnings(w => ({...w, matricule: 'This student ID is already in use.'}));
-                    } else if (field === 'email') {
+                    try { body = await response.json(); } catch {}
+                    const { field: conflictField = '' } = body ?? {};
+                    if (conflictField === 'studentId') {
+                        setWarnings(w => ({...w, studentId: 'This student ID is already in use.'}));
+                    } else if (conflictField === 'email') {
                         setWarnings(w => ({...w, email: 'This email address is already in use.'}));
                     } else {
                         setServerError('An account with this student ID or email already exists.');
@@ -154,19 +151,17 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
-            <Field id="matricule" label="Student ID" warning={warnings.matricule} labelClass={labelClass}
-                   errorClass={errorClass}>
-                <input
-                    id="matricule" name="matricule" type="text"
-                    inputMode="numeric"
-                    value={form.matricule} onChange={handleMatricule}
-                    required className={fieldClass}
-                />
-            </Field>
+            <MatriculeField
+                value={form.studentId} onChange={handleChange} warning={warnings.studentId}
+                labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
+                name="studentId"
+                role="Student"
+            />
 
             <DisciplineField
                 value={form.discipline} onChange={handleChange} warning={warnings.discipline}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
+                options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}
             />
 
             <EmailField

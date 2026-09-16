@@ -52,6 +52,7 @@ public class SecurityConfiguration {
     private static final String PREPOSE_PATH = "/prepose/**";
     private static final String GESTIONNAIRE_PATH = "/gestionnaire/**";
     private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
+    private static final String ROLES_LIST_PATH = "/api/roles";
 
 
 
@@ -68,6 +69,7 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, TEACHER_SIGNUP_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYER_REGISTER_PATH).permitAll()
                         .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
+                        .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
 
