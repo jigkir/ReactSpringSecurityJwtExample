@@ -158,7 +158,7 @@ export const DisciplineField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a discipline --'}
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' +label+' --'}
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>

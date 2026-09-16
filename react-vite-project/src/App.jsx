@@ -12,7 +12,7 @@ import Logout from "./components/page/auth/Logout.jsx";
 import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
-import EmployeurInscription from "./components/page/EmployeurInscription.jsx"
+import Employer from "./components/page/auth/signup/Employer.jsx"
 
 function App() {
     const [user, setUser] = useState({});
@@ -64,24 +64,6 @@ function App() {
         // Re-run on every navigation so state updates right after login/logout, not just once on mount.
     }, [location.pathname]);
 
-  return (
-    <div>
-      <Routes>
-        <Route path="/" element={<PageLayout user={user}/>}>
-          <Route index element={<MainContainer setError={setError}/>}/>
-          <Route path='about' element={<About/>}/>
-          <Route path='login' element={<LoginForm setError={setError}/>}/>
-          <Route path='logout' element={<Logout setUser={setUser}/>}/>
-          <Route path='employeurinscription' element={<EmployeurInscription/>}/>
-          <Route path='emprunteur' element={<EmprunteurHome/>}/>
-          <Route path='prepose' element={<PreposeHome/>}/>
-          <Route path='gestionnaire' element={<GestionnaireHome/>}/>
-          <Route path='error' element={<ErrorPage error={error}/>}/>
-        </Route>
-      </Routes>
-
-    </div>
-  );
     return (
         <div className={`${dark ? 'app-dark' : 'app-light'} flex flex-col min-h-screen`}>
             <Routes>
