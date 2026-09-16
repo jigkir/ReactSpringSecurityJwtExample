@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.presentation;
 
-import com.lacouf.rsbjwt.security.exception.TeacherAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.TeacherService;
 import com.lacouf.rsbjwt.service.dto.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -20,7 +20,7 @@ public class TeacherController {
     public TeacherController(TeacherService teacherService){this.teacherService = teacherService;}
 
     @PostMapping("/signup")
-    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody TeacherSignUpDto teacherSignUpDto) throws TeacherAlreadyExistsException {
+    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody TeacherSignUpDto teacherSignUpDto) throws UserAlreadyExistsException {
         UserResponseDto signedUpTeacher = teacherService.save(teacherSignUpDto);
 
         return new ResponseEntity<>(signedUpTeacher, HttpStatus.CREATED);
