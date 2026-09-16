@@ -6,7 +6,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.StudentAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +27,7 @@ public class StudentService {
         this.userAppRepository = userAppRepository;
     }
 
-    public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws StudentAlreadyExistsException {
+    public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
         verifyIfStudentExists(studentSignUpDto.email(), studentSignUpDto.studentId());
 
         Credentials credentials = Credentials.builder()
@@ -49,12 +49,12 @@ public class StudentService {
         return UserResponseDto.of(student);
     }
 
-    private void verifyIfStudentExists(String email, String studentId) throws StudentAlreadyExistsException {
+    private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
         Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
         Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
 
         if (studentFoundByEmail.isPresent() || studentFoundByStudentId.isPresent()) {
-            throw new StudentAlreadyExistsException();
+            throw new UserAlreadyExistsException();
         }
     }
 }
