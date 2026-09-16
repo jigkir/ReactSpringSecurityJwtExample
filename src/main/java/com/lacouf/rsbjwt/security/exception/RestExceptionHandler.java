@@ -40,4 +40,9 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(TeacherAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleTeacherAlreadyExistsException(TeacherAlreadyExistsException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
+    }
+
 }
