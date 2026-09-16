@@ -4,7 +4,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.Student;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.StudentAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldSaveStudent() throws StudentAlreadyExistsException {
+    void shouldSaveStudent() throws UserAlreadyExistsException {
         // Arrange
         when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
 
@@ -73,12 +73,12 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowStudentAlreadyExistsExceptionWhenStudentIdAlreadyExists() {
+    void shouldThrowUserAlreadyExistsExceptionWhenStudentIdAlreadyExists() {
         // Arrange
         when(studentRepository.findByStudentId(studentSignUpDto.studentId())).thenReturn(Optional.of(new Student()));
 
         // Act + Assert
-        assertThrows(StudentAlreadyExistsException.class, () -> studentService.save(studentSignUpDto));
+        assertThrows(UserAlreadyExistsException.class, () -> studentService.save(studentSignUpDto));
 
         verify(studentRepository, never()).save(any(Student.class));
     }
