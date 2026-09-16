@@ -56,7 +56,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                     label: typeof d === 'string' ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setsectorActivitysFetchError('Could not load sectorActivitys.'))
+            .catch(() => setsectorActivitysFetchError('Could not load sector of Activitys.'))
             .finally(() => setsectorActivitysLoading(false));
     }, []);
 
@@ -86,13 +86,55 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         setServerError('');
         if (!validateAll()) return;
         setSubmitting(true);
+        try {
+            const response = await fetcher('employer/register', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json;charset=UTF-8',
+                },
+                body: JSON.stringify({
+                    lastName: form.lastName.trim(),
+                    firstName: form.firstName.trim(),
+                    email: form.email.trim().toLowerCase(),
+                    password: form.password,
+                    companyName: form.companyName.trim(),
+                    activitySector: form.sectorActivity,
+                    phoneNumber: form.phoneNumber
+                }),
+            });
 
-      setTimeout(() => {
-          console.log(formData);
-          setLoading(false);
-          navigate("/login");
-      },1000)
-    }
+            if (response.ok) {
+                navigate('/login');
+                return;
+            }
+
+            switch (response.status) {
+                case 409: {
+                    let body = {};
+                    try { body = await response.json(); } catch {}
+                    const { field: conflictField = '' } = body ?? {};
+                    if (conflictField === 'studentId') {
+                        setWarnings(w => ({...w, studentId: 'This student ID is already in use.'}));
+                    } else if (conflictField === 'email') {
+                        setWarnings(w => ({...w, email: 'This email address is already in use.'}));
+                    } else {
+                        setServerError('An account with this student ID or email already exists.');
+                    }
+                    break;
+                }
+                case 400:
+                    setServerError('The submitted data is invalid. Please review the fields.');
+                    break;
+                default:
+                    setServerError(`Server error (${response.status}). Please try again.`);
+            }
+        } catch {
+            setServerError('Unable to reach the server. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -120,7 +162,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <DisciplineField
-                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity} label= "Sector of Activity"
+                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity} label= "Sector of Activity" name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
                 options={sectorActivitys} loading={sectorActivitysLoading} fetchError={sectorActivitysFetchError}
             />

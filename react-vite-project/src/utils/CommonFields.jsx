@@ -148,17 +148,17 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
 
 export const DisciplineField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass,
-    label = 'Discipline', options = [], loading = false, fetchError = ''
+    label = 'Discipline', options = [], loading = false, fetchError = '', name = "discipline"
 }) => (
-    <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+    <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
         <select
-            id="discipline" name="discipline"
+            id="discipline" name={name}
             value={value} onChange={onChange}
             required className={fieldClass}
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' +label+' --'}
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' +label.toLowerCase()+' --'}
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
