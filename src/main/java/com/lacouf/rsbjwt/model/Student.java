@@ -1,10 +1,7 @@
 package com.lacouf.rsbjwt.model;
 
 import com.lacouf.rsbjwt.model.auth.Credentials;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 
 @Entity
 public class Student extends UserApp {
@@ -14,6 +11,10 @@ public class Student extends UserApp {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Discipline discipline;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "cv_id", referencedColumnName = "id")
+    private CV cv;
 
     public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline) {
         super(firstName, lastName, credentials);

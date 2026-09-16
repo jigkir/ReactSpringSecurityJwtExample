@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class PDFDocument {
+public class CV {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,10 +22,14 @@ public class PDFDocument {
     @Column
     private String fileHash;
 
-    public PDFDocument() {
+    @OneToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
+
+    public CV() {
     }
 
-    public PDFDocument(byte[] content, String fileName) {
+    public CV(byte[] content, String fileName) {
         this.content = content;
         this.fileName = fileName;
     }
