@@ -4,7 +4,6 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Getter
