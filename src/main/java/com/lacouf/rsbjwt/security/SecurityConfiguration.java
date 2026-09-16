@@ -45,6 +45,7 @@ public class SecurityConfiguration {
     private static final String EMPRUNTEUR_REGISTER_PATH = "/emprunteur/register";
     private static final String PREPOSE_REGISTER_PATH = "/prepose/register";
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
+    private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
     private static final String EMPLOYER_REGISTER_PATH = "/employer/register";
     private static final String USER_PATH = "/api/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
@@ -65,6 +66,7 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, EMPRUNTEUR_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, PREPOSE_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, STUDENT_SIGNUP_PATH).permitAll()
+                        .requestMatchers(POST, TEACHER_SIGNUP_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYER_REGISTER_PATH).permitAll()
                         .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
