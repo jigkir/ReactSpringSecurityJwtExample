@@ -20,7 +20,7 @@ export const RoleField = ({
 );
 
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
+export const PASSWORD_REGEX = /^(?!.*\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
 
 export const handleSpaceKeyDown = (e) => {
     if (e.key === ' ') {
@@ -30,10 +30,10 @@ export const handleSpaceKeyDown = (e) => {
 
 export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
 
-export const validateId = (value) => {
+export const validateId = (value, length = 7) => {
     const t = value.trim();
     if (!t) return 'ID is required.';
-    if (t.length !== 7) return 'ID must be exactly 7 digits.';
+    if (t.length !== length) return `ID must be exactly ${length} digits.`;
     return '';
 };
 
@@ -69,8 +69,9 @@ export function validateField(field, value, formValues = {}) {
         case 'discipline':
             return validateDiscipline(value);
         case 'studentId':
+            return validateId(value, 7);
         case 'teacherId':
-            return validateId(value);
+            return validateId(value, 5);
         default:
             return '';
     }
@@ -103,9 +104,10 @@ export const MatriculeField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass,
     role = 'Student',
     name = 'studentId',
+    limit = 7,
 }) => {
     const handleChange = (e) => {
-        const digits = e.target.value.replace(/\D/g, '').slice(0, 7);
+        const digits = e.target.value.replace(/\D/g, '').slice(0, limit);
         onChange({target: {name, value: digits}});
     };
 

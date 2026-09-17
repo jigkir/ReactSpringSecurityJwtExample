@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {useNavigate} from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {
     FirstNameField,
@@ -14,58 +14,84 @@ import {
 } from "../../../../utils/CommonFields.jsx";
 
 const DEFAULT_FORM = {
-    companyName:"",
-    sectorActivity:"",
-    firstName:"",
-    lastName:"",
-    email:"",
-    phoneNumber:"",
-    password: '',
-    confirmPassword: '',
-}
+    companyName: "",
+    sectorActivity: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+};
 
-const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, '']));
+const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
 function isAllFilled(form) {
-    return Object.values(form).every(v => v !== '');
+    return Object.values(form).every(v => v !== "");
 }
 
-const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
+function validateCompanyName(value) {
+    const t = value.trim();
+    if (!t) return "Company name is required.";
+    if (t.length < 2) return "Must be at least 2 characters.";
+    if (t.length > 100) return "Must be at most 100 characters.";
+    return "";
+}
 
+function validatePhoneNumber(value) {
+    if (!value) return "Phone number is required.";
+    if (value.length !== 10) return "Phone number must be exactly 10 digits.";
+    return "";
+}
+
+function validateSectorActivity(value) {
+    return value ? "" : "Please select a sector of activity.";
+}
+
+function validateEmployerField(field, value, formValues = {}) {
+    switch (field) {
+        case "companyName": return validateCompanyName(value);
+        case "phoneNumber": return validatePhoneNumber(value);
+        case "sectorActivity": return validateSectorActivity(value);
+        default: return validateField(field, value, formValues);
+    }
+}
+
+const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
     const navigate = useNavigate();
 
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [serverError, setServerError] = useState('');
+    const [serverError, setServerError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    const [sectorActivitys, setsectorActivitys] = useState([]);
-    const [sectorActivitysLoading, setsectorActivitysLoading] = useState(true);
-    const [sectorActivitysFetchError, setsectorActivitysFetchError] = useState('');
+    const [sectors, setSectors] = useState([]);
+    const [sectorsLoading, setSectorsLoading] = useState(true);
+    const [sectorsFetchError, setSectorsFetchError] = useState("");
 
     useEffect(() => {
-        fetcher('disciplines', {})
+        fetcher("disciplines", {})
             .then(async (res) => {
                 if (!res.ok) throw new Error(`Error ${res.status}`);
                 const data = await res.json();
                 const list = Array.isArray(data) ? data : (data.disciplines ?? []);
-                setsectorActivitys(list.map(d => ({
-                    value: typeof d === 'string' ? d : d.value,
-                    label: typeof d === 'string' ? d : (d.label ?? d.value),
+                setSectors(list.map(d => ({
+                    value: typeof d === "string" ? d : d.value,
+                    label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setsectorActivitysFetchError('Could not load sector of Activitys.'))
-            .finally(() => setsectorActivitysLoading(false));
+            .catch(() => setSectorsFetchError("Could not load sectors of activity."))
+            .finally(() => setSectorsLoading(false));
     }, []);
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setForm(prev => ({...prev, [name]: value}));
-        setServerError('');
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+        setServerError("");
         if (warnings[name]) {
-            setWarnings(prev => ({...prev, [name]: ''}));
+            setWarnings(prev => ({ ...prev, [name]: "" }));
         }
     };
 
@@ -73,7 +99,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         const newWarnings = {};
         let valid = true;
         Object.keys(DEFAULT_FORM).forEach(key => {
-            const msg = validateField(key, form[key], form);
+            const msg = validateEmployerField(key, form[key], form);
             newWarnings[key] = msg;
             if (msg) valid = false;
         });
@@ -83,29 +109,29 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setServerError('');
+        setServerError("");
         if (!validateAll()) return;
         setSubmitting(true);
         try {
-            const response = await fetcher('employer/register', {
-                method: 'POST',
+            const response = await fetcher("employer/signup", {
+                method: "POST",
                 headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json;charset=UTF-8',
+                    Accept: "application/json",
+                    "Content-Type": "application/json;charset=UTF-8",
                 },
                 body: JSON.stringify({
-                    lastName: form.lastName.trim(),
                     firstName: form.firstName.trim(),
+                    lastName: form.lastName.trim(),
                     email: form.email.trim().toLowerCase(),
                     password: form.password,
                     companyName: form.companyName.trim(),
-                    activitySector: form.sectorActivity,
-                    phoneNumber: form.phoneNumber
+                    discipline: form.sectorActivity,
+                    phoneNumber: form.phoneNumber,
                 }),
             });
 
             if (response.ok) {
-                navigate('/login');
+                navigate("/login");
                 return;
             }
 
@@ -113,24 +139,22 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 case 409: {
                     let body = {};
                     try { body = await response.json(); } catch {}
-                    const { field: conflictField = '' } = body ?? {};
-                    if (conflictField === 'studentId') {
-                        setWarnings(w => ({...w, studentId: 'This student ID is already in use.'}));
-                    } else if (conflictField === 'email') {
-                        setWarnings(w => ({...w, email: 'This email address is already in use.'}));
+                    const { field: conflictField = "" } = body ?? {};
+                    if (conflictField === "email") {
+                        setWarnings(w => ({ ...w, email: "This email address is already in use." }));
                     } else {
-                        setServerError('An account with this student ID or email already exists.');
+                        setServerError("An account with this email already exists.");
                     }
                     break;
                 }
                 case 400:
-                    setServerError('The submitted data is invalid. Please review the fields.');
+                    setServerError("The submitted data is invalid. Please review the fields.");
                     break;
                 default:
                     setServerError(`Server error (${response.status}). Please try again.`);
             }
         } catch {
-            setServerError('Unable to reach the server. Please try again.');
+            setServerError("Unable to reach the server. Please try again.");
         } finally {
             setSubmitting(false);
         }
@@ -143,11 +167,13 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             )}
 
             <Field
-                id="companyName" label="Company Name" warning={warnings.companyName} labelClass={labelClass} errorClass={errorClass}>
+                id="companyName" label="Company Name" warning={warnings.companyName}
+                labelClass={labelClass} errorClass={errorClass}
+            >
                 <input
                     id="companyName" name="companyName" type="text"
                     value={form.companyName} onChange={handleChange}
-                    required className={fieldClass}
+                    maxLength={100} required className={fieldClass}
                 />
             </Field>
 
@@ -162,9 +188,10 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <DisciplineField
-                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity} label="Sector of Activity" name="sectorActivity"
+                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity}
+                label="Sector of Activity" name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
-                options={sectorActivitys} loading={sectorActivitysLoading} fetchError={sectorActivitysFetchError}
+                options={sectors} loading={sectorsLoading} fetchError={sectorsFetchError}
             />
 
             <EmailField
@@ -173,14 +200,16 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <Field
-                id="phoneNumber" label="Phone Number" warning={warnings.phoneNumber} labelClass={labelClass} errorClass={errorClass}>
+                id="phoneNumber" label="Phone Number" warning={warnings.phoneNumber}
+                labelClass={labelClass} errorClass={errorClass}
+            >
                 <input
                     id="phoneNumber" name="phoneNumber" type="tel"
                     inputMode="numeric"
                     value={form.phoneNumber}
                     onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        handleChange({target: {name: 'phoneNumber', value: digits}});
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        handleChange({ target: { name: "phoneNumber", value: digits } });
                     }}
                     maxLength={10} required className={fieldClass}
                 />
@@ -209,6 +238,6 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
         </form>
     );
-}
+};
 
 export default Employer;

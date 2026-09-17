@@ -74,7 +74,7 @@ public class TeacherServiceTest {
     }
 
     @Test
-    void shouldThrowUserAlreadyExistsExceptionWhenTeacherIdAlreadyExists() {
+    void shouldThrowUserAlreadyExistsExceptionWhenTeacherIdAlreadyUsed() {
         // Arrange
         when(teacherRepository.findByTeacherId(teacherSignUpDto.teacherId())).thenReturn(Optional.of(new Teacher()));
 
@@ -85,7 +85,7 @@ public class TeacherServiceTest {
     }
 
     @Test
-    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyExists() {
+    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyUsed() {
         // Arrange
         when(userAppRepository.findByCredentialsEmail(teacherSignUpDto.email())).thenReturn(Optional.of(new Teacher()));
 

@@ -61,7 +61,7 @@ public class TeacherControllerTest {
                             {
                                 "firstName": "First Name",
                                 "lastName": "Last Name",
-                                "teacherId": "1234567",
+                                "teacherId": "12345",
                                 "email": "test@claurendeau.qc.ca",
                                 "password": "Test123@",
                                 "discipline": "COMPUTER_SCIENCE"
@@ -87,7 +87,7 @@ public class TeacherControllerTest {
                         {
                             "firstName": "First Name",
                             "lastName": "Last Name",
-                            "teacherId": "1234567",
+                            "teacherId": "12345",
                             "email": "test@claurendeau.qc.ca",
                             "password": "Test123@",
                             "discipline": "COMPUTER_SCIENCE"
@@ -105,7 +105,7 @@ public class TeacherControllerTest {
 
         teacher.put("firstName", "First Name");
         teacher.put("lastName", "Last Name");
-        teacher.put("teacherId", "1234567");
+        teacher.put("teacherId", "12345");
         teacher.put("email", "test@claurendeau.qc.ca");
         teacher.put("password", "Test123@");
         teacher.put("discipline", "COMPUTER_SCIENCE");
