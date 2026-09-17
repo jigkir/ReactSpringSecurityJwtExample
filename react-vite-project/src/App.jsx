@@ -12,7 +12,6 @@ import Logout from "./components/page/auth/Logout.jsx";
 import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
-import Employer from "./components/page/auth/signup/Employer.jsx"
 
 function App() {
     const [user, setUser] = useState({});
@@ -33,7 +32,7 @@ function App() {
 
         let cancelled = false;
 
-        fetcher('user/me', {})
+        fetcher('me', {})
             .then(async (res) => {
                 if (!res.ok) {
                     switch (res.status) {
