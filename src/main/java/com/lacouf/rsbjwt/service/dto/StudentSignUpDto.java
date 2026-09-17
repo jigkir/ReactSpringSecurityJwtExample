@@ -13,8 +13,7 @@ public record StudentSignUpDto(
         String lastName,
 
         @NotBlank
-        @Size(max = 20)
-        @Pattern(regexp = "^[0-9]*$", message = "student ID must contain only digits")
+        @Pattern(regexp = "^[0-9]{7}$", message = "student ID must contain 7 digits")
         String studentId,
 
         @NotBlank
@@ -24,11 +23,12 @@ public record StudentSignUpDto(
 
         @NotBlank
         @Size(min = 8, max = 50)
-        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?])\\S+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=), and must not contain whitespace")
+        @Pattern(regexp = "^(?!.*\\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=!), and must not contain whitespace")
         String password,
 
         @NotNull
-        Discipline discipline) {
+        Discipline discipline
+) {
 
         public StudentSignUpDto {
                 if (firstName != null) {
