@@ -5,7 +5,7 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.security.exception.RestExceptionHandler;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
-import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +52,15 @@ public class EmployerControllerTest {
 
     @Test
     void shouldReturnCreatedWhenEmployerSignsUp() throws Exception {
+        // Arrange
         UserResponseDto employerCreationResponse = new UserResponseDto(
                 1L, "George", "Hudubulla", "email@email.com", "EMPLOYER"
         );
 
-        when(employerService.save(any(EmployerRegistrationDto.class))).thenReturn(employerCreationResponse);
+        when(employerService.save(any(EmployerSignUpDto.class))).thenReturn(employerCreationResponse);
 
-        mockMvc.perform(post("/api/employer/register")
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
@@ -81,10 +83,12 @@ public class EmployerControllerTest {
 
     @Test
     void shouldReturnConflictWhenEmployerAlreadyExists() throws Exception {
-        when(employerService.save(any(EmployerRegistrationDto.class)))
+        // Arrange
+        when(employerService.save(any(EmployerSignUpDto.class)))
                 .thenThrow(new UserAlreadyExistsException());
 
-        mockMvc.perform(post("/api/employer/register")
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
@@ -104,6 +108,7 @@ public class EmployerControllerTest {
     @ParameterizedTest
     @MethodSource("invalidFields")
     void shouldReturnBadRequestForInvalidFields(String field, Object invalidValue) throws Exception {
+        // Arrange
         Map<String, Object> employer = new HashMap<>();
         employer.put("firstName", "George");
         employer.put("lastName", "Hudubulla");
@@ -115,7 +120,8 @@ public class EmployerControllerTest {
 
         employer.put(field, invalidValue);
 
-        mockMvc.perform(post("/api/employer/register")
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employer)))
                 .andExpect(status().isBadRequest());

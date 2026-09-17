@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
-import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,9 +22,9 @@ public class EmployerController {
         this.employerService = employerService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerRegistrationDto employerRegistrationDto) throws UserAlreadyExistsException {
-        UserResponseDto userResponseDto = employerService.save(employerRegistrationDto);
+    @PostMapping("/signup")
+    public ResponseEntity<UserResponseDto> save(@Valid @RequestBody EmployerSignUpDto employerSignUpDto) throws UserAlreadyExistsException {
+        UserResponseDto userResponseDto = employerService.save(employerSignUpDto);
         return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }
 }

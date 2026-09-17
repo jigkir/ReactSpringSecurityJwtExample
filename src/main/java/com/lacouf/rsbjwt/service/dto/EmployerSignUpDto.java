@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record EmployerRegistrationDto (
-        @NotBlank(message = "Le prénom est obligatoire")
-        @Size(min = 2, max = 50, message = "Le prénom doit contenir entre 2 et 50 caractères")
+public record EmployerSignUpDto(
+        @NotBlank
+        @Size(min = 2, max = 50)
         String firstName,
 
         @NotBlank(message = "Le nom est obligatoire")
@@ -36,7 +36,7 @@ public record EmployerRegistrationDto (
         String phoneNumber
 ) {
 
-        public EmployerRegistrationDto {
+        public EmployerSignUpDto {
                 if (firstName != null) {
                         firstName = firstName.trim();
                 }

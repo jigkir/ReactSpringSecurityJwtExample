@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.service;
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,15 +34,16 @@ public class EmployerServiceTest {
     @Captor
     private ArgumentCaptor<Employer> employerArgumentCaptor;
 
-    private static EmployerRegistrationDto employerRegistrationDto;
+    private static EmployerSignUpDto employerSignUpDto;
 
     @BeforeAll
-    static void createEmployerRegistrationDto() {
-        employerRegistrationDto = new EmployerRegistrationDto("First Name", "Last Name", "email@example.com", "Test123@", "Company Name", "sector", "514-123-4567");
+    static void createEmployerSignUpDto() {
+        employerSignUpDto = new EmployerSignUpDto("First Name", "Last Name", "email@example.com", "Test123@", "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
     }
 
     @Test
     void shouldSaveEmployer() throws UserAlreadyExistsException {
+        // Arrange
         when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
 
         when(employerRepository.save(any(Employer.class)))
@@ -51,8 +52,10 @@ public class EmployerServiceTest {
                     return employer;
                 }));
 
-        employerService.save(employerRegistrationDto);
+        // Act
+        employerService.save(employerSignUpDto);
 
+        // Assert
         verify(employerRepository).save(employerArgumentCaptor.capture());
 
         Employer savedEmployer = employerArgumentCaptor.getValue();
@@ -69,6 +72,7 @@ public class EmployerServiceTest {
     void shouldThrowExceptionWhenEmailAlreadyUsed() {
         when(employerRepository.existsByCredentialsEmail("email@example.com")).thenReturn(true);
 
+        // Act + Assert
         assertThrows(UserAlreadyExistsException.class, () ->
                 employerService.employerEmailAlreadyUsed("email@example.com")
         );

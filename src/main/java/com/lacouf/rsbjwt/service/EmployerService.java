@@ -5,7 +5,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class EmployerService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponseDto save(EmployerRegistrationDto employerDTO) throws UserAlreadyExistsException {
+    public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
 
         employerEmailAlreadyUsed(employerDTO.email());
 
