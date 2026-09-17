@@ -69,7 +69,7 @@ public class EmployerControllerTest {
                                 "email": "email@email.com",
                                 "password": "Password123@",
                                 "companyName": "Tech Corp",
-                                "activitySector": "Software",
+                                "discipline": "COMPUTER_SCIENCE",
                                 "phoneNumber": "5550199999"
                             }
                             """))
@@ -97,7 +97,7 @@ public class EmployerControllerTest {
                                 "email": "email@email.com",
                                 "password": "Password123@",
                                 "companyName": "Tech Corp",
-                                "activitySector": "Software",
+                                "discipline": "COMPUTER_SCIENCE",
                                 "phoneNumber": "5550199999"
                             }
                             """))
@@ -115,7 +115,7 @@ public class EmployerControllerTest {
         employer.put("email", "email@email.com");
         employer.put("password", "Password123@");
         employer.put("companyName", "Tech Corp");
-        employer.put("activitySector", "Software");
+        employer.put("discipline", "COMPUTER_SCIENCE");
         employer.put("phoneNumber", "5550199999");
 
         employer.put(field, invalidValue);
@@ -161,12 +161,6 @@ public class EmployerControllerTest {
                 Arguments.of("companyName", "   "),
                 Arguments.of("companyName", "a"),
                 Arguments.of("companyName", "a".repeat(101)),
-
-                Arguments.of("activitySector", null),
-                Arguments.of("activitySector", ""),
-                Arguments.of("activitySector", "   "),
-                Arguments.of("activitySector", "a"),
-                Arguments.of("activitySector", "a".repeat(31)),
 
                 Arguments.of("phoneNumber", null),
                 Arguments.of("phoneNumber", ""),

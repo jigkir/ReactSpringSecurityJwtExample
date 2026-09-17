@@ -1,7 +1,9 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
+import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.answer;
@@ -27,7 +31,8 @@ public class EmployerServiceTest {
 
     @Mock
     private EmployerRepository employerRepository;
-
+    @Mock
+    private UserAppRepository userAppRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
 
@@ -59,22 +64,23 @@ public class EmployerServiceTest {
         verify(employerRepository).save(employerArgumentCaptor.capture());
 
         Employer savedEmployer = employerArgumentCaptor.getValue();
-        assertEquals("First Name", savedEmployer.getFirstName());
-        assertEquals("Last Name", savedEmployer.getLastName());
-        assertEquals("email@example.com", savedEmployer.getEmail());
-        assertEquals("Test123@-encoded", savedEmployer.getPassword());
-        assertEquals("Company Name", savedEmployer.getCompanyName());
-        assertEquals("sector", savedEmployer.getActivitySector());
-        assertEquals("514-123-4567", savedEmployer.getPhoneNumber());
+        assert(savedEmployer.getFirstName()).equals("First Name");
+        assert(savedEmployer.getLastName()).equals("Last Name");
+        assert(savedEmployer.getEmail()).equals("email@example.com");
+        assert(savedEmployer.getPassword()).equals("Test123@-encoded");
+        assert(savedEmployer.getCompanyName()).equals("Company Name");
+        assert(savedEmployer.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
+        assert(savedEmployer.getPhoneNumber()).equals("514-123-4567");
     }
 
     @Test
-    void shouldThrowExceptionWhenEmailAlreadyUsed() {
-        when(employerRepository.existsByCredentialsEmail("email@example.com")).thenReturn(true);
+    void shouldThrowUserAlreadyExistsWhenEmailAlreadyUsed() {
+        // Arrange
+        when(userAppRepository.findByCredentialsEmail(employerSignUpDto.email())).thenReturn(Optional.of(new Employer()));
 
         // Act + Assert
         assertThrows(UserAlreadyExistsException.class, () ->
-                employerService.employerEmailAlreadyUsed("email@example.com")
+                employerService.save(employerSignUpDto)
         );
 
         verify(employerRepository, never()).save(any(Employer.class));

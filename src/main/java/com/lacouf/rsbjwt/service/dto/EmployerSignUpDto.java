@@ -1,38 +1,35 @@
 package com.lacouf.rsbjwt.service.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.lacouf.rsbjwt.model.Discipline;
+import jakarta.validation.constraints.*;
 
 public record EmployerSignUpDto(
         @NotBlank
         @Size(min = 2, max = 50)
         String firstName,
 
-        @NotBlank(message = "Le nom est obligatoire")
-        @Size(min = 2, max = 50, message = "Le nom doit contenir entre 2 et 50 caractères")
+        @NotBlank
+        @Size(min = 2, max = 50)
         String lastName,
 
-        @NotBlank(message = "L'email est obligatoire")
+        @NotBlank
         @Email
         String email,
 
         @NotBlank
-        @Size(min = 8, max = 50, message = "Le mot de passe doit contenir entre 8 et 50 caractères")
-        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])\\S+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=), and must not contain whitespace")
+        @Size(min = 8, max = 50)
+        @Pattern(regexp = "^(?!.*\\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=!), and must not contain whitespace")
         String password,
 
         @NotBlank
-        @Size(min = 2, max = 100, message = "Le nom de l'entreprise doit contenir entre 2 et 100 caractères")
+        @Size(min = 2, max = 100)
         String companyName,
 
-        @NotBlank
-        @Size(min = 2, max = 30, message = "Le secteur d'activité doit contenir entre 2 et 30 caractères")
-        String activitySector,
+        @NotNull
+        Discipline discipline,
 
         @NotBlank
-        @Size(min = 10, max = 20, message = "Le numéro de téléphone doit contenir entre 10 et 20 caractères")
+        @Pattern(regexp = "^[0-9]{10}$", message = "phone number must contain exactly 10 digits")
         String phoneNumber
 ) {
 
@@ -51,10 +48,6 @@ public record EmployerSignUpDto(
 
                 if (companyName != null) {
                         companyName = companyName.trim();
-                }
-
-                if (activitySector != null) {
-                        activitySector = activitySector.trim();
                 }
 
                 if (phoneNumber != null) {
