@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.security.exception.CorruptedFileException;
 import com.lacouf.rsbjwt.security.exception.InvalidFileSizeException;
 import com.lacouf.rsbjwt.security.exception.InvalidFileTypeException;
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
@@ -77,26 +78,26 @@ public class CVService {
         }
     }
 
-    public int getCVCountByStudent(Student student) {
-        if (student == null || student.getCvs() == null) {
+    public long getCVCountByStudent(Student student) {
+        if (student == null) {
             return 0;
         }
-        return student.getCvs().size();
+        return cvRepository.countByStudent_StudentId(student.getStudentId());
     }
 
 
 
     public CVDto getMostRecentCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException {
-        if (student == null || student.getCvs() == null || student.getCvs().isEmpty()) {
-            throw new CorruptedFileException("No CV found for the given student.");
+        if (student == null) {
+            throw new UserNotFoundException();
         }
-        if (!isCVReadable(student.getCvs().iterator().next())) {
+        CV mostRecentCV = cvRepository.findTopByStudent_StudentIdOrderByUploadDateDesc(student.getStudentId())
+                .orElseThrow(() -> new CorruptedFileException("No CV found for the given student."));
+
+        if (!isCVReadable(mostRecentCV)) {
             throw new CorruptedFileException("The CV for the given student is corrupted or unreadable.");
         }
 
-        CV mostRecentCV = student.getCvs().stream()
-                .max((cv1, cv2) -> cv1.getUploadDate().compareTo(cv2.getUploadDate()))
-                .orElseThrow(() -> new CorruptedFileException("No CV found for the given student."));
 
         return CVDto.fromCV(mostRecentCV);
     }

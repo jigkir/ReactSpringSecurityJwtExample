@@ -1,6 +1,8 @@
 package com.lacouf.rsbjwt.security.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -52,6 +54,16 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(InvalidFileSizeException.class)
     public ResponseEntity<Map<String, String>> handleInvalidFileSizeException(InvalidFileSizeException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONTENT_TOO_LARGE);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
+        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Map<String, String>> handleMultipartException(MultipartException exception) {
+        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
     }
 }

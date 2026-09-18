@@ -73,9 +73,9 @@ public class StudentController {
     }
 
     @GetMapping("/cv-count/{studentId}")
-    public ResponseEntity<Integer> getCVCount(@PathVariable String studentId) {
+    public ResponseEntity<Long> getCVCount(@PathVariable String studentId) {
         Student student = studentService.findByStudentId(studentId);
-        int cvCount = cvService.getCVCountByStudent(student);
+        long cvCount = cvService.getCVCountByStudent(student);
         return new ResponseEntity<>(cvCount, HttpStatus.OK);
     }
 }

@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.model;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -15,7 +16,7 @@ public class Student extends UserApp {
     private Discipline discipline;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "student")
-    private Set<CV> cvs;
+    private Set<CV> cvs = new HashSet<>();
 
     public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline) {
         super(firstName, lastName, credentials);

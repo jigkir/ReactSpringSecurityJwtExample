@@ -17,7 +17,7 @@ public class CV {
     private Long id;
 
     @Lob
-    @Column(length = Integer.MAX_VALUE / 1000)
+    @Column()
     private byte[] content;
 
     @Column
