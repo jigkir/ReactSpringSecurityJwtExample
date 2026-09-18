@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.model;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 public class Student extends UserApp {
     @Column(unique = true, nullable = false)
@@ -12,9 +14,8 @@ public class Student extends UserApp {
     @Column(nullable = false)
     private Discipline discipline;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "cv_id", referencedColumnName = "id")
-    private CV cv;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "student")
+    private Set<CV> cvs;
 
     public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline) {
         super(firstName, lastName, credentials);
@@ -33,9 +34,12 @@ public class Student extends UserApp {
         return discipline;
     }
 
-    public CV getCv() {
-        return cv;
+    public Set<CV> getCvs() {
+        return cvs;
     }
 
-    public void setCv(CV cv) { this.cv = cv; }
+    public void addCv(CV cv) {
+        this.cvs.add(cv);
+        cv.setStudent(this);
+    }
 }

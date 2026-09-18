@@ -71,4 +71,11 @@ public class StudentController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(cvDto.content());
     }
+
+    @GetMapping("/cv-count/{studentId}")
+    public ResponseEntity<Integer> getCVCount(@PathVariable String studentId) {
+        Student student = studentService.findByStudentId(studentId);
+        int cvCount = cvService.getCVCountByStudent(student);
+        return new ResponseEntity<>(cvCount, HttpStatus.OK);
+    }
 }

@@ -52,7 +52,7 @@ public class CVService {
         CV cv = cvDto.toCV();
         cv.setStudent(student);
         cv.setUploadDate(LocalDateTime.now());
-        student.setCv(cv);
+        student.addCv(cv);
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(cvDto.getContent());
@@ -77,15 +77,22 @@ public class CVService {
         }
     }
 
+    public int getCVCountByStudent(Student student) {
+        if (student == null || student.getCvs() == null) {
+            return 0;
+        }
+        return student.getCvs().size();
+    }
+
 
     public CVDto getCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException {
-        if (student == null || student.getCv() == null) {
+        if (student == null || student.getCvs() == null || student.getCvs().isEmpty()) {
             throw new CorruptedFileException("No CV found for the given student.");
         }
-        if (!isCVReadable(student.getCv())) {
+        if (!isCVReadable(student.getCvs().iterator().next())) {
             throw new CorruptedFileException("The CV for the given student is corrupted or unreadable.");
         }
 
-        return CVDto.fromCV(student.getCv());
+        return CVDto.fromCV(student.getCvs().iterator().next());
     }
 }

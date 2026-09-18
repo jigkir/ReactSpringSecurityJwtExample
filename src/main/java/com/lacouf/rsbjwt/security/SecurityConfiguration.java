@@ -48,6 +48,7 @@ public class SecurityConfiguration {
     private static final String USER_PATH = "/api/**";
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/upload-cv";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/download-cv/**";
+    private static final String STUDENT_CV_COUNT_PATH = "/api/student/cv-count/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
     private static final String GESTIONNAIRE_PATH = "/gestionnaire/**";
@@ -70,6 +71,7 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
+                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).permitAll()
                         .requestMatchers(POST, STUDENT_UPLOAD_CV_PATH).permitAll()
                         .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).permitAll()
 

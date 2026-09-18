@@ -26,7 +26,8 @@ public class CV {
     @Column
     private LocalDateTime uploadDate;
 
-    @OneToOne(mappedBy = "cv")
+    @ManyToOne
+    @JoinColumn(name = "student_id")
     private Student student;
 
     public CV() {
