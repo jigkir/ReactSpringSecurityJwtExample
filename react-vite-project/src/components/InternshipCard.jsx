@@ -9,13 +9,13 @@ export default function InternshipCard({ internship }) {
             {/* Top row: Title and Status Badge with Icon and Text */}
             <div className="flex justify-between items-start gap-4">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900">{internship.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{internship.description}</p>
+                    <h3 className="text-xl font-bold text-gray-900">{internship.title}</h3>
+                    <p className="text-gray-600 text-md mt-1">{internship.description}</p>
                 </div>
 
                 {/* Status Badge with Dynamic Colors and Icons */}
                 <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium shrink-0 ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-md font-medium shrink-0 ${
                         isPending
                             ? "bg-yellow-50 text-yellow-700 border border-yellow-200"
                             : isApproved
@@ -44,13 +44,13 @@ export default function InternshipCard({ internship }) {
             </div>
 
             {/* Required Skills */}
-            <div className="text-xs text-gray-700">
+            <div className="text-md text-gray-700">
                 <span className="font-semibold">Required Skills: </span>
                 <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium">{internship.requiredSkills}</span>
             </div>
 
             {/* Details badges */}
-            <div className="flex flex-wrap gap-2 text-xs text-gray-500 pt-1 border-t border-gray-100">
+            <div className="flex flex-wrap gap-2 text-md text-gray-500 pt-1 border-t border-gray-100">
                 <span className="bg-gray-100 px-2.5 py-1 rounded">📍 {internship.location}</span>
                 <span className="bg-gray-100 px-2.5 py-1 rounded">⏳ {internship.duration}</span>
                 <span className="bg-gray-100 px-2.5 py-1 rounded">💰 {internship.compensation}</span>
