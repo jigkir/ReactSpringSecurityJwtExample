@@ -1,23 +1,19 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.model.Student;
-import com.lacouf.rsbjwt.security.exception.CorruptedFileException;
-import com.lacouf.rsbjwt.security.exception.InvalidFileTypeException;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.*;
 import com.lacouf.rsbjwt.service.CVService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 @RestController
 @RequestMapping("/api/student")
@@ -40,39 +36,39 @@ public class StudentController {
     @PostMapping("/upload-cv")
     public ResponseEntity<String> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("studentId") String studentId,
-            @RequestParam("fileName") String fileName) throws CorruptedFileException, InvalidFileTypeException, IOException {
+            @RequestParam("studentId") String studentId) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException {
 
         if (file == null || file.isEmpty()) {
             throw new InvalidFileTypeException("Uploaded file is empty or null.");
         }
 
         Student student = studentService.findByStudentId(studentId);
-        if (student == null) {
-            return new ResponseEntity<>("Student not found", HttpStatus.NOT_FOUND);
-        }
 
         byte[] bytes = file.getBytes();
-        if (bytes == null || bytes.length == 0) {
+        if (bytes.length == 0) {
             throw new InvalidFileTypeException("Uploaded file contains no data.");
         }
 
-        cvService.saveCV(new CVDto(fileName, bytes), student);
+        cvService.saveCV(new CVDto(bytes), student);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
     @GetMapping("/download-cv/{studentId}")
-    public ResponseEntity<byte[]> downloadCV(@PathVariable String studentId) throws CorruptedFileException {
+    public ResponseEntity<byte[]> downloadCV(@PathVariable String studentId) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
         Student student = studentService.findByStudentId(studentId);
-        if (student == null || student.getCv() == null) {
-            return ResponseEntity.notFound().build();
-        }
 
         CVDto cvDto = cvService.getCVByStudent(student);
 
+        ContentDisposition contentDisposition = ContentDisposition.builder("inline")
+                .build();
+
         return ResponseEntity.ok()
+                .headers(headers -> {
+                    headers.setContentDisposition(contentDisposition);
+                    headers.add("X-Content-Type-Options", "nosniff");
+                    headers.setContentLength(cvDto.content().length);
+                })
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + cvDto.fileName() + "\"")
                 .body(cvDto.content());
     }
 }

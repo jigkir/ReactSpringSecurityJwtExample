@@ -3,12 +3,11 @@ package com.lacouf.rsbjwt.service.dto;
 import com.lacouf.rsbjwt.model.CV;
 
 public record CVDto (
-        String fileName,
         byte[] content
 )
 {
     public static CVDto fromCV(CV cv) {
-        return new CVDto(cv.getFileName(), cv.getContent());
+        return new CVDto(cv.getContent());
     }
 
     public byte[] getContent() {
@@ -16,7 +15,7 @@ public record CVDto (
     }
 
     public CV toCV() {
-        return new CV(content, fileName);
+        return new CV(content);
     }
 
 }

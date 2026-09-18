@@ -4,17 +4,23 @@ import com.lacouf.rsbjwt.model.CV;
 import com.lacouf.rsbjwt.model.Student;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.security.exception.CorruptedFileException;
+import com.lacouf.rsbjwt.security.exception.InvalidFileSizeException;
 import com.lacouf.rsbjwt.security.exception.InvalidFileTypeException;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.HexFormat;
 
 @Service
 public class CVService {
+    private static final int MAX_FILE_SIZE = 2 * 1024 * 1024;
+
     private final CVRepository cvRepository;
 
     private final Tika tika = new Tika();
@@ -23,10 +29,14 @@ public class CVService {
         this.cvRepository = cvRepository;
     }
 
-    public void saveCV(CVDto cvDto, Student student) throws CorruptedFileException, InvalidFileTypeException {
-        IO.println("Saving CV for student: " + student.getStudentId() + ", File name: " + cvDto.fileName() + ", File size: " + (cvDto.content() != null ? cvDto.content().length : 0) + " bytes");
-        if (cvDto == null || cvDto.content() == null || cvDto.content().length == 0) {
+    public void saveCV(CVDto cvDto, Student student) throws CorruptedFileException, InvalidFileTypeException, NoSuchAlgorithmException, InvalidFileSizeException {
+
+        if (cvDto.content() == null || cvDto.content().length == 0) {
             throw new InvalidFileTypeException("File content cannot be null or empty.");
+        }
+
+        if (cvDto.content().length > MAX_FILE_SIZE) {
+            throw new InvalidFileSizeException("File size exceeds the maximum allowed size of " + MAX_FILE_SIZE + " bytes.");
         }
 
         String mimeType = tika.detect(cvDto.content());
@@ -39,33 +49,45 @@ public class CVService {
             throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
         }
 
-        CV cv = new CV();
-        cv = cvDto.toCV();
+        CV cv = cvDto.toCV();
         cv.setStudent(student);
+        cv.setUploadDate(LocalDateTime.now());
         student.setCv(cv);
-        assert cvDto.getContent() != null;
-        cv.setFileHash(DigestUtils.md5DigestAsHex(cvDto.getContent()));
+        byte[] content = cvDto.getContent();
+        cv.setContent(content);
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(cvDto.getContent());
+        String hash = HexFormat.of().formatHex(hashBytes);
+        cv.setFileHash(hash);
+
         cvRepository.save(cv);
     }
 
-    public CVDto getCVById(Long id) throws CorruptedFileException {
-        CV cv = cvRepository.findById(id).orElse(null);
-        if (cv != null && !isFileReadable(cv)) {
-            throw new CorruptedFileException("File integrity check failed. The file may have been tampered with.");
+    public boolean isCVReadable(CV cv) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(cv.getContent());
+        String hash = HexFormat.of().formatHex(hashBytes);
+
+        if (!hash.equals(cv.getFileHash())) {
+            return false;
         }
-        assert cv != null;
-        return CVDto.fromCV(cv);
+        try (PDDocument document = PDDocument.load(cv.getContent())) {
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
-    public boolean isFileReadable(CV cv) {
-        String hash = DigestUtils.md5DigestAsHex(cv.getContent());
-        return hash.equals(cv.getFileHash());
-    }
 
-    public CVDto getCVByStudent(Student student) throws CorruptedFileException {
+    public CVDto getCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException {
         if (student == null || student.getCv() == null) {
             throw new CorruptedFileException("No CV found for the given student.");
         }
+        if (!isCVReadable(student.getCv())) {
+            throw new CorruptedFileException("The CV for the given student is corrupted or unreadable.");
+        }
+
         return CVDto.fromCV(student.getCv());
     }
 }

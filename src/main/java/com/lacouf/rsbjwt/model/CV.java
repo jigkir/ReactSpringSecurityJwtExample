@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -14,9 +16,6 @@ public class CV {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String fileName;
-
     @Lob
     @Column(length = Integer.MAX_VALUE / 1000)
     private byte[] content;
@@ -24,14 +23,16 @@ public class CV {
     @Column
     private String fileHash;
 
+    @Column
+    private LocalDateTime uploadDate;
+
     @OneToOne(mappedBy = "cv")
     private Student student;
 
     public CV() {
     }
 
-    public CV(byte[] content, String fileName) {
+    public CV(byte[] content) {
         this.content = content;
-        this.fileName = fileName;
     }
 }

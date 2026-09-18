@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -60,6 +61,6 @@ public class StudentService {
 
     public Student findByStudentId(String studentId) {
         return studentRepository.findByStudentId(studentId)
-                .orElse(null);
+                .orElseThrow(UserNotFoundException::new);
     }
 }

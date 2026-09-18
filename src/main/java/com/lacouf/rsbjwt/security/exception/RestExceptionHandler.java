@@ -42,6 +42,16 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(CorruptedFileException.class)
     public ResponseEntity<Map<String, String>> handleCorruptedFileException(CorruptedFileException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidFileSizeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidFileSizeException(InvalidFileSizeException exception) {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }
