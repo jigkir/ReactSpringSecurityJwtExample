@@ -57,7 +57,7 @@ public class StudentController {
     public ResponseEntity<byte[]> downloadCV(@PathVariable String studentId) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
         Student student = studentService.findByStudentId(studentId);
 
-        CVDto cvDto = cvService.getCVByStudent(student);
+        CVDto cvDto = cvService.getMostRecentCVByStudent(student);
 
         ContentDisposition contentDisposition = ContentDisposition.builder("inline")
                 .build();

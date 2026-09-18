@@ -85,7 +85,8 @@ public class CVService {
     }
 
 
-    public CVDto getCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException {
+
+    public CVDto getMostRecentCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException {
         if (student == null || student.getCvs() == null || student.getCvs().isEmpty()) {
             throw new CorruptedFileException("No CV found for the given student.");
         }
@@ -93,6 +94,10 @@ public class CVService {
             throw new CorruptedFileException("The CV for the given student is corrupted or unreadable.");
         }
 
-        return CVDto.fromCV(student.getCvs().iterator().next());
+        CV mostRecentCV = student.getCvs().stream()
+                .max((cv1, cv2) -> cv1.getUploadDate().compareTo(cv2.getUploadDate()))
+                .orElseThrow(() -> new CorruptedFileException("No CV found for the given student."));
+
+        return CVDto.fromCV(mostRecentCV);
     }
 }
