@@ -20,14 +20,20 @@ export const RoleField = ({
 );
 
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
+export const PASSWORD_REGEX = /^(?!.*\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
+
+export const handleSpaceKeyDown = (e) => {
+    if (e.key === ' ') {
+        e.preventDefault();
+    }
+};
 
 export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
 
-export const validateId = (value) => {
+export const validateId = (value, length = 7) => {
     const t = value.trim();
     if (!t) return 'ID is required.';
-    if (t.length !== 7) return 'ID must be exactly 7 digits.';
+    if (t.length !== length) return `ID must be exactly ${length} digits.`;
     return '';
 };
 
@@ -63,8 +69,9 @@ export function validateField(field, value, formValues = {}) {
         case 'discipline':
             return validateDiscipline(value);
         case 'studentId':
+            return validateId(value, 7);
         case 'teacherId':
-            return validateId(value);
+            return validateId(value, 5);
         default:
             return '';
     }
@@ -97,9 +104,10 @@ export const MatriculeField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass,
     role = 'Student',
     name = 'studentId',
+    limit = 7,
 }) => {
     const handleChange = (e) => {
-        const digits = e.target.value.replace(/\D/g, '').slice(0, 7);
+        const digits = e.target.value.replace(/\D/g, '').slice(0, limit);
         onChange({target: {name, value: digits}});
     };
 
@@ -120,7 +128,7 @@ export const FirstNameField = ({value, onChange, warning, labelClass, errorClass
     <Field id="firstName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="firstName" name="firstName" type="text"
-            value={value} onChange={onChange}
+            value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
             maxLength={50} required className={fieldClass}
         />
     </Field>
@@ -140,7 +148,7 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
     <Field id="email" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="email" name="email" type="email"
-            value={value} onChange={onChange}
+            value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
             required className={fieldClass}
         />
     </Field>
@@ -148,17 +156,17 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
 
 export const DisciplineField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass,
-    label = 'Discipline', options = [], loading = false, fetchError = ''
+    label = 'Discipline', options = [], loading = false, fetchError = '', name = "discipline"
 }) => (
-    <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+    <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
         <select
-            id="discipline" name="discipline"
+            id="discipline" name={name}
             value={value} onChange={onChange}
             required className={fieldClass}
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a discipline --'}
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' +label.toLowerCase()+' --'}
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
@@ -177,7 +185,7 @@ export const PasswordField = ({
             <input
                 id="password" name="password"
                 type={show ? 'text' : 'password'}
-                value={value} onChange={onChange}
+                value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
                 maxLength={50} required className={fieldClass}
             />
             <button type="button" onClick={onToggleShow}
@@ -198,7 +206,7 @@ export const ConfirmPasswordField = ({
             <input
                 id="confirmPassword" name="confirmPassword"
                 type={show ? 'text' : 'password'}
-                value={value} onChange={onChange}
+                value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
                 required className={fieldClass}
             />
             <button type="button" onClick={onToggleShow}

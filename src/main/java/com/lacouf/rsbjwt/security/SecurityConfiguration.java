@@ -41,11 +41,10 @@ public class SecurityConfiguration {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     private static final String H2_CONSOLE_PATH = "/h2-console/**";
-    private static final String USER_LOGIN_PATH = "/api/login";
-    private static final String EMPRUNTEUR_REGISTER_PATH = "/emprunteur/register";
-    private static final String PREPOSE_REGISTER_PATH = "/prepose/register";
+    private static final String USER_LOGIN_PATH = "/api/login";;
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
-    private static final String EMPLOYER_REGISTER_PATH = "/api/employer/register";
+    private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
+    private static final String EMPLOYER_SIGNUP_PATH = "/api/employer/signup";
     private static final String USER_PATH = "/api/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
@@ -62,10 +61,9 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
-                        .requestMatchers(POST, EMPRUNTEUR_REGISTER_PATH).permitAll()
-                        .requestMatchers(POST, PREPOSE_REGISTER_PATH).permitAll()
                         .requestMatchers(POST, STUDENT_SIGNUP_PATH).permitAll()
-                        .requestMatchers(POST, EMPLOYER_REGISTER_PATH).permitAll()
+                        .requestMatchers(POST, TEACHER_SIGNUP_PATH).permitAll()
+                        .requestMatchers(POST, EMPLOYER_SIGNUP_PATH).permitAll()
                         .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests

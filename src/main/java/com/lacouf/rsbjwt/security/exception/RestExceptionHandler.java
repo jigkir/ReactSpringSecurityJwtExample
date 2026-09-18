@@ -29,19 +29,9 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {
-        Map<String, String> error = Map.of("message", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-    }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(EmployerEmailAlreadyUsedException.class)
-    public ResponseEntity<Map<String, String>> handleEmployerEmailAlreadyUsedException(EmployerEmailAlreadyUsedException exception) {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 }

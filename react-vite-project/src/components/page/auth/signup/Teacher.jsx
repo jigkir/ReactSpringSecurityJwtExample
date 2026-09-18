@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {useState, useEffect} from "react";
+import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {
     FirstNameField,
@@ -13,8 +13,7 @@ import {
     validateField,
 } from "../../../../utils/CommonFields.jsx";
 
-// The student-specific ID field name — single source of truth for all references below
-const ID_FIELD = "studentId";
+const ID_FIELD = "teacherId";
 
 const DEFAULT_FORM = {
     firstName: "",
@@ -26,33 +25,29 @@ const DEFAULT_FORM = {
     confirmPassword: "",
 };
 
-// Mirror DEFAULT_FORM shape with empty strings — one warning slot per field
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
-// Submit button stays disabled until every field has a value
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
+const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
     const navigate = useNavigate();
 
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [serverError, setServerError] = useState("");   // API-level error message
-    const [submitting, setSubmitting] = useState(false);  // prevents double-submit
+    const [serverError, setServerError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const [disciplines, setDisciplines] = useState([]);
     const [disciplinesLoading, setDisciplinesLoading] = useState(true);
     const [disciplinesFetchError, setDisciplinesFetchError] = useState("");
 
-    // Fetch discipline options once on mount
     useEffect(() => {
         fetcher("disciplines", {})
             .then(async (res) => {
                 if (!res.ok) throw new Error(`Error ${res.status}`);
                 const data = await res.json();
-                // Backend may return a plain array or { disciplines: [...] }
                 const list = Array.isArray(data) ? data : (data.disciplines ?? []);
                 setDisciplines(list.map(d => ({
                     value: typeof d === "string" ? d : d.value,
@@ -63,15 +58,13 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             .finally(() => setDisciplinesLoading(false));
     }, []);
 
-    // Clear the field's inline warning as soon as the user starts correcting it
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setForm(prev => ({...prev, [name]: value}));
         setServerError("");
-        if (warnings[name]) setWarnings(prev => ({ ...prev, [name]: "" }));
+        if (warnings[name]) setWarnings(prev => ({...prev, [name]: ""}));
     };
 
-    // Run every field through validateField and collect error messages
     const validateAll = () => {
         const newWarnings = {};
         let valid = true;
@@ -87,11 +80,11 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError("");
-        if (!validateAll()) return; // stop early if any field is invalid
+        if (!validateAll()) return;
 
         setSubmitting(true);
         try {
-            const response = await fetcher("student/signup", {
+            const response = await fetcher("teacher/signup", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -107,20 +100,25 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 }),
             });
 
-            if (response.ok) { navigate("/login"); return; }
+            if (response.ok) {
+                navigate("/login");
+                return;
+            }
 
-            // Map known server error codes to field-level or page-level messages
             switch (response.status) {
                 case 409: {
                     let body = {};
-                    try { body = await response.json(); } catch {}
-                    const { field: conflictField = "" } = body ?? {};
+                    try {
+                        body = await response.json();
+                    } catch {
+                    }
+                    const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({ ...w, [ID_FIELD]: "This student ID is already in use." }));
+                        setWarnings(w => ({...w, [ID_FIELD]: "This teacher ID is already in use."}));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({ ...w, email: "This email address is already in use." }));
+                        setWarnings(w => ({...w, email: "This email address is already in use."}));
                     } else {
-                        setServerError("An account with this student ID or email already exists.");
+                        setServerError("An account with this teacher ID or email already exists.");
                     }
                     break;
                 }
@@ -137,8 +135,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         }
     };
 
-    // Props shared by every field component — spread with {...sharedProps} to avoid repetition
-    const sharedProps = { labelClass, errorClass, fieldClass, onChange: handleChange };
+    const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -147,7 +144,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             <FirstNameField  {...sharedProps} value={form.firstName} warning={warnings.firstName}/>
             <LastNameField   {...sharedProps} value={form.lastName} warning={warnings.lastName}/>
             <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={warnings[ID_FIELD]} name={ID_FIELD}
-                             role="Student"/>
+                             role="Teacher" limit="5"/>
             <DisciplineField {...sharedProps} value={form.discipline} warning={warnings.discipline}
                              options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}/>
             <EmailField      {...sharedProps} value={form.email} warning={warnings.email}/>
@@ -169,4 +166,4 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
     );
 };
 
-export default Student;
+export default Teacher;

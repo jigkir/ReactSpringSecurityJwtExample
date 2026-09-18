@@ -2,10 +2,10 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.security.exception.EmployerEmailAlreadyUsedException;
 import com.lacouf.rsbjwt.security.exception.RestExceptionHandler;
+import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
-import com.lacouf.rsbjwt.service.dto.EmployerRegistrationDto;
+import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +52,15 @@ public class EmployerControllerTest {
 
     @Test
     void shouldReturnCreatedWhenEmployerSignsUp() throws Exception {
+        // Arrange
         UserResponseDto employerCreationResponse = new UserResponseDto(
                 1L, "George", "Hudubulla", "email@email.com", "EMPLOYER"
         );
 
-        when(employerService.save(any(EmployerRegistrationDto.class))).thenReturn(employerCreationResponse);
+        when(employerService.save(any(EmployerSignUpDto.class))).thenReturn(employerCreationResponse);
 
-        mockMvc.perform(post("/api/employer/register")
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
@@ -67,7 +69,7 @@ public class EmployerControllerTest {
                                 "email": "email@email.com",
                                 "password": "Password123@",
                                 "companyName": "Tech Corp",
-                                "activitySector": "Software",
+                                "discipline": "COMPUTER_SCIENCE",
                                 "phoneNumber": "5550199999"
                             }
                             """))
@@ -81,10 +83,12 @@ public class EmployerControllerTest {
 
     @Test
     void shouldReturnConflictWhenEmployerAlreadyExists() throws Exception {
-        when(employerService.save(any(EmployerRegistrationDto.class)))
-                .thenThrow(new EmployerEmailAlreadyUsedException());
+        // Arrange
+        when(employerService.save(any(EmployerSignUpDto.class)))
+                .thenThrow(new UserAlreadyExistsException());
 
-        mockMvc.perform(post("/api/employer/register")
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
@@ -93,29 +97,31 @@ public class EmployerControllerTest {
                                 "email": "email@email.com",
                                 "password": "Password123@",
                                 "companyName": "Tech Corp",
-                                "activitySector": "Software",
+                                "discipline": "COMPUTER_SCIENCE",
                                 "phoneNumber": "5550199999"
                             }
                             """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Un employeur avec ce email existe déjà."));
+                .andExpect(jsonPath("$.message").value("user already exists"));
     }
 
     @ParameterizedTest
     @MethodSource("invalidFields")
     void shouldReturnBadRequestForInvalidFields(String field, Object invalidValue) throws Exception {
+        // Arrange
         Map<String, Object> employer = new HashMap<>();
         employer.put("firstName", "George");
         employer.put("lastName", "Hudubulla");
         employer.put("email", "email@email.com");
         employer.put("password", "Password123@");
         employer.put("companyName", "Tech Corp");
-        employer.put("activitySector", "Software");
+        employer.put("discipline", "COMPUTER_SCIENCE");
         employer.put("phoneNumber", "5550199999");
 
         employer.put(field, invalidValue);
 
-        mockMvc.perform(post("/api/employer/register")
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employer)))
                 .andExpect(status().isBadRequest());
@@ -155,12 +161,6 @@ public class EmployerControllerTest {
                 Arguments.of("companyName", "   "),
                 Arguments.of("companyName", "a"),
                 Arguments.of("companyName", "a".repeat(101)),
-
-                Arguments.of("activitySector", null),
-                Arguments.of("activitySector", ""),
-                Arguments.of("activitySector", "   "),
-                Arguments.of("activitySector", "a"),
-                Arguments.of("activitySector", "a".repeat(31)),
 
                 Arguments.of("phoneNumber", null),
                 Arguments.of("phoneNumber", ""),
