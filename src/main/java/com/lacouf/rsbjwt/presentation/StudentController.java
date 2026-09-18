@@ -60,6 +60,7 @@ public class StudentController {
         CVDto cvDto = cvService.getMostRecentCVByStudent(student);
 
         ContentDisposition contentDisposition = ContentDisposition.builder("inline")
+                .filename("cv_" + studentId + ".pdf")
                 .build();
 
         return ResponseEntity.ok()
