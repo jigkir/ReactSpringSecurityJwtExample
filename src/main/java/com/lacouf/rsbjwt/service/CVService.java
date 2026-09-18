@@ -53,8 +53,6 @@ public class CVService {
         cv.setStudent(student);
         cv.setUploadDate(LocalDateTime.now());
         student.setCv(cv);
-        byte[] content = cvDto.getContent();
-        cv.setContent(content);
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(cvDto.getContent());
