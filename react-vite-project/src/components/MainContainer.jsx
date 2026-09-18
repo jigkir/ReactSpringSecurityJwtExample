@@ -3,12 +3,12 @@ import { useOutletContext } from "react-router-dom";
 import {useTranslation} from 'react-i18next';
 
 function MainContainer() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const {dark} = useOutletContext();
   return (
     <div className={`maincontainer ${dark ? 'text-white' : 'text-gray-900'}`}>
-      <h1>{t("title")}</h1>
-      <p>{t("maincontainer.subtitle")}</p>
+      <h1>{t('mainContainer.title')}</h1>
+      <p>{t('mainContainer.subtitle')}</p>
     </div>
   );
 }
