@@ -1,6 +1,8 @@
 import {Link, useLocation} from "react-router-dom";
+import {useTranslation} from 'react-i18next';
 
 function Navbar({user, dark, toggleDark}) {
+    const { t } = useTranslation();
     const location = useLocation();
 
     const role = (user?.role?.toString() ?? '').replace('ROLE_', '');
@@ -38,11 +40,11 @@ function Navbar({user, dark, toggleDark}) {
         ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
 
     const navItems = [
-        {to: '/', label: 'Accueil', show: true},
-        {to: '/about', label: 'À propos', show: true},
-        {to: '/emprunteur', label: 'Emprunteur', show: isEmprunteur()},
-        {to: '/prepose', label: 'Préposé', show: isPrepose()},
-        {to: '/gestionnaire', label: 'Gestionnaire', show: isGestionnaire()},
+        {to: '/', label: t("navbar.acceuil"), show: true},
+        {to: '/about', label: t("navbar.about"), show: true},
+        {to: '/emprunteur', label: t("navbar.emprunteur"), show: isEmprunteur()},
+        {to: '/prepose', label: t("navbar.prepose"), show: isPrepose()},
+        {to: '/gestionnaire', label: t("navbar.gestionnaire"), show: isGestionnaire()},
     ].filter(item => item.show);
 
     const ToggleIcon = () => dark ? (
@@ -66,7 +68,7 @@ function Navbar({user, dark, toggleDark}) {
                     <div className="flex items-center gap-6">
                         <Link to="/"
                               className={`flex items-center gap-2 font-bold text-lg tracking-tight transition-colors duration-150 ${theme.brand}`}>
-                            My App
+                            {t("navbar.appName")}
                         </Link>
                         <nav className="flex items-center gap-1">
                             {navItems.map(({to, label}) => (
@@ -99,12 +101,12 @@ function Navbar({user, dark, toggleDark}) {
                             aria-label={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
                         >
                             <ToggleIcon/>
-                            {dark ? 'Clair' : 'Sombre'}
+                            {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                         </button>
 
                         {user?.isLoggedIn ? (
                             <Link to="/logout" className={linkClass('/logout')}>
-                                Déconnexion
+                                {t("navbar.disconnect")}
                             </Link>
                         ) : (
                             <>
@@ -112,7 +114,7 @@ function Navbar({user, dark, toggleDark}) {
                                     to="/login"
                                     className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}
                                 >
-                                    Login
+                                    {t("navbar.login")}
                                 </Link>
                                 <Link
                                     to="/signup"
@@ -122,7 +124,7 @@ function Navbar({user, dark, toggleDark}) {
                                             : 'bg-transparent border border-white text-white hover:bg-white/15'
                                     }`}
                                 >
-                                    Sign Up
+                                    {t("navbar.signup")}
                                 </Link>
                             </>
                         )}

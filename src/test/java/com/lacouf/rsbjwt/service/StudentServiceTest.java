@@ -73,7 +73,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowUserAlreadyExistsExceptionWhenStudentIdAlreadyExists() {
+    void shouldThrowUserAlreadyExistsExceptionWhenStudentIdAlreadyUsed() {
         // Arrange
         when(studentRepository.findByStudentId(studentSignUpDto.studentId())).thenReturn(Optional.of(new Student()));
 
@@ -84,7 +84,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyExists() {
+    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyUsed() {
         // Arrange
         when(userAppRepository.findByCredentialsEmail(studentSignUpDto.email())).thenReturn(Optional.of(new Student()));
 

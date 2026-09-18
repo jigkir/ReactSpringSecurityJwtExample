@@ -13,21 +13,23 @@ public record TeacherSignUpDto(
         String lastName,
 
         @NotBlank
-        @Size(max = 20)
-        @Pattern(regexp = "^[0-9]*$", message = "teacher ID must contain only digits")
+        @Pattern(regexp = "^[0-9]{5}$", message = "teacher ID must contain 5 digits")
         String teacherId,
 
         @NotBlank
         @Email
+        @Size(max = 100)
         String email,
 
         @NotBlank
         @Size(min = 8, max = 50)
-        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])\\S+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=), and must not contain whitespace")
+        @Pattern(regexp = "^(?!.*\\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=!1), and must not contain whitespace")
         String password,
 
         @NotNull
-        Discipline discipline) {
+        Discipline discipline
+) {
+
         public TeacherSignUpDto {
                 if (firstName != null) {
                         firstName = firstName.trim();
