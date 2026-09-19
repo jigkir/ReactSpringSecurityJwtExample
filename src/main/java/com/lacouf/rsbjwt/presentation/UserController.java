@@ -54,7 +54,7 @@ public class UserController {
 		return ResponseEntity.ok(userService.getAllRoles());
 	}
 
-	@GetMapping("/get-max-cv-size")
+	@GetMapping("/max-cv-size")
 	public ResponseEntity<Integer> getMaxCVSize() {
 		return ResponseEntity.ok(cvService.getMaxCVSize());
 	}

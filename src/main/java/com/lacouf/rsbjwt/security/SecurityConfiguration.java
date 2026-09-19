@@ -49,6 +49,7 @@ public class SecurityConfiguration {
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/upload-cv";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/download-cv/**";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/cv-count/**";
+    private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
     private static final String GESTIONNAIRE_PATH = "/gestionnaire/**";
@@ -74,6 +75,7 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, STUDENT_CV_COUNT_PATH).permitAll()
                         .requestMatchers(POST, STUDENT_UPLOAD_CV_PATH).permitAll()
                         .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).permitAll()
+                        .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
 
                         // Use Role enum names for authorities
                         .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.EMPRUNTEUR.name(), Role.PREPOSE.name(), Role.GESTIONNAIRE.name())
