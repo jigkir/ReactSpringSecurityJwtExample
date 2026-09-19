@@ -38,11 +38,11 @@ public class SecurityConfiguration {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     private static final String H2_CONSOLE_PATH = "/h2-console/**";
+    private static final String CURRENT_USER_PATH = "/api/users/current";
     private static final String USER_LOGIN_PATH = "/api/login";
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
     private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
     private static final String EMPLOYER_SIGNUP_PATH = "/api/employer/signup";
-    private static final String USER_PATH = "/api/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
     private static final String MANAGER_PATH = "/api/manager/**";
@@ -70,8 +70,7 @@ public class SecurityConfiguration {
                         .requestMatchers(EMPRUNTEUR_PATH).hasAuthority(Role.EMPRUNTEUR.name())
                         .requestMatchers(PREPOSE_PATH).hasAuthority(Role.PREPOSE.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(GET, "/api/users/current").authenticated()
-                        .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.EMPRUNTEUR.name(), Role.PREPOSE.name(), Role.MANAGER.name())
+                        .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 )
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // for h2-console
