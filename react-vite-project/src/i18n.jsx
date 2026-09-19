@@ -43,31 +43,40 @@ i18n
                         disconnect:"Disconnect",
                         login:"Login",
                         signup:"Sign Up",
+                        switchFench:"FR",
+                        switchEnglish:"EN",
                     },
                 }
             },
             fr:{
-                translations: {
+                translation: {
                     about:{
-
+                        version:"Version 1.0.0",
+                        backLabel:"Retour"
                     },
                     errorPage:{
 
                     },
                     footer:{
-
+                        copyright:"Copyright © 2021",
+                        about:"À propos",
                     },
                     mainContainer:{
-                        title: "Example de Spring security avec JWT",
+                        title: "Exemple de Spring security avec JWT",
                         subtitle: "Dans cet exemple, vous trouverez le nécessaire pour implanter la sécurité avec des tokens JWT"
                     },
                     navbar:{
                         appName:"My App",
-                        acceuil:"Home",
-                        aPropos:"About",
-                        emprunteur:"Borrower",
-                        prepose:"Attendant",
-                        gestionnaire:"Manager",
+                        acceuil:"Acceuil",
+                        about:"À propos",
+                        emprunteur:"Emprunteur",
+                        prepose:"Préposé",
+                        gestionnaire:"Gestionnaire",
+                        lightmode:"Clair",
+                        darkmode:"Sombre",
+                        disconnect:"Déconnection",
+                        login:"Login",
+                        signup:"S'enregistrer",
                     },
                 }
             }

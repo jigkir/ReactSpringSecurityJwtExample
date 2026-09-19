@@ -2,11 +2,11 @@ import {Link, useLocation} from "react-router-dom";
 import {useTranslation} from 'react-i18next';
 
 function Navbar({user, dark, toggleDark}) {
-    const { t } = useTranslation();
+    const { t, i18n} = useTranslation();
     const location = useLocation();
 
     const role = (user?.role?.toString() ?? '').replace('ROLE_', '');
-
+    const toggleLang = () => {if (i18n.language === 'en') {i18n.changeLanguage('fr')}else {i18n.changeLanguage('en')}};
     const isGestionnaire = () => role === 'GESTIONNAIRE';
     const isPrepose = () => role === 'GESTIONNAIRE' || role === 'PREPOSE';
     const isEmprunteur = () => role === 'GESTIONNAIRE' || role === 'EMPRUNTEUR';
@@ -94,6 +94,14 @@ function Navbar({user, dark, toggleDark}) {
                                 )}
                             </div>
                         )}
+
+                        <button
+                            onClick={toggleLang}
+                            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.toggleBtn}`}
+                            aria-label={i18n.language === 'en' ? 'Passer en français' : 'Switch to english'}
+                        >
+                            {i18n.language === 'en' ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                        </button>
 
                         <button
                             onClick={toggleDark}
