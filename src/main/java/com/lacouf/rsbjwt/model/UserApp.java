@@ -13,7 +13,6 @@ import java.util.Collection;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
 public abstract class UserApp  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +44,6 @@ public abstract class UserApp  {
     public Role getRole(){
         return credentials.getRole();
     }
-
 
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return credentials.getAuthorities();

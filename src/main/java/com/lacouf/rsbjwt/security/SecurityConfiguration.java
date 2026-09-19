@@ -5,8 +5,6 @@ import com.lacouf.rsbjwt.repository.UserAppRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -23,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,14 +38,14 @@ public class SecurityConfiguration {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     private static final String H2_CONSOLE_PATH = "/h2-console/**";
-    private static final String USER_LOGIN_PATH = "/api/login";;
+    private static final String USER_LOGIN_PATH = "/api/login";
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
     private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
     private static final String EMPLOYER_SIGNUP_PATH = "/api/employer/signup";
     private static final String USER_PATH = "/api/**";
     private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
     private static final String PREPOSE_PATH = "/prepose/**";
-    private static final String MANAGER_PATH = "/manager/**";
+    private static final String MANAGER_PATH = "/api/manager/**";
     private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
     private static final String ROLES_LIST_PATH = "/api/roles";
 
@@ -66,14 +63,15 @@ public class SecurityConfiguration {
                         .requestMatchers(POST, EMPLOYER_SIGNUP_PATH).permitAll()
                         .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
+                        .requestMatchers(OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
 
                         // Use Role enum names for authorities
-                        .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.EMPRUNTEUR.name(), Role.PREPOSE.name(), Role.MANAGER.name())
                         .requestMatchers(EMPRUNTEUR_PATH).hasAuthority(Role.EMPRUNTEUR.name())
                         .requestMatchers(PREPOSE_PATH).hasAuthority(Role.PREPOSE.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, "/api/users/current").authenticated()
+                        .requestMatchers(GET, USER_PATH).hasAnyAuthority(Role.EMPRUNTEUR.name(), Role.PREPOSE.name(), Role.MANAGER.name())
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 )
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // for h2-console
@@ -112,8 +110,7 @@ public class SecurityConfiguration {
                 "Cache-Control",
                 "Content-Type",
                 "Accept",
-                "X-Requested-With",
-                "*"
+                "X-Requested-With"
                 // Add any other headers needed by your frontend
         ));
 
@@ -132,13 +129,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public CorsFilter corsFilter() {
-        return new CorsFilter(corsConfigurationSource());
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenProvider, userRepository);
     }
 

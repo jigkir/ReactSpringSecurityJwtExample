@@ -1,13 +1,13 @@
 package com.lacouf.rsbjwt.presentation;
 
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -15,25 +15,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class UserController {
 
-	private final UserAppService userService;
+	private final UserAppService userAppService;
 
 	@PostMapping("/login")
-	public ResponseEntity<JWTAuthResponse> authenticateUser(@RequestBody LoginDTO loginDto){
-		try {
-			String accessToken = userService.authenticateUser(loginDto);
-			final JWTAuthResponse authResponse = new JWTAuthResponse(accessToken);
-			return ResponseEntity.accepted()
-					.contentType(MediaType.APPLICATION_JSON)
-					.body(authResponse);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new JWTAuthResponse());
-		}
+	public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody UserLoginDTO userLoginDto) {
+		return ResponseEntity.ok(userAppService.login(userLoginDto));
 	}
 
-	@GetMapping("/me")
-	public ResponseEntity<UserDTO> getMe(HttpServletRequest request){
-		return ResponseEntity.accepted().contentType(MediaType.APPLICATION_JSON).body(
-			userService.getMe(request.getHeader("Authorization")));
+	@GetMapping("/users/current")
+	public ResponseEntity<UserResponseDto> getCurrentUser(Authentication authentication) throws UserNotFoundException {
+		return ResponseEntity.ok(userAppService.getUserByEmail(authentication.getName()));
 	}
 
 	@GetMapping("/manager/demo")
@@ -44,11 +35,11 @@ public class UserController {
 
 	@GetMapping("/disciplines")
 	public ResponseEntity<DisciplineDto> getAllDisciplines() {
-		return ResponseEntity.ok(userService.getAllDisciplines());
+		return ResponseEntity.ok(userAppService.getAllDisciplines());
 	}
 
 	@GetMapping("/roles")
 	public ResponseEntity<RoleDto> getAllRoles() {
-		return ResponseEntity.ok(userService.getAllRoles());
+		return ResponseEntity.ok(userAppService.getAllRoles());
 	}
 }

@@ -5,13 +5,14 @@ import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.DisciplineDto;
-import com.lacouf.rsbjwt.service.dto.LoginDTO;
+import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.UserLoginDTO;
 import com.lacouf.rsbjwt.service.dto.RoleDto;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -69,37 +70,32 @@ class UserControllerWebMvcTest {
     }
 
     @Test
-    @DisplayName("POST /api/login returns 202 and token on success")
-    void authenticateUser_success_returnsAcceptedAndToken() throws Exception {
+    void shouldReturnTokenWhenLoginSucceeds() throws Exception {
         // Arrange
-        LoginDTO login = new LoginDTO("user@example.com", "password");
-        when(userService.authenticateUser(any(LoginDTO.class))).thenReturn("token123");
+        UserLoginDTO login = new UserLoginDTO("user@example.com", "password");
+        when(userService.login(any(UserLoginDTO.class))).thenReturn(new JWTAuthResponse("token123"));
 
         // Act + Assert
         mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isAccepted())
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.tokenType").value("BEARER"))
                 .andExpect(jsonPath("$.accessToken").value("token123"));
     }
 
     @Test
-    @DisplayName("POST /api/login returns 401 on failure")
-    void authenticateUser_failure_returnsUnauthorized() throws Exception {
+    void shouldReturnUnauthorizedWhenCredentialsAreInvalid() throws Exception {
         // Arrange
-        LoginDTO login = new LoginDTO("user@example.com", "wrong");
-        when(userService.authenticateUser(any(LoginDTO.class))).thenThrow(new RuntimeException("bad creds"));
+        UserLoginDTO login = new UserLoginDTO("user@example.com", "Password123@");
+        when(userService.login(any(UserLoginDTO.class))).thenThrow(new BadCredentialsException("Invalid credentials"));
 
         // Act + Assert
         mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.tokenType").value("BEARER"))
-                .andExpect(jsonPath("$.accessToken").value(org.hamcrest.Matchers.nullValue()));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
