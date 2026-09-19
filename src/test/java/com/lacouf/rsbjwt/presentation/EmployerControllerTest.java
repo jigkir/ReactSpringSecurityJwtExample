@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.security.exception.RestExceptionHandler;
+import com.lacouf.rsbjwt.security.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EmployerController.class)
-@Import(RestExceptionHandler.class)
+@Import(GlobalExceptionHandler.class)
 public class EmployerControllerTest {
 
     @Autowired
