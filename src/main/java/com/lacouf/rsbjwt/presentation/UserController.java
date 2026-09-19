@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.presentation;
 
+import com.lacouf.rsbjwt.service.CVService;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
 	private final UserAppService userService;
+	private final CVService cvService;
 
 	@PostMapping("/login")
 	public ResponseEntity<JWTAuthResponse> authenticateUser(@RequestBody LoginDTO loginDto){
@@ -50,5 +52,10 @@ public class UserController {
 	@GetMapping("/roles")
 	public ResponseEntity<RoleDto> getAllRoles() {
 		return ResponseEntity.ok(userService.getAllRoles());
+	}
+
+	@GetMapping("/get-max-cv-size")
+	public ResponseEntity<Integer> getMaxCVSize() {
+		return ResponseEntity.ok(cvService.getMaxCVSize());
 	}
 }

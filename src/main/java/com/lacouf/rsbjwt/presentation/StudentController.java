@@ -79,4 +79,5 @@ public class StudentController {
         long cvCount = cvService.getCVCountByStudent(student);
         return new ResponseEntity<>(cvCount, HttpStatus.OK);
     }
+
 }

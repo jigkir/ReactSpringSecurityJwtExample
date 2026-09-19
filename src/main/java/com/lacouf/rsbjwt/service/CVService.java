@@ -101,4 +101,8 @@ public class CVService {
 
         return CVDto.fromCV(mostRecentCV);
     }
+
+    public Integer getMaxCVSize() {
+        return MAX_FILE_SIZE;
+    }
 }
