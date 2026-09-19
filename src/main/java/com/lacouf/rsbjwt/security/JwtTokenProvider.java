@@ -3,7 +3,6 @@ package com.lacouf.rsbjwt.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import com.lacouf.rsbjwt.security.exception.InvalidJwtTokenException;
@@ -35,11 +34,11 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getEmailFromJWT(String token) {
+    public String getEmailFromJWT(String token) throws InvalidJwtTokenException {
         return parseClaims(token).getSubject();
     }
 
-    public Claims parseClaims(String token) {
+    public Claims parseClaims(String token) throws InvalidJwtTokenException {
         try {
             return Jwts.parser()
                     .verifyWith(jwtSecret)
@@ -47,9 +46,9 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token)
 					.getPayload();
         } catch (ExpiredJwtException ex) {
-            throw new InvalidJwtTokenException(HttpStatus.UNAUTHORIZED, "Expired JWT token");
+            throw new InvalidJwtTokenException("Expired JWT token");
         } catch (JwtException | IllegalArgumentException ex) {
-            throw new InvalidJwtTokenException(HttpStatus.BAD_REQUEST, "Invalid JWT token");
+            throw new InvalidJwtTokenException("Invalid JWT token");
         }
     }
 }

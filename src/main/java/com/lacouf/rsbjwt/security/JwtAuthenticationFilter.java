@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void authenticateUser(HttpServletRequest request, String token) {
+    private void authenticateUser(HttpServletRequest request, String token) throws InvalidJwtTokenException, UserNotFoundException {
         String email = tokenProvider.getEmailFromJWT(token);
         UserApp user = userRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
 
