@@ -2,10 +2,9 @@ package com.lacouf.rsbjwt;
 
 import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.repository.EmprunteurRepository;
-import com.lacouf.rsbjwt.repository.GestionnaireRepository;
 import com.lacouf.rsbjwt.repository.PreposeRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.repository.EmployerRepository;
+import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.util.TcpServer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -20,24 +19,23 @@ import java.util.Optional;
 @SpringBootApplication
 public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
 
-    private final GestionnaireRepository gestionnaireRepository;
+    private final ManagerService managerService;
     private final EmprunteurRepository emprunteurRepository;
     private final PreposeRepository preposeRepository;
     private final UserAppRepository userAppRepository;
-    private final EmployerRepository employerRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     private final DataSourceProperties dataSourceProperties;
 
-    public ReactSpringSecurityJwtApplication(GestionnaireRepository gestionnaireRepository, EmprunteurRepository emprunteurRepository, PreposeRepository preposeRepository, UserAppRepository userAppRepository, PasswordEncoder passwordEncoder, DataSourceProperties dataSourceProperties, EmployerRepository employerRepository) {
-        this.gestionnaireRepository = gestionnaireRepository;
+    public ReactSpringSecurityJwtApplication(ManagerService managerService, EmprunteurRepository emprunteurRepository, PreposeRepository preposeRepository, UserAppRepository userAppRepository, PasswordEncoder passwordEncoder, DataSourceProperties dataSourceProperties) {
+        this.managerService = managerService;
+
         this.emprunteurRepository = emprunteurRepository;
         this.preposeRepository = preposeRepository;
         this.userAppRepository = userAppRepository;
         this.passwordEncoder = passwordEncoder;
         this.dataSourceProperties = dataSourceProperties;
-        this.employerRepository = employerRepository;
     }
 
     public static void main(String[] args) {
@@ -48,16 +46,8 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         configureTcpServer();
 
-        gestionnaireRepository.save(
-                Gestionnaire.builder()
-                        .firstName("Gerard")
-                        .lastName("Biblio")
-                        .email("l@l.com")
-                        .password(passwordEncoder.encode("bib"))
-                        .matricule("0000001")
-                        .phoneNumber("123-456-7890")
-                        .build()
-        );
+        IO.println(managerService.save("John", "Doe", "manager@email.com", "Password123#", "0123456789"));
+
         emprunteurRepository.save(
                 Emprunteur.builder()
                         .firstName("Isidor")

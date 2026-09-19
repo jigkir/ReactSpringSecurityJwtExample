@@ -36,9 +36,9 @@ public class UserController {
 			userService.getMe(request.getHeader("Authorization")));
 	}
 
-	@GetMapping("/gestionnaire/demo")
-	@PreAuthorize("hasAuthority('GESTIONNAIRE')")
-	public ResponseEntity<String> gestionnaireDemoEndpoint() {
+	@GetMapping("/manager/demo")
+	@PreAuthorize("hasAuthority('MANAGER')")
+	public ResponseEntity<String> managerDemoEndpoint() {
 		return ResponseEntity.ok("tout est beau");
 	}
 

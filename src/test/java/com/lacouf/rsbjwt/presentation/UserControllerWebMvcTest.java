@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.repository.*;
+import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.LoginDTO;
@@ -41,7 +42,7 @@ class UserControllerWebMvcTest {
     private UserAppService userService;
 
     @MockitoBean
-    private GestionnaireRepository gestionnaireRepository;
+    private ManagerService managerService;
 
     @MockitoBean
     private EmprunteurRepository emprunteurRepository;
@@ -135,7 +136,7 @@ class UserControllerWebMvcTest {
         // Arrange
         RoleDto roles = new RoleDto(
                 List.of(
-                        "GESTIONNAIRE",
+                        "MANAGER",
                         "PREPOSE",
                         "EMPRUNTEUR",
                         "STUDENT",
@@ -150,7 +151,7 @@ class UserControllerWebMvcTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.roles",
                         contains(
-                                "GESTIONNAIRE",
+                                "MANAGER",
                                 "PREPOSE",
                                 "EMPRUNTEUR",
                                 "STUDENT",
