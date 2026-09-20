@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.service.CVService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
@@ -43,6 +44,8 @@ public class StudentControllerTest {
 
     @MockitoBean
     private StudentService studentService;
+    @MockitoBean
+    private CVService cvService;
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
