@@ -26,36 +26,32 @@ const DEFAULT_FORM = {
 
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
-function isAllFilled(form) {
-    return Object.values(form).every(v => v !== "");
-}
+const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-function validateCompanyName(value) {
+const validateCompanyName = (value) => {
     const t = value.trim();
     if (!t) return "Company name is required.";
     if (t.length < 2) return "Must be at least 2 characters.";
     if (t.length > 100) return "Must be at most 100 characters.";
     return "";
-}
+};
 
-function validatePhoneNumber(value) {
+const validatePhoneNumber = (value) => {
     if (!value) return "Phone number is required.";
     if (value.length !== 10) return "Phone number must be exactly 10 digits.";
     return "";
-}
+};
 
-function validateSectorActivity(value) {
-    return value ? "" : "Please select a sector of activity.";
-}
+const validateSectorActivity = (value) => value ? "" : "Please select a sector of activity.";
 
-function validateEmployerField(field, value, formValues = {}) {
+const validateEmployerField = (field, value, formValues = {}) => {
     switch (field) {
-        case "companyName": return validateCompanyName(value);
-        case "phoneNumber": return validatePhoneNumber(value);
+        case "companyName":    return validateCompanyName(value);
+        case "phoneNumber":    return validatePhoneNumber(value);
         case "sectorActivity": return validateSectorActivity(value);
-        default: return validateField(field, value, formValues);
+        default:               return validateField(field, value, formValues);
     }
-}
+};
 
 const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
     const navigate = useNavigate();
@@ -98,13 +94,18 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
     const validateAll = () => {
         const newWarnings = {};
         let valid = true;
-        Object.keys(DEFAULT_FORM).forEach(key => {
+        for (const key of Object.keys(DEFAULT_FORM)) {
             const msg = validateEmployerField(key, form[key], form);
             newWarnings[key] = msg;
             if (msg) valid = false;
-        });
+        }
         setWarnings(newWarnings);
         return valid;
+    };
+
+    const handlePhoneChange = (e) => {
+        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+        handleChange({ target: { name: "phoneNumber", value: digits } });
     };
 
     const handleSubmit = async (e) => {
@@ -130,10 +131,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                 }),
             });
 
-            if (response.ok) {
-                navigate("/login");
-                return;
-            }
+            if (response.ok) { navigate("/login"); return; }
 
             switch (response.status) {
                 case 409: {
@@ -207,10 +205,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                     id="phoneNumber" name="phoneNumber" type="tel"
                     inputMode="numeric"
                     value={form.phoneNumber}
-                    onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                        handleChange({ target: { name: "phoneNumber", value: digits } });
-                    }}
+                    onChange={handlePhoneChange}
                     maxLength={10} required className={fieldClass}
                 />
             </Field>

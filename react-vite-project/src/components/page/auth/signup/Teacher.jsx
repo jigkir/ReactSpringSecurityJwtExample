@@ -100,18 +100,12 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 }),
             });
 
-            if (response.ok) {
-                navigate("/login");
-                return;
-            }
+            if (response.ok) { navigate("/login"); return; }
 
             switch (response.status) {
                 case 409: {
                     let body = {};
-                    try {
-                        body = await response.json();
-                    } catch {
-                    }
+                    try { body = await response.json(); } catch {}
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
                         setWarnings(w => ({...w, [ID_FIELD]: "This teacher ID is already in use."}));
