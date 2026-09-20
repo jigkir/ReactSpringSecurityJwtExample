@@ -46,12 +46,6 @@ class UserControllerWebMvcTest {
     private ManagerService managerService;
 
     @MockitoBean
-    private EmprunteurRepository emprunteurRepository;
-
-    @MockitoBean
-    private PreposeRepository preposeRepository;
-
-    @MockitoBean
     private ManagerRepository managerRepository;
 
     @MockitoBean
@@ -133,9 +127,8 @@ class UserControllerWebMvcTest {
         RoleDto roles = new RoleDto(
                 List.of(
                         "MANAGER",
-                        "PREPOSE",
-                        "EMPRUNTEUR",
                         "STUDENT",
+                        "TEACHER",
                         "EMPLOYER"
                 ));
 
@@ -149,8 +142,7 @@ class UserControllerWebMvcTest {
                         contains(
                                 "MANAGER",
                                 "PREPOSE",
-                                "EMPRUNTEUR",
-                                "STUDENT",
+                                "TEACHER",
                                 "EMPLOYER"
                         )
                 ));

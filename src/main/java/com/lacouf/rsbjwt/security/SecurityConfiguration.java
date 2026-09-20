@@ -43,8 +43,6 @@ public class SecurityConfiguration {
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
     private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
     private static final String EMPLOYER_SIGNUP_PATH = "/api/employer/signup";
-    private static final String EMPRUNTEUR_PATH = "/emprunteur/**";
-    private static final String PREPOSE_PATH = "/prepose/**";
     private static final String MANAGER_PATH = "/api/manager/**";
     private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
     private static final String ROLES_LIST_PATH = "/api/roles";
@@ -67,8 +65,6 @@ public class SecurityConfiguration {
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
 
                         // Use Role enum names for authorities
-                        .requestMatchers(EMPRUNTEUR_PATH).hasAuthority(Role.EMPRUNTEUR.name())
-                        .requestMatchers(PREPOSE_PATH).hasAuthority(Role.PREPOSE.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed

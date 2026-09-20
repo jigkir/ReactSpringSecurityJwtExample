@@ -1,8 +1,6 @@
 package com.lacouf.rsbjwt;
 
 import com.lacouf.rsbjwt.model.*;
-import com.lacouf.rsbjwt.repository.EmprunteurRepository;
-import com.lacouf.rsbjwt.repository.PreposeRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.util.TcpServer;
@@ -20,25 +18,14 @@ import java.util.Optional;
 public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
 
     private final ManagerService managerService;
-    private final EmprunteurRepository emprunteurRepository;
-    private final PreposeRepository preposeRepository;
-    private final UserAppRepository userAppRepository;
-
-    private final PasswordEncoder passwordEncoder;
-
     private final DataSourceProperties dataSourceProperties;
 
-    public ReactSpringSecurityJwtApplication(ManagerService managerService, EmprunteurRepository emprunteurRepository, PreposeRepository preposeRepository, UserAppRepository userAppRepository, PasswordEncoder passwordEncoder, DataSourceProperties dataSourceProperties) {
+    public ReactSpringSecurityJwtApplication(ManagerService managerService, DataSourceProperties dataSourceProperties) {
         this.managerService = managerService;
-
-        this.emprunteurRepository = emprunteurRepository;
-        this.preposeRepository = preposeRepository;
-        this.userAppRepository = userAppRepository;
-        this.passwordEncoder = passwordEncoder;
         this.dataSourceProperties = dataSourceProperties;
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(ReactSpringSecurityJwtApplication.class, args);
     }
 
@@ -47,28 +34,6 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
         configureTcpServer();
 
         IO.println(managerService.save("John", "Doe", "manager@email.com", "Password123#", "0123456789"));
-
-        emprunteurRepository.save(
-                Emprunteur.builder()
-                        .firstName("Isidor")
-                        .lastName("Teurteur")
-                        .email("ll@l.com")
-                        .password(passwordEncoder.encode("bib"))
-                        .since(LocalDate.of(2020, 10,20))
-                        .build()
-        );
-        preposeRepository.save(
-                Prepose.builder()
-                        .firstName("Chandeuse")
-                        .lastName("Lixor")
-                        .email("lll@l.com")
-                        .password(passwordEncoder.encode("bib"))
-                        .passeKey("12345")
-                        .build()
-        );
-        final Optional<UserApp> userAppByEmail = userAppRepository.findByCredentialsEmail("l@l.com");
-        userAppByEmail.ifPresent(userApp -> System.out.println("user " + userAppByEmail));
-
     }
 
     private void configureTcpServer() throws SQLException {
