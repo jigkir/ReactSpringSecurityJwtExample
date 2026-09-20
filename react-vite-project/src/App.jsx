@@ -32,7 +32,7 @@ function App() {
 
         let cancelled = false;
 
-        fetcher('me', {})
+        fetcher('users/current', {})
             .then(async (res) => {
                 if (!res.ok) {
                     switch (res.status) {

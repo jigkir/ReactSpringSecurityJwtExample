@@ -90,7 +90,7 @@ const Login = ({user, setError}) => {
             const data = await response.json();
             localStorage.setItem('token', data.accessToken);
 
-            const userResponse = await fetcher('me', {});
+            const userResponse = await fetcher('users/current', {});
             if (!userResponse.ok) {
                 throw new Error('Failed to fetch user info');
             }
