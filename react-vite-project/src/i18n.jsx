@@ -20,7 +20,7 @@ i18n
                         version:"Version 1.0.0",
                         backLabel:"Go Back"
                     },
-                    errorPage:{
+                    error:{
 
                     },
                     footer:{
@@ -54,8 +54,9 @@ i18n
                         version:"Version 1.0.0",
                         backLabel:"Retour"
                     },
-                    errorPage:{
-
+                    error:{
+                        accessRefused: "Accès refusé: endpoint réservé au gestionnaire (403).",
+                        apiError: "Erreur API"
                     },
                     footer:{
                         copyright:"Copyright © 2021",
@@ -75,8 +76,28 @@ i18n
                         lightmode:"Clair",
                         darkmode:"Sombre",
                         disconnect:"Déconnection",
-                        login:"Login",
+                        login:"Connecter",
                         signup:"S'enregistrer",
+                    },
+                    managerPage:{
+                        pageInfo:"Page accueil gestionnaire",
+                        buttonInfo:"Accéder à l'endpoint gestionnaire",
+                    },
+                    borrowerPage:{
+                        pageInfo:"Page accueil emprunteur",
+                        buttonInfo:"Accéder à l'endpoint gestionnaire",
+                    },
+                    attendantPage:{
+                        pageInfo:"Page accueil prepose",
+                        buttonInfo:"Accéder à l'endpoint gestionnaire",
+                    },
+                    signup:{
+                        signupInfo:"Se Connecter",
+                        noSignup:"No signup form available for this role yet.",
+                        signupFormConfirm:"Se Connecter",
+                    },
+                    login:{
+
                     },
                 }
             }
