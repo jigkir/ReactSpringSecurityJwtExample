@@ -36,7 +36,7 @@ public class StudentController {
     @PostMapping("/upload-cv")
     public ResponseEntity<String> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("studentId") String studentId) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException {
+            @RequestParam("studentId") String studentId) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
 
         if (file == null || file.isEmpty()) {
             throw new InvalidFileTypeException("Uploaded file is empty or null.");
@@ -74,7 +74,7 @@ public class StudentController {
     }
 
     @GetMapping("/cv-count/{studentId}")
-    public ResponseEntity<Long> getCVCount(@PathVariable String studentId) {
+    public ResponseEntity<Long> getCVCount(@PathVariable String studentId) throws UserNotFoundException {
         Student student = studentService.findByStudentId(studentId);
         long cvCount = cvService.getCVCountByStudent(student);
         return new ResponseEntity<>(cvCount, HttpStatus.OK);

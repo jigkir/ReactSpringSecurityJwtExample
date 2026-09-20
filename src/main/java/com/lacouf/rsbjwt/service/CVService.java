@@ -87,7 +87,7 @@ public class CVService {
 
 
 
-    public CVDto getMostRecentCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException {
+    public CVDto getMostRecentCVByStudent(Student student) throws CorruptedFileException, NoSuchAlgorithmException, UserNotFoundException {
         if (student == null) {
             throw new UserNotFoundException();
         }

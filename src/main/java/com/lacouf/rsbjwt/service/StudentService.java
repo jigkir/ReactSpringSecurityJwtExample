@@ -63,7 +63,7 @@ public class StudentService {
         }
     }
 
-    public Student findByStudentId(String studentId) {
+    public Student findByStudentId(String studentId) throws UserNotFoundException {
         return studentRepository.findByStudentId(studentId)
                 .orElseThrow(UserNotFoundException::new);
     }
