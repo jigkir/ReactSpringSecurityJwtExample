@@ -12,6 +12,27 @@ export default function InternshipModal({ isOpen, onClose }) {
         compensation: ''
     });
 
+    const [error, setError] = useState("")
+
+    const today = new Date().toISOString().split("T")[0];
+    const maxDeadline = formData.startDate
+        ? (() => {
+            const d = new Date(formData.startDate + 'T00:00:00');
+            // Check if the date is valid before doing math
+            if (isNaN(d.getTime())) return "";
+            d.setDate(d.getDate() - 14);
+            return d.toISOString().split("T")[0];
+        })()
+        : "";
+
+    const minStartDay = today
+        ? (() => {
+            const d = new Date(today + 'T00:00:00');
+            if (isNaN(d.getTime())) return "";
+            d.setDate(d.getDate() + 14);
+            return d.toISOString().split("T")[0]
+    })() : "";
+
     if (!isOpen) return null;
 
     const handleChange = (e) => {
@@ -24,6 +45,26 @@ export default function InternshipModal({ isOpen, onClose }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        setError("");
+
+        const skillsArray = formData.requiredSkills
+            .split(",")
+            .map(skill => skill.trim())
+            .filter(skill => skill.length > 0);
+
+        if (skillsArray.length === 0) {
+            setError("Please enter at least one valid skill.");
+            return;
+        }
+
+        const compensationRegex = /^\$\d+(\.\d+)?\/h$|^unpaid$|^non\s*rémunéré$/i;
+
+        if (!compensationRegex.test(formData.compensation.trim())) {
+            setError("Compensation must be in format like '$20/h' or 'unpaid'.");
+            return;
+        }
+
         const newInternship = {
             ...formData,
             status: "En attente de validation",
@@ -50,6 +91,12 @@ export default function InternshipModal({ isOpen, onClose }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+
+                    {error && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-red-600 text-sm font-medium animate-fadeIn">
+                            <span>{error}</span>
+                        </div>
+                )}
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Title :</label>
@@ -86,6 +133,9 @@ export default function InternshipModal({ isOpen, onClose }) {
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Separate each skill with a comma.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -123,6 +173,7 @@ export default function InternshipModal({ isOpen, onClose }) {
                                 type="date"
                                 name="startDate"
                                 value={formData.startDate}
+                                min={minStartDay}
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 required
@@ -134,6 +185,8 @@ export default function InternshipModal({ isOpen, onClose }) {
                             <input
                                 type="date"
                                 name="deadline"
+                                min={today}
+                                max={maxDeadline}
                                 value={formData.deadline}
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -149,7 +202,7 @@ export default function InternshipModal({ isOpen, onClose }) {
                             name="compensation"
                             value={formData.compensation}
                             onChange={handleChange}
-                            placeholder="ex: 20$/heure ou Non rémunéré"
+                            placeholder="ex: 20$/h or Unpaid"
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                         />
