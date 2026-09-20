@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @NoArgsConstructor
@@ -14,7 +16,7 @@ import lombok.*;
 
 public abstract class Internship {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String description;
@@ -26,7 +28,8 @@ public abstract class Internship {
     private String compensation;
     private String status;
     private Boolean isDeleted;
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "employer_id")
-    private Employer postedby;
+    private Employer postedBy;
 }

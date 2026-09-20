@@ -1,11 +1,11 @@
 package com.lacouf.rsbjwt.model;
 
 import com.lacouf.rsbjwt.model.auth.Credentials;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -20,6 +20,9 @@ public class Employer extends UserApp {
 
     @Column(nullable = false)
     private String phoneNumber;
+
+    @OneToMany(mappedBy = "postedBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Internship> internships = new HashSet<>();
 
     public Employer(String firstName, String lastName, Credentials credentials, String companyName, Discipline discipline, String phoneNumber) {
         super(firstName, lastName, credentials);
