@@ -21,7 +21,8 @@ i18n
                         backLabel:"Go Back"
                     },
                     error:{
-
+                        accessRefused: "Access denied: endpoint reserved for the manager (403).",
+                        apiError: "API error"
                     },
                     footer:{
                         copyright:"Copyright © 2026",
@@ -45,6 +46,26 @@ i18n
                         signup:"Sign Up",
                         switchFench:"FR",
                         switchEnglish:"EN",
+                    },
+                    managerPage:{
+                        pageInfo:"Manager home page",
+                        buttonInfo:"Access the manager endpoint",
+                    },
+                    borrowerPage:{
+                        pageInfo:"Borrower home page",
+                        buttonInfo:"Access the manager endpoint",
+                    },
+                    attendantPage:{
+                        pageInfo:"Attendant home page",
+                        buttonInfo:"Access the manager endpoint",
+                    },
+                    signup:{
+                        signupInfo:"Create an account",
+                        noSignup:"No signup form available for this role yet.",
+                        signupFormConfirm:"Sign in",
+                    },
+                    login:{
+
                     },
                 }
             },
@@ -92,8 +113,8 @@ i18n
                         buttonInfo:"Accéder à l'endpoint gestionnaire",
                     },
                     signup:{
-                        signupInfo:"Se Connecter",
-                        noSignup:"No signup form available for this role yet.",
+                        signupInfo:"Créer un compte",
+                        noSignup:"Aucun formulaire d'inscription n'est disponible pour ce rôle.",
                         signupFormConfirm:"Se Connecter",
                     },
                     login:{
