@@ -20,7 +20,8 @@ export const RoleField = ({
 );
 
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-export const PASSWORD_REGEX = /^(?!.*\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
+export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])\S+$/;
+export const NAME_REGEX = /^(?=.*\p{L})[\p{L}\p{M}'’\-. ]+$/u;
 
 export const handleSpaceKeyDown = (e) => {
     if (e.key === ' ') {
@@ -45,6 +46,8 @@ export function validateField(field, value, formValues = {}) {
             if (!t) return 'This field is required.';
             if (t.length < 2) return 'Must be at least 2 characters.';
             if (t.length > 50) return 'Must be at most 50 characters.';
+            if (!NAME_REGEX.test(t))
+                return 'Must contain at least one letter. Only letters, spaces, hyphens, apostrophes and periods are allowed.';
             return '';
         }
         case 'email': {
@@ -57,8 +60,9 @@ export function validateField(field, value, formValues = {}) {
             if (!value) return 'Password is required.';
             if (value.length < 8) return 'Must be at least 8 characters.';
             if (value.length > 50) return 'Must be at most 50 characters.';
+            if (/\s/.test(value)) return 'Must not contain spaces.';
             if (!PASSWORD_REGEX.test(value)) {
-                return 'Must contain at least one digit, one lowercase, one uppercase, and one special character (@#$%^&+=!).';
+                return 'Must contain at least one digit, one lowercase letter, one uppercase letter, and one special character (e.g. !@#$%?&*).';
             }
             return '';
         }
@@ -128,7 +132,7 @@ export const FirstNameField = ({value, onChange, warning, labelClass, errorClass
     <Field id="firstName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="firstName" name="firstName" type="text"
-            value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
+            value={value} onChange={onChange}
             maxLength={50} required className={fieldClass}
         />
     </Field>
@@ -166,7 +170,7 @@ export const DisciplineField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' +label.toLowerCase()+' --'}
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' + label.toLowerCase() + ' --'}
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>

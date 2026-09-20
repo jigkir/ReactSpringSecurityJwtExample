@@ -24,7 +24,7 @@ i18n
 
                     },
                     footer:{
-                        copyright:"Copyright © 2021",
+                        copyright:"Copyright © 2026",
                         about:"About",
                     },
                     mainContainer:{
@@ -59,7 +59,7 @@ i18n
                         apiError: "Erreur API"
                     },
                     footer:{
-                        copyright:"Copyright © 2021",
+                        copyright:"Copyright © 2026",
                         about:"À propos",
                     },
                     mainContainer:{
