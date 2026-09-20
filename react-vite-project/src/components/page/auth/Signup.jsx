@@ -6,6 +6,7 @@ import fetcher from '../../../utils/fetcher.js';
 import Student from './signup/Student.jsx';
 import Employer from "./signup/Employer.jsx";
 import Teacher from './signup/Teacher.jsx';
+import {useTranslation} from 'react-i18next';
 
 // Roles that are allowed to self-register — MANAGER/GESTIONNAIRE/PREPOSE are login-only
 const SIGNUP_ROLES = ['student', 'employer', 'teacher'];
@@ -29,6 +30,8 @@ const Signup = () => {
 
     const classes = getAuthClasses(dark);
     const {fieldClass, labelClass, cardClass, pageClass, titleClass, subtextClass} = classes;
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         fetcher('roles', {})
@@ -58,7 +61,7 @@ const Signup = () => {
     return (
         <div className={pageClass}>
             <div className={cardClass}>
-                <h1 className={titleClass}>Sign Up</h1>
+                <h1 className={titleClass}>{t("signup.signupInfo")}</h1>
 
                 <div className="mb-4">
                     <RoleField
@@ -75,14 +78,14 @@ const Signup = () => {
 
                 {role && (roleComponents[role] ?? (
                     <p className={classes.errorClass}>
-                        No signup form available for this role yet.
+                        {t("signup.noSignup")}
                     </p>
                 ))}
 
                 <p className={subtextClass}>
                     Already have an account?{' '}
                     <button onClick={() => navigate('/login')} className="text-blue-500 hover:underline font-medium">
-                        Sign in
+                        {t("signup.signupFormConfirm")}
                     </button>
                 </p>
             </div>

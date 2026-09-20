@@ -20,12 +20,32 @@ export const RoleField = ({
 );
 
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-export const PASSWORD_REGEX = /^(?!.*\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$/;
+export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])\S+$/;
+export const NAME_REGEX = /^(?=.*\p{L})[\p{L}\p{M}'’\-. ]+$/u;
 
-export const handleSpaceKeyDown = (e) => {
-    if (e.key === ' ') {
-        e.preventDefault();
-    }
+const NAME_DISALLOWED = /[^\p{L}\p{M}'’\-. ]/gu;
+const EMAIL_DISALLOWED = /[^A-Za-z0-9._%+\-@]/g;
+const PASSWORD_DISALLOWED = /\s/g;
+
+export const sanitizeName = (v) => v.replace(NAME_DISALLOWED, '');
+
+export const sanitizeEmail = (v) => {
+    const cleaned = v.replace(EMAIL_DISALLOWED, '');
+    const at = cleaned.indexOf('@');
+    if (at === -1) return cleaned;
+
+    const local = cleaned.slice(0, at);
+    // Everything after the first @ is the domain: drop extra @ and _ % +
+    const domain = cleaned.slice(at + 1).replace(/[^A-Za-z0-9.-]/g, '');
+    return `${local}@${domain}`;
+};
+
+export const sanitizePassword = (v) => v.replace(PASSWORD_DISALLOWED, '');
+
+// Wraps a form's onChange so the value is cleaned before it reaches state
+const withSanitizer = (sanitize, onChange) => (e) => {
+    const {name, value} = e.target;
+    onChange({target: {name, value: sanitize(value)}});
 };
 
 export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
@@ -45,11 +65,14 @@ export function validateField(field, value, formValues = {}) {
             if (!t) return 'This field is required.';
             if (t.length < 2) return 'Must be at least 2 characters.';
             if (t.length > 50) return 'Must be at most 50 characters.';
+            if (!NAME_REGEX.test(t))
+                return 'Must contain at least one letter. Only letters, spaces, hyphens, apostrophes and periods are allowed.';
             return '';
         }
         case 'email': {
             const t = value.trim();
             if (!t) return 'Email address is required.';
+            if (t.length > 100) return 'Must be at most 100 characters.';
             if (!EMAIL_REGEX.test(t)) return 'Invalid email format.';
             return '';
         }
@@ -57,8 +80,14 @@ export function validateField(field, value, formValues = {}) {
             if (!value) return 'Password is required.';
             if (value.length < 8) return 'Must be at least 8 characters.';
             if (value.length > 50) return 'Must be at most 50 characters.';
+            if (/\s/.test(value)) return 'Must not contain spaces.';
             if (!PASSWORD_REGEX.test(value)) {
-                return 'Must contain at least one digit, one lowercase, one uppercase, and one special character (@#$%^&+=!).';
+                const missing = [];
+                if (!/[0-9]/.test(value)) missing.push('one digit');
+                if (!/[a-z]/.test(value)) missing.push('one lowercase letter');
+                if (!/[A-Z]/.test(value)) missing.push('one uppercase letter');
+                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push('one special character');
+                return `Missing: ${missing.join(', ')}.`;
             }
             return '';
         }
@@ -128,7 +157,7 @@ export const FirstNameField = ({value, onChange, warning, labelClass, errorClass
     <Field id="firstName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="firstName" name="firstName" type="text"
-            value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
+            value={value} onChange={withSanitizer(sanitizeName, onChange)}
             maxLength={50} required className={fieldClass}
         />
     </Field>
@@ -138,7 +167,7 @@ export const LastNameField = ({value, onChange, warning, labelClass, errorClass,
     <Field id="lastName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="lastName" name="lastName" type="text"
-            value={value} onChange={onChange}
+            value={value} onChange={withSanitizer(sanitizeName, onChange)}
             maxLength={50} required className={fieldClass}
         />
     </Field>
@@ -148,8 +177,8 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
     <Field id="email" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
         <input
             id="email" name="email" type="email"
-            value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
-            required className={fieldClass}
+            value={value} onChange={withSanitizer(sanitizeEmail, onChange)}
+            maxLength={100} required className={fieldClass}
         />
     </Field>
 );
@@ -166,7 +195,7 @@ export const DisciplineField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' +label.toLowerCase()+' --'}
+                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' + label.toLowerCase() + ' --'}
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
@@ -185,7 +214,7 @@ export const PasswordField = ({
             <input
                 id="password" name="password"
                 type={show ? 'text' : 'password'}
-                value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
+                value={value} onChange={withSanitizer(sanitizePassword, onChange)}
                 maxLength={50} required className={fieldClass}
             />
             <button type="button" onClick={onToggleShow}
@@ -206,7 +235,7 @@ export const ConfirmPasswordField = ({
             <input
                 id="confirmPassword" name="confirmPassword"
                 type={show ? 'text' : 'password'}
-                value={value} onChange={onChange} onKeyDown={handleSpaceKeyDown}
+                value={value} onChange={withSanitizer(sanitizePassword, onChange)}
                 required className={fieldClass}
             />
             <button type="button" onClick={onToggleShow}

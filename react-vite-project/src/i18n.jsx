@@ -20,11 +20,12 @@ i18n
                         version:"Version 1.0.0",
                         backLabel:"Go Back"
                     },
-                    errorPage:{
-
+                    error:{
+                        accessRefused: "Access denied: endpoint reserved for the manager (403).",
+                        apiError: "API error"
                     },
                     footer:{
-                        copyright:"Copyright © 2021",
+                        copyright:"Copyright © 2026",
                         about:"About",
                     },
                     mainContainer:{
@@ -43,31 +44,81 @@ i18n
                         disconnect:"Disconnect",
                         login:"Login",
                         signup:"Sign Up",
+                        switchFench:"FR",
+                        switchEnglish:"EN",
+                    },
+                    managerPage:{
+                        pageInfo:"Manager home page",
+                        buttonInfo:"Access the manager endpoint",
+                    },
+                    borrowerPage:{
+                        pageInfo:"Borrower home page",
+                        buttonInfo:"Access the manager endpoint",
+                    },
+                    attendantPage:{
+                        pageInfo:"Attendant home page",
+                        buttonInfo:"Access the manager endpoint",
+                    },
+                    signup:{
+                        signupInfo:"Create an account",
+                        noSignup:"No signup form available for this role yet.",
+                        signupFormConfirm:"Sign in",
+                    },
+                    login:{
+
                     },
                 }
             },
             fr:{
-                translations: {
+                translation: {
                     about:{
-
+                        version:"Version 1.0.0",
+                        backLabel:"Retour"
                     },
-                    errorPage:{
-
+                    error:{
+                        accessRefused: "Accès refusé: endpoint réservé au gestionnaire (403).",
+                        apiError: "Erreur API"
                     },
                     footer:{
-
+                        copyright:"Copyright © 2026",
+                        about:"À propos",
                     },
                     mainContainer:{
-                        title: "Example de Spring security avec JWT",
+                        title: "Exemple de Spring security avec JWT",
                         subtitle: "Dans cet exemple, vous trouverez le nécessaire pour implanter la sécurité avec des tokens JWT"
                     },
                     navbar:{
                         appName:"My App",
-                        acceuil:"Home",
-                        aPropos:"About",
-                        emprunteur:"Borrower",
-                        prepose:"Attendant",
-                        gestionnaire:"Manager",
+                        acceuil:"Acceuil",
+                        about:"À propos",
+                        emprunteur:"Emprunteur",
+                        prepose:"Préposé",
+                        gestionnaire:"Gestionnaire",
+                        lightmode:"Clair",
+                        darkmode:"Sombre",
+                        disconnect:"Déconnection",
+                        login:"Connecter",
+                        signup:"S'enregistrer",
+                    },
+                    managerPage:{
+                        pageInfo:"Page accueil gestionnaire",
+                        buttonInfo:"Accéder à l'endpoint gestionnaire",
+                    },
+                    borrowerPage:{
+                        pageInfo:"Page accueil emprunteur",
+                        buttonInfo:"Accéder à l'endpoint gestionnaire",
+                    },
+                    attendantPage:{
+                        pageInfo:"Page accueil prepose",
+                        buttonInfo:"Accéder à l'endpoint gestionnaire",
+                    },
+                    signup:{
+                        signupInfo:"Créer un compte",
+                        noSignup:"Aucun formulaire d'inscription n'est disponible pour ce rôle.",
+                        signupFormConfirm:"Se Connecter",
+                    },
+                    login:{
+
                     },
                 }
             }

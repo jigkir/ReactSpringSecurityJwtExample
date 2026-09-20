@@ -6,10 +6,12 @@ import jakarta.validation.constraints.*;
 public record TeacherSignUpDto(
         @NotBlank
         @Size(min = 2, max = 50)
+        @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
         String firstName,
 
         @NotBlank
         @Size(min = 2, max = 50)
+        @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
         String lastName,
 
         @NotBlank
@@ -17,13 +19,13 @@ public record TeacherSignUpDto(
         String teacherId,
 
         @NotBlank
-        @Email
         @Size(max = 100)
+        @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "invalid email format")
         String email,
 
         @NotBlank
         @Size(min = 8, max = 50)
-        @Pattern(regexp = "^(?!.*\\s)(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character (@#$%^&+=!1), and must not contain whitespace")
+        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~])\\S+$", message = "password must contain at least one digit, one lowercase, one uppercase, one special character, and must not contain whitespace")
         String password,
 
         @NotNull
