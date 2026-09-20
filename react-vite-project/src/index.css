@@ -1,3 +1,13 @@
 @import "tailwindcss";
 
-body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.app-dark {
+    background-color: #111827;
+    color: #f9fafb;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-light {
+    background-color: #ffffff;
+    color: #111827;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

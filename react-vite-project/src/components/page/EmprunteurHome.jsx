@@ -1,18 +1,22 @@
 import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import fetcher from "../../utils/fetcher.js";
+import {useTranslation} from 'react-i18next';
 
 const EmprunteurHome = () => {
   const [message, setMessage] = useState("");
+  const {dark} = useOutletContext();
+    const { t } = useTranslation();
 
   const handleAccessGestionnaireEndpoint = () => {
     setMessage("");
     fetcher("/user/gestionnaire/demo", { method: "GET" })
       .then(async (response) => {
         if (response.status === 403) {
-          throw new Error("Accès refusé: endpoint réservé au gestionnaire (403).");
+          throw new Error(t("error.accessRefused"));
         }
         if (!response.ok) {
-          throw new Error(`Erreur API (${response.status})`);
+          throw new Error(t("arror.apiError")` (${response.status})`);
         }
         const data = await response.text();
         setMessage(data);
@@ -23,13 +27,13 @@ const EmprunteurHome = () => {
   };
 
   return(
-    <>
-      <h1>Page accueil emprunteur</h1>
+    <div className={dark ? 'text-white' : 'text-gray-900'}>
+      <h1>{t("borrowerPage.pageInfo")}</h1>
       <button style={{ width: 'fit-content' }} onClick={handleAccessGestionnaireEndpoint}>
-        Accéder à l'endpoint gestionnaire
+          {t("borrowerPage.buttonInfo")}
       </button>
       {message && <p>{message}</p>}
-    </>
+    </div>
   );
 }
 export default EmprunteurHome;

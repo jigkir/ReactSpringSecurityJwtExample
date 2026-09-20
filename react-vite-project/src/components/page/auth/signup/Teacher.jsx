@@ -1,0 +1,163 @@
+import {useState, useEffect} from "react";
+import {useNavigate} from "react-router-dom";
+import fetcher from "../../../../utils/fetcher.js";
+import {
+    FirstNameField,
+    LastNameField,
+    MatriculeField,
+    DisciplineField,
+    EmailField,
+    PasswordField,
+    ConfirmPasswordField,
+    SubmitButton,
+    validateField,
+} from "../../../../utils/CommonFields.jsx";
+
+const ID_FIELD = "teacherId";
+
+const DEFAULT_FORM = {
+    firstName: "",
+    lastName: "",
+    [ID_FIELD]: "",
+    discipline: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+};
+
+const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
+
+const isAllFilled = (form) => Object.values(form).every(v => v !== "");
+
+const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
+    const navigate = useNavigate();
+
+    const [form, setForm] = useState(DEFAULT_FORM);
+    const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [serverError, setServerError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
+    const [disciplines, setDisciplines] = useState([]);
+    const [disciplinesLoading, setDisciplinesLoading] = useState(true);
+    const [disciplinesFetchError, setDisciplinesFetchError] = useState("");
+
+    useEffect(() => {
+        fetcher("disciplines", {})
+            .then(async (res) => {
+                if (!res.ok) throw new Error(`Error ${res.status}`);
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.disciplines ?? []);
+                setDisciplines(list.map(d => ({
+                    value: typeof d === "string" ? d : d.value,
+                    label: typeof d === "string" ? d : (d.label ?? d.value),
+                })));
+            })
+            .catch(() => setDisciplinesFetchError("Could not load disciplines."))
+            .finally(() => setDisciplinesLoading(false));
+    }, []);
+
+    const handleChange = (e) => {
+        const {name, value} = e.target;
+        setForm(prev => ({...prev, [name]: value}));
+        setServerError("");
+        if (warnings[name]) setWarnings(prev => ({...prev, [name]: ""}));
+    };
+
+    const validateAll = () => {
+        const newWarnings = {};
+        let valid = true;
+        for (const key of Object.keys(DEFAULT_FORM)) {
+            const msg = validateField(key, form[key], form);
+            newWarnings[key] = msg;
+            if (msg) valid = false;
+        }
+        setWarnings(newWarnings);
+        return valid;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setServerError("");
+        if (!validateAll()) return;
+
+        setSubmitting(true);
+        try {
+            const response = await fetcher("teacher/signup", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json;charset=UTF-8",
+                },
+                body: JSON.stringify({
+                    firstName: form.firstName.trim(),
+                    lastName: form.lastName.trim(),
+                    [ID_FIELD]: form[ID_FIELD],
+                    discipline: form.discipline,
+                    email: form.email.trim().toLowerCase(),
+                    password: form.password,
+                }),
+            });
+
+            if (response.ok) { navigate("/login"); return; }
+
+            switch (response.status) {
+                case 409: {
+                    let body = {};
+                    try { body = await response.json(); } catch {}
+                    const {field: conflictField = ""} = body ?? {};
+                    if (conflictField === ID_FIELD) {
+                        setWarnings(w => ({...w, [ID_FIELD]: "This teacher ID is already in use."}));
+                    } else if (conflictField === "email") {
+                        setWarnings(w => ({...w, email: "This email address is already in use."}));
+                    } else {
+                        setServerError("An account with this teacher ID or email already exists.");
+                    }
+                    break;
+                }
+                case 400:
+                    setServerError("The submitted data is invalid. Please review the fields.");
+                    break;
+                default:
+                    setServerError(`Server error (${response.status}). Please try again.`);
+            }
+        } catch {
+            setServerError("Unable to reach the server. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
+
+    return (
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {serverError && <div className={serverErrorClass}>{serverError}</div>}
+
+            <FirstNameField  {...sharedProps} value={form.firstName} warning={warnings.firstName}/>
+            <LastNameField   {...sharedProps} value={form.lastName} warning={warnings.lastName}/>
+            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={warnings[ID_FIELD]} name={ID_FIELD}
+                             role="Teacher" limit="5"/>
+            <DisciplineField {...sharedProps} value={form.discipline} warning={warnings.discipline}
+                             options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}/>
+            <EmailField      {...sharedProps} value={form.email} warning={warnings.email}/>
+            <PasswordField   {...sharedProps} value={form.password} warning={warnings.password}
+                             eyeClass={eyeClass} show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
+                             hint="8–50 characters · digit · lowercase · uppercase · special character"
+                             passwordHintClass={passwordHintClass}/>
+            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={warnings.confirmPassword}
+                                  eyeClass={eyeClass} show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}/>
+
+            <SubmitButton
+                disabled={!isAllFilled(form) || submitting}
+                loading={submitting}
+                loadingLabel="Creating account…"
+                label="Create account"
+                submitClass={submitClass}
+            />
+        </form>
+    );
+};
+
+export default Teacher;

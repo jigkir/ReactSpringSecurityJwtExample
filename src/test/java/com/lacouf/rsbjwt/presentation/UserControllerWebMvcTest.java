@@ -2,13 +2,20 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.repository.*;
+import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.UserAppService;
-import com.lacouf.rsbjwt.service.dto.LoginDTO;
-import org.junit.jupiter.api.DisplayName;
+import com.lacouf.rsbjwt.service.dto.DisciplineDto;
+import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.UserLoginDTO;
+import com.lacouf.rsbjwt.service.dto.RoleDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,8 +24,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,13 +50,7 @@ class UserControllerWebMvcTest {
     private UserAppService userService;
 
     @MockitoBean
-    private GestionnaireRepository gestionnaireRepository;
-
-    @MockitoBean
-    private EmprunteurRepository emprunteurRepository;
-
-    @MockitoBean
-    private PreposeRepository preposeRepository;
+    private ManagerService managerService;
 
     @MockitoBean
     private ManagerRepository managerRepository;
@@ -62,36 +71,120 @@ class UserControllerWebMvcTest {
     }
 
     @Test
-    @DisplayName("POST /user/login returns 202 and token on success")
-    void authenticateUser_success_returnsAcceptedAndToken() throws Exception {
+    void shouldReturnTokenWhenLoginSucceeds() throws Exception {
         // Arrange
-        LoginDTO login = new LoginDTO("user@example.com", "password");
-        when(userService.authenticateUser(any(LoginDTO.class))).thenReturn("token123");
+        UserLoginDTO login = new UserLoginDTO("user@example.com", "password");
+        when(userService.login(any(UserLoginDTO.class))).thenReturn(new JWTAuthResponse("token123"));
 
         // Act + Assert
-        mockMvc.perform(post("/user/login")
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isAccepted())
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.tokenType").value("BEARER"))
                 .andExpect(jsonPath("$.accessToken").value("token123"));
     }
 
     @Test
-    @DisplayName("POST /user/login returns 401 on failure")
-    void authenticateUser_failure_returnsUnauthorized() throws Exception {
+    void shouldReturnUnauthorizedWhenCredentialsAreInvalid() throws Exception {
         // Arrange
-        LoginDTO login = new LoginDTO("user@example.com", "wrong");
-        when(userService.authenticateUser(any(LoginDTO.class))).thenThrow(new RuntimeException("bad creds"));
+        UserLoginDTO login = new UserLoginDTO("user@example.com", "Password123@");
+        when(userService.login(any(UserLoginDTO.class))).thenThrow(new BadCredentialsException("Invalid credentials"));
 
         // Act + Assert
-        mockMvc.perform(post("/user/login")
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.tokenType").value("BEARER"))
-                .andExpect(jsonPath("$.accessToken").value(org.hamcrest.Matchers.nullValue()));
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldReturnAllDisciplines() throws Exception {
+        // Arrange
+        DisciplineDto disciplines = new DisciplineDto(
+                List.of(
+                    "COMPUTER_SCIENCE",
+                    "CIVIL_ENGINEERING",
+                    "ELECTRICAL_ENGINEERING",
+                    "MARKETING",
+                    "NURSING"
+                ));
+
+        when(userService.getAllDisciplines()).thenReturn(disciplines);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/disciplines"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.disciplines",
+                        contains(
+                                "COMPUTER_SCIENCE",
+                                "CIVIL_ENGINEERING",
+                                "ELECTRICAL_ENGINEERING",
+                                "MARKETING",
+                                "NURSING"
+                        )
+                ));
+    }
+
+    @Test
+    void shouldReturnAllRoles() throws Exception {
+        // Arrange
+        RoleDto roles = new RoleDto(
+                List.of(
+                        "MANAGER",
+                        "STUDENT",
+                        "TEACHER",
+                        "EMPLOYER"
+                ));
+
+        when(userService.getAllRoles()).thenReturn(roles);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/roles"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.roles",
+                        contains(
+                                "MANAGER",
+                                "STUDENT",
+                                "TEACHER",
+                                "EMPLOYER"
+                        )
+                ));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidLoginFields")
+    void shouldReturnBadRequestForInvalidLoginFields(String field, Object invalidValue) throws Exception {
+        // Arrange
+        Map<String, Object> login = new HashMap<>();
+
+        login.put("email", "user@example.com");
+        login.put("password", "Password123@");
+
+        login.put(field, invalidValue);
+
+        // Act + Assert
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
+    static Stream<Arguments> invalidLoginFields() {
+        return Stream.of(
+                Arguments.of("email", null),
+                Arguments.of("email", ""),
+                Arguments.of("email", "   "),
+                Arguments.of("email", "invalid-email"),
+
+                Arguments.of("password", null),
+                Arguments.of("password", ""),
+                Arguments.of("password", "   ")
+        );
     }
 }
