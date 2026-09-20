@@ -5,6 +5,7 @@ import InternshipCard from "../InternshipCard.jsx";
 
 const mockInternships = [
     {
+        id:1,
         title: "Frontend Developer Intern",
         description: "Help build and optimize our core student-facing React web applications.",
         requiredSkills: "React, JavaScript, Tailwind CSS",
@@ -13,9 +14,11 @@ const mockInternships = [
         startDate: "2027-05-01",
         deadline: "2027-04-01",
         compensation: "$22/hour",
-        status: "Pending Validation"
+        status: "Pending Validation",
+        isDeleted: false
     },
     {
+        id:2,
         title: "Backend Java Intern",
         description: "Develop REST APIs and secure endpoints using Spring Boot and Java.",
         requiredSkills: "Java, Spring Boot, SQL",
@@ -24,9 +27,11 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-15",
         compensation: "$25/hour",
-        status: "Approved"
+        status: "Approved",
+        isDeleted: false
     },
     {
+        id:3,
         title: "AI Chatbot Developer Intern",
         description: "Build conversational agents using Python, LangChain, and local LLMs.",
         requiredSkills: "Python, LangChain, Ollama",
@@ -35,9 +40,11 @@ const mockInternships = [
         startDate: "2027-05-15",
         deadline: "2027-04-30",
         compensation: "$20/hour",
-        status: "Pending Validation"
+        status: "Pending Validation",
+        isDeleted: false
     },
     {
+        id:4,
         title: "Full Stack Software Intern",
         description: "Work across the entire stack building robust database solutions and user interfaces.",
         requiredSkills: "Python, React, PostgreSQL",
@@ -46,9 +53,11 @@ const mockInternships = [
         startDate: "2027-09-01",
         deadline: "2027-07-30",
         compensation: "$24/hour",
-        status: "Approved"
+        status: "Approved",
+        isDeleted: false
     },
     {
+        id:5,
         title: "Database Administration Intern",
         description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
         requiredSkills: "SQL, MariaDB, Oracle",
@@ -57,9 +66,11 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-01",
         compensation: "$21/hour",
-        status: "Pending Validation"
+        status: "Pending Validation",
+        isDeleted: false
     },
     {
+        id:6,
         title: "Database Administration Intern",
         description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
         requiredSkills: "SQL, MariaDB, Oracle",
@@ -68,9 +79,11 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-01",
         compensation: "$21/hour",
-        status: "Approved"
+        status: "Approved",
+        isDeleted: false
     },
     {
+        id:7,
         title: "Database Administration Intern",
         description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
         requiredSkills: "SQL, MariaDB, Oracle",
@@ -79,9 +92,11 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-01",
         compensation: "$21/hour",
-        status: "Pending Validation"
+        status: "Pending Validation",
+        isDeleted: false
     },
     {
+        id:8,
         title: "Database Administration Intern",
         description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
         requiredSkills: "SQL, MariaDB, Oracle",
@@ -90,9 +105,11 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-01",
         compensation: "$21/hour",
-        status: "Approved"
+        status: "Approved",
+        isDeleted: false
     },
     {
+        id:9,
         title: "Database Administration Intern",
         description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
         requiredSkills: "SQL, MariaDB, Oracle",
@@ -101,9 +118,11 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-01",
         compensation: "$21/hour",
-        status: "Pending Validation"
+        status: "Pending Validation",
+        isDeleted: false
     },
     {
+        id:10,
         title: "Database Administration Intern",
         description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
         requiredSkills: "SQL, MariaDB, Oracle",
@@ -112,7 +131,8 @@ const mockInternships = [
         startDate: "2027-06-01",
         deadline: "2027-05-01",
         compensation: "$21/hour",
-        status: "Denied"
+        status: "Denied",
+        isDeleted: false
     }
 ];
 
@@ -122,6 +142,14 @@ function PostInternship() {
 
     const handleAddInternship = (newOffer) => {
         setInternships((prev) => [newOffer, ...prev]);
+    };
+
+    const handleDelete = (id) =>{
+        setInternships(prevState =>
+            prevState.map( internship =>
+                internship.id === id ? {...internship, isDeleted:true} : internship
+            )
+        );
     };
 
     return (
@@ -136,7 +164,7 @@ function PostInternship() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex-shrink-0"
+                    className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shrink-0"
                 >
                     Submit an internship offer
                 </button>
@@ -148,8 +176,9 @@ function PostInternship() {
 
                 {/* 2. Scrollable container for the cards */}
                 <div className="flex-1 overflow-y-auto pr-2 space-y-4 min-h-0">
-                    {mockInternships.map((internship) => (
-                        <InternshipCard key={internship.id} internship={internship}/>
+                    {internships.map((internship) => (
+                        !internship.isDeleted &&
+                        <InternshipCard key={internship.id} internship={internship} OnDelete={handleDelete}/>
                     ))}
                 </div>
             </div>
