@@ -51,8 +51,12 @@ public class TeacherService {
         Optional<UserApp> teacherFoundByEmail = userAppRepository.findByCredentialsEmail(email);
         Optional<Teacher> teacherFoundByTeacherId = teacherRepository.findByTeacherId(teacherId);
 
-        if (teacherFoundByEmail.isPresent() || teacherFoundByTeacherId.isPresent()) {
-            throw new UserAlreadyExistsException();
+        if (teacherFoundByEmail.isPresent()) {
+            throw new UserAlreadyExistsException("email");
+        }
+
+        if (teacherFoundByTeacherId.isPresent()) {
+            throw new UserAlreadyExistsException("teacherId");
         }
     }
 }

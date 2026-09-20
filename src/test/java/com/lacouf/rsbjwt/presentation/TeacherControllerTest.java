@@ -75,10 +75,11 @@ public class TeacherControllerTest {
                 .andExpect(jsonPath("$.role").value("TEACHER"));
     }
 
-    @Test
-    void shouldReturnConflictWhenTeacherAlreadyExists() throws Exception {
+    @ParameterizedTest
+    @MethodSource("teacherConflictFields")
+    void shouldReturnConflictWhenTeacherAlreadyExists(String conflictField) throws Exception {
         // Arrange
-        when(teacherService.save(any(TeacherSignUpDto.class))).thenThrow(new UserAlreadyExistsException());
+        when(teacherService.save(any(TeacherSignUpDto.class))).thenThrow(new UserAlreadyExistsException(conflictField));
 
         // Act & Assert
         mockMvc.perform(post("/api/teacher/signup")
@@ -94,7 +95,15 @@ public class TeacherControllerTest {
                         }
                         """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("user already exists"));
+                .andExpect(jsonPath("$.message").value("user already exists"))
+                .andExpect(jsonPath("$.field").value(conflictField));
+    }
+
+    static Stream<Arguments> teacherConflictFields() {
+        return Stream.of(
+                Arguments.of("email"),
+                Arguments.of("teacherId")
+        );
     }
 
     @ParameterizedTest

@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.security.exception.RestExceptionHandler;
+import com.lacouf.rsbjwt.security.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EmployerController.class)
-@Import(RestExceptionHandler.class)
+@Import(GlobalExceptionHandler.class)
 public class EmployerControllerTest {
 
     @Autowired
@@ -85,7 +85,7 @@ public class EmployerControllerTest {
     void shouldReturnConflictWhenEmployerAlreadyExists() throws Exception {
         // Arrange
         when(employerService.save(any(EmployerSignUpDto.class)))
-                .thenThrow(new UserAlreadyExistsException());
+                .thenThrow(new UserAlreadyExistsException("email"));
 
         // Act + Assert
         mockMvc.perform(post("/api/employer/signup")
@@ -102,7 +102,8 @@ public class EmployerControllerTest {
                             }
                             """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("user already exists"));
+                .andExpect(jsonPath("$.message").value("user already exists"))
+                .andExpect(jsonPath("$.field").value("email"));
     }
 
     @ParameterizedTest

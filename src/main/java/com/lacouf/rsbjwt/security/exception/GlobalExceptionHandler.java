@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.security.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
-public class RestExceptionHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
@@ -29,9 +30,18 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(Map.of("message", exception.getMessage(), "field", exception.getField()), exception.getStatus());
+    }
+
+    @ExceptionHandler(APIException.class)
+    public ResponseEntity<Map<String, String>> handleApiException(APIException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), exception.getStatus());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleBadCredentials() {
+        return new ResponseEntity<>(Map.of("message", "Incorrect email or password"), HttpStatus.UNAUTHORIZED);
     }
 }
