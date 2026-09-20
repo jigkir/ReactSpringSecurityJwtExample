@@ -96,16 +96,8 @@ const Login = ({user, setError}) => {
             }
             const userData = await userResponse.json();
 
-            const userRole = userData.role;
-            if (userRole === 'EMPRUNTEUR') {
-                navigate('/emprunteur');
-            } else if (userRole === 'PREPOSE') {
-                navigate('/prepose');
-            } else if (userRole === 'GESTIONNAIRE') {
-                navigate('/gestionnaire');
-            } else {
-                navigate('/');
-            }
+            navigate('/home');
+
         } catch (error) {
             setError(error);
             navigate('/error');
@@ -122,10 +114,7 @@ const Login = ({user, setError}) => {
     };
 
     if (user?.isLoggedIn) {
-        if (user.role === 'ROLE_EMPRUNTEUR') navigate('/emprunteur');
-        else if (user.role === 'ROLE_PREPOSE') navigate('/prepose');
-        else if (user.role === 'ROLE_GESTIONNAIRE') navigate('/gestionnaire');
-        else navigate('/');
+        navigate('/home');
     }
 
     return (

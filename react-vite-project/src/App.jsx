@@ -12,6 +12,7 @@ import Logout from "./components/page/auth/Logout.jsx";
 import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
+import Home from "./components/page/Home.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -71,6 +72,7 @@ function App() {
                     <Route path="about" element={<About/>}/>
                     <Route path="login" element={<Login user={user} setError={setError}/>}/>
                     <Route path="signup" element={<Signup/>}/>
+                    <Route path="home" element={<Home user={user}/>}/>
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
                     <Route path="emprunteur" element={<EmprunteurHome/>}/>
                     <Route path="prepose" element={<PreposeHome/>}/>
