@@ -53,8 +53,12 @@ public class StudentService {
         Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
         Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
 
-        if (studentFoundByEmail.isPresent() || studentFoundByStudentId.isPresent()) {
-            throw new UserAlreadyExistsException();
+        if (studentFoundByEmail.isPresent()) {
+            throw new UserAlreadyExistsException("email");
+        }
+
+        if (studentFoundByStudentId.isPresent()) {
+            throw new UserAlreadyExistsException("studentId");
         }
     }
 }

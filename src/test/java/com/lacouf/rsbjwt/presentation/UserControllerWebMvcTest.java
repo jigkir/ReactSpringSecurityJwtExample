@@ -9,6 +9,9 @@ import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.UserLoginDTO;
 import com.lacouf.rsbjwt.service.dto.RoleDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -21,10 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,12 +51,6 @@ class UserControllerWebMvcTest {
 
     @MockitoBean
     private ManagerService managerService;
-
-    @MockitoBean
-    private EmprunteurRepository emprunteurRepository;
-
-    @MockitoBean
-    private PreposeRepository preposeRepository;
 
     @MockitoBean
     private ManagerRepository managerRepository;
@@ -133,9 +134,8 @@ class UserControllerWebMvcTest {
         RoleDto roles = new RoleDto(
                 List.of(
                         "MANAGER",
-                        "PREPOSE",
-                        "EMPRUNTEUR",
                         "STUDENT",
+                        "TEACHER",
                         "EMPLOYER"
                 ));
 
@@ -148,11 +148,43 @@ class UserControllerWebMvcTest {
                 .andExpect(jsonPath("$.roles",
                         contains(
                                 "MANAGER",
-                                "PREPOSE",
-                                "EMPRUNTEUR",
                                 "STUDENT",
+                                "TEACHER",
                                 "EMPLOYER"
                         )
                 ));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidLoginFields")
+    void shouldReturnBadRequestForInvalidLoginFields(String field, Object invalidValue) throws Exception {
+        // Arrange
+        Map<String, Object> login = new HashMap<>();
+
+        login.put("email", "user@example.com");
+        login.put("password", "Password123@");
+
+        login.put(field, invalidValue);
+
+        // Act + Assert
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
+    static Stream<Arguments> invalidLoginFields() {
+        return Stream.of(
+                Arguments.of("email", null),
+                Arguments.of("email", ""),
+                Arguments.of("email", "   "),
+                Arguments.of("email", "invalid-email"),
+
+                Arguments.of("password", null),
+                Arguments.of("password", ""),
+                Arguments.of("password", "   ")
+        );
     }
 }

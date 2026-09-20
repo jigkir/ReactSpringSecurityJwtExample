@@ -27,12 +27,6 @@ public class UserController {
 		return ResponseEntity.ok(userAppService.getUserByEmail(authentication.getName()));
 	}
 
-	@GetMapping("/manager/demo")
-	@PreAuthorize("hasAuthority('MANAGER')")
-	public ResponseEntity<String> managerDemoEndpoint() {
-		return ResponseEntity.ok("tout est beau");
-	}
-
 	@GetMapping("/disciplines")
 	public ResponseEntity<DisciplineDto> getAllDisciplines() {
 		return ResponseEntity.ok(userAppService.getAllDisciplines());

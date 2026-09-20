@@ -78,10 +78,15 @@ public class EmployerServiceTest {
         // Arrange
         when(userAppRepository.findByCredentialsEmail(employerSignUpDto.email())).thenReturn(Optional.of(new Employer()));
 
-        // Act + Assert
-        assertThrows(UserAlreadyExistsException.class, () ->
-                employerService.save(employerSignUpDto)
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> employerService.save(employerSignUpDto)
         );
+
+        // Assert
+        assert("email").equals(exception.getField());
+        assert("user already exists").equals(exception.getMessage());
 
         verify(employerRepository, never()).save(any(Employer.class));
     }

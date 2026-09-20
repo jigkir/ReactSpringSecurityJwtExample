@@ -68,10 +68,15 @@ public class ManagerServiceTest {
         // Arrange
         when(userAppRepository.findByCredentialsEmail("manager@example.com")).thenReturn(Optional.of(new Manager()));
 
-        // Act + Assert
-        assertThrows(UserAlreadyExistsException.class, () ->
-                managerService.save("First Name", "Last Name", "manager@example.com", "Test123@", "5141234567")
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> managerService.save("First Name", "Last Name", "manager@example.com", "Test123@", "5141234567")
         );
+
+        // Assert
+        assert("email").equals(exception.getField());
+        assert("user already exists").equals(exception.getMessage());
 
         verify(managerRepository, never()).save(any(Manager.class));
     }

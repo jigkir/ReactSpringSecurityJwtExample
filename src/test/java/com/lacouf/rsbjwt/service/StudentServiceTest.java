@@ -77,8 +77,15 @@ public class StudentServiceTest {
         // Arrange
         when(studentRepository.findByStudentId(studentSignUpDto.studentId())).thenReturn(Optional.of(new Student()));
 
-        // Act + Assert
-        assertThrows(UserAlreadyExistsException.class, () -> studentService.save(studentSignUpDto));
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> studentService.save(studentSignUpDto)
+        );
+
+        // Assert
+        assert("studentId").equals(exception.getField());
+        assert("user already exists").equals(exception.getMessage());
 
         verify(studentRepository, never()).save(any(Student.class));
     }
@@ -88,8 +95,15 @@ public class StudentServiceTest {
         // Arrange
         when(userAppRepository.findByCredentialsEmail(studentSignUpDto.email())).thenReturn(Optional.of(new Student()));
 
-        // Act + Assert
-        assertThrows(UserAlreadyExistsException.class, () -> studentService.save(studentSignUpDto));
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> studentService.save(studentSignUpDto)
+        );
+
+        // Assert
+        assert("email").equals(exception.getField());
+        assert("user already exists").equals(exception.getMessage());
 
         verify(studentRepository, never()).save(any(Student.class));
     }

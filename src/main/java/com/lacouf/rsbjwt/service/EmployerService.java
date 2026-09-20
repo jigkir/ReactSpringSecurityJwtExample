@@ -57,7 +57,7 @@ public class EmployerService {
         Optional<UserApp> employerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
 
         if (employerFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException("email");
         }
     }
 }
