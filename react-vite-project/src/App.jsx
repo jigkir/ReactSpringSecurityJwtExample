@@ -14,6 +14,7 @@ import PreposeHome from "./components/page/PreposeHome.jsx";
 import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
 import Home from "./components/page/Home.jsx";
 
+import PostInternship from "./components/page/PostInternship.jsx";
 function App() {
     const [user, setUser] = useState({});
     const [error, setError] = useState(null);
@@ -76,6 +77,7 @@ function App() {
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
                     <Route path="emprunteur" element={<EmprunteurHome/>}/>
                     <Route path="prepose" element={<PreposeHome/>}/>
+                    <Route path='post' element={<PostInternship/>}/>
                     <Route path="gestionnaire" element={<GestionnaireHome/>}/>
                     <Route path="error" element={<ErrorPage error={error}/>}/>
                 </Route>
