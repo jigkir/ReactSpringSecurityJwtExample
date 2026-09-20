@@ -10,36 +10,50 @@ import {
 const Login = ({user, setError}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
-    const [role, setRole] = useState('');
+    // const [role, setRole] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [serverError, setServerError] = useState('');
     const [warnings, setWarnings] = useState({
         email: '',
         password: ''
     });
 
-   // const classes = getAuthClasses(dark);
+    const classes = getAuthClasses(dark);
+    const {
+        fieldClass,
+        labelClass,
+        cardClass,
+        pageClass,
+        titleClass,
+        subtextClass,
+        errorClass,
+        eyeClass,
+        submitClass
+    } = classes;
 
     const validateEmail = () => {
         const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         return emailRegex.test(email);
     };
 
-    const validatePassword = () => true;
-
     const validateUser = () => {
         let isValid = true;
         const updatedWarnings = {...warnings};
 
-        if (!validateEmail()) {
-            updatedWarnings.email = 'courriel invalide';
+        if (!email) {
+            updatedWarnings.email = 'Le courriel est obligatoire.';
+            isValid = false;
+        } else if (!validateEmail()) {
+            updatedWarnings.email = 'Le courriel est invalide.';
             isValid = false;
         } else {
             updatedWarnings.email = '';
         }
 
-        if (!validatePassword()) {
-            updatedWarnings.password = 'mot de passe invalide';
+        if (!password) {
+            updatedWarnings.password = 'Le mot de passe est obligatoire.';
             isValid = false;
         } else {
             updatedWarnings.password = '';
@@ -65,7 +79,8 @@ const Login = ({user, setError}) => {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error('Not authorized');
+                        setServerError('Email or password not valid');
+                        return;
                     case 404:
                         throw new Error('No server available');
                     default:
@@ -75,18 +90,18 @@ const Login = ({user, setError}) => {
             const data = await response.json();
             localStorage.setItem('token', data.accessToken);
 
-            const userResponse = await fetcher('me', {});
+            const userResponse = await fetcher('users/current', {});
             if (!userResponse.ok) {
                 throw new Error('Failed to fetch user info');
             }
             const userData = await userResponse.json();
 
             const userRole = userData.role;
-            if (userRole === 'ROLE_EMPRUNTEUR') {
+            if (userRole === 'EMPRUNTEUR') {
                 navigate('/emprunteur');
-            } else if (userRole === 'ROLE_PREPOSE') {
+            } else if (userRole === 'PREPOSE') {
                 navigate('/prepose');
-            } else if (userRole === 'ROLE_GESTIONNAIRE') {
+            } else if (userRole === 'GESTIONNAIRE') {
                 navigate('/gestionnaire');
             } else {
                 navigate('/');
@@ -99,6 +114,8 @@ const Login = ({user, setError}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setServerError('');
+
         if (validateUser()) {
             fetchFunc();
         }
@@ -112,57 +129,61 @@ const Login = ({user, setError}) => {
     }
 
     return (
-        <div>
-            <div>
-                <h2>Sign In</h2>
-                <form onSubmit={handleSubmit}>
+        <div className={pageClass}>
+            <div className={cardClass}>
+                <h2 className={titleClass}>Sign In</h2>
+                <form onSubmit={handleSubmit} noValidate className="space-y-4">
                     <div>
-                        <label htmlFor="role">Role</label>
-                        <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="">-- Select a role --</option>
-                            <option value="student">Student</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="manager">Manager</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label htmlFor="email">Email</label>
-                        <input
-                            id="email"
-                            type="email"
+                        <EmailField
                             value={email}
                             onChange={(e) => {
                                 setWarnings({...warnings, email: ''});
                                 setEmail(e.target.value.trim());
                             }}
+                            labelClass={labelClass} fieldClass={fieldClass}
                             required
                         />
-                        {warnings.email && <div>{warnings.email}</div>}
+                        {warnings.email && (
+                            <p className={errorClass}>
+                                {warnings.email}
+                            </p>
+                        )}
                     </div>
 
                     <div>
-                        <label htmlFor="password">Password</label>
-                        <input
-                            id="password"
-                            type="password"
+                        <PasswordField
                             value={password}
                             onChange={(e) => {
                                 setWarnings({...warnings, password: ''});
-                                setPassword(e.target.value.trim());
+                                setPassword(e.target.value);
                             }}
+                            labelClass={labelClass}
+                            fieldClass={fieldClass}
+                            eyeClass={eyeClass}
+                            show={showPassword}
+                            onToggleShow={() => setShowPassword(!showPassword)}
                             required
                         />
-                        {warnings.password && <div>{warnings.password}</div>}
+                        {warnings.password && (
+                            <p className={errorClass}>
+                                {warnings.password}
+                            </p>
+                            )}
                     </div>
 
-                    <button type="submit" disabled={!email || !password}>
+                    {serverError && (
+                        <div className={errorClass}>
+                            {serverError}
+                        </div>
+                    )}
+
+                    <button type="submit" className={submitClass}>
                         Sign in
                     </button>
                 </form>
-                <p>
+                <p className={subtextClass}>
                     No account yet?{' '}
-                    <button onClick={() => navigate('/signup')}>
+                    <button onClick={() => navigate('/signup')} className="text-blue-500 hover:underline font-medium">
                         Sign up
                     </button>
                 </p>
