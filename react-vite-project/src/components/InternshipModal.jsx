@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function InternshipModal({ isOpen, onClose }) {
+export default function InternshipModal({ isOpen, onClose, onAddInternship }) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -65,14 +65,24 @@ export default function InternshipModal({ isOpen, onClose }) {
             return;
         }
 
+        const durationNumber = parseInt(formData.duration, 10);
+        if (isNaN(durationNumber) || durationNumber <= 0) {
+            setError("Duration must be a valid number of months.");
+            return;
+        }
+
         const newInternship = {
+            id: crypto.randomUUID(), //Temporary until backend is made
             ...formData,
-            status: "En attente de validation",
-            submittedAt: new Date().toISOString()
+            duration: `${durationNumber} mois`,
+            status: "Pending Validation",
+            submittedAt: new Date().toISOString(),
+            isDeleted: false
         };
         // Handle form submission logic here
         console.log("Form submitted:", newInternship);
         onClose(); // Close modal after submitting
+        onAddInternship(newInternship)
     };
 
     return (
@@ -140,13 +150,14 @@ export default function InternshipModal({ isOpen, onClose }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Duration :</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Duration (months) :</label>
                             <input
-                                type="text"
+                                type="number"
                                 name="duration"
+                                min="1"
                                 value={formData.duration}
                                 onChange={handleChange}
-                                placeholder="ex: 3 mois"
+                                placeholder="ex: 3"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 required
                             />
