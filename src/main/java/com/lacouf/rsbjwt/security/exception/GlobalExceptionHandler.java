@@ -32,16 +32,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(Map.of("message", exception.getMessage(), "field", exception.getField()), exception.getStatus());
+    }
+
+    @ExceptionHandler(APIException.class)
+    public ResponseEntity<Map<String, String>> handleApiException(APIException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), exception.getStatus());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleBadCredentials() {
         return new ResponseEntity<>(Map.of("message", "Incorrect email or password"), HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
     }
 }

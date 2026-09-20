@@ -85,7 +85,7 @@ public class EmployerControllerTest {
     void shouldReturnConflictWhenEmployerAlreadyExists() throws Exception {
         // Arrange
         when(employerService.save(any(EmployerSignUpDto.class)))
-                .thenThrow(new UserAlreadyExistsException());
+                .thenThrow(new UserAlreadyExistsException("email"));
 
         // Act + Assert
         mockMvc.perform(post("/api/employer/signup")
@@ -102,7 +102,8 @@ public class EmployerControllerTest {
                             }
                             """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("user already exists"));
+                .andExpect(jsonPath("$.message").value("user already exists"))
+                .andExpect(jsonPath("$.field").value("email"));
     }
 
     @ParameterizedTest

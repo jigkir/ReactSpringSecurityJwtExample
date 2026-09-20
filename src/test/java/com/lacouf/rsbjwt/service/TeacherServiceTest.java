@@ -43,7 +43,7 @@ public class TeacherServiceTest {
 
     @BeforeAll
     static void createTeacherSignUpDto() {
-        teacherSignUpDto = new TeacherSignUpDto("First Name", "Last Name", "1234567", "test@claurendeau.qc.ca", "Test123@", Discipline.COMPUTER_SCIENCE);
+        teacherSignUpDto = new TeacherSignUpDto("First Name", "Last Name", "12345", "test@claurendeau.qc.ca", "Test123@", Discipline.COMPUTER_SCIENCE);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class TeacherServiceTest {
 
         assert(teacher.getFirstName()).equals("First Name");
         assert(teacher.getLastName()).equals("Last Name");
-        assert(teacher.getTeacherId()).equals("1234567");
+        assert(teacher.getTeacherId()).equals("12345");
         assert(teacher.getEmail()).equals("test@claurendeau.qc.ca");
         assert(teacher.getPassword()).equals("Test123@-encoded");
         assert(teacher.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
@@ -78,8 +78,15 @@ public class TeacherServiceTest {
         // Arrange
         when(teacherRepository.findByTeacherId(teacherSignUpDto.teacherId())).thenReturn(Optional.of(new Teacher()));
 
-        // Act + Assert
-        assertThrows(UserAlreadyExistsException.class, () -> teacherService.save(teacherSignUpDto));
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> teacherService.save(teacherSignUpDto)
+        );
+
+        // Assert
+        assert("teacherId").equals(exception.getField());
+        assert("user already exists").equals(exception.getMessage());
 
         verify(teacherRepository, never()).save(any(Teacher.class));
     }
@@ -89,8 +96,15 @@ public class TeacherServiceTest {
         // Arrange
         when(userAppRepository.findByCredentialsEmail(teacherSignUpDto.email())).thenReturn(Optional.of(new Teacher()));
 
-        // Act + Assert
-        assertThrows(UserAlreadyExistsException.class, () -> teacherService.save(teacherSignUpDto));
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> teacherService.save(teacherSignUpDto)
+        );
+
+        // Assert
+        assert("email").equals(exception.getField());
+        assert("user already exists").equals(exception.getMessage());
 
         verify(teacherRepository, never()).save(any(Teacher.class));
     }

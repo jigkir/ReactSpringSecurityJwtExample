@@ -47,7 +47,7 @@ public class ManagerService {
         Optional<UserApp> managerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
 
         if (managerFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException("email");
         }
     }
 }
