@@ -1,6 +1,8 @@
 package com.lacouf.rsbjwt.security.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
@@ -43,5 +45,35 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleBadCredentials() {
         return new ResponseEntity<>(Map.of("message", "Incorrect email or password"), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidFileTypeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidFileTypeException(InvalidFileTypeException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CorruptedFileException.class)
+    public ResponseEntity<Map<String, String>> handleCorruptedFileException(CorruptedFileException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidFileSizeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidFileSizeException(InvalidFileSizeException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONTENT_TOO_LARGE);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
+        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Map<String, String>> handleMultipartException(MultipartException exception) {
+        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
     }
 }

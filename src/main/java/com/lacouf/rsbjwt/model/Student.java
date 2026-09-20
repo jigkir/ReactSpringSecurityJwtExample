@@ -1,10 +1,10 @@
 package com.lacouf.rsbjwt.model;
 
 import com.lacouf.rsbjwt.model.auth.Credentials;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Student extends UserApp {
@@ -14,6 +14,9 @@ public class Student extends UserApp {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Discipline discipline;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "student")
+    private Set<CV> cvs = new HashSet<>();
 
     public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline) {
         super(firstName, lastName, credentials);
@@ -30,5 +33,14 @@ public class Student extends UserApp {
 
     public Discipline getDiscipline() {
         return discipline;
+    }
+
+    public Set<CV> getCvs() {
+        return cvs;
+    }
+
+    public void addCv(CV cv) {
+        this.cvs.add(cv);
+        cv.setStudent(this);
     }
 }

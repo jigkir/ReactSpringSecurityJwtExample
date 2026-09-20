@@ -43,6 +43,10 @@ public class SecurityConfiguration {
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
     private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
     private static final String EMPLOYER_SIGNUP_PATH = "/api/employer/signup";
+    private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/upload-cv";
+    private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/download-cv/**";
+    private static final String STUDENT_CV_COUNT_PATH = "/api/student/cv-count/**";
+    private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
     private static final String MANAGER_PATH = "/api/manager/**";
     private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
     private static final String ROLES_LIST_PATH = "/api/roles";
@@ -63,6 +67,10 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
+                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).permitAll()
+                        .requestMatchers(POST, STUDENT_UPLOAD_CV_PATH).permitAll()
+                        .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).permitAll()
+                        .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
 
                         // Use Role enum names for authorities
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
