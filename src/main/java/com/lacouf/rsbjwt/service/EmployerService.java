@@ -53,7 +53,7 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
-    public void verifyIfEmployerExists(String email) throws UserAlreadyExistsException {
+    private void verifyIfEmployerExists(String email) throws UserAlreadyExistsException {
         Optional<UserApp> employerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
 
         if (employerFoundByEmail.isPresent()) {

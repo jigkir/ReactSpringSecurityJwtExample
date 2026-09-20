@@ -16,6 +16,7 @@ public record EmployerSignUpDto(
 
         @NotBlank
         @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "invalid email format")
+        @Size(max = 100)
         String email,
 
         @NotBlank
