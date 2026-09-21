@@ -26,6 +26,12 @@ public class CV {
     @Column
     private LocalDateTime uploadDate;
 
+    @Column
+    private CvVisibility visibility;
+
+    @Column
+    private CVSharingScope sharingScope;
+
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
@@ -33,7 +39,10 @@ public class CV {
     public CV() {
     }
 
-    public CV(byte[] content) {
+    public CV(byte[] content, CvVisibility visibility, CVSharingScope sharingScope) {
         this.content = content;
+        this.visibility = visibility;
+        this.sharingScope = sharingScope;
     }
+
 }

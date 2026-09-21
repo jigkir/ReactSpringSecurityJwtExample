@@ -1,7 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
-import com.lacouf.rsbjwt.service.CVService;
+import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.UserAppService;
 import com.lacouf.rsbjwt.service.dto.*;
 import jakarta.validation.Valid;
@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
 	private final UserAppService userAppService;
-	private final CVService cvService;
+	private final StudentService studentService;
+
 
 	@PostMapping("/login")
 	public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody UserLoginDTO userLoginDto) {
@@ -40,6 +41,6 @@ public class UserController {
 
 	@GetMapping("/max-cv-size")
 	public ResponseEntity<Integer> getMaxCVSize() {
-		return ResponseEntity.ok(cvService.getMaxCVSize());
+		return ResponseEntity.ok(studentService.getMaxCVSize());
 	}
 }

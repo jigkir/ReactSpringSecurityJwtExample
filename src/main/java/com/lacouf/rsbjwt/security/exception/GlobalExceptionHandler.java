@@ -76,4 +76,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleMultipartException(MultipartException exception) {
         return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
     }
+
+    @ExceptionHandler(CVAlreadyPublicException.class)
+    public ResponseEntity<Map<String, String>> handleCVAlreadyPublicException(CVAlreadyPublicException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CVAlredyPrivateException.class)
+    public ResponseEntity<Map<String, String>> handleCVAlredyPrivateException(CVAlredyPrivateException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }
