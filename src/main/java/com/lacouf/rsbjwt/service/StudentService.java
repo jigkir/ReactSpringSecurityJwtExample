@@ -104,6 +104,7 @@ public class StudentService {
         }
 
         CV cv = cvDto.toCV();
+        cv.setFileName(cvDto.fileName());
         cv.setStudent(student);
         cv.setUploadDate(LocalDateTime.now());
         student.addCv(cv);

@@ -28,7 +28,6 @@ public class StudentController {
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> save(@Valid @RequestBody StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
         UserResponseDto signedUpStudent = studentService.save(studentSignUpDto);
-
         return new ResponseEntity<>(signedUpStudent, HttpStatus.CREATED);
     }
 
@@ -48,7 +47,8 @@ public class StudentController {
             throw new InvalidFileTypeException("Uploaded file contains no data.");
         }
 
-        studentService.saveCV(new CVDto(bytes, null, CVSharingScope.PRIVATE), student); //null
+        String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
+        studentService.saveCV(new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, false), student);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 

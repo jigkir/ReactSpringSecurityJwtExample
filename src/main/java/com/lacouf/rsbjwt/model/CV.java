@@ -24,6 +24,9 @@ public class CV {
     private String fileHash;
 
     @Column
+    private String fileName;
+
+    @Column
     private LocalDateTime uploadDate;
 
     @Column
