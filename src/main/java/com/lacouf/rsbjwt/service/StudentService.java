@@ -10,6 +10,7 @@ import com.lacouf.rsbjwt.security.exception.*;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -78,8 +79,8 @@ public class StudentService {
         }
     }
 
-    public Student findByStudentId(String studentId) throws UserNotFoundException {
-        return studentRepository.findByStudentId(studentId)
+    public Student findById(Long id) throws UserNotFoundException {
+        return studentRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
     }
 
@@ -98,7 +99,7 @@ public class StudentService {
             throw new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.");
         }
 
-        try (PDDocument document = PDDocument.load(cvDto.content())) {
+        try (PDDocument document = Loader.loadPDF(cvDto.content())) {
         } catch (IOException e) {
             throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
         }
@@ -125,7 +126,7 @@ public class StudentService {
         if (!hash.equals(cv.getFileHash())) {
             return false;
         }
-        try (PDDocument document = PDDocument.load(cv.getContent())) {
+        try (PDDocument document = Loader.loadPDF(cv.getContent())) {
             return true;
         } catch (IOException e) {
             return false;

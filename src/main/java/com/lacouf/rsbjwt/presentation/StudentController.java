@@ -31,16 +31,16 @@ public class StudentController {
         return new ResponseEntity<>(signedUpStudent, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{studentId}/cvs")
+    @PostMapping("/{id}/cvs")
     public ResponseEntity<String> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @PathVariable String studentId) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
+            @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
 
         if (file == null || file.isEmpty()) {
             throw new InvalidFileTypeException("Uploaded file is empty or null.");
         }
 
-        Student student = studentService.findByStudentId(studentId);
+        Student student = studentService.findById(id);
 
         byte[] bytes = file.getBytes();
         if (bytes.length == 0) {
@@ -52,11 +52,11 @@ public class StudentController {
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
-    @GetMapping("/{studentId}/cvs")
-    public ResponseEntity<List<CVDto>> getStudentCVs(@PathVariable String studentId)
+    @GetMapping("/{id}/cvs")
+    public ResponseEntity<List<CVDto>> getStudentCVs(@PathVariable Long id)
             throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
 
-        Student student = studentService.findByStudentId(studentId);
+        Student student = studentService.findById(id);
         List<CVDto> cvDtos = studentService.getCVs(student);
 
         return ResponseEntity.ok()
@@ -64,30 +64,30 @@ public class StudentController {
                 .body(cvDtos);
     }
 
-    @GetMapping("/{studentId}/cvs/count")
-    public ResponseEntity<Long> getCVCount(@PathVariable String studentId) throws UserNotFoundException {
-        Student student = studentService.findByStudentId(studentId);
+    @GetMapping("/{id}/cvs/count")
+    public ResponseEntity<Long> getCVCount(@PathVariable Long id) throws UserNotFoundException {
+        Student student = studentService.findById(id);
         long cvCount = studentService.getCVCountByStudent(student);
         return new ResponseEntity<>(cvCount, HttpStatus.OK);
     }
 
-    @PutMapping("/{studentId}/cvs/{cvId}/hide")
-    public ResponseEntity<String> hideCV(@PathVariable String studentId, @PathVariable Long cvId) throws UserNotFoundException {
-        Student student = studentService.findByStudentId(studentId);
+    @PutMapping("/{id}/cvs/{cvId}/hide")
+    public ResponseEntity<String> hideCV(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException {
+        Student student = studentService.findById(id);
         studentService.setCvAsInvisible(student, cvId);
         return new ResponseEntity<>("CV hidden successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/{studentId}/cvs/{cvId}/public")
-    public ResponseEntity<String> makeCVPublic(@PathVariable String studentId, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException {
-        Student student = studentService.findByStudentId(studentId);
+    @PutMapping("/{id}/cvs/{cvId}/public")
+    public ResponseEntity<String> makeCVPublic(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException {
+        Student student = studentService.findById(id);
         studentService.setCvAsPublic(student, cvId);
         return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/{studentId}/cvs/{cvId}/private")
-    public ResponseEntity<String> makeCVPrivate(@PathVariable String studentId, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException {
-        Student student = studentService.findByStudentId(studentId);
+    @PutMapping("/{id}/cvs/{cvId}/private")
+    public ResponseEntity<String> makeCVPrivate(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException {
+        Student student = studentService.findById(id);
         studentService.setCvAsPrivate(student, cvId);
         return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
     }
