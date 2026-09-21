@@ -29,9 +29,11 @@ public class CV {
     @Column
     private LocalDateTime uploadDate;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private CvVisibility visibility;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private CVSharingScope sharingScope;
 
@@ -42,10 +44,12 @@ public class CV {
     public CV() {
     }
 
-    public CV(byte[] content, CvVisibility visibility, CVSharingScope sharingScope) {
+    public CV(byte[] content, CvVisibility visibility, CVSharingScope sharingScope, String fileName, LocalDateTime uploadDate) {
         this.content = content;
         this.visibility = visibility;
         this.sharingScope = sharingScope;
+        this.fileName = fileName;
+        this.uploadDate = uploadDate;
     }
 
 }

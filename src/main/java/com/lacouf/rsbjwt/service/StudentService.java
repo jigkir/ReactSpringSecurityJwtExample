@@ -105,9 +105,7 @@ public class StudentService {
         }
 
         CV cv = cvDto.toCV();
-        cv.setFileName(cvDto.fileName());
         cv.setStudent(student);
-        cv.setUploadDate(LocalDateTime.now());
         student.addCv(cv);
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -119,6 +117,12 @@ public class StudentService {
     }
 
     public boolean isCVReadable(CV cv) throws NoSuchAlgorithmException {
+        if (cv == null) {
+            return false;
+        }
+        if (cv.getContent() == null || cv.getContent().length == 0) {
+            return false;
+        }
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(cv.getContent());
         String hash = HexFormat.of().formatHex(hashBytes);

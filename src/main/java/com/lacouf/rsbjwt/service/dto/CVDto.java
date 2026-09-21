@@ -30,6 +30,6 @@ public record CVDto(
     public byte[] getContent() { return content; }
 
     public CV toCV() {
-        return new CV(content, CvVisibility.VISIBLE, CVSharingScope.PRIVATE);
+        return new CV(content, CvVisibility.VISIBLE, CVSharingScope.PRIVATE, fileName, LocalDateTime.now());
     }
 }
