@@ -1,13 +1,10 @@
 package com.lacouf.rsbjwt.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record InternshipDto(
-        Long id,
-
+public record InternshipRequestDto(
         @NotBlank
         @Size(min = 2, max = 50)
         @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "Title must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
@@ -43,7 +40,7 @@ public record InternshipDto(
 
         Long employerId
 ) {
-    public InternshipDto {
+    public InternshipRequestDto {
         if (title != null) {
             title = title.trim();
         }
