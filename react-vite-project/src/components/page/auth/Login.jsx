@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {useNavigate, useOutletContext} from "react-router-dom";
 import fetcher from "../../../utils/fetcher.js";
+import {useTranslation} from 'react-i18next';
 
 const Login = ({user, setError}) => {
     const navigate = useNavigate();
@@ -8,6 +9,7 @@ const Login = ({user, setError}) => {
     const [role, setRole] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const { t } = useTranslation();
     const [warnings, setWarnings] = useState({
         email: '',
         password: ''
@@ -58,11 +60,11 @@ const Login = ({user, setError}) => {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error('Not authorized');
+                        throw new Error(t("login.error401"));
                     case 404:
-                        throw new Error('No server available');
+                        throw new Error(t("login.error404"));
                     default:
-                        throw new Error('Not ok');
+                        throw new Error(t("login.errorGeneric"));
                 }
             }
             const data = await response.json();
@@ -70,7 +72,7 @@ const Login = ({user, setError}) => {
 
             const userResponse = await fetcher('me', {});
             if (!userResponse.ok) {
-                throw new Error('Failed to fetch user info');
+                throw new Error(t("login.errorUserFetchFail"));
             }
             const userData = await userResponse.json();
 
@@ -110,17 +112,17 @@ const Login = ({user, setError}) => {
                 <h2>Sign In</h2>
                 <form onSubmit={handleSubmit}>
                     <div>
-                        <label htmlFor="role">Role</label>
+                        <label htmlFor="role">{t("login.role")}</label>
                         <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
                             <option value="">-- Select a role --</option>
-                            <option value="student">Student</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="manager">Manager</option>
+                            <option value="student">{t("login.student")}</option>
+                            <option value="teacher">{t("login.teacher")}</option>
+                            <option value="manager">{t("login.manager")}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label htmlFor="email">Email</label>
+                        <label htmlFor="email">{t("login.email")}</label>
                         <input
                             id="email"
                             type="email"
@@ -135,7 +137,7 @@ const Login = ({user, setError}) => {
                     </div>
 
                     <div>
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="password">{t("login.password")}</label>
                         <input
                             id="password"
                             type="password"
@@ -150,13 +152,13 @@ const Login = ({user, setError}) => {
                     </div>
 
                     <button type="submit" disabled={!email || !password}>
-                        Sign in
+                        {t("login.submit")}
                     </button>
                 </form>
                 <p>
-                    No account yet?{' '}
+                    {t("login.noAccount")}{' '}
                     <button onClick={() => navigate('/signup')}>
-                        Sign up
+                        {t("signUpButton")}
                     </button>
                 </p>
             </div>

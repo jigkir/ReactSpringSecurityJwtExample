@@ -6,7 +6,7 @@ import {useTranslation} from 'react-i18next';
 const EmprunteurHome = () => {
   const [message, setMessage] = useState("");
   const {dark} = useOutletContext();
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const handleAccessGestionnaireEndpoint = () => {
     setMessage("");
@@ -16,7 +16,7 @@ const EmprunteurHome = () => {
           throw new Error(t("error.accessRefused"));
         }
         if (!response.ok) {
-          throw new Error(t("arror.apiError")` (${response.status})`);
+          throw new Error(t("error.apiError")` (${response.status})`);
         }
         const data = await response.text();
         setMessage(data);

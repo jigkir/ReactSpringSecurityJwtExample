@@ -65,7 +65,10 @@ i18n
                         signupFormConfirm:"Sign in",
                     },
                     login:{
-
+                        error401:'Not authorized',
+                        error404:'No server available',
+                        errorGeneric:'Not ok',
+                        errorUserFetchFail:'Failed to fetch user info',
                     },
                 }
             },
@@ -118,8 +121,31 @@ i18n
                         signupFormConfirm:"Se Connecter",
                     },
                     login:{
-
+                        error401:'Non autorisé',
+                        error404:'Aucun serveur disponible',
+                        errorGeneric:"Ce n'est pas bon",
+                        errorUserFetchFail:'Échec de la récupération des renseignements',
+                        role:"Role",
+                        student: "Student",
+                        teacher: "Teacher",
+                        manager: "Manager",
+                        email: "Email",
+                        password:"Password",
+                        submit:"Sign in",
+                        noAccount:"No account yet?",
+                        signUpButton:"Sign up",
                     },
+                    student:{
+                        existingId:"This student ID is already in use.",
+                        emailInUse: "This email address is already in use.",
+                        eitherEmailOrIdInUse:"An account with this student ID or email already exists.",
+                        invalidData:"The submitted data is invalid. Please review the fields.",
+                        genericServerErrorPt1:"Server error ",
+                        genericServerErrorPt2:". Please try again.",
+                        unableToReachServerError:"Unable to reach the server. Please try again.",
+                        accountCreationButton:"Create account",
+                        accountCreationButtonLoading:"Creating account…",
+                    }
                 }
             }
         }
