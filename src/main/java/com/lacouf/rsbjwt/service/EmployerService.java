@@ -96,11 +96,14 @@ public class EmployerService {
         return InternshipResponseDto.of(internship);
     }
 
-    public List<Internship> getInternshipsByEmployerName(Long employerId) {
-        return internshipRepository.findByPostedBy_IdAndIsDeletedIsFalse(employerId);
+    public List<InternshipResponseDto> getInternshipsByEmployerId(Long employerId) {
+         List<Internship> internships = internshipRepository.findByPostedBy_IdAndIsDeletedIsFalse(employerId);
+        return internships.stream()
+                .map(InternshipResponseDto::of)
+                .toList();
     }
 
-    public List<Internship> getAllActiveInternships() {
-        return internshipRepository.findByIsDeletedFalse();
+    public List<InternshipResponseDto> getAllActiveInternships() {
+        return internshipRepository.findByIsDeletedFalse().stream().map(InternshipResponseDto::of).toList();
     }
 }
