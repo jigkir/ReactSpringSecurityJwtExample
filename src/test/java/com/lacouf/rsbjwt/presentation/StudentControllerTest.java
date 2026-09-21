@@ -2,8 +2,13 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.Student;
+import com.lacouf.rsbjwt.model.auth.Credentials;
+import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.StudentService;
+import com.lacouf.rsbjwt.model.CVSharingScope;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.junit.jupiter.api.Test;
@@ -16,16 +21,24 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.test.web.servlet.MockMvc;
+import com.lacouf.rsbjwt.security.exception.*;
+import com.lacouf.rsbjwt.service.dto.CVDto;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.web.servlet.function.RequestPredicates.contentType;
 
 
 @WebMvcTest(StudentController.class)
@@ -35,10 +48,18 @@ public class StudentControllerTest {
     private MockMvc mockMvc;
 
     private ObjectMapper objectMapper;
+    private Student dummyStudent;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
+
+        dummyStudent = new Student(
+                "First Name", "Last Name", "1234567",
+                Credentials.builder().email("test@claurendeau.qc.ca").role(Role.STUDENT).build(),
+                Discipline.COMPUTER_SCIENCE
+        );
+        dummyStudent.setId(1L);
     }
 
     @MockitoBean
@@ -149,4 +170,112 @@ public class StudentControllerTest {
                 Arguments.of("discipline", null)
         );
     }
+
+    @Test
+    void shouldGetStudentCVsSuccessfully() throws Exception {
+        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), true);
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        when(studentService.getCVs(dummyStudent)).thenReturn(List.of(cvDto));
+
+        mockMvc.perform(get("/api/student/1/cvs"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(10))
+                .andExpect(jsonPath("$[0].fileName").value("my_cv.pdf"))
+                .andExpect(jsonPath("$[0].sharingScope").value("PRIVATE"))
+                .andExpect(jsonPath("$[0].visible").value(true));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingCVsForNonExistentStudent() throws Exception {
+        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(get("/api/student/99/cvs"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldGetCVCountSuccessfully() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        when(studentService.getCVCountByStudent(dummyStudent)).thenReturn(3L);
+
+        mockMvc.perform(get("/api/student/1/cvs/count"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("3"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingCVCountForNonExistentStudent() throws Exception {
+        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(get("/api/student/99/cvs/count"))
+                .andExpect(status().isNotFound());
+    }
+
+
+    // Hide, Make Public & Make Private CV Tests
+
+
+    @Test
+    void shouldHideCVSuccessfully() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doNothing().when(studentService).setCvAsInvisible(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/hide"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("CV hidden successfully"));
+
+        verify(studentService).setCvAsInvisible(dummyStudent, 10L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenHidingCVForNonExistentStudent() throws Exception {
+        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(put("/api/student/99/cvs/10/hide"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldMakeCVPublicSuccessfully() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doNothing().when(studentService).setCvAsPublic(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/public"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("CV made public successfully"));
+
+        verify(studentService).setCvAsPublic(dummyStudent, 10L);
+    }
+
+    @Test
+    void shouldReturnConflictWhenCVAlreadyPublic() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doThrow(new CVAlreadyPublicException("CV is already public")).when(studentService).setCvAsPublic(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/public"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldMakeCVPrivateSuccessfully() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doNothing().when(studentService).setCvAsPrivate(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/private"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("CV made private successfully"));
+
+        verify(studentService).setCvAsPrivate(dummyStudent, 10L);
+    }
+
+    @Test
+    void shouldReturnConflictWhenCVAlreadyPrivate() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doThrow(new CVAlredyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/private"))
+                .andExpect(status().isConflict());
+    }
 }
+

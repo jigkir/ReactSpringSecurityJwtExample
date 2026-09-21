@@ -79,11 +79,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CVAlreadyPublicException.class)
     public ResponseEntity<Map<String, String>> handleCVAlreadyPublicException(CVAlreadyPublicException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(CVAlredyPrivateException.class)
     public ResponseEntity<Map<String, String>> handleCVAlredyPrivateException(CVAlredyPrivateException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 }
