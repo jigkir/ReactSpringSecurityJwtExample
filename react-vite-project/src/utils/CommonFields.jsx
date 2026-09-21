@@ -1,8 +1,11 @@
 import {useTranslation} from 'react-i18next';
+
 export const RoleField = ({
     value, onChange, labelClass, errorClass, fieldClass,
     label = 'Role', options = [], loading = false, fetchError = '',
-}) => (
+}) => {
+    const { t } = useTranslation();
+    return(
     <Field id="role" label={label} warning={fetchError} labelClass={labelClass} errorClass={errorClass}>
         <select
             id="role" name="role"
@@ -11,7 +14,7 @@ export const RoleField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectRoleText", {selectType:label.toLowerCase()})}
+                {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectXText", {selectType:label.toLowerCase()})}
 
             </option>
             {options.map(({value: v, label: l}) => (
@@ -19,12 +22,12 @@ export const RoleField = ({
             ))}
         </select>
     </Field>
-);
+);}
 
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])\S+$/;
 export const NAME_REGEX = /^(?=.*\p{L})[\p{L}\p{M}'’\-. ]+$/u;
-const { t } = useTranslation();
+
 const NAME_DISALLOWED = /[^\p{L}\p{M}'’\-. ]/gu;
 const EMAIL_DISALLOWED = /[^A-Za-z0-9._%+\-@]/g;
 const PASSWORD_DISALLOWED = /\s/g;
@@ -60,6 +63,7 @@ export const validateId = (value, length = 7) => {
 };
 
 export function validateField(field, value, formValues = {}) {
+    const { t } = useTranslation();
     switch (field) {
         case 'firstName':
         case 'lastName': {
@@ -188,65 +192,74 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
 export const DisciplineField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass,
     label = 'Discipline', options = [], loading = false, fetchError = '', name = "discipline"
-}) => (
-    <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
-        <select
-            id="discipline" name={name}
-            value={value} onChange={onChange}
-            required className={fieldClass}
-            disabled={loading}
-        >
-            <option value="">
-                {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectRoleText", {selectType:label.toLowerCase()})}
-            </option>
-            {options.map(({value: v, label: l}) => (
-                <option key={v} value={v}>{l}</option>
-            ))}
-        </select>
-        {fetchError && <p className={errorClass}>{fetchError}</p>}
-    </Field>
-);
+}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
+            <select
+                id="discipline" name={name}
+                value={value} onChange={onChange}
+                required className={fieldClass}
+                disabled={loading}
+            >
+                <option value="">
+                    {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectRoleText")}
+                </option>
+                {options.map(({value: v, label: l}) => (
+                    <option key={v} value={v}>{l}</option>
+                ))}
+            </select>
+            {fetchError && <p className={errorClass}>{fetchError}</p>}
+        </Field>
+    );
+}
 
 export const PasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
     show, onToggleShow, hint, passwordHintClass, label = 'Password',
-}) => (
-    <Field id="password" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <div className="flex gap-2">
-            <input
-                id="password" name="password"
-                type={show ? t("commonFields.text") : t("commonFields.password")}
-                value={value} onChange={withSanitizer(sanitizePassword, onChange)}
-                maxLength={50} required className={fieldClass}
-            />
-            <button type="button" onClick={onToggleShow}
-                    aria-label={show ? t("commonFields.hidePassword") : t("commonFields.showPassword")} className={eyeClass}>
-                <EyeIcon open={show}/>
-            </button>
-        </div>
-        {hint && <p className={passwordHintClass}>{hint}</p>}
-    </Field>
-);
+}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="password" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <div className="flex gap-2">
+                <input
+                    id="password" name="password"
+                    type={show ? t("commonFields.text") : t("commonFields.password")}
+                    value={value} onChange={withSanitizer(sanitizePassword, onChange)}
+                    maxLength={50} required className={fieldClass}
+                />
+                <button type="button" onClick={onToggleShow}
+                        aria-label={show ? t("commonFields.hidePassword") : t("commonFields.showPassword")} className={eyeClass}>
+                    <EyeIcon open={show}/>
+                </button>
+            </div>
+            {hint && <p className={passwordHintClass}>{hint}</p>}
+        </Field>
+    );
+}
 
 export const ConfirmPasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
     show, onToggleShow, label = 'Confirm Password',
-}) => (
-    <Field id="confirmPassword" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <div className="flex gap-2">
-            <input
-                id="confirmPassword" name="confirmPassword"
-                type={show ? t("commonFields.text") : t("commonFields.password")}
-                value={value} onChange={withSanitizer(sanitizePassword, onChange)}
-                required className={fieldClass}
-            />
-            <button type="button" onClick={onToggleShow}
-                    aria-label={show ? t("commonFields.hideConfirmation") : t("commonFields.showConfirmation")} className={eyeClass}>
-                <EyeIcon open={show}/>
-            </button>
-        </div>
-    </Field>
-);
+}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="confirmPassword" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <div className="flex gap-2">
+                <input
+                    id="confirmPassword" name="confirmPassword"
+                    type={show ? t("commonFields.text") : t("commonFields.password")}
+                    value={value} onChange={withSanitizer(sanitizePassword, onChange)}
+                    required className={fieldClass}
+                />
+                <button type="button" onClick={onToggleShow}
+                        aria-label={show ? t("commonFields.hideConfirmation") : t("commonFields.showConfirmation")} className={eyeClass}>
+                    <EyeIcon open={show}/>
+                </button>
+            </div>
+        </Field>
+    );
+}
 
 export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClass}) => (
     <button

@@ -131,7 +131,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                     setServerError(t("student.invalidData"));
                     break;
                 default:
-                    setServerError(t("student.genericServerErrorPt1")+response.status+("student.genericServerErrorPt2"));
+                    setServerError(t("student.genericServerError", {errorCode:response.status}));
             }
         } catch {
             setServerError(t("student.unableToReachServerError"));
