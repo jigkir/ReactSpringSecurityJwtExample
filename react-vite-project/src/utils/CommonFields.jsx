@@ -1,3 +1,4 @@
+import {useTranslation} from 'react-i18next';
 export const RoleField = ({
     value, onChange, labelClass, errorClass, fieldClass,
     label = 'Role', options = [], loading = false, fetchError = '',
@@ -10,7 +11,8 @@ export const RoleField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a role --'}
+                {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectRoleText", {selectType:label.toLowerCase()})}
+
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
@@ -22,7 +24,7 @@ export const RoleField = ({
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])\S+$/;
 export const NAME_REGEX = /^(?=.*\p{L})[\p{L}\p{M}'’\-. ]+$/u;
-
+const { t } = useTranslation();
 const NAME_DISALLOWED = /[^\p{L}\p{M}'’\-. ]/gu;
 const EMAIL_DISALLOWED = /[^A-Za-z0-9._%+\-@]/g;
 const PASSWORD_DISALLOWED = /\s/g;
@@ -48,12 +50,12 @@ const withSanitizer = (sanitize, onChange) => (e) => {
     onChange({target: {name, value: sanitize(value)}});
 };
 
-export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
+export const validateDiscipline = (value) => value ? '' : t("commonFields.disciplineSelect");
 
 export const validateId = (value, length = 7) => {
     const t = value.trim();
-    if (!t) return 'ID is required.';
-    if (t.length !== length) return `ID must be exactly ${length} digits.`;
+    if (!t) return t("commonFields.requiredId");
+    if (t.length !== length) return t("commonFields.requiredIdLength",{length:length});
     return '';
 };
 
@@ -61,39 +63,39 @@ export function validateField(field, value, formValues = {}) {
     switch (field) {
         case 'firstName':
         case 'lastName': {
-            const t = value.trim();
-            if (!t) return 'This field is required.';
-            if (t.length < 2) return 'Must be at least 2 characters.';
-            if (t.length > 50) return 'Must be at most 50 characters.';
-            if (!NAME_REGEX.test(t))
-                return 'Must contain at least one letter. Only letters, spaces, hyphens, apostrophes and periods are allowed.';
+            const tr = value.trim();
+            if (!tr) return t("commonFields.requiredField");
+            if (tr.length < 2) return t("commonFields.atLeastXCharacters",{amount:2});
+            if (tr.length > 50) return t("commonFields.atMostXCharacters", {amount:50});
+            if (!NAME_REGEX.test(tr))
+                return t("commonFields.nameRequirements");
             return '';
         }
         case 'email': {
-            const t = value.trim();
-            if (!t) return 'Email address is required.';
-            if (t.length > 100) return 'Must be at most 100 characters.';
-            if (!EMAIL_REGEX.test(t)) return 'Invalid email format.';
+            const tr = value.trim();
+            if (!tr) return t("commonFields.requiredEmail");
+            if (tr.length > 100) return t("commonFields.atMostXCharacters", {amount:100});
+            if (!EMAIL_REGEX.test(tr)) return t("commonFields.invalidEmailFormat");
             return '';
         }
         case 'password': {
-            if (!value) return 'Password is required.';
-            if (value.length < 8) return 'Must be at least 8 characters.';
-            if (value.length > 50) return 'Must be at most 50 characters.';
-            if (/\s/.test(value)) return 'Must not contain spaces.';
+            if (!value) return t("commonFields.requiredPassword");
+            if (value.length < 8) return t("commonFields.atLeastXCharacters",{amount:8});
+            if (value.length > 50) return t("commonFields.atMostXCharacters", {amount:50});
+            if (/\s/.test(value)) return t("commonFields.mustNotContainSpaces");
             if (!PASSWORD_REGEX.test(value)) {
                 const missing = [];
-                if (!/[0-9]/.test(value)) missing.push('one digit');
-                if (!/[a-z]/.test(value)) missing.push('one lowercase letter');
-                if (!/[A-Z]/.test(value)) missing.push('one uppercase letter');
-                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push('one special character');
+                if (!/[0-9]/.test(value)) missing.push(t("commonFields.missingDigit"));
+                if (!/[a-z]/.test(value)) missing.push(t("commonFields.missingLowercaseLetter"));
+                if (!/[A-Z]/.test(value)) missing.push(t("commonFields.missingUppercaseLetter"));
+                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push(t("commonFields.missingSpecialCharacter"));
                 return `Missing: ${missing.join(', ')}.`;
             }
             return '';
         }
         case 'confirmPassword':
-            if (!value) return 'Please confirm your password.';
-            if (value !== formValues.password) return 'Passwords do not match.';
+            if (!value) return t("commonFields.missingConfirmPassword");
+            if (value !== formValues.password) return t("commonFields.noMatchingPasswords");
             return '';
         case 'discipline':
             return validateDiscipline(value);
@@ -195,7 +197,7 @@ export const DisciplineField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' + label.toLowerCase() + ' --'}
+                {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectRoleText", {selectType:label.toLowerCase()})}
             </option>
             {options.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
@@ -213,12 +215,12 @@ export const PasswordField = ({
         <div className="flex gap-2">
             <input
                 id="password" name="password"
-                type={show ? 'text' : 'password'}
+                type={show ? t("commonFields.text") : t("commonFields.password")}
                 value={value} onChange={withSanitizer(sanitizePassword, onChange)}
                 maxLength={50} required className={fieldClass}
             />
             <button type="button" onClick={onToggleShow}
-                    aria-label={show ? 'Hide password' : 'Show password'} className={eyeClass}>
+                    aria-label={show ? t("commonFields.hidePassword") : t("commonFields.showPassword")} className={eyeClass}>
                 <EyeIcon open={show}/>
             </button>
         </div>
@@ -234,12 +236,12 @@ export const ConfirmPasswordField = ({
         <div className="flex gap-2">
             <input
                 id="confirmPassword" name="confirmPassword"
-                type={show ? 'text' : 'password'}
+                type={show ? t("commonFields.text") : t("commonFields.password")}
                 value={value} onChange={withSanitizer(sanitizePassword, onChange)}
                 required className={fieldClass}
             />
             <button type="button" onClick={onToggleShow}
-                    aria-label={show ? 'Hide confirmation' : 'Show confirmation'} className={eyeClass}>
+                    aria-label={show ? t("commonFields.hideConfirmation") : t("commonFields.showConfirmation")} className={eyeClass}>
                 <EyeIcon open={show}/>
             </button>
         </div>
