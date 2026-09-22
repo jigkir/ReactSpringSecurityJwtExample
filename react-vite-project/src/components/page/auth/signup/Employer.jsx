@@ -32,30 +32,31 @@ const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 const validateCompanyName = (value) => {
     const t = value.trim();
     if (!t) return t("employer.requiredCompanyName");
-    if (t.length < 2) return t("employer.atLeastXCharacters");
-    if (t.length > 100) return t("employer.atMostXCharacters");
+    if (t.length < 2) return t("employer.atLeastXCharacters", {amount:2});
+    if (t.length > 100) return t("employer.atMoreXCharacters", {amount:100});
     return "";
 };
 
 const validatePhoneNumber = (value) => {
     if (!value) return t("employer.requiredPhoneNumber");
-    if (value.length !== 10) return t("employer.phoneNumberXDigits");
+    if (value.length !== 10) return t("employer.requiredPhoneNumber",{amount:10});
     return "";
 };
 
 const validateSectorActivity = (value) => value ? "" : "Please select a sector of activity.";
 
-const validateEmployerField = (field, value, formValues = {}, t) => {
+const validateEmployerField = (field, value, formValues = {}) => {
     switch (field) {
         case "companyName":    return validateCompanyName(value);
         case "phoneNumber":    return validatePhoneNumber(value);
         case "sectorActivity": return validateSectorActivity(value);
-        default:               return validateField(field, value, formValues, t);
+        default:               return validateField(field, value, formValues);
     }
 };
 
 const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
     const navigate = useNavigate();
+
     const { t } = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
@@ -79,7 +80,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                     label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setSectorsFetchError(t("employer.couldNotLoadActivity")))
+            .catch(() => setSectorsFetchError(t("employer.couldNotLoadActivity")))//TODO this doesn't change language dynamically
             .finally(() => setSectorsLoading(false));
     }, []);
 
