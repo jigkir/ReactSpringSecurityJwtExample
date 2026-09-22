@@ -97,7 +97,16 @@ const Login = ({user, setError}) => {
             const userData = await userResponse.json();
 
             if (userData.role === "STUDENT") {
-                navigate("/cv");
+                const studentId = userData.studentId || userData.matricule || userData.id;
+                let hasCv = false;
+                try {
+                    const countRes = await fetcher(`student/${studentId}/cvs/count`, {});
+                    if (countRes.ok) {
+                        const count = await countRes.json();
+                        hasCv = count > 0;
+                    }
+                } catch { /* fallback: send to /cv */ }
+                navigate(hasCv ? "/home" : "/cv");
             } else {
                 navigate("/home");
             }
