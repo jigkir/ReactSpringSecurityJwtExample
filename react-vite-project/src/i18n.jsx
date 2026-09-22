@@ -60,6 +60,9 @@ i18n
                         pageInfo: "Attendant home page",
                         buttonInfo: "Access the manager endpoint",
                     },
+                    teacher: {
+                        passwordRequirements: "8–50 characters · digit · lowercase · uppercase · special character",
+                    },
                     signup: {
                         signupInfo: "Create an account",
                         noSignup: "No signup form available for this role yet.",
@@ -123,6 +126,7 @@ i18n
                         unableToReachServerError: "Unable to reach the server. Please try again.",
                         accountCreationButton: "Create account",
                         accountCreationButtonLoading: "Creating account…",
+                        passwordRequirements: "8–50 characters · digit · lowercase · uppercase · special character",
                     },
                     commonFields: {
                         firstName: "First Name",
@@ -284,6 +288,9 @@ i18n
                         pageInfo: "Page accueil prepose",
                         buttonInfo: "Accéder à l'endpoint gestionnaire",
                     },
+                    teacher: {
+                        passwordRequirements: "8 à 50 caractères · chiffre · minuscule · majuscule · caractère spécial",
+                    },
                     signup: {
                         signupInfo: "Créer un compte",
                         noSignup: "Aucun formulaire d'inscription n'est disponible pour ce rôle.",
@@ -347,6 +354,7 @@ i18n
                         unableToReachServerError: "Impossible d'accéder au serveur. Veuillez réessayer.",
                         accountCreationButton: "Créer un compte",
                         accountCreationButtonLoading: "Création en cours…",
+                        passwordRequirements: "8 à 50 caractères · chiffre · minuscule · majuscule · caractère spécial",
                     },
                     commonFields: {
                         firstName: "Prénom",

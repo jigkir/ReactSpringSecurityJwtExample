@@ -146,7 +146,7 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
             <EmailField      {...sharedProps} value={form.email} warning={warnings.email}/>
             <PasswordField   {...sharedProps} value={form.password} warning={warnings.password}
                              eyeClass={eyeClass} show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
-                             hint="8–50 characters · digit · lowercase · uppercase · special character"
+                             hint={t("teacher.passwordRequirements")}
                              passwordHintClass={passwordHintClass}/>
             <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={warnings.confirmPassword}
                                   eyeClass={eyeClass} show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}/>
