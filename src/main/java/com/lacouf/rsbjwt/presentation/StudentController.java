@@ -1,8 +1,8 @@
 package com.lacouf.rsbjwt.presentation;
 
+import com.lacouf.rsbjwt.model.CVSharingScope;
 import com.lacouf.rsbjwt.model.Student;
 import com.lacouf.rsbjwt.security.exception.*;
-import com.lacouf.rsbjwt.service.CVService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
@@ -14,70 +14,84 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/student")
 public class StudentController {
     private final StudentService studentService;
-    private final CVService cvService;
 
-    public StudentController(StudentService studentService, CVService cvService) {
+    public StudentController(StudentService studentService) {
         this.studentService = studentService;
-        this.cvService = cvService;
     }
 
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> save(@Valid @RequestBody StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
         UserResponseDto signedUpStudent = studentService.save(studentSignUpDto);
-
         return new ResponseEntity<>(signedUpStudent, HttpStatus.CREATED);
     }
 
-    @PostMapping("/upload-cv")
+    @PostMapping("/{id}/cvs")
     public ResponseEntity<String> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("studentId") String studentId) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
+            @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
 
         if (file == null || file.isEmpty()) {
             throw new InvalidFileTypeException("Uploaded file is empty or null.");
         }
 
-        Student student = studentService.findByStudentId(studentId);
+        Student student = studentService.findById(id);
 
         byte[] bytes = file.getBytes();
         if (bytes.length == 0) {
             throw new InvalidFileTypeException("Uploaded file contains no data.");
         }
 
-        cvService.saveCV(new CVDto(bytes), student);
+        String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
+        studentService.saveCV(new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, false), student);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
-    @GetMapping("/download-cv/{studentId}")
-    public ResponseEntity<byte[]> downloadCV(@PathVariable String studentId) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
-        Student student = studentService.findByStudentId(studentId);
+    @GetMapping("/{id}/cvs")
+    public ResponseEntity<List<CVDto>> getStudentCVs(@PathVariable Long id)
+            throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
 
-        CVDto cvDto = cvService.getMostRecentCVByStudent(student);
-
-        ContentDisposition contentDisposition = ContentDisposition.builder("inline")
-                .filename("cv_" + studentId + ".pdf")
-                .build();
+        Student student = studentService.findById(id);
+        List<CVDto> cvDtos = studentService.getCVs(student);
 
         return ResponseEntity.ok()
-                .headers(headers -> {
-                    headers.setContentDisposition(contentDisposition);
-                    headers.add("X-Content-Type-Options", "nosniff");
-                    headers.setContentLength(cvDto.content().length);
-                })
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(cvDto.content());
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(cvDtos);
     }
 
-    @GetMapping("/cv-count/{studentId}")
-    public ResponseEntity<Long> getCVCount(@PathVariable String studentId) throws UserNotFoundException {
-        Student student = studentService.findByStudentId(studentId);
-        long cvCount = cvService.getCVCountByStudent(student);
+    @GetMapping("/{id}/cvs/count")
+    public ResponseEntity<Long> getCVCount(@PathVariable Long id) throws UserNotFoundException {
+        Student student = studentService.findById(id);
+        long cvCount = studentService.getCVCountByStudent(student);
         return new ResponseEntity<>(cvCount, HttpStatus.OK);
     }
+
+    @PutMapping("/{id}/cvs/{cvId}/hide")
+    public ResponseEntity<String> hideCV(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException {
+        Student student = studentService.findById(id);
+        studentService.setCvAsInvisible(student, cvId);
+        return new ResponseEntity<>("CV hidden successfully", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/cvs/{cvId}/public")
+    public ResponseEntity<String> makeCVPublic(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException {
+        Student student = studentService.findById(id);
+        studentService.setCvAsPublic(student, cvId);
+        return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/cvs/{cvId}/private")
+    public ResponseEntity<String> makeCVPrivate(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException {
+        Student student = studentService.findById(id);
+        studentService.setCvAsPrivate(student, cvId);
+        return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
+    }
+
+
 
 }

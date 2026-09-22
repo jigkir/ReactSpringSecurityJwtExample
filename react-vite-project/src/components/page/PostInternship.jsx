@@ -1,127 +1,77 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { useState } from "react";
 import InternshipModal from "../InternshipModal.jsx";
 import InternshipCard from "../InternshipCard.jsx";
+import fetcher from "../../utils/fetcher.js";
 
-const mockInternships = [
-    {
-        title: "Frontend Developer Intern",
-        description: "Help build and optimize our core student-facing React web applications.",
-        requiredSkills: "React, JavaScript, Tailwind CSS",
-        duration: "4 months",
-        location: "Montreal (Hybrid)",
-        startDate: "2027-05-01",
-        deadline: "2027-04-01",
-        compensation: "$22/hour",
-        status: "Pending Validation"
-    },
-    {
-        title: "Backend Java Intern",
-        description: "Develop REST APIs and secure endpoints using Spring Boot and Java.",
-        requiredSkills: "Java, Spring Boot, SQL",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-15",
-        compensation: "$25/hour",
-        status: "Approved"
-    },
-    {
-        title: "AI Chatbot Developer Intern",
-        description: "Build conversational agents using Python, LangChain, and local LLMs.",
-        requiredSkills: "Python, LangChain, Ollama",
-        duration: "2 months",
-        location: "Montreal (On-site)",
-        startDate: "2027-05-15",
-        deadline: "2027-04-30",
-        compensation: "$20/hour",
-        status: "Pending Validation"
-    },
-    {
-        title: "Full Stack Software Intern",
-        description: "Work across the entire stack building robust database solutions and user interfaces.",
-        requiredSkills: "Python, React, PostgreSQL",
-        duration: "4 months",
-        location: "Montreal (Hybrid)",
-        startDate: "2027-09-01",
-        deadline: "2027-07-30",
-        compensation: "$24/hour",
-        status: "Approved"
-    },
-    {
-        title: "Database Administration Intern",
-        description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
-        requiredSkills: "SQL, MariaDB, Oracle",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-01",
-        compensation: "$21/hour",
-        status: "Pending Validation"
-    },
-    {
-        title: "Database Administration Intern",
-        description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
-        requiredSkills: "SQL, MariaDB, Oracle",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-01",
-        compensation: "$21/hour",
-        status: "Approved"
-    },
-    {
-        title: "Database Administration Intern",
-        description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
-        requiredSkills: "SQL, MariaDB, Oracle",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-01",
-        compensation: "$21/hour",
-        status: "Pending Validation"
-    },
-    {
-        title: "Database Administration Intern",
-        description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
-        requiredSkills: "SQL, MariaDB, Oracle",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-01",
-        compensation: "$21/hour",
-        status: "Approved"
-    },
-    {
-        title: "Database Administration Intern",
-        description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
-        requiredSkills: "SQL, MariaDB, Oracle",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-01",
-        compensation: "$21/hour",
-        status: "Pending Validation"
-    },
-    {
-        title: "Database Administration Intern",
-        description: "Manage database schemas, query optimization, and data security in MariaDB and Oracle.",
-        requiredSkills: "SQL, MariaDB, Oracle",
-        duration: "3 months",
-        location: "Remote",
-        startDate: "2027-06-01",
-        deadline: "2027-05-01",
-        compensation: "$21/hour",
-        status: "Denied"
-    }
-];
-
-function PostInternship() {
+function PostInternship({user}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [internships, setInternships] = useState(mockInternships);
+    const [internships, setInternships] = useState([]);
+    const [error,setError] = useState("")
+    const [loading,setLoading] = useState(true)
 
-    const handleAddInternship = (newOffer) => {
-        setInternships((prev) => [newOffer, ...prev]);
+
+    useEffect(() => {
+        fetcher("internship/made", {})
+            .then(async (res) => {
+                if (!res.ok) throw new Error(`Error ${res.status}`);
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.internships ?? []);
+
+                setInternships(list);
+            })
+            .catch(() => setError('Could not load your internships.'))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleAddInternship = async (newOffer) => {
+        try {
+            const response = await fetcher("internship/make", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newOffer),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to create internship");
+            }
+
+            const savedInternship = await response.json();
+
+            // Prepend the newly created internship (InternshipResponseDto) to the list
+            setInternships((prev) => [savedInternship, ...prev]);
+            return { success: true };
+        } catch (err) {
+            console.error(err);
+            return { success: false, message: err.message || "Could not save internship offer." };
+        }
+    };
+
+    const handleDelete = async (id) =>{
+        try {
+            const response = await fetcher(`internship/delete?id=${id}`, {
+                method: "PUT",
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to delete internship");
+            }
+
+            const updatedInternship = await response.json();
+
+            setInternships(prevState =>
+                prevState.map(internship =>
+                    internship.id === id ? { ...updatedInternship, isDeleted: true } : internship
+                )
+            );
+        } catch (err) {
+            console.error(err);
+            alert(err.message || "Could not delete internship.");
+        }
     };
 
     return (
@@ -136,7 +86,7 @@ function PostInternship() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex-shrink-0"
+                    className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shrink-0"
                 >
                     Submit an internship offer
                 </button>
@@ -148,8 +98,21 @@ function PostInternship() {
 
                 {/* 2. Scrollable container for the cards */}
                 <div className="flex-1 overflow-y-auto pr-2 space-y-4 min-h-0">
-                    {mockInternships.map((internship) => (
-                        <InternshipCard key={internship.id} internship={internship}/>
+                    {loading && (
+                        <p className="text-gray-500 text-center py-8">Loading your internships...</p>
+                    )}
+
+                    {error && (
+                        <p className="text-red-500 bg-red-50 p-4 rounded-lg text-center">{error}</p>
+                    )}
+
+                    {!loading && !error && internships.filter(i => !i.isDeleted).length === 0 && (
+                        <p className="text-gray-500 text-center py-8">You haven't posted any internships yet.</p>
+                    )}
+
+                    {!loading && !error && internships.map((internship) => (
+                        !internship.isDeleted &&
+                        <InternshipCard key={internship.id} internship={internship} OnDelete={handleDelete}/>
                     ))}
                 </div>
             </div>
@@ -162,6 +125,7 @@ function PostInternship() {
                     console.log("hi");
                 }}
                 onAddInternship={handleAddInternship}
+                user={user}
             />
 
         </div>

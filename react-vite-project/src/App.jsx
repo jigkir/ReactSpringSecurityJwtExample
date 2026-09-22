@@ -11,6 +11,7 @@ import ErrorPage from "./components/ErrorPage.jsx";
 import Logout from "./components/page/auth/Logout.jsx";
 import PostInternship from "./components/page/PostInternship.jsx";
 import Home from "./components/page/Home.jsx";
+import Cv from "./components/page/student/Cv.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -73,6 +74,7 @@ function App() {
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
                     <Route path="home" element={<Home user={user}/>}/>
                     <Route path='post' element={<PostInternship/>}/>
+                    <Route path="cv" element={<Cv user={user}/>}/>
                     <Route path="error" element={<ErrorPage error={error}/>}/>
                 </Route>
             </Routes>

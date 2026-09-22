@@ -69,11 +69,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
-        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
+        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.CONTENT_TOO_LARGE);
     }
 
     @ExceptionHandler(MultipartException.class)
     public ResponseEntity<Map<String, String>> handleMultipartException(MultipartException exception) {
-        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.PAYLOAD_TOO_LARGE);
+        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.CONTENT_TOO_LARGE);
+    }
+
+    @ExceptionHandler(CVAlreadyPublicException.class)
+    public ResponseEntity<Map<String, String>> handleCVAlreadyPublicException(CVAlreadyPublicException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(CVAlredyPrivateException.class)
+    public ResponseEntity<Map<String, String>> handleCVAlredyPrivateException(CVAlredyPrivateException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 }

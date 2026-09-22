@@ -35,12 +35,11 @@ public class Student extends UserApp {
         return discipline;
     }
 
-    public Set<CV> getCvs() {
-        return cvs;
-    }
-
     public void addCv(CV cv) {
         this.cvs.add(cv);
         cv.setStudent(this);
+    }
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
     }
 }
