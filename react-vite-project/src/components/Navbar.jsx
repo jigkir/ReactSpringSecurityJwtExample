@@ -1,5 +1,6 @@
 import {Link, useLocation} from "react-router-dom";
 import {useTranslation} from 'react-i18next';
+import home from "./page/Home.jsx";
 
 function Navbar({user, dark, toggleDark}) {
     const { t, i18n} = useTranslation();
@@ -7,10 +8,6 @@ function Navbar({user, dark, toggleDark}) {
 
     const role = (user?.role?.toString() ?? '').replace('ROLE_', '');
     const toggleLang = () => {if (i18n.language === 'en') {i18n.changeLanguage('fr')}else {i18n.changeLanguage('en')}};
-    const isGestionnaire = () => role === 'GESTIONNAIRE';
-    const isPrepose = () => role === 'GESTIONNAIRE' || role === 'PREPOSE';
-    const isEmprunteur = () => role === 'GESTIONNAIRE' || role === 'EMPRUNTEUR';
-
     const formatRole = (roleString) => {
         if (!roleString) return '';
         const name = roleString.replace('ROLE_', '');
@@ -21,6 +18,8 @@ function Navbar({user, dark, toggleDark}) {
         path === '/'
             ? location.pathname === '/'
             : location.pathname.startsWith(path);
+
+    const homePath = user?.isLoggedIn ? '/home' : '/';
 
     const theme = {
         header: dark ? 'bg-slate-800/95 backdrop-blur border-b border-slate-700 shadow-md shadow-black/20'
@@ -40,11 +39,9 @@ function Navbar({user, dark, toggleDark}) {
         ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
 
     const navItems = [
-        {to: '/', label: t("navbar.acceuil"), show: true},
+        {to: homePath, label: t("navbar.acceuil"), show: true},
         {to: '/about', label: t("navbar.about"), show: true},
-        {to: '/emprunteur', label: t("navbar.emprunteur"), show: isEmprunteur()},
-        {to: '/prepose', label: t("navbar.prepose"), show: isPrepose()},
-        {to: '/gestionnaire', label: t("navbar.gestionnaire"), show: isGestionnaire()},
+        {to: '/cv', label: 'CV', show: role === 'STUDENT'},
     ].filter(item => item.show);
 
     const ToggleIcon = () => dark ? (

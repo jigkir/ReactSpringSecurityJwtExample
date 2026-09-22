@@ -9,8 +9,8 @@ import Signup from "./components/page/auth/Signup.jsx";
 import fetcher from "./utils/fetcher.js";
 import ErrorPage from "./components/ErrorPage.jsx";
 import Logout from "./components/page/auth/Logout.jsx";
-import PreposeHome from "./components/page/PreposeHome.jsx";
 import PostInternship from "./components/page/PostInternship.jsx";
+import Home from "./components/page/Home.jsx";
 import Cv from "./components/page/student/Cv.jsx";
 
 function App() {
@@ -72,8 +72,8 @@ function App() {
                     <Route path="login" element={<Login user={user} setError={setError}/>}/>
                     <Route path="signup" element={<Signup/>}/>
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
-                    <Route path="prepose" element={<PreposeHome/>}/>
-                    <Route path='post' element={<PostInternship user={user}/>}/>
+                    <Route path="home" element={<Home/>}/>
+                    <Route path='post' element={<PostInternship/>}/>
                     <Route path="cv" element={<Cv user={user}/>}/>
                     <Route path="error" element={<ErrorPage error={error}/>}/>
                 </Route>
