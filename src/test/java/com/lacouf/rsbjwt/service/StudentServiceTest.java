@@ -10,13 +10,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.CVAlredyPrivateException;
-import com.lacouf.rsbjwt.security.exception.CVAlreadyPublicException;
-import com.lacouf.rsbjwt.security.exception.CorruptedFileException;
-import com.lacouf.rsbjwt.security.exception.InvalidFileSizeException;
-import com.lacouf.rsbjwt.security.exception.InvalidFileTypeException;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
+import com.lacouf.rsbjwt.security.exception.*;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -171,7 +165,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldSaveCVSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto(validPdfBytes, null, CVSharingScope.PRIVATE, "cv.pdf", validPdfBytes.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(validPdfBytes, null, CVSharingScope.PRIVATE, "cv.pdf", validPdfBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         studentService.saveCV(cvDto, dummyStudent);
 
@@ -186,7 +180,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsNull() {
-        CVDto cvDto = new CVDto(null, null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(null, null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
@@ -198,7 +192,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsEmpty() {
-        CVDto cvDto = new CVDto(new byte[0], null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(new byte[0], null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
@@ -211,7 +205,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileSizeExceptionWhenFileExceedsMaxSize() {
         byte[] oversizedContent = new byte[2 * 1024 * 1024 + 1];
-        CVDto cvDto = new CVDto(oversizedContent, null, CVSharingScope.PRIVATE, "large.pdf", oversizedContent.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(oversizedContent, null, CVSharingScope.PRIVATE, "large.pdf", oversizedContent.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         assertThrows(
                 InvalidFileSizeException.class,
@@ -222,7 +216,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenMimeTypeIsNotPdf() {
         byte[] textFileBytes = "Hello World".getBytes();
-        CVDto cvDto = new CVDto(textFileBytes, null, CVSharingScope.PRIVATE, "file.txt", textFileBytes.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(textFileBytes, null, CVSharingScope.PRIVATE, "file.txt", textFileBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
@@ -235,7 +229,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowCorruptedFileExceptionWhenPdfIsCorrupted() {
         byte[] corruptedPdfBytes = "%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes();
-        CVDto cvDto = new CVDto(corruptedPdfBytes, null, CVSharingScope.PRIVATE, "corrupted.pdf", corruptedPdfBytes.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(corruptedPdfBytes, null, CVSharingScope.PRIVATE, "corrupted.pdf", corruptedPdfBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         assertThrows(
                 CorruptedFileException.class,
@@ -283,7 +277,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldGetCVCountByStudent() {
-        when(cvRepository.countByStudent_StudentId("1234567")).thenReturn(3L);
+        when(cvRepository.countByStudent(dummyStudent)).thenReturn(3L);
 
         long count = studentService.getCVCountByStudent(dummyStudent);
 
@@ -305,7 +299,7 @@ public class StudentServiceTest {
         visibleCv.setFileHash(calculateHash(validPdfBytes));
         visibleCv.setVisibility(CvVisibility.VISIBLE);
 
-        when(cvRepository.findByStudent_StudentId("1234567")).thenReturn(List.of(visibleCv));
+        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(visibleCv));
 
         List<CVDto> cvs = studentService.getCVs(dummyStudent);
 
@@ -321,7 +315,7 @@ public class StudentServiceTest {
         hiddenCv.setFileHash(calculateHash(validPdfBytes));
         hiddenCv.setVisibility(CvVisibility.HIDDEN);
 
-        when(cvRepository.findByStudent_StudentId("1234567")).thenReturn(List.of(hiddenCv));
+        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(hiddenCv));
 
         List<CVDto> cvs = studentService.getCVs(dummyStudent);
 
@@ -340,7 +334,7 @@ public class StudentServiceTest {
         corruptedCv.setContent("Corrupted".getBytes());
         corruptedCv.setFileHash("badhash");
 
-        when(cvRepository.findByStudent_StudentId("1234567")).thenReturn(List.of(corruptedCv));
+        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(corruptedCv));
 
         assertThrows(CorruptedFileException.class, () -> studentService.getCVs(dummyStudent));
     }
@@ -355,7 +349,7 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldSetCvAsInvisible() throws UserNotFoundException {
+    void shouldSetCvAsInvisible() throws UserNotFoundException, CvNotFoundException {
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -389,7 +383,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldSetCvAsPublic() throws UserNotFoundException, CVAlreadyPublicException {
+    void shouldSetCvAsPublic() throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -421,7 +415,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlredyPrivateException {
+    void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);

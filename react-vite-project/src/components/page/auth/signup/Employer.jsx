@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
+import {useTranslation} from 'react-i18next';
 import {
     FirstNameField,
     LastNameField,
@@ -28,34 +29,35 @@ const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [
 
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-const validateCompanyName = (value) => {
-    const t = value.trim();
-    if (!t) return "Company name is required.";
-    if (t.length < 2) return "Must be at least 2 characters.";
-    if (t.length > 100) return "Must be at most 100 characters.";
+const validateCompanyName = (value, t) => {
+    const tr = value.trim();
+    if (!tr) return t("employer.requiredCompanyName");
+    if (tr.length < 2) return t("employer.atLeastXCharacters", {amount:2});
+    if (tr.length > 100) return t("employer.atMoreXCharacters", {amount:100});
     return "";
 };
 
-const validatePhoneNumber = (value) => {
-    if (!value) return "Phone number is required.";
-    if (value.length !== 10) return "Phone number must be exactly 10 digits.";
+const validatePhoneNumber = (value, t) => {
+    if (!value) return t("employer.requiredPhoneNumber");
+    if (value.length !== 10) return t("employer.phoneNumberXDigits",{amount:10});
     return "";
 };
 
-const validateSectorActivity = (value) => value ? "" : "Please select a sector of activity.";
+const validateSectorActivity = (value, t) => value ? "" : t("employer.selectSectorOfActivity");
 
-const validateEmployerField = (field, value, formValues = {}) => {
+const validateEmployerField = (field, value, formValues = {}, t) => {
     switch (field) {
-        case "companyName":    return validateCompanyName(value);
-        case "phoneNumber":    return validatePhoneNumber(value);
-        case "sectorActivity": return validateSectorActivity(value);
-        default:               return validateField(field, value, formValues);
+        case "companyName":    return validateCompanyName(value, t);
+        case "phoneNumber":    return validatePhoneNumber(value, t);
+        case "sectorActivity": return validateSectorActivity(value, t);
+        default:               return validateField(field, value, formValues, t);
     }
 };
 
 const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
     const navigate = useNavigate();
 
+    const { t } = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +80,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                     label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setSectorsFetchError("Could not load sectors of activity."))
+            .catch(() => setSectorsFetchError(t("employer.couldNotLoadActivity")))//TODO this doesn't change language dynamically
             .finally(() => setSectorsLoading(false));
     }, []);
 
@@ -95,7 +97,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateEmployerField(key, form[key], form);
+            const msg = validateEmployerField(key, form[key], form, t);
             newWarnings[key] = msg;
             if (msg) valid = false;
         }
@@ -139,20 +141,20 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                     try { body = await response.json(); } catch {}
                     const { field: conflictField = "" } = body ?? {};
                     if (conflictField === "email") {
-                        setWarnings(w => ({ ...w, email: "This email address is already in use." }));
+                        setWarnings(w => ({ ...w, email: t("employer.emailInUse") }));
                     } else {
-                        setServerError("An account with this email already exists.");
+                        setServerError(t("employer.emailAlreadyExists"));
                     }
                     break;
                 }
                 case 400:
-                    setServerError("The submitted data is invalid. Please review the fields.");
+                    setServerError(t("employer.invalidData"));
                     break;
                 default:
-                    setServerError(`Server error (${response.status}). Please try again.`);
+                    setServerError(t("employer.genericServerError",{errorCode:response.status}));
             }
         } catch {
-            setServerError("Unable to reach the server. Please try again.");
+            setServerError(t("employer.unableToReachServerError"));
         } finally {
             setSubmitting(false);
         }
@@ -165,7 +167,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
             )}
 
             <Field
-                id="companyName" label="Company Name" warning={warnings.companyName}
+                id="companyName" label={t("employer.companyName")} warning={warnings.companyName}
                 labelClass={labelClass} errorClass={errorClass}
             >
                 <input
@@ -198,7 +200,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
             />
 
             <Field
-                id="phoneNumber" label="Phone Number" warning={warnings.phoneNumber}
+                id="phoneNumber" label={t("employer.phoneNumber")} warning={warnings.phoneNumber}
                 labelClass={labelClass} errorClass={errorClass}
             >
                 <input
@@ -214,7 +216,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                 value={form.password} onChange={handleChange} warning={warnings.password}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass} eyeClass={eyeClass}
                 show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
-                hint="8–50 characters · digit · lowercase · uppercase · special character"
+                hint={t("employer.passwordRequirements")}
                 passwordHintClass={passwordHintClass}
             />
 
@@ -227,8 +229,8 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
             <SubmitButton
                 disabled={!isAllFilled(form) || submitting}
                 loading={submitting}
-                loadingLabel="Creating account…"
-                label="Create account"
+                loadingLabel={t("employer.accountCreationButtonLoading")}
+                label={t("employer.accountCreationButton")}
                 submitClass={submitClass}
             />
         </form>

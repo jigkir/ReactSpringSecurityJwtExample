@@ -2,7 +2,7 @@
  * CvDocuments.jsx — "Documents déposés" list.
  *
  * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE),
- *               fileName, sizeBytes, uploadedAt, visible
+ *               fileName, sizeBytes, uploadedAt, visibility (CvVisibility enum: VISIBLE|HIDDEN)
  *
  * Endpoints (StudentController):
  *   GET /api/student/{studentId}/cvs                    → List<CVDto> (VISIBLE only)
@@ -18,34 +18,12 @@
  */
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import CvButton, {useButtonClasses} from './CvButton.jsx';
 import CvPreview from './CvPreview.jsx';
 import fetcher from '../../../../utils/fetcher.js';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
-
-// ─── Texts ───────────────────────────────────────────────────────────────────
-
-const T = {
-    title: "Uploaded Documents",
-    addBtn: "Add a CV",
-    docType: "Curriculum vitae",
-    uploadedOn: "uploaded on",
-    scopePublic: "Shared with supervisors",
-    scopePrivate: "Visible to you only",
-    makePublic: "Share",
-    makePrivate: "Make private",
-    viewBtn: "Preview",
-    hideBtn: "Hide",
-    hideAsk: "Hide this CV? It will no longer appear in this list.",
-    confirmBtn: "Confirm",
-    cancelBtn: "Cancel",
-    empty: "No documents uploaded yet.",
-    loadError: "Unable to load your documents.",
-    retryBtn: "Retry",
-    errorAction: "The action failed. Please try again.",
-    previewError: "Preview unavailable (content missing).",
-};
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
@@ -70,6 +48,8 @@ function buildApi(studentId) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
+    const {t} = useTranslation();
+
     // Stable api reference — prevents the `load` callback from re-creating
     // on every render and triggering an infinite GET /cvs loop.
     const api = apiProp ?? useMemo(() => buildApi(studentId), [studentId]); // eslint-disable-line react-hooks/rules-of-hooks
@@ -88,7 +68,9 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
     const load = useCallback(async () => {
         setLoadFailed(false);
         try {
-            setDocs(sortDocs(await api.list()));
+            const all = await api.list();
+            // Keep only VISIBLE CVs on the client side to match the new enum shape
+            setDocs(sortDocs(all.filter(d => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
@@ -108,7 +90,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
             await fn();
             await load();
         } catch {
-            setActionError(T.errorAction);
+            setActionError(t("cvDocuments.errorAction"));
         } finally {
             setBusyId(null);
             setConfirmHideId(null);
@@ -130,7 +112,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
      */
     const getUrl = useCallback(async (cvId) => {
         const doc = docs?.find((d) => d.id === cvId);
-        if (!doc?.content) throw new Error(T.previewError);
+        if (!doc?.content) throw new Error(t("cvDocuments.previewError"));
         return base64ToBlobUrl(doc.content);
     }, [docs]);
 
@@ -139,8 +121,8 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
     if (loadFailed) {
         body = (
             <div className={th.muted} role="alert">
-                <p>{T.loadError}</p>
-                <button onClick={load} className={`${btn} ${btnTone.neutral} mt-3`}>{T.retryBtn}</button>
+                <p>{t("cvDocuments.loadError")}</p>
+                <button onClick={load} className={`${btn} ${btnTone.neutral} mt-3`}>{t("cvDocuments.retryBtn")}</button>
             </div>
         );
     } else if (docs === null) {
@@ -155,7 +137,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
             </div>
         );
     } else if (docs.length === 0) {
-        body = <p className={th.muted}>{T.empty}</p>;
+        body = <p className={th.muted}>{t("cvDocuments.empty")}</p>;
     } else {
         body = (
             <ul className={th.list}>
@@ -171,14 +153,14 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                             <div className="min-w-0 md:flex-1">
                                 <p className={th.name}>{doc.fileName}</p>
                                 <p className={th.meta}>
-                                    {T.docType} · {formatBytes(doc.sizeBytes)} · {T.uploadedOn} {formatDate(doc.uploadedAt)}
+                                    {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
                                 </p>
                             </div>
 
                             {/* Sharing-scope pill */}
                             <div className="flex items-center md:w-56 md:shrink-0">
                                 <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
-                                    {isPublic ? T.scopePublic : T.scopePrivate}
+                                    {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
                                 </span>
                             </div>
 
@@ -186,23 +168,23 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                             <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
                                 {confirming ? (
                                     <>
-                                        <span className={th.confirmText}>{T.hideAsk}</span>
+                                        <span className={th.confirmText}>{t("cvDocuments.hideAsk")}</span>
                                         <CvButton tone="danger" dark={dark} onClick={() => hideDoc(doc)} disabled={busy}
-                                                  autoFocus>{T.confirmBtn}</CvButton>
+                                                  autoFocus>{t("cvDocuments.confirmBtn")}</CvButton>
                                         <CvButton tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
-                                                  disabled={busy}>{T.cancelBtn}</CvButton>
+                                                  disabled={busy}>{t("cvDocuments.cancelBtn")}</CvButton>
                                     </>
                                 ) : (
                                     <>
                                         <CvButton tone="accent" dark={dark} onClick={() => setPreviewDoc(doc)}
                                                   disabled={busy || !doc.content}
-                                                  aria-label={`${T.viewBtn} : ${doc.fileName}`}>{T.viewBtn}</CvButton>
+                                                  aria-label={`${t("cvDocuments.viewBtn")} : ${doc.fileName}`}>{t("cvDocuments.viewBtn")}</CvButton>
                                         <CvButton tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
                                                   disabled={busy}
-                                                  aria-label={`${isPublic ? T.makePrivate : T.makePublic} : ${doc.fileName}`}>{isPublic ? T.makePrivate : T.makePublic}</CvButton>
+                                                  aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</CvButton>
                                         <CvButton tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
                                                   disabled={busy}
-                                                  aria-label={`${T.hideBtn} : ${doc.fileName}`}>{T.hideBtn}</CvButton>
+                                                  aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</CvButton>
                                     </>
                                 )}
                             </div>
@@ -217,11 +199,11 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
 
     return (
         <>
-            <section className={th.card} aria-label={T.title}>
+            <section className={th.card} aria-label={t("cvDocuments.title")}>
                 <div className={th.header}>
-                    <h2 className={th.title}>{T.title}</h2>
+                    <h2 className={th.title}>{t("cvDocuments.title")}</h2>
                     {onAddClick && (
-                        <button onClick={onAddClick} className={th.addBtn}>{T.addBtn}</button>
+                        <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
                     )}
                 </div>
 

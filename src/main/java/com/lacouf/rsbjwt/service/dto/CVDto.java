@@ -13,7 +13,7 @@ public record CVDto(
         String fileName,
         long sizeBytes,
         LocalDateTime uploadedAt,
-        boolean visible
+        CvVisibility visibility
 ) {
     public static CVDto fromCV(CV cv) {
         return new CVDto(
@@ -23,7 +23,7 @@ public record CVDto(
                 cv.getFileName(),
                 cv.getContent() != null ? cv.getContent().length : 0,
                 cv.getUploadDate(),
-                cv.getVisibility() == CvVisibility.VISIBLE
+                cv.getVisibility()
         );
     }
 

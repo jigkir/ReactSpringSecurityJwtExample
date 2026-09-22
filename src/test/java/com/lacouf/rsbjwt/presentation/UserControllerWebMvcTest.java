@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.UserAppService;
@@ -60,6 +61,9 @@ class UserControllerWebMvcTest {
 
     @MockitoBean
     private PasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    private ReactSpringSecurityJwtApplication application;
 
     private MockMvc mockMvc;
 

@@ -16,6 +16,7 @@
 
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import CvUpload from './cv/CvUpload.jsx';
 import CvDocuments from './cv/CvDocuments.jsx';
@@ -57,6 +58,7 @@ async function uploadResume(file, studentId) {
 const Cv = ({user}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
+    const {t} = useTranslation();
     const {pageClass} = getAuthClasses(dark);
 
     const studentId = resolveStudentId(user);
@@ -113,7 +115,7 @@ const Cv = ({user}) => {
         setServerError("");
         const error = validateFile(file, maxBytes);
         if (error) {
-            setFileError(error);
+            setFileError(t(error.key, error.options));
             setSelectedFile(null);
             return;
         }
@@ -168,7 +170,7 @@ const Cv = ({user}) => {
         if (!selectedFile || uploadState === STATE.UPLOADING) return;
 
         if (!studentId) {
-            setServerError("Student ID not found. Please log out and log back in.");
+            setServerError(t("cv.studentIdMissing"));
             setUploadState(STATE.ERROR);
             return;
         }
@@ -191,15 +193,15 @@ const Cv = ({user}) => {
             const code = body?.code ?? body?.error ?? "";
 
             if (code === "INVALID_FILE" || code === "CORRUPTED_FILE" || response.status === 415) {
-                setServerError("The file appears to be corrupted or invalid. Please select another one.");
+                setServerError(t("cv.fileInvalid"));
             } else if (response.status === 413) {
-                setServerError(`Your file is too large. The maximum allowed size is ${(maxBytes / (1024 * 1024)).toFixed(0)} MB.`);
+                setServerError(t("cv.fileTooLarge", {mb: (maxBytes / (1024 * 1024)).toFixed(0)}));
             } else {
-                setServerError("Upload failed. Please try again.");
+                setServerError(t("cv.uploadFailed"));
             }
             setUploadState(STATE.ERROR);
         } catch {
-            setServerError("Upload failed. Please try again.");
+            setServerError(t("cv.uploadFailed"));
             setUploadState(STATE.ERROR);
         }
     };
@@ -260,7 +262,7 @@ const Cv = ({user}) => {
                             ? "text-slate-300 hover:text-white hover:bg-slate-700"
                             : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
                     >
-                        Go to my dashboard
+                        {t("cv.goToDashboard")}
                     </button>
                 </div>
             </div>

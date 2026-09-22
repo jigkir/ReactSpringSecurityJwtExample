@@ -1,23 +1,27 @@
 import { useState } from "react";
+import { getInternshipModalClasses } from "../styles/appStyles.jsx";
 
-export default function InternshipModal({ isOpen, onClose, onAddInternship,user }) {
+export default function InternshipModal({ isOpen, onClose, onAddInternship, user, dark }) {
+    const s = getInternshipModalClasses(dark);
+
     const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        requiredSkills: '',
-        duration: '',
-        location: '',
-        startDate: '',
-        deadline: '',
-        compensation: ''
+        title: "",
+        description: "",
+        requiredSkills: "",
+        duration: "",
+        location: "",
+        startDate: "",
+        deadline: "",
+        compensation: "",
     });
 
-    const [error, setError] = useState("")
+    const [error, setError] = useState("");
 
     const today = new Date().toISOString().split("T")[0];
+
     const maxDeadline = formData.startDate
         ? (() => {
-            const d = new Date(formData.startDate + 'T00:00:00');
+            const d = new Date(formData.startDate + "T00:00:00");
             // Check if the date is valid before doing math
             if (isNaN(d.getTime())) return "";
             d.setDate(d.getDate() - 14);
@@ -37,21 +41,17 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship,user 
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         setError("");
 
         const skillsArray = formData.requiredSkills
             .split(",")
-            .map(skill => skill.trim())
-            .filter(skill => skill.length > 0);
+            .map((skill) => skill.trim())
+            .filter((skill) => skill.length > 0);
 
         if (skillsArray.length === 0) {
             setError("Please enter at least one valid skill.");
@@ -59,7 +59,6 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship,user 
         }
 
         const compensationRegex = /^\$\d+(\.\d+)?\/h$|^unpaid$|^non\s*rémunéré$/i;
-
         if (!compensationRegex.test(formData.compensation.trim())) {
             setError("Compensation must be in format like '$20/h' or 'unpaid'.");
             return;
@@ -77,164 +76,119 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship,user 
             status: "Pending Validation",
             submittedAt: new Date().toISOString(),
             isDeleted: false,
-            employerId: user.id
+            employerId: user.id,
         };
-        // Handle form submission logic here
-        console.log("Form submitted:", newInternship);
-        onClose(); // Close modal after submitting
-        onAddInternship(newInternship)
+
+        onClose();
+        onAddInternship(newInternship);
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 md:p-8 my-8 max-h-[90vh] overflow-y-auto">
-
-                <div className="flex justify-between items-center border-b pb-4 mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Post a New Internship</h2>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 font-bold text-2xl transition-colors"
-                    >
+        <div className={s.overlay}>
+            <div className={s.panel}>
+                {/* Header */}
+                <div className={s.header}>
+                    <h2 className={s.title}>Post a New Internship</h2>
+                    <button type="button" onClick={onClose} className={s.closeBtn}>
                         &times;
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-
                     {error && (
-                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-red-600 text-sm font-medium animate-fadeIn">
+                        <div className={s.errorBanner}>
                             <span>{error}</span>
                         </div>
-                )}
+                    )}
 
+                    {/* Title */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Title :</label>
+                        <label className={s.label}>Title :</label>
                         <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            required
+                            type="text" name="title" value={formData.title}
+                            onChange={handleChange} className={s.input} required
                         />
                     </div>
 
+                    {/* Description */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Description :</label>
+                        <label className={s.label}>Description :</label>
                         <textarea
-                            name="description"
-                            rows="3"
-                            value={formData.description}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            required
+                            name="description" rows="3" value={formData.description}
+                            onChange={handleChange} className={s.textarea} required
                         />
                     </div>
 
+                    {/* Required skills */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Required skills :</label>
+                        <label className={s.label}>Required skills :</label>
                         <input
-                            type="text"
-                            name="requiredSkills"
-                            value={formData.requiredSkills}
-                            onChange={handleChange}
-                            placeholder="ex: React, Node.js, Python"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            required
+                            type="text" name="requiredSkills" value={formData.requiredSkills}
+                            onChange={handleChange} placeholder="ex: React, Node.js, Python"
+                            className={s.input} required
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                            Separate each skill with a comma.
-                        </p>
+                        <p className={s.hint}>Separate each skill with a comma.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Duration + Location */}
+                    <div className={s.grid2}>
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Duration (months) :</label>
+                            <label className={s.label}>Duration (months) :</label>
                             <input
-                                type="number"
-                                name="duration"
-                                min="1"
-                                value={formData.duration}
-                                onChange={handleChange}
-                                placeholder="ex: 3"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                required
+                                type="number" name="duration" min="1" value={formData.duration}
+                                onChange={handleChange} placeholder="ex: 3"
+                                className={s.input} required
                             />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Location :</label>
+                            <label className={s.label}>Location :</label>
                             <input
-                                type="text"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleChange}
-                                placeholder="ex: Montréal (Hybride)"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                required
+                                type="text" name="location" value={formData.location}
+                                onChange={handleChange} placeholder="ex: Montréal (Hybride)"
+                                className={s.input} required
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Start date + Deadline */}
+                    <div className={s.grid2}>
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Start date :</label>
+                            <label className={s.label}>Start date :</label>
                             <input
-                                type="date"
-                                name="startDate"
-                                value={formData.startDate}
-                                min={minStartDay}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                required
+                                type="date" name="startDate" value={formData.startDate}
+                                min={minStartDay} onChange={handleChange}
+                                className={s.input} required
                             />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Dead line to post :</label>
+                            <label className={s.label}>Deadline to post :</label>
                             <input
-                                type="date"
-                                name="deadline"
-                                min={today}
-                                max={maxDeadline}
-                                value={formData.deadline}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                required
+                                type="date" name="deadline" min={today} max={maxDeadline}
+                                value={formData.deadline} onChange={handleChange}
+                                className={s.input} required
                             />
                         </div>
                     </div>
 
+                    {/* Compensation */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Compensation :</label>
+                        <label className={s.label}>Compensation :</label>
                         <input
-                            type="text"
-                            name="compensation"
-                            value={formData.compensation}
-                            onChange={handleChange}
-                            placeholder="ex: 20$/h or Unpaid"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            required
+                            type="text" name="compensation" value={formData.compensation}
+                            onChange={handleChange} placeholder="ex: 20$/h or Unpaid"
+                            className={s.input} required
                         />
                     </div>
 
-                    <div className="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-5 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
-                        >
+                    {/* Footer */}
+                    <div className={s.footer}>
+                        <button type="button" onClick={onClose} className={s.cancelBtn}>
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            className="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm transition-colors"
-                        >
+                        <button type="submit" className={s.submitBtn}>
                             Submit
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>

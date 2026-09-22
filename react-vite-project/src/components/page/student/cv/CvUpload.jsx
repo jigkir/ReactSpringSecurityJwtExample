@@ -13,25 +13,7 @@
 
 import {getAuthClasses, getCvUploadClasses} from '../../../../styles/appStyles.jsx';
 import {formatBytes} from './cvUtils.js';
-
-// ─── Texts ───────────────────────────────────────────────────────────────────
-
-const T = {
-    pageTitle: "Upload your CV",
-    pageSubtitle: "Your CV is required to access your dashboard and apply for internship offers.",
-    uploadBtn: "Upload my CV",
-    replaceBtn: "Add a CV",
-    cancelBtn: "Cancel",
-    deleteBtn: "Delete",
-    retryBtn: "Retry",
-    continueBtn: "Go to my dashboard",
-    viewDocsBtn: "View my documents",
-    uploadingLabel: "Uploading…",
-    successMsg: "Your CV has been uploaded successfully.",
-    dragHint: "Drag and drop your CV here or",
-    orBrowse: "browse",
-    acceptedFormats: "Accepted format: PDF",
-};
+import {useTranslation} from 'react-i18next';
 
 const PdfIcon = ({className = "h-10 w-10"}) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -72,6 +54,7 @@ const CvUpload = ({
                       onCancelReplacing, onGoToDashboard, onGoToList,
                       maxFileSizeMb = 2, acceptedExt = ".pdf",
                   }) => {
+    const {t} = useTranslation();
     const {cardClass, titleClass, submitClass, serverErrorClass} = getAuthClasses(dark);
     const u = getCvUploadClasses(dark, isDragging);
 
@@ -89,11 +72,11 @@ const CvUpload = ({
                 <div className={`flex flex-col items-center gap-3 py-6 ${u.successText}`} role="status"
                      aria-live="polite">
                     <CheckIcon/>
-                    <p className="text-lg font-semibold">{T.successMsg}</p>
+                    <p className="text-lg font-semibold">{t("cvUpload.successMsg")}</p>
                 </div>
-                <button onClick={onGoToList} className={submitClass} autoFocus>{T.viewDocsBtn}</button>
+                <button onClick={onGoToList} className={submitClass} autoFocus>{t("cvUpload.viewDocsBtn")}</button>
                 <button onClick={onGoToDashboard}
-                        className={`${u.ghostBtn} mt-3 w-full text-center`}>{T.continueBtn}</button>
+                        className={`${u.ghostBtn} mt-3 w-full text-center`}>{t("cvUpload.continueBtn")}</button>
             </div>
         );
     }
@@ -105,7 +88,7 @@ const CvUpload = ({
         return (
             <div className={cardClass}>
                 {hiddenInput}
-                <h1 className={titleClass}>{isReplacing ? T.replaceBtn : T.uploadBtn}</h1>
+                <h1 className={titleClass}>{isReplacing ? t("cvUpload.replaceBtn") : t("cvUpload.uploadBtn")}</h1>
 
                 {hasError && serverError && (
                     <div className={serverErrorClass} role="alert" aria-live="assertive">{serverError}</div>
@@ -120,11 +103,11 @@ const CvUpload = ({
                     {!isUploading && (
                         <div className="flex flex-col gap-1 shrink-0">
                             <button onClick={onOpenFilePicker} className={u.ghostBtn}
-                                    aria-label="Replace selected file">Replace
+                                    aria-label="Replace selected file">{t("cvUpload.replaceFile")}
                             </button>
                             <button onClick={onClearFile} className={u.dangerBtn}
                                     aria-label="Supprimer le fichier sélectionné">
-                                <span className="flex items-center gap-1.5"><TrashIcon/>{T.deleteBtn}</span>
+                                <span className="flex items-center gap-1.5"><TrashIcon/>{t("cvUpload.deleteBtn")}</span>
                             </button>
                         </div>
                     )}
@@ -134,8 +117,8 @@ const CvUpload = ({
                 <div className="mt-6 flex flex-col gap-3">
                     {hasError ? (
                         <>
-                            <button onClick={onRetry} className={submitClass}>{T.retryBtn}</button>
-                            <button onClick={onClearFile} className={`${u.ghostBtn} text-center`}>{T.cancelBtn}</button>
+                            <button onClick={onRetry} className={submitClass}>{t("cvUpload.retryBtn")}</button>
+                            <button onClick={onClearFile} className={`${u.ghostBtn} text-center`}>{t("cvUpload.cancelBtn")}</button>
                         </>
                     ) : (
                         <>
@@ -143,12 +126,12 @@ const CvUpload = ({
                                     aria-busy={isUploading}>
                                 {isUploading
                                     ? <span
-                                        className="flex items-center justify-center gap-2"><SpinnerIcon/>{T.uploadingLabel}</span>
-                                    : T.uploadBtn}
+                                        className="flex items-center justify-center gap-2"><SpinnerIcon/>{t("cvUpload.uploadingLabel")}</span>
+                                    : t("cvUpload.uploadBtn")}
                             </button>
                             {!isUploading && (
                                 <button onClick={onClearFile}
-                                        className={`${u.ghostBtn} text-center`}>{T.cancelBtn}</button>
+                                        className={`${u.ghostBtn} text-center`}>{t("cvUpload.cancelBtn")}</button>
                             )}
                         </>
                     )}
@@ -162,8 +145,8 @@ const CvUpload = ({
     return (
         <div className={cardClass}>
             {hiddenInput}
-            <h1 className={titleClass}>{T.pageTitle}</h1>
-            <p className={u.subtitle}>{T.pageSubtitle}</p>
+            <h1 className={titleClass}>{t("cvUpload.pageTitle")}</h1>
+            <p className={u.subtitle}>{t("cvUpload.pageSubtitle")}</p>
 
             {fileError && (
                 <div className={`mb-4 ${serverErrorClass}`} role="alert" aria-live="assertive">{fileError}</div>
@@ -184,22 +167,22 @@ const CvUpload = ({
                 <UploadIcon className={`h-10 w-10 ${isDragging ? "text-indigo-500" : u.iconColor}`}/>
                 <div>
                     <p className={u.dragHintText}>
-                        {T.dragHint}{" "}
+                        {t("cvUpload.dragHint")}{" "}
                         <span
-                            className="text-indigo-500 underline underline-offset-2 cursor-pointer">{T.orBrowse}</span>
+                            className="text-indigo-500 underline underline-offset-2 cursor-pointer">{t("cvUpload.orBrowse")}</span>
                     </p>
-                    <p className={u.hint}>{T.acceptedFormats}</p>
-                    <p className={u.hint}>{`Maximum size: ${maxFileSizeMb} MB`}</p>
+                    <p className={u.hint}>{t("cvUpload.acceptedFormats")}</p>
+                    <p className={u.hint}>{t("cvUpload.maxSize", {mb: maxFileSizeMb})}</p>
                 </div>
             </div>
 
             <button onClick={onOpenFilePicker} className={`${submitClass} mt-6`} type="button">
-                {isReplacing ? T.replaceBtn : T.uploadBtn}
+                {isReplacing ? t("cvUpload.replaceBtn") : t("cvUpload.uploadBtn")}
             </button>
 
             {isReplacing && (
                 <button onClick={onCancelReplacing} className={`${u.ghostBtn} mt-3 w-full text-center`} type="button">
-                    {T.cancelBtn}
+                    {t("cvUpload.cancelBtn")}
                 </button>
             )}
         </div>

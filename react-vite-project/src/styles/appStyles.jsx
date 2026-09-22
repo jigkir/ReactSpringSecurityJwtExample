@@ -183,58 +183,67 @@ export function getErrorPageClasses() {
 
 // ─── PostInternship ───────────────────────────────────────────────────────────
 
-export function getPostInternshipClasses() {
+export function getPostInternshipClasses(dark) {
     return {
-        page:          'h-screen bg-gray-50 p-6 md:p-10 flex flex-col overflow-hidden',
-        headerSection: 'max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-200 pb-6 shrink-0',
-        title:         'text-3xl font-bold text-gray-900',
-        subtitle:      'text-gray-600 mt-1',
+        page:          `h-screen p-6 md:p-10 flex flex-col overflow-hidden ${dark ? 'bg-gray-900' : 'bg-gray-50'}`,
+        headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? 'border-slate-700' : 'border-gray-200'}`,
+        title:         `text-3xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`,
+        subtitle:      `mt-1 ${dark ? 'text-slate-400' : 'text-gray-600'}`,
         addBtn:        'px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shrink-0',
         listSection:   'max-w-5xl w-full mx-auto flex-1 flex flex-col min-h-0',
-        listHeading:   'text-xl font-semibold text-gray-800 mb-4 shrink-0',
+        listHeading:   `text-xl font-semibold mb-4 shrink-0 ${dark ? 'text-white' : 'text-gray-800'}`,
         scrollArea:    'flex-1 overflow-y-auto pr-2 space-y-4 min-h-0',
+        emptyText:     `text-center py-8 ${dark ? 'text-slate-400' : 'text-gray-500'}`,
+        errorText:     `p-4 rounded-lg text-center ${dark ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-500'}`,
+        loadingText:   `text-center py-8 ${dark ? 'text-slate-400' : 'text-gray-500'}`,
     };
 }
 
 // ─── InternshipCard ───────────────────────────────────────────────────────────
 
-export function getInternshipCardClasses() {
+export function getInternshipCardClasses(dark) {
     return {
-        card:        'bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-left space-y-3',
+        card:        `rounded-xl shadow-sm border p-6 text-left space-y-3 ${dark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`,
         topRow:      'flex justify-between items-start gap-4',
-        title:       'text-xl font-bold text-gray-900',
-        description: 'text-gray-600 text-md mt-1',
-        skillsRow:   'text-md text-gray-700',
-        skillBadge:  'bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium',
-        detailsRow:  'flex flex-wrap gap-2 text-md text-gray-500 pt-1 border-t border-gray-100',
-        detailBadge: 'bg-gray-100 px-2.5 py-1 rounded flex items-center gap-1.5',
-        deleteBtn:   'p-1.5 rounded hover:bg-gray-200 ml-auto text-gray-600 hover:text-red-600 transition-colors',
+        title:       `text-xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`,
+        description: `text-md mt-1 ${dark ? 'text-slate-400' : 'text-gray-600'}`,
+        skillsRow:   `text-md ${dark ? 'text-slate-300' : 'text-gray-700'}`,
+        skillBadge:  `px-2 py-0.5 rounded font-medium ${dark ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-50 text-blue-700'}`,
+        detailsRow:  `flex flex-wrap gap-2 text-md pt-1 border-t ${dark ? 'text-slate-400 border-slate-700' : 'text-gray-500 border-gray-100'}`,
+        detailBadge: `px-2.5 py-1 rounded flex items-center gap-1.5 ${dark ? 'bg-slate-700 text-slate-300' : 'bg-gray-100 text-gray-500'}`,
+        deleteBtn:   `p-1.5 rounded ml-auto transition-colors ${dark ? 'text-slate-400 hover:bg-slate-700 hover:text-red-400' : 'text-gray-600 hover:bg-gray-200 hover:text-red-600'}`,
         statusBadge: (status) => {
             const base = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-md font-medium shrink-0';
-            if (status === 'Pending Validation') return `${base} bg-yellow-50 text-yellow-700 border border-yellow-200`;
-            if (status === 'Approved')           return `${base} bg-green-50 text-green-700 border border-green-200`;
-            return                                      `${base} bg-red-50 text-red-700 border border-red-200`;
+            if (status === 'Pending Validation') return dark
+                ? `${base} bg-yellow-900/30 text-yellow-300 border border-yellow-700`
+                : `${base} bg-yellow-50 text-yellow-700 border border-yellow-200`;
+            if (status === 'Approved') return dark
+                ? `${base} bg-green-900/30 text-green-300 border border-green-700`
+                : `${base} bg-green-50 text-green-700 border border-green-200`;
+            return dark
+                ? `${base} bg-red-900/30 text-red-300 border border-red-700`
+                : `${base} bg-red-50 text-red-700 border border-red-200`;
         },
     };
 }
 
 // ─── InternshipModal ──────────────────────────────────────────────────────────
 
-export function getInternshipModalClasses() {
+export function getInternshipModalClasses(dark) {
     return {
         overlay:     'fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto',
-        panel:       'bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 md:p-8 my-8 max-h-[90vh] overflow-y-auto',
-        header:      'flex justify-between items-center border-b pb-4 mb-6',
-        title:       'text-2xl font-bold text-gray-800',
-        closeBtn:    'text-gray-400 hover:text-gray-600 font-bold text-2xl transition-colors',
+        panel:       `rounded-2xl shadow-2xl w-full max-w-2xl p-6 md:p-8 my-8 max-h-[90vh] overflow-y-auto ${dark ? 'bg-slate-800' : 'bg-white'}`,
+        header:      `flex justify-between items-center border-b pb-4 mb-6 ${dark ? 'border-slate-700' : 'border-gray-200'}`,
+        title:       `text-2xl font-bold ${dark ? 'text-white' : 'text-gray-800'}`,
+        closeBtn:    `font-bold text-2xl transition-colors ${dark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600'}`,
         errorBanner: 'p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-red-600 text-sm font-medium animate-fadeIn',
-        label:       'block text-sm font-semibold text-gray-700 mb-1',
-        input:       'w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
-        textarea:    'w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
-        hint:        'text-xs text-gray-500 mt-1',
+        label:       `block text-sm font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-gray-700'}`,
+        input:       `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${dark ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'border-gray-300 text-gray-900'}`,
+        textarea:    `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${dark ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'border-gray-300 text-gray-900'}`,
+        hint:        `text-xs mt-1 ${dark ? 'text-slate-400' : 'text-gray-500'}`,
         grid2:       'grid grid-cols-1 md:grid-cols-2 gap-4',
-        footer:      'flex items-center justify-end space-x-3 pt-6 border-t mt-6',
-        cancelBtn:   'px-5 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors',
+        footer:      `flex items-center justify-end space-x-3 pt-6 border-t mt-6 ${dark ? 'border-slate-700' : 'border-gray-200'}`,
+        cancelBtn:   `px-5 py-2.5 rounded-lg font-medium transition-colors ${dark ? 'text-slate-200 bg-slate-700 hover:bg-slate-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}`,
         submitBtn:   'px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm transition-colors',
     };
 }

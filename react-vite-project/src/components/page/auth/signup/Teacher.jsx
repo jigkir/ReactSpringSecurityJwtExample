@@ -1,6 +1,7 @@
 import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
+import {useTranslation} from 'react-i18next';
 import {
     FirstNameField,
     LastNameField,
@@ -12,6 +13,7 @@ import {
     SubmitButton,
     validateField,
 } from "../../../../utils/CommonFields.jsx";
+
 
 const ID_FIELD = "teacherId";
 
@@ -31,7 +33,7 @@ const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
 const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
     const navigate = useNavigate();
-
+    const { t } = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
@@ -69,7 +71,7 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateField(key, form[key], form);
+            const msg = validateField(key, form[key], form, t);
             newWarnings[key] = msg;
             if (msg) valid = false;
         }

@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.presentation;
 
-import com.lacouf.rsbjwt.model.CVSharingScope;
 import com.lacouf.rsbjwt.model.Student;
 import com.lacouf.rsbjwt.security.exception.*;
 import com.lacouf.rsbjwt.service.StudentService;
@@ -34,21 +33,9 @@ public class StudentController {
     @PostMapping("/{id}/cvs")
     public ResponseEntity<String> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
+            @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException, CvNotFoundException {
 
-        if (file == null || file.isEmpty()) {
-            throw new InvalidFileTypeException("Uploaded file is empty or null.");
-        }
-
-        Student student = studentService.findById(id);
-
-        byte[] bytes = file.getBytes();
-        if (bytes.length == 0) {
-            throw new InvalidFileTypeException("Uploaded file contains no data.");
-        }
-
-        String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
-        studentService.saveCV(new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, false), student);
+        studentService.uploadCV(file, id);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
@@ -72,21 +59,21 @@ public class StudentController {
     }
 
     @PutMapping("/{id}/cvs/{cvId}/hide")
-    public ResponseEntity<String> hideCV(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException {
+    public ResponseEntity<String> hideCV(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CvNotFoundException {
         Student student = studentService.findById(id);
         studentService.setCvAsInvisible(student, cvId);
         return new ResponseEntity<>("CV hidden successfully", HttpStatus.OK);
     }
 
     @PutMapping("/{id}/cvs/{cvId}/public")
-    public ResponseEntity<String> makeCVPublic(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException {
+    public ResponseEntity<String> makeCVPublic(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         Student student = studentService.findById(id);
         studentService.setCvAsPublic(student, cvId);
         return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
     }
 
     @PutMapping("/{id}/cvs/{cvId}/private")
-    public ResponseEntity<String> makeCVPrivate(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException {
+    public ResponseEntity<String> makeCVPrivate(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
         Student student = studentService.findById(id);
         studentService.setCvAsPrivate(student, cvId);
         return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
