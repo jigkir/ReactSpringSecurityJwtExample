@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {useNavigate, useOutletContext} from "react-router-dom";
-import {getAuthClasses} from './styles/authStyles.jsx';
+import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import fetcher from "../../../utils/fetcher.js";
 import {
     EmailField,
@@ -96,7 +96,11 @@ const Login = ({user, setError}) => {
             }
             const userData = await userResponse.json();
 
-            navigate('/home');
+            if (userData.role === 'STUDENT') {
+                navigate('/cv');
+            } else {
+                navigate('/home');
+            }
 
         } catch (error) {
             setError(error);

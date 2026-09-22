@@ -1,10 +1,10 @@
 import {useState, useEffect} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
-import {getAuthClasses} from './styles/authStyles.jsx';
+import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import {RoleField} from '../../../utils/CommonFields.jsx';
 import fetcher from '../../../utils/fetcher.js';
 import Student from './signup/Student.jsx';
-import Employer from "./signup/Employer.jsx";
+import Employer from './signup/Employer.jsx';
 import Teacher from './signup/Teacher.jsx';
 import {useTranslation} from 'react-i18next';
 
