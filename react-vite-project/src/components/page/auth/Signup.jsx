@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import {RoleField} from '../../../utils/CommonFields.jsx';
@@ -31,7 +31,7 @@ const Signup = () => {
     const classes = getAuthClasses(dark);
     const {fieldClass, labelClass, cardClass, pageClass, titleClass, subtextClass} = classes;
 
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     useEffect(() => {
         fetcher('roles', {})

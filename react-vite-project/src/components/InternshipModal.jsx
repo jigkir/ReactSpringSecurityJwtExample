@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { getInternshipModalClasses } from "../styles/appStyles.jsx";
+import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {getInternshipModalClasses} from '../styles/appStyles.jsx';
 
-export default function InternshipModal({ isOpen, onClose, onAddInternship, user, dark }) {
-    const { t } = useTranslation();
+export default function InternshipModal({isOpen, onClose, onAddInternship, user, dark}) {
+    const {t} = useTranslation();
     const s = getInternshipModalClasses(dark);
 
     const [formData, setFormData] = useState({
@@ -37,13 +37,13 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
             if (isNaN(d.getTime())) return "";
             d.setDate(d.getDate() + 14);
             return d.toISOString().split("T")[0]
-    })() : "";
+        })() : "";
 
     if (!isOpen) return null;
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData((prev) => ({...prev, [name]: value}));
     };
 
     const handleSubmit = (e) => {
@@ -74,7 +74,7 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
 
         const newInternship = {
             ...formData,
-            duration: t("internshipModal.duration", { count: durationNumber }),
+            duration: t("internshipModal.duration", {count: durationNumber}),
             status: "Pending Validation",
             submittedAt: new Date().toISOString(),
             isDeleted: false,

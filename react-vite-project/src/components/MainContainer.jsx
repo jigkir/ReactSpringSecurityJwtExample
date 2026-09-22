@@ -1,6 +1,6 @@
-import {useOutletContext} from "react-router-dom";
+import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getMainContainerClasses} from "../styles/appStyles.jsx";
+import {getMainContainerClasses} from '../styles/appStyles.jsx';
 
 function MainContainer() {
     const {t} = useTranslation();
@@ -8,8 +8,8 @@ function MainContainer() {
     const classes = getMainContainerClasses(dark);
     return (
         <div className={classes.page}>
-            <h1>{t('mainContainer.title')}</h1>
-            <p>{t('mainContainer.subtitle')}</p>
+            <h1>{t("mainContainer.title")}</h1>
+            <p>{t("mainContainer.subtitle")}</p>
         </div>
     );
 }

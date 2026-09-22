@@ -1,31 +1,31 @@
-import {Link, useLocation} from "react-router-dom";
+import {Link, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getNavbarClasses} from "../styles/appStyles.jsx";
+import {getNavbarClasses} from '../styles/appStyles.jsx';
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
 
-    const role = (user?.role?.toString() ?? '').replace('ROLE_', '');
+    const role = (user?.role?.toString() ?? "").replace("ROLE_", "");
     const toggleLang = () => {
-        if (i18n.language === 'en') {
-            i18n.changeLanguage('fr')
+        if (i18n.language === "en") {
+            i18n.changeLanguage("fr")
         } else {
-            i18n.changeLanguage('en')
+            i18n.changeLanguage("en")
         }
     };
     const formatRole = (roleString) => {
-        if (!roleString) return '';
-        const name = roleString.replace('ROLE_', '');
+        if (!roleString) return "";
+        const name = roleString.replace("ROLE_", "");
         return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     };
 
     const isActive = (path) =>
-        path === '/'
-            ? location.pathname === '/'
+        path === "/"
+            ? location.pathname === "/"
             : location.pathname.startsWith(path);
 
-    const homePath = user?.isLoggedIn ? '/home' : '/';
+    const homePath = user?.isLoggedIn ? "/home" : "/";
 
     const theme = getNavbarClasses(dark);
 
@@ -34,9 +34,9 @@ function Navbar({user, dark, toggleDark}) {
 
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), show: true},
-        {to: '/about', label: t("navbar.about"), show: true},
-        {to: '/cv', label: 'CV', show: role === 'STUDENT'},
-        {to: '/post', label: 'Post Internship', show: role === 'EMPLOYER'},
+        {to: "/about", label: t("navbar.about"), show: true},
+        {to: "/cv", label: "CV", show: role === "STUDENT"},
+        {to: "/post", label: "Post Internship", show: role === "EMPLOYER"},
     ].filter(item => item.show);
 
     const ToggleIcon = () => dark ? (
@@ -65,7 +65,7 @@ function Navbar({user, dark, toggleDark}) {
                         <nav className="flex items-center gap-1">
                             {navItems.map(({to, label}) => (
                                 <Link key={to} to={to} className={linkClass(to)}
-                                      aria-current={isActive(to) ? 'page' : undefined}>
+                                      aria-current={isActive(to) ? "page" : undefined}>
                                     {label}
                                 </Link>
                             ))}
@@ -90,22 +90,22 @@ function Navbar({user, dark, toggleDark}) {
                         <button
                             onClick={toggleLang}
                             className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                            aria-label={i18n.language === 'en' ? 'Passer en français' : 'Switch to english'}
+                            aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}
                         >
-                            {i18n.language === 'en' ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                            {i18n.language === "en" ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
 
                         <button
                             onClick={toggleDark}
                             className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                            aria-label={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+                            aria-label={dark ? "Passer en mode clair" : "Passer en mode sombre"}
                         >
                             <ToggleIcon/>
                             {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                         </button>
 
                         {user?.isLoggedIn ? (
-                            <Link to="/logout" className={linkClass('/logout')}>
+                            <Link to="/logout" className={linkClass("/logout")}>
                                 {t("navbar.disconnect")}
                             </Link>
                         ) : (

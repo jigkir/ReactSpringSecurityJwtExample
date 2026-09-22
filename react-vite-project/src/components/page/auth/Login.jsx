@@ -2,10 +2,7 @@ import {useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import fetcher from '../../../utils/fetcher.js';
-import {
-    EmailField,
-    PasswordField,
-} from '../../../utils/CommonFields.jsx';
+import {EmailField, PasswordField,} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
 
 const Login = ({user, setError}) => {

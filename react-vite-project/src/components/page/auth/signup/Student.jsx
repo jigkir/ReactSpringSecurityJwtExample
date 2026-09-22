@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
 import {useTranslation} from 'react-i18next';
 import {
+    ConfirmPasswordField,
+    DisciplineField,
+    EmailField,
     FirstNameField,
     LastNameField,
     MatriculeField,
-    DisciplineField,
-    EmailField,
     PasswordField,
-    ConfirmPasswordField,
     SubmitButton,
     validateField,
 } from "../../../../utils/CommonFields.jsx";
@@ -28,16 +28,15 @@ const DEFAULT_FORM = {
 };
 
 
-
 // Mirror DEFAULT_FORM shape with empty strings — one warning slot per field
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
 // Submit button stays disabled until every field has a value
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
+const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
@@ -68,10 +67,10 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
 
     // Clear the field's inline warning as soon as the user starts correcting it
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setForm(prev => ({...prev, [name]: value}));
         setServerError("");
-        if (warnings[name]) setWarnings(prev => ({ ...prev, [name]: "" }));
+        if (warnings[name]) setWarnings(prev => ({...prev, [name]: ""}));
     };
 
     // Run every field through validateField and collect error messages
@@ -110,18 +109,24 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 }),
             });
 
-            if (response.ok) { navigate("/login"); return; }
+            if (response.ok) {
+                navigate("/login");
+                return;
+            }
 
             // Map known server error codes to field-level or page-level messages
             switch (response.status) {
                 case 409: {
                     let body = {};
-                    try { body = await response.json(); } catch {}
-                    const { field: conflictField = "" } = body ?? {};
+                    try {
+                        body = await response.json();
+                    } catch {
+                    }
+                    const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({ ...w, [ID_FIELD]: t("student.existingId") }));
+                        setWarnings(w => ({...w, [ID_FIELD]: t("student.existingId")}));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({ ...w, email: t("student.emailInUse") }));
+                        setWarnings(w => ({...w, email: t("student.emailInUse")}));
                     } else {
                         setServerError(t("student.eitherEmailOrIdInUse"));
                     }
@@ -131,7 +136,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                     setServerError(t("student.invalidData"));
                     break;
                 default:
-                    setServerError(t("student.genericServerError", {errorCode:response.status}));
+                    setServerError(t("student.genericServerError", {errorCode: response.status}));
             }
         } catch {
             setServerError(t("student.unableToReachServerError"));
@@ -141,7 +146,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
     };
 
     // Props shared by every field component — spread with {...sharedProps} to avoid repetition
-    const sharedProps = { labelClass, errorClass, fieldClass, onChange: handleChange };
+    const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">

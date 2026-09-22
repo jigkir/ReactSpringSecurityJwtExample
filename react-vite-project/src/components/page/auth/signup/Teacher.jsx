@@ -1,15 +1,15 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import fetcher from '../../../../utils/fetcher.js';
 import {useTranslation} from 'react-i18next';
 import {
+    ConfirmPasswordField,
+    DisciplineField,
+    EmailField,
     FirstNameField,
     LastNameField,
     MatriculeField,
-    DisciplineField,
-    EmailField,
     PasswordField,
-    ConfirmPasswordField,
     SubmitButton,
     validateField,
 } from '../../../../utils/CommonFields.jsx';
@@ -101,12 +101,18 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 }),
             });
 
-            if (response.ok) { navigate("/login"); return; }
+            if (response.ok) {
+                navigate("/login");
+                return;
+            }
 
             switch (response.status) {
                 case 409: {
                     let body = {};
-                    try { body = await response.json(); } catch {}
+                    try {
+                        body = await response.json();
+                    } catch {
+                    }
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
                         setWarnings(w => ({...w, [ID_FIELD]: t("teacher.existingId")}));

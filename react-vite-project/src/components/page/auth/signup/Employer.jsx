@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import fetcher from '../../../../utils/fetcher.js';
 import {useTranslation} from 'react-i18next';
 import {
-    FirstNameField,
-    LastNameField,
+    ConfirmPasswordField,
     DisciplineField,
     EmailField,
+    Field,
+    FirstNameField,
+    LastNameField,
     PasswordField,
-    ConfirmPasswordField,
     SubmitButton,
     validateField,
-    Field,
 } from '../../../../utils/CommonFields.jsx';
 
 const DEFAULT_FORM = {
@@ -32,14 +32,14 @@ const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 const validateCompanyName = (value, t) => {
     const tr = value.trim();
     if (!tr) return t("employer.requiredCompanyName");
-    if (tr.length < 2) return t("employer.atLeastXCharacters", {amount:2});
+    if (tr.length < 2) return t("employer.atLeastXCharacters", {amount: 2});
     if (tr.length > 100) return t("employer.atMostXCharacters", {amount: 100});
     return "";
 };
 
 const validatePhoneNumber = (value, t) => {
     if (!value) return t("employer.requiredPhoneNumber");
-    if (value.length !== 10) return t("employer.phoneNumberXDigits",{amount:10});
+    if (value.length !== 10) return t("employer.phoneNumberXDigits", {amount: 10});
     return "";
 };
 
@@ -47,17 +47,21 @@ const validateSectorActivity = (value, t) => value ? "" : t("employer.selectSect
 
 const validateEmployerField = (field, value, formValues = {}, t) => {
     switch (field) {
-        case "companyName":    return validateCompanyName(value, t);
-        case "phoneNumber":    return validatePhoneNumber(value, t);
-        case "sectorActivity": return validateSectorActivity(value, t);
-        default:               return validateField(field, value, formValues, t);
+        case "companyName":
+            return validateCompanyName(value, t);
+        case "phoneNumber":
+            return validatePhoneNumber(value, t);
+        case "sectorActivity":
+            return validateSectorActivity(value, t);
+        default:
+            return validateField(field, value, formValues, t);
     }
 };
 
-const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
+const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
     const navigate = useNavigate();
 
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
@@ -85,11 +89,11 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
     }, []);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setForm(prev => ({...prev, [name]: value}));
         setServerError("");
         if (warnings[name]) {
-            setWarnings(prev => ({ ...prev, [name]: "" }));
+            setWarnings(prev => ({...prev, [name]: ""}));
         }
     };
 
@@ -107,7 +111,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
 
     const handlePhoneChange = (e) => {
         const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-        handleChange({ target: { name: "phoneNumber", value: digits } });
+        handleChange({target: {name: "phoneNumber", value: digits}});
     };
 
     const handleSubmit = async (e) => {
@@ -133,15 +137,21 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                 }),
             });
 
-            if (response.ok) { navigate("/login"); return; }
+            if (response.ok) {
+                navigate("/login");
+                return;
+            }
 
             switch (response.status) {
                 case 409: {
                     let body = {};
-                    try { body = await response.json(); } catch {}
-                    const { field: conflictField = "" } = body ?? {};
+                    try {
+                        body = await response.json();
+                    } catch {
+                    }
+                    const {field: conflictField = ""} = body ?? {};
                     if (conflictField === "email") {
-                        setWarnings(w => ({ ...w, email: t("employer.emailInUse") }));
+                        setWarnings(w => ({...w, email: t("employer.emailInUse")}));
                     } else {
                         setServerError(t("employer.emailAlreadyExists"));
                     }
@@ -151,7 +161,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
                     setServerError(t("employer.invalidData"));
                     break;
                 default:
-                    setServerError(t("employer.genericServerError",{errorCode:response.status}));
+                    setServerError(t("employer.genericServerError", {errorCode: response.status}));
             }
         } catch {
             setServerError(t("employer.unableToReachServerError"));

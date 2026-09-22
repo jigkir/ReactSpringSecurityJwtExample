@@ -1,17 +1,17 @@
-import {useEffect, useState} from "react";
-import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
-import {useDarkMode} from "./styles/DarkMode.jsx";
-import PageLayout from "./components/PageLayout.jsx";
-import MainContainer from "./components/MainContainer.jsx";
-import About from "./components/About.jsx";
-import Login from "./components/page/auth/Login.jsx";
-import Signup from "./components/page/auth/Signup.jsx";
-import fetcher from "./utils/fetcher.js";
-import ErrorPage from "./components/ErrorPage.jsx";
-import Logout from "./components/page/auth/Logout.jsx";
-import PostInternship from "./components/page/PostInternship.jsx";
-import Home from "./components/page/Home.jsx";
-import Cv from "./components/page/student/Cv.jsx";
+import {useEffect, useState} from 'react';
+import {Route, Routes, useLocation, useNavigate} from 'react-router-dom';
+import {useDarkMode} from './styles/DarkMode.jsx';
+import PageLayout from './components/PageLayout.jsx';
+import MainContainer from './components/MainContainer.jsx';
+import About from './components/About.jsx';
+import Login from './components/page/auth/Login.jsx';
+import Signup from './components/page/auth/Signup.jsx';
+import fetcher from './utils/fetcher.js';
+import ErrorPage from './components/ErrorPage.jsx';
+import Logout from './components/page/auth/Logout.jsx';
+import PostInternship from './components/page/PostInternship.jsx';
+import Home from './components/page/Home.jsx';
+import Cv from './components/page/student/Cv.jsx';
 
 function App() {
     const [user, setUser] = useState({});
@@ -24,7 +24,7 @@ function App() {
     const location = useLocation();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
             setUser({});
             return;
@@ -32,7 +32,7 @@ function App() {
 
         let cancelled = false;
 
-        fetcher('users/current', {})
+        fetcher("users/current", {})
             .then(async (res) => {
                 if (!res.ok) {
                     switch (res.status) {
@@ -41,9 +41,9 @@ function App() {
                             if (!cancelled) setUser({});
                             return;
                         case 403:
-                            throw new Error('Forbidden');
+                            throw new Error("Forbidden");
                         case 404:
-                            throw new Error('Nothing here 404');
+                            throw new Error("Nothing here 404");
                         default:
                             throw new Error(`Erreur API (${res.status})`);
                     }
@@ -54,14 +54,16 @@ function App() {
             .catch((err) => {
                 if (cancelled) return;
                 setError(err);
-                navigate('/error');
+                navigate("/error");
             });
 
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [location.pathname]);
 
     return (
-        <div className={`${dark ? 'app-dark' : 'app-light'} flex flex-col min-h-screen`}>
+        <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
             <Routes>
                 <Route path="/" element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
                     <Route index element={<MainContainer setError={setError}/>}/>

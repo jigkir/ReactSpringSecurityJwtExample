@@ -1,13 +1,13 @@
-import {useEffect, useState} from "react";
-import {useOutletContext} from "react-router-dom";
-import fetcher from "../../utils/fetcher.js";
-import {getHomeClasses} from "../../styles/appStyles.jsx";
+import {useEffect, useState} from 'react';
+import {useOutletContext} from 'react-router-dom';
+import fetcher from '../../utils/fetcher.js';
+import {getHomeClasses} from '../../styles/appStyles.jsx';
 import {useTranslation} from 'react-i18next';
 
 const Home = () => {
     const {dark} = useOutletContext();
     const classes = getHomeClasses(dark);
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const [user, setUser] = useState(null);
 

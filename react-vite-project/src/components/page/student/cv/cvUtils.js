@@ -35,12 +35,12 @@ export function resolveStudentId(user) {
  * Keeping translation out of this utility preserves its framework-agnostic nature.
  */
 export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
-    if (!file) return { key: "cvUpload.validation.noFile" };
+    if (!file) return {key: "cvUpload.validation.noFile"};
     if (file.type !== ACCEPTED_MIME && !file.name.toLowerCase().endsWith(ACCEPTED_EXT)) {
-        return { key: "cvUpload.validation.invalidFormat" };
+        return {key: "cvUpload.validation.invalidFormat"};
     }
     if (file.size > maxBytes) {
-        return { key: "cvUpload.validation.tooLarge", options: { mb: (maxBytes / (1024 * 1024)).toFixed(0) } };
+        return {key: "cvUpload.validation.tooLarge", options: {mb: (maxBytes / (1024 * 1024)).toFixed(0)}};
     }
     return null;
 }

@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
-import { getInternshipCardClasses } from "../styles/appStyles.jsx";
+import {useTranslation} from 'react-i18next';
+import {getInternshipCardClasses} from '../styles/appStyles.jsx';
 
 const STATUS_KEY_MAP = {
     "Pending Validation": "internshipCard.status.pendingValidation",
@@ -7,8 +7,8 @@ const STATUS_KEY_MAP = {
     "Rejected": "internshipCard.status.rejected",
 };
 
-export default function InternshipCard({ internship, OnDelete, dark }) {
-    const { t } = useTranslation();
+export default function InternshipCard({internship, OnDelete, dark}) {
+    const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
 
     const statusLabel = STATUS_KEY_MAP[internship.status]

@@ -118,7 +118,8 @@ const CvUpload = ({
                     {hasError ? (
                         <>
                             <button onClick={onRetry} className={submitClass}>{t("cvUpload.retryBtn")}</button>
-                            <button onClick={onClearFile} className={`${u.ghostBtn} text-center`}>{t("cvUpload.cancelBtn")}</button>
+                            <button onClick={onClearFile}
+                                    className={`${u.ghostBtn} text-center`}>{t("cvUpload.cancelBtn")}</button>
                         </>
                     ) : (
                         <>
