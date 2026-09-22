@@ -7,7 +7,7 @@ import {
     PasswordField,
 } from "../../../utils/CommonFields.jsx";
 
-const Login = ({user, setError}) => {
+const Login = ({user,setError}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
     // const [role, setRole] = useState('');
@@ -94,6 +94,7 @@ const Login = ({user, setError}) => {
             if (!userResponse.ok) {
                 throw new Error('Failed to fetch user info');
             }
+
             const userData = await userResponse.json();
 
             navigate('/home');
