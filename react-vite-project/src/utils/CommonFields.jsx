@@ -64,7 +64,6 @@ export const validateId = (value, length = 7) => {
 };
 
 export function validateField(field, value, formValues = {}, t) {
-
     switch (field) {
         case 'firstName':
         case 'lastName': {
@@ -239,7 +238,7 @@ export const PasswordField = ({
             <div className="flex gap-2">
                 <input
                     id="password" name="password"
-                    type={show ? t("commonFields.text") : t("commonFields.password")}
+                    type={show ? "text" : "password"}
                     value={value} onChange={withSanitizer(sanitizePassword, onChange)}
                     maxLength={50} required className={fieldClass}
                 />

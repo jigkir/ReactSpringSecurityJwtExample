@@ -29,28 +29,28 @@ const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [
 
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-const validateCompanyName = (value) => {
-    const t = value.trim();
-    if (!t) return t("employer.requiredCompanyName");
-    if (t.length < 2) return t("employer.atLeastXCharacters", {amount:2});
-    if (t.length > 100) return t("employer.atMoreXCharacters", {amount:100});
+const validateCompanyName = (value, t) => {
+    const tr = value.trim();
+    if (!tr) return t("employer.requiredCompanyName");
+    if (tr.length < 2) return t("employer.atLeastXCharacters", {amount:2});
+    if (tr.length > 100) return t("employer.atMoreXCharacters", {amount:100});
     return "";
 };
 
-const validatePhoneNumber = (value) => {
+const validatePhoneNumber = (value, t) => {
     if (!value) return t("employer.requiredPhoneNumber");
-    if (value.length !== 10) return t("employer.requiredPhoneNumber",{amount:10});
+    if (value.length !== 10) return t("employer.phoneNumberXDigits",{amount:10});
     return "";
 };
 
-const validateSectorActivity = (value) => value ? "" : "Please select a sector of activity.";
+const validateSectorActivity = (value, t) => value ? "" : t("employer.selectSectorOfActivity");
 
-const validateEmployerField = (field, value, formValues = {}) => {
+const validateEmployerField = (field, value, formValues = {}, t) => {
     switch (field) {
-        case "companyName":    return validateCompanyName(value);
-        case "phoneNumber":    return validatePhoneNumber(value);
-        case "sectorActivity": return validateSectorActivity(value);
-        default:               return validateField(field, value, formValues);
+        case "companyName":    return validateCompanyName(value, t);
+        case "phoneNumber":    return validatePhoneNumber(value, t);
+        case "sectorActivity": return validateSectorActivity(value, t);
+        default:               return validateField(field, value, formValues, t);
     }
 };
 
