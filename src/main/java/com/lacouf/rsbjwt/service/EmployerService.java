@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Internship;
+import com.lacouf.rsbjwt.model.InternshipStatus;
 import com.lacouf.rsbjwt.model.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
@@ -63,7 +64,7 @@ public class EmployerService {
     }
 
     public InternshipResponseDto save(InternshipRequestDto internshipDto) throws UserNotFoundException {
-        Employer employer = (Employer) userAppRepository.findById(internshipDto.employerId())
+        Employer employer =  employerRepository.findById(internshipDto.employerId())
                 .orElseThrow(UserNotFoundException::new);
         Internship internship = new Internship(
                 internshipDto.title(),
@@ -74,8 +75,8 @@ public class EmployerService {
                 internshipDto.startDate(),
                 internshipDto.deadline(),
                 internshipDto.compensation(),
-                internshipDto.status(),
-                internshipDto.isDeleted(),
+                InternshipStatus.PENDING,
+                false,
                 employer
         );
 

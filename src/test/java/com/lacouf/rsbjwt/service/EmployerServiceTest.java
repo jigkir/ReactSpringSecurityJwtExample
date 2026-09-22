@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.Employer;
 import com.lacouf.rsbjwt.model.Internship;
+import com.lacouf.rsbjwt.model.InternshipStatus;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
@@ -21,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,9 +60,9 @@ public class EmployerServiceTest {
         employer = new Employer("First Name", "Last Name", null, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
         employer.setId(1L);
 
-        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, 1L);
+        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", "4 months", "Montreal", LocalDate.of(2027, 1, 10), LocalDate.of(2026, 12, 1), "25$/h", InternshipStatus.PENDING, false, 1L);
 
-        internship = new Internship("Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, employer);
+        internship = new Internship("Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", LocalDate.of(2027, 1, 10), LocalDate.of(2026, 12, 1), "25$/h", InternshipStatus.PENDING, false, employer);
         internship.setId(10L);
     }
 
@@ -112,7 +114,7 @@ public class EmployerServiceTest {
     @Test
     void shouldSaveInternship() throws UserNotFoundException {
         // Arrange
-        when(userAppRepository.findById(1L)).thenReturn(Optional.of(employer));
+        when(employerRepository.findById(1L)).thenReturn(Optional.of(employer));
 
         when(internshipRepository.save(any(Internship.class)))
                 .thenAnswer(invocation -> {
@@ -131,10 +133,10 @@ public class EmployerServiceTest {
         assert("Java, Spring").equals(response.requiredSkills());
         assert("4 months").equals(response.duration());
         assert("Montreal").equals(response.location());
-        assert("2027-01-10").equals(response.startDate());
-        assert("2026-12-01").equals(response.deadline());
+        assert(LocalDate.of(2027, 1, 10)).equals(response.startDate());
+        assert(LocalDate.of(2026, 12, 1)).equals(response.deadline());
         assert("25$/h").equals(response.compensation());
-        assert("PENDING").equals(response.status());
+        assert(InternshipStatus.PENDING).equals(response.status());
         assert(Boolean.FALSE).equals(response.isDeleted());
         assert(Long.valueOf(1L)).equals(response.employerId());
 

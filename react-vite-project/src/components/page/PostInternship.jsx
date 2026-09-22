@@ -37,8 +37,17 @@ function PostInternship({user}) {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || t("postInternship.createError"));
+                const errorData = await response.json().catch(() => ({}));
+                const fieldErrors = Object.entries(errorData)
+                    .filter(([field, message]) =>
+                        Object.hasOwn(newOffer, field) && typeof message === "string"
+                    )
+                    .map(([field, message]) => `${field}: ${message}`)
+                    .join("\n");
+
+                throw new Error(
+                    errorData.message || fieldErrors || t("postInternship.createError")
+                );
             }
 
             const savedInternship = await response.json();
