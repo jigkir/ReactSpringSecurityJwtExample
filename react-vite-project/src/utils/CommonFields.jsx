@@ -262,7 +262,7 @@ export const ConfirmPasswordField = ({
             <div className="flex gap-2">
                 <input
                     id="confirmPassword" name="confirmPassword"
-                    type={show ? t("commonFields.text") : t("commonFields.password")}
+                    type={show ? "text" : "password"}
                     value={value} onChange={withSanitizer(sanitizePassword, onChange)}
                     required className={fieldClass}
                 />
