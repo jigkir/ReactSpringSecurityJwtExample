@@ -36,7 +36,7 @@ public class Internship {
     @JoinColumn(name = "employer_id")
     private Employer postedBy;
 
-    public Internship(String title, String description, String requiredSkills, String duration, String location, String startDate, String deadline, String compensation, String status, boolean isDeleted){
+    public Internship(String title, String description, String requiredSkills, String duration, String location, String startDate, String deadline, String compensation, String status, boolean isDeleted, Employer employer){
         this.title = title;
         this.description = description;
         this.requiredSkills = requiredSkills;
@@ -47,5 +47,6 @@ public class Internship {
         this.compensation = compensation;
         this.status = status;
         this.isDeleted = isDeleted;
+        this.postedBy = employer;
     }
 }

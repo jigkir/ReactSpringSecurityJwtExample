@@ -10,6 +10,7 @@ import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.exception.InternshipNotFoundException;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.InternshipResponseDto;
@@ -61,7 +62,9 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
-    public InternshipResponseDto save(InternshipRequestDto internshipDto){
+    public InternshipResponseDto save(InternshipRequestDto internshipDto) throws UserNotFoundException {
+        Employer employer = (Employer) userAppRepository.findById(internshipDto.employerId())
+                .orElseThrow(UserNotFoundException::new);
         Internship internship = new Internship(
                 internshipDto.title(),
                 internshipDto.description(),
@@ -72,7 +75,8 @@ public class EmployerService {
                 internshipDto.deadline(),
                 internshipDto.compensation(),
                 internshipDto.status(),
-                internshipDto.isDeleted()
+                internshipDto.isDeleted(),
+                employer
         );
 
         internshipRepository.save(internship);

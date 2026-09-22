@@ -26,7 +26,7 @@ public class InternshipController {
     }
 
     @PostMapping("/make")
-    public ResponseEntity<InternshipResponseDto> save(@Valid @RequestBody InternshipRequestDto internshipRequestDto){
+    public ResponseEntity<InternshipResponseDto> save(@Valid @RequestBody InternshipRequestDto internshipRequestDto) throws UserNotFoundException {
         InternshipResponseDto internshipResponseDto = employerService.save(internshipRequestDto);
         return new ResponseEntity<>(internshipResponseDto, HttpStatus.CREATED);
     }

@@ -31,7 +31,6 @@ public record InternshipRequestDto(
         String deadline,
 
         @NotBlank
-        @Pattern(regexp = "(?i)^\\\\$\\\\d+(\\\\.\\\\d+)?/h$|^unpaid$|^non\\\\s*rémunéré$", message = "Compensation must be a valid format (e.g., $20/h, unpaid, or non rémunéré)")
         String compensation,
 
         String status,
