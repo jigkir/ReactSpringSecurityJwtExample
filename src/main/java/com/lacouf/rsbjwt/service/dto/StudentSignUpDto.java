@@ -46,7 +46,7 @@ public record StudentSignUpDto(
                 }
 
                 if (studentId != null) {
-                        studentId = studentId.trim().toLowerCase();
+                        studentId = studentId.trim();
                 }
         }
 }

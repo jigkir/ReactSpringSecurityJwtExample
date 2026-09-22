@@ -46,7 +46,7 @@ public record TeacherSignUpDto(
                 }
 
                 if (teacherId != null) {
-                        teacherId = teacherId.trim().toLowerCase();
+                        teacherId = teacherId.trim();
                 }
         }
 }

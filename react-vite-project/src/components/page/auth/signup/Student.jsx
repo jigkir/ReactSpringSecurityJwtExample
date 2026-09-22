@@ -164,8 +164,8 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             <SubmitButton
                 disabled={!isAllFilled(form) || submitting}
                 loading={submitting}
-                loadingLabel={t("student.accountCreationButton")}
-                label={t("student.accountCreationButtonLoading")}
+                loadingLabel={t("student.accountCreationButtonLoading")}
+                label={t("student.accountCreationButton")}
                 submitClass={submitClass}
             />
         </form>
