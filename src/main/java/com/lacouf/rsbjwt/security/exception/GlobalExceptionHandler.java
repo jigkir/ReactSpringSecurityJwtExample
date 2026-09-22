@@ -86,4 +86,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleCVAlredyPrivateException(CVAlredyPrivateException exception) {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(CvNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCVNotFoundException(CvNotFoundException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
 }

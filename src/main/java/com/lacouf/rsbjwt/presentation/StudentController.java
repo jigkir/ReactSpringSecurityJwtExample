@@ -59,21 +59,21 @@ public class StudentController {
     }
 
     @PutMapping("/{id}/cvs/{cvId}/hide")
-    public ResponseEntity<String> hideCV(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException {
+    public ResponseEntity<String> hideCV(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CvNotFoundException {
         Student student = studentService.findById(id);
         studentService.setCvAsInvisible(student, cvId);
         return new ResponseEntity<>("CV hidden successfully", HttpStatus.OK);
     }
 
     @PutMapping("/{id}/cvs/{cvId}/public")
-    public ResponseEntity<String> makeCVPublic(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException {
+    public ResponseEntity<String> makeCVPublic(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         Student student = studentService.findById(id);
         studentService.setCvAsPublic(student, cvId);
         return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
     }
 
     @PutMapping("/{id}/cvs/{cvId}/private")
-    public ResponseEntity<String> makeCVPrivate(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException {
+    public ResponseEntity<String> makeCVPrivate(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
         Student student = studentService.findById(id);
         studentService.setCvAsPrivate(student, cvId);
         return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);

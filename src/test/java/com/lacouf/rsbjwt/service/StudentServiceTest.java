@@ -10,13 +10,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.CVAlredyPrivateException;
-import com.lacouf.rsbjwt.security.exception.CVAlreadyPublicException;
-import com.lacouf.rsbjwt.security.exception.CorruptedFileException;
-import com.lacouf.rsbjwt.security.exception.InvalidFileSizeException;
-import com.lacouf.rsbjwt.security.exception.InvalidFileTypeException;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
+import com.lacouf.rsbjwt.security.exception.*;
 import com.lacouf.rsbjwt.service.dto.CVDto;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -355,7 +349,7 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldSetCvAsInvisible() throws UserNotFoundException {
+    void shouldSetCvAsInvisible() throws UserNotFoundException, CvNotFoundException {
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -389,7 +383,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldSetCvAsPublic() throws UserNotFoundException, CVAlreadyPublicException {
+    void shouldSetCvAsPublic() throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -421,7 +415,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlredyPrivateException {
+    void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
