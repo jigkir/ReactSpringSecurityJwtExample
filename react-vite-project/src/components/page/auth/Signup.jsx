@@ -8,7 +8,7 @@ import Employer from './signup/Employer.jsx';
 import Teacher from './signup/Teacher.jsx';
 import {useTranslation} from 'react-i18next';
 
-// Roles that are allowed to self-register — MANAGER/GESTIONNAIRE/PREPOSE are login-only
+// Roles that are allowed to self-register — MANAGER are login-only
 const SIGNUP_ROLES = ['student', 'employer', 'teacher'];
 
 // UPDATE THIS MAP when you add a new signup form component:
@@ -40,9 +40,11 @@ const Signup = () => {
                 const data = await res.json();
                 // backend returns { roles: ['STUDENT', 'EMPLOYER', ...] } or a plain array
                 const list = Array.isArray(data) ? data : (data.roles ?? []);
-                const mapped = list.map((r) => (typeof r === 'string' ? r : r.value ?? r).toLowerCase());
+                const mapped = list
+                    .map((r) => (typeof r === 'string' ? r : r.value ?? r).toLowerCase())
+                    .filter((r) => SIGNUP_ROLES.includes(r));
                 setRoles(mapped);
-                if (mapped.length > 0) setRole(mapped[0].value);
+                if (mapped.length > 0) setRole(mapped[0]);
             })
             .catch(() => setRolesFetchError(t("signup.couldNotLoadRoles")))
             .finally(() => setRolesLoading(false));

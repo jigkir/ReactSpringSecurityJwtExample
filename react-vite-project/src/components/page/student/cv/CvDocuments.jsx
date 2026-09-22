@@ -2,7 +2,7 @@
  * CvDocuments.jsx — "Documents déposés" list.
  *
  * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE),
- *               fileName, sizeBytes, uploadedAt, visible
+ *               fileName, sizeBytes, uploadedAt, visibility (CvVisibility enum: VISIBLE|HIDDEN)
  *
  * Endpoints (StudentController):
  *   GET /api/student/{studentId}/cvs                    → List<CVDto> (VISIBLE only)
@@ -68,7 +68,9 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
     const load = useCallback(async () => {
         setLoadFailed(false);
         try {
-            setDocs(sortDocs(await api.list()));
+            const all = await api.list();
+            // Keep only VISIBLE CVs on the client side to match the new enum shape
+            setDocs(sortDocs(all.filter(d => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
