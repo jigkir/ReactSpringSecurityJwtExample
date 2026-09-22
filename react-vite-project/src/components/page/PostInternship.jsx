@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import InternshipModal from "../InternshipModal.jsx";
-import InternshipCard from "../InternshipCard.jsx";
-import fetcher from "../../utils/fetcher.js";
-import { getPostInternshipClasses } from "../../styles/appStyles.jsx";
+import {useEffect, useState} from 'react';
+import {useOutletContext} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import InternshipModal from '../InternshipModal.jsx';
+import InternshipCard from '../InternshipCard.jsx';
+import fetcher from '../../utils/fetcher.js';
+import {getPostInternshipClasses} from '../../styles/appStyles.jsx';
 
-function PostInternship({ user }) {
-    const { dark } = useOutletContext();
-    const { t } = useTranslation();
+function PostInternship({user}) {
+    const {dark} = useOutletContext();
+    const {t} = useTranslation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState("");
@@ -32,7 +32,7 @@ function PostInternship({ user }) {
         try {
             const response = await fetcher("internship/make", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(newOffer),
             });
 
@@ -45,23 +45,23 @@ function PostInternship({ user }) {
 
             // Prepend the newly created internship (InternshipResponseDto) to the list
             setInternships((prev) => [savedInternship, ...prev]);
-            return { success: true };
+            return {success: true};
         } catch (err) {
             console.error(err);
-            return { success: false, message: err.message || t("postInternship.createGenericError") };
+            return {success: false, message: err.message || t("postInternship.createGenericError")};
         }
     };
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetcher(`internship/delete?id=${id}`, { method: "PUT" });
+            const response = await fetcher(`internship/delete?id=${id}`, {method: "PUT"});
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || t("postInternship.deleteError"));
             }
             const updatedInternship = await response.json();
             setInternships((prev) =>
-                prev.map((i) => (i.id === id ? { ...updatedInternship, isDeleted: true } : i))
+                prev.map((i) => (i.id === id ? {...updatedInternship, isDeleted: true} : i))
             );
         } catch (err) {
             console.error(err);
@@ -89,30 +89,21 @@ function PostInternship({ user }) {
 
                 {/* 2. Scrollable container for the cards */}
                 <div className={s.scrollArea}>
-                    {loading && (
-                        <p className={s.loadingText}>{t("postInternship.loading")}</p>
-                    )}
-                    {error && (
-                        <p className={s.errorText}>{error}</p>
-                    )}
+                    {loading && <p className={s.loadingText}>{t("postInternship.loading")}</p>}
+                    {error && <p className={s.errorText}>{error}</p>}
                     {!loading && !error && internships.filter((i) => !i.isDeleted).length === 0 && (
-                        <p className={s.emptyText}>
-                            {t("postInternship.empty")}
-                        </p>
+                        <p className={s.emptyText}>{t("postInternship.empty")}</p>
                     )}
-                    {!loading &&
-                        !error &&
-                        internships.map(
-                            (internship) =>
-                                !internship.isDeleted && (
-                                    <InternshipCard
-                                        key={internship.id}
-                                        internship={internship}
-                                        OnDelete={handleDelete}
-                                        dark={dark}
-                                    />
-                                )
-                        )}
+                    {!loading && !error && internships.map((internship) =>
+                            !internship.isDeleted && (
+                                <InternshipCard
+                                    key={internship.id}
+                                    internship={internship}
+                                    OnDelete={handleDelete}
+                                    dark={dark}
+                                />
+                            )
+                    )}
                 </div>
             </div>
 

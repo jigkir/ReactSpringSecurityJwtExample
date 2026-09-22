@@ -62,6 +62,14 @@ i18n
                     },
                     teacher: {
                         passwordRequirements: "8–50 characters · digit · lowercase · uppercase · special character",
+                        existingId: "This teacher ID is already in use.",
+                        emailInUse: "This email address is already in use.",
+                        eitherIdOrEmailInUse: "An account with this teacher ID or email already exists.",
+                        invalidData: "The submitted data is invalid. Please review the fields.",
+                        genericServerError: "Server error {{errorCode}}. Please try again.",
+                        unableToReachServerError: "Unable to reach the server. Please try again.",
+                        accountCreationButton: "Create account",
+                        accountCreationButtonLoading: "Creating account…",
                     },
                     signup: {
                         signupInfo: "Create an account",
@@ -115,6 +123,7 @@ i18n
                         accountCreationButtonLoading: "Creating account…",
                         companyName: "Company Name",
                         phoneNumber: "Phone Number",
+                        sectorOfActivityLabel: "Sector of Activity",
                         selectSectorOfActivity: "Please select a sector of activity.",
                     },
                     student: {
@@ -335,6 +344,14 @@ i18n
                     },
                     teacher: {
                         passwordRequirements: "8 à 50 caractères · chiffre · minuscule · majuscule · caractère spécial",
+                        existingId: "Ce matricule enseignant est déjà en usage.",
+                        emailInUse: "Cette adresse courriel est déjà utilisée.",
+                        eitherIdOrEmailInUse: "Un compte associé à ce matricule ou à cette adresse courriel existe déjà.",
+                        invalidData: "Les données fournies ne sont pas valides. Veuillez vérifier les champs.",
+                        genericServerError: "Erreur de serveur {{errorCode}}. Veuillez réessayer.",
+                        unableToReachServerError: "Impossible d'accéder au serveur. Veuillez réessayer.",
+                        accountCreationButton: "Créer un compte",
+                        accountCreationButtonLoading: "Création en cours…",
                     },
                     signup: {
                         signupInfo: "Créer un compte",
@@ -388,6 +405,7 @@ i18n
                         accountCreationButtonLoading: "Création en cours…",
                         companyName: "Nom de la compagnie",
                         phoneNumber: "Numéro de téléphone",
+                        sectorOfActivityLabel: "Secteur d'activité",
                         selectSectorOfActivity: "Veuillez sélectionner un secteur d'activité.",
                     },
                     student: {

@@ -202,17 +202,21 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
 }
 
 export const DisciplineField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass, options = [], loading = false, fetchError = '', name = "discipline"
+    value, onChange, warning, labelClass, errorClass, fieldClass,
+    options = [], loading = false, fetchError = '', name = "discipline",
+    label,
 }) => {
     const { t } = useTranslation();
 
-    const disciplineOptions = options.map(({ value: v, label: l }) => ({
+    const effectiveLabel = label ?? t("commonFields.discipline");
+
+    const disciplineOptions = options.map(({ value: v }) => ({
         value: v,
         label: t(`disciplines.${v.toLowerCase()}`),
     }));
 
-    return(
-        <Field id="discipline" label={t("commonFields.discipline")} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
+    return (
+        <Field id="discipline" label={effectiveLabel} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
             <select
                 id="discipline" name={name}
                 value={value} onChange={onChange}

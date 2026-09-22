@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import fetcher from "../../../../utils/fetcher.js";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import fetcher from '../../../../utils/fetcher.js';
 import {useTranslation} from 'react-i18next';
 import {
     FirstNameField,
@@ -12,7 +12,7 @@ import {
     SubmitButton,
     validateField,
     Field,
-} from "../../../../utils/CommonFields.jsx";
+} from '../../../../utils/CommonFields.jsx';
 
 const DEFAULT_FORM = {
     companyName: "",
@@ -33,7 +33,7 @@ const validateCompanyName = (value, t) => {
     const tr = value.trim();
     if (!tr) return t("employer.requiredCompanyName");
     if (tr.length < 2) return t("employer.atLeastXCharacters", {amount:2});
-    if (tr.length > 100) return t("employer.atMoreXCharacters", {amount:100});
+    if (tr.length > 100) return t("employer.atMostXCharacters", {amount: 100});
     return "";
 };
 
@@ -189,7 +189,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
 
             <DisciplineField
                 value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity}
-                label="Sector of Activity" name="sectorActivity"
+                label={t("employer.sectorOfActivityLabel")} name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
                 options={sectors} loading={sectorsLoading} fetchError={sectorsFetchError}
             />

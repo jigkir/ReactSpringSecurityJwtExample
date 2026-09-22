@@ -1,6 +1,6 @@
-import {useState, useEffect} from "react";
-import {useNavigate} from "react-router-dom";
-import fetcher from "../../../../utils/fetcher.js";
+import {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import fetcher from '../../../../utils/fetcher.js';
 import {useTranslation} from 'react-i18next';
 import {
     FirstNameField,
@@ -12,7 +12,7 @@ import {
     ConfirmPasswordField,
     SubmitButton,
     validateField,
-} from "../../../../utils/CommonFields.jsx";
+} from '../../../../utils/CommonFields.jsx';
 
 
 const ID_FIELD = "teacherId";
@@ -28,12 +28,11 @@ const DEFAULT_FORM = {
 };
 
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
-
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
 const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
@@ -56,9 +55,9 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                     label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setDisciplinesFetchError("Could not load disciplines."))
+            .catch(() => setDisciplinesFetchError(t("commonFields.fetchError")))
             .finally(() => setDisciplinesLoading(false));
-    }, []);
+    }, [t]);
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -110,22 +109,22 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                     try { body = await response.json(); } catch {}
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({...w, [ID_FIELD]: "This teacher ID is already in use."}));
+                        setWarnings(w => ({...w, [ID_FIELD]: t("teacher.existingId")}));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({...w, email: "This email address is already in use."}));
+                        setWarnings(w => ({...w, email: t("teacher.emailInUse")}));
                     } else {
-                        setServerError("An account with this teacher ID or email already exists.");
+                        setServerError(t("teacher.eitherIdOrEmailInUse"));
                     }
                     break;
                 }
                 case 400:
-                    setServerError("The submitted data is invalid. Please review the fields.");
+                    setServerError(t("teacher.invalidData"));
                     break;
                 default:
-                    setServerError(`Server error (${response.status}). Please try again.`);
+                    setServerError(t("teacher.genericServerError", {errorCode: response.status}));
             }
         } catch {
-            setServerError("Unable to reach the server. Please try again.");
+            setServerError(t("teacher.unableToReachServerError"));
         } finally {
             setSubmitting(false);
         }
@@ -139,23 +138,22 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
             <FirstNameField  {...sharedProps} value={form.firstName} warning={warnings.firstName}/>
             <LastNameField   {...sharedProps} value={form.lastName} warning={warnings.lastName}/>
-            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={warnings[ID_FIELD]} name={ID_FIELD}
-                             role="Teacher" limit="5"/>
+            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={warnings[ID_FIELD]}
+                             name={ID_FIELD} role="Teacher" limit="5"/>
             <DisciplineField {...sharedProps} value={form.discipline} warning={warnings.discipline}
                              options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}/>
             <EmailField      {...sharedProps} value={form.email} warning={warnings.email}/>
             <PasswordField   {...sharedProps} value={form.password} warning={warnings.password}
                              eyeClass={eyeClass} show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
-                             hint={t("teacher.passwordRequirements")}
-                             passwordHintClass={passwordHintClass}/>
+                             hint={t("teacher.passwordRequirements")} passwordHintClass={passwordHintClass}/>
             <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={warnings.confirmPassword}
                                   eyeClass={eyeClass} show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}/>
 
             <SubmitButton
                 disabled={!isAllFilled(form) || submitting}
                 loading={submitting}
-                loadingLabel="Creating account…"
-                label="Create account"
+                loadingLabel={t("teacher.accountCreationButtonLoading")}
+                label={t("teacher.accountCreationButton")}
                 submitClass={submitClass}
             />
         </form>

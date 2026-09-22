@@ -57,10 +57,7 @@ function App() {
                 navigate('/error');
             });
 
-        return () => {
-            cancelled = true;
-        };
-        // Re-run on every navigation so state updates right after login/logout, not just once on mount.
+        return () => { cancelled = true; };
     }, [location.pathname]);
 
     return (
@@ -73,7 +70,7 @@ function App() {
                     <Route path="signup" element={<Signup/>}/>
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
                     <Route path="home" element={<Home/>}/>
-                    <Route path='post' element={<PostInternship/>}/>
+                    <Route path="post" element={<PostInternship user={user}/>}/>
                     <Route path="cv" element={<Cv user={user}/>}/>
                     <Route path="error" element={<ErrorPage error={error}/>}/>
                 </Route>
