@@ -85,16 +85,13 @@ public class StudentService {
     }
 
     public void uploadCV(MultipartFile file, Long studentId)
-            throws InvalidFileTypeException, InvalidFileSizeException, CorruptedFileException, UserNotFoundException, IOException, NoSuchAlgorithmException {
+            throws InvalidFileTypeException, InvalidFileSizeException, IOException, NoSuchAlgorithmException, CorruptedFileException, UserNotFoundException {
 
         if (file == null || file.isEmpty()) {
             throw new InvalidFileTypeException("Uploaded file is empty or null.");
         }
 
         byte[] bytes = file.getBytes();
-        if (bytes.length == 0) {
-            throw new InvalidFileTypeException("Uploaded file contains no data.");
-        }
 
         Student student = findById(studentId);
         String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
@@ -103,7 +100,7 @@ public class StudentService {
         saveCV(cvDto, student);
     }
 
-    public void saveCV(CVDto cvDto, Student student) throws CorruptedFileException, InvalidFileTypeException, NoSuchAlgorithmException, InvalidFileSizeException {
+    public void saveCV(CVDto cvDto, Student student) throws InvalidFileTypeException, NoSuchAlgorithmException, InvalidFileSizeException, CorruptedFileException {
 
         if (cvDto.content() == null || cvDto.content().length == 0) {
             throw new InvalidFileTypeException("File content cannot be null or empty.");
@@ -118,21 +115,24 @@ public class StudentService {
             throw new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.");
         }
 
-        try (PDDocument document = Loader.loadPDF(cvDto.content())) {
-        } catch (IOException e) {
-            throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
-        }
-
         CV cv = cvDto.toCV();
         cv.setStudent(student);
         student.addCv(cv);
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(cvDto.getContent());
-        String hash = HexFormat.of().formatHex(hashBytes);
+        String hash = calculateFileHash(cv.getContent());
         cv.setFileHash(hash);
 
+        if (!isCVReadable(cv)) {
+            throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
+        }
+
         cvRepository.save(cv);
+    }
+
+    public String calculateFileHash(byte[] content) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(content);
+        return HexFormat.of().formatHex(hashBytes);
     }
 
     public boolean isCVReadable(CV cv) throws NoSuchAlgorithmException {
@@ -142,9 +142,7 @@ public class StudentService {
         if (cv.getContent() == null || cv.getContent().length == 0) {
             return false;
         }
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(cv.getContent());
-        String hash = HexFormat.of().formatHex(hashBytes);
+        String hash = calculateFileHash(cv.getContent());
 
         if (!hash.equals(cv.getFileHash())) {
             return false;
@@ -160,7 +158,7 @@ public class StudentService {
         if (student == null) {
             return 0;
         }
-        return cvRepository.countByStudent_StudentId(student.getStudentId());
+        return cvRepository.countByStudent(student);
     }
 
 
@@ -169,7 +167,7 @@ public class StudentService {
         if (student == null) {
             throw new UserNotFoundException();
         }
-        List<CV> cvs = cvRepository.findByStudent_StudentId(student.getStudentId());
+        List<CV> cvs = cvRepository.findByStudent(student);
         List<CVDto> cvDtos = new ArrayList<>();
         for (CV cv : cvs) {
             if (!isCVReadable(cv)) {
@@ -188,16 +186,9 @@ public class StudentService {
     }
 
     public void setCvAsInvisible(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
-        if (student == null) {
-            throw new UserNotFoundException();
-        }
-        CV cv = findCvById(cvId);
-        if (cv != null && cv.getStudent().getStudentId().equals(student.getStudentId())) {
-            cv.setVisibility(CvVisibility.HIDDEN);
-            cvRepository.save(cv);
-        } else {
-            throw new UserNotFoundException();
-        }
+        CV cv = validateAndGetStudentCv(student, cvId);
+        cv.setVisibility(CvVisibility.HIDDEN);
+        cvRepository.save(cv);
     }
 
     public CV findCvById(Long cvId) throws CvNotFoundException {
@@ -209,34 +200,31 @@ public class StudentService {
     }
 
     public void setCvAsPublic(Student student, Long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
-        if (student == null) {
-            throw new UserNotFoundException();
+        CV cv = validateAndGetStudentCv(student, cvId);
+        if (cv.getSharingScope() == CVSharingScope.PUBLIC) {
+            throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
         }
-        CV cv = findCvById(cvId);
-        if (cv != null && cv.getStudent().getStudentId().equals(student.getStudentId())) {
-            if (cv.getSharingScope().equals(CVSharingScope.PUBLIC)) {
-                throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
-            }
-            cv.setSharingScope(CVSharingScope.PUBLIC);
-            cvRepository.save(cv);
-        } else {
-            throw new UserNotFoundException();
-        }
+        cv.setSharingScope(CVSharingScope.PUBLIC);
+        cvRepository.save(cv);
     }
 
     public void setCvAsPrivate(Student student, Long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+        CV cv = validateAndGetStudentCv(student, cvId);
+        if (cv.getSharingScope() == CVSharingScope.PRIVATE) {
+            throw new CVAlredyPrivateException("The CV with ID " + cvId + " is already private.");
+        }
+        cv.setSharingScope(CVSharingScope.PRIVATE);
+        cvRepository.save(cv);
+    }
+
+    private CV validateAndGetStudentCv(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
         if (student == null) {
             throw new UserNotFoundException();
         }
         CV cv = findCvById(cvId);
-        if (cv != null && cv.getStudent().getStudentId().equals(student.getStudentId())) {
-            if (cv.getSharingScope().equals(CVSharingScope.PRIVATE)) {
-                throw new CVAlredyPrivateException("The CV with ID " + cvId + " is already private.");
-            }
-            cv.setSharingScope(CVSharingScope.PRIVATE);
-            cvRepository.save(cv);
-        } else {
+        if (!cv.isOwnedBy(student)) {
             throw new UserNotFoundException();
         }
+        return cv;
     }
 }

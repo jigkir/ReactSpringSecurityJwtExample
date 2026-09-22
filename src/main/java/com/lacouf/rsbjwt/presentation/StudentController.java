@@ -33,7 +33,7 @@ public class StudentController {
     @PostMapping("/{id}/cvs")
     public ResponseEntity<String> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
+            @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException, CvNotFoundException {
 
         studentService.uploadCV(file, id);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);

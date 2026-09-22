@@ -277,7 +277,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldGetCVCountByStudent() {
-        when(cvRepository.countByStudent_StudentId("1234567")).thenReturn(3L);
+        when(cvRepository.countByStudent(dummyStudent)).thenReturn(3L);
 
         long count = studentService.getCVCountByStudent(dummyStudent);
 
@@ -299,7 +299,7 @@ public class StudentServiceTest {
         visibleCv.setFileHash(calculateHash(validPdfBytes));
         visibleCv.setVisibility(CvVisibility.VISIBLE);
 
-        when(cvRepository.findByStudent_StudentId("1234567")).thenReturn(List.of(visibleCv));
+        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(visibleCv));
 
         List<CVDto> cvs = studentService.getCVs(dummyStudent);
 
@@ -315,7 +315,7 @@ public class StudentServiceTest {
         hiddenCv.setFileHash(calculateHash(validPdfBytes));
         hiddenCv.setVisibility(CvVisibility.HIDDEN);
 
-        when(cvRepository.findByStudent_StudentId("1234567")).thenReturn(List.of(hiddenCv));
+        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(hiddenCv));
 
         List<CVDto> cvs = studentService.getCVs(dummyStudent);
 
@@ -334,7 +334,7 @@ public class StudentServiceTest {
         corruptedCv.setContent("Corrupted".getBytes());
         corruptedCv.setFileHash("badhash");
 
-        when(cvRepository.findByStudent_StudentId("1234567")).thenReturn(List.of(corruptedCv));
+        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(corruptedCv));
 
         assertThrows(CorruptedFileException.class, () -> studentService.getCVs(dummyStudent));
     }
