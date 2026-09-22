@@ -64,7 +64,6 @@ export const validateId = (value, length = 7) => {
 };
 
 export function validateField(field, value, formValues = {}, t) {
-
     switch (field) {
         case 'firstName':
         case 'lastName': {

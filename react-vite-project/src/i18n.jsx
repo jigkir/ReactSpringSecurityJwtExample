@@ -56,6 +56,7 @@ i18n
                         student:"Student",
                         employer:"Employer",
                         teacher:"Teacher",
+                        manager: "Manager",
                     },
                     login:{
                         error401:'Not authorized',
@@ -89,6 +90,7 @@ i18n
                         accountCreationButtonLoading:"Creating account…",
                         companyName:"Company Name",
                         phoneNumber:"Phone Number",
+                        selectSectorOfActivity:"Please select a sector of activity.",
                     },
                     student:{
                         existingId:"This student ID is already in use.",
@@ -244,6 +246,7 @@ i18n
                         student:"Étudiant",
                         employer:"Employeur",
                         teacher:"Professeur",
+                        manager: "Gestionnaire",
                     },
                     login:{
                         error401:'Non autorisé',
@@ -277,6 +280,7 @@ i18n
                         accountCreationButtonLoading:"Création en cours…",
                         companyName:"Nom de le compagnie",
                         phoneNumber:"Numéro de téléphone",
+                        selectSectorOfActivity:"Veuillez sélectionner un secteur d'activité.",
                     },
                     student:{
                         existingId:"Ce matricule est déjà en usage.",
