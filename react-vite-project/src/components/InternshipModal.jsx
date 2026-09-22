@@ -46,7 +46,7 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
         setFormData((prev) => ({...prev, [name]: value}));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
 
@@ -60,7 +60,7 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
             return;
         }
 
-        const compensationRegex = /^\$\d+(\.\d+)?\/h$|^unpaid$|^non\s*rémunéré$/i;
+        const compensationRegex = /^(?:\d+\$\/h|non rémunéré)$/i;
         if (!compensationRegex.test(formData.compensation.trim())) {
             setError(t("internshipModal.errorCompensation"));
             return;
@@ -75,14 +75,18 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
         const newInternship = {
             ...formData,
             duration: t("internshipModal.duration", {count: durationNumber}),
-            status: "Pending Validation",
+            status: "PENDING",
             submittedAt: new Date().toISOString(),
             isDeleted: false,
             employerId: user.id,
         };
 
+        const result = await onAddInternship(newInternship);
+        if (!result?.success) {
+            setError(result?.message || t("postInternship.createError"));
+            return;
+        }
         onClose();
-        onAddInternship(newInternship);
     };
 
     return (

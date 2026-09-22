@@ -1,6 +1,9 @@
 package com.lacouf.rsbjwt.service.dto;
 
 import com.lacouf.rsbjwt.model.Internship;
+import com.lacouf.rsbjwt.model.InternshipStatus;
+
+import java.time.LocalDate;
 
 public record InternshipResponseDto(
         Long id,
@@ -9,10 +12,10 @@ public record InternshipResponseDto(
         String requiredSkills,
         String duration,
         String location,
-        String startDate,
-        String deadline,
+        LocalDate  startDate,
+        LocalDate deadline,
         String compensation,
-        String status,
+        InternshipStatus status,
         Boolean isDeleted,
         Long employerId
 ) {

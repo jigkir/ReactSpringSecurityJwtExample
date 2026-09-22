@@ -1,18 +1,19 @@
 package com.lacouf.rsbjwt.service.dto;
 
+import com.lacouf.rsbjwt.model.InternshipStatus;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDate;
 
 public record InternshipRequestDto(
         @NotBlank
         @Size(min = 2, max = 50)
-        @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "Title must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
         String title,
 
         @NotBlank
         @Size(min = 2, max = 255)
-        @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "Description must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
         String description,
 
         @NotBlank
@@ -24,16 +25,16 @@ public record InternshipRequestDto(
         @NotBlank
         String location,
 
-        @NotBlank
-        String startDate,
+        @NotNull
+        LocalDate startDate,
 
-        @NotBlank
-        String deadline,
+        @NotNull
+        LocalDate deadline,
 
         @NotBlank
         String compensation,
 
-        String status,
+        InternshipStatus status,
 
         Boolean isDeleted,
 

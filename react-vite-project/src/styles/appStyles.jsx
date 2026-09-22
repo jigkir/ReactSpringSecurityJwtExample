@@ -198,10 +198,10 @@ export function getInternshipCardClasses(dark) {
         deleteBtn: `p-1.5 rounded ml-auto transition-colors ${dark ? "text-slate-400 hover:bg-slate-700 hover:text-red-400" : "text-gray-600 hover:bg-gray-200 hover:text-red-600"}`,
         statusBadge: (status) => {
             const base = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-md font-medium shrink-0";
-            if (status === "Pending Validation") return dark
+            if (status === "PENDING") return dark
                 ? `${base} bg-yellow-900/30 text-yellow-300 border border-yellow-700`
                 : `${base} bg-yellow-50 text-yellow-700 border border-yellow-200`;
-            if (status === "Approved") return dark
+            if (status === "APPROVED") return dark
                 ? `${base} bg-green-900/30 text-green-300 border border-green-700`
                 : `${base} bg-green-50 text-green-700 border border-green-200`;
             return dark

@@ -2,9 +2,9 @@ import {useTranslation} from 'react-i18next';
 import {getInternshipCardClasses} from '../styles/appStyles.jsx';
 
 const STATUS_KEY_MAP = {
-    "Pending Validation": "internshipCard.status.pendingValidation",
-    "Approved": "internshipCard.status.approved",
-    "Rejected": "internshipCard.status.rejected",
+    PENDING: "internshipCard.status.pendingValidation",
+    APPROVED: "internshipCard.status.approved",
+    REJECTED: "internshipCard.status.rejected",
 };
 
 export default function InternshipCard({internship, OnDelete, dark}) {
@@ -24,13 +24,13 @@ export default function InternshipCard({internship, OnDelete, dark}) {
                     <p className={s.description}>{internship.description}</p>
                 </div>
                 <span className={s.statusBadge(internship.status)}>
-                    {internship.status === "Pending Validation" ? (
+                    {internship.status === "PENDING" ? (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round"
                                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                    ) : internship.status === "Approved" ? (
+                    ) : internship.status === "APPROVED" ? (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.model.InternshipStatus;
 import com.lacouf.rsbjwt.security.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.EmployerService;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +68,7 @@ class InternshipControllerTest {
     @WithMockUser(username = "email@example.com", authorities = "EMPLOYER")
     void shouldReturnCreatedWhenInternshipIsCreated() throws Exception {
         // Arrange
-        InternshipResponseDto response = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, 1L);
+        InternshipResponseDto response = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", LocalDate.of(2027, 1, 10), LocalDate.of(2026, 12, 1), "25$/h", InternshipStatus.PENDING, false, 1L);
 
         when(employerService.save(any(InternshipRequestDto.class))).thenReturn(response);
 
@@ -158,13 +160,11 @@ class InternshipControllerTest {
                 Arguments.of("title", " "),
                 Arguments.of("title", "a"),
                 Arguments.of("title", "a".repeat(51)),
-                Arguments.of("title", "12345"),
                 Arguments.of("description", null),
                 Arguments.of("description", ""),
                 Arguments.of("description", " "),
                 Arguments.of("description", "a"),
                 Arguments.of("description", "a".repeat(256)),
-                Arguments.of("description", "12345"),
                 Arguments.of("requiredSkills", null),
                 Arguments.of("requiredSkills", ""),
                 Arguments.of("requiredSkills", " "),
@@ -190,7 +190,7 @@ class InternshipControllerTest {
     @WithMockUser(username = "email@example.com", authorities = "EMPLOYER")
     void shouldReturnOkWhenInternshipIsDeleted() throws Exception {
         // Arrange
-        InternshipResponseDto response = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", true, 1L);
+        InternshipResponseDto response = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", LocalDate.of(2027, 1, 10), LocalDate.of(2026, 12, 1), "25$/h", InternshipStatus.PENDING, true, 1L);
         when(employerService.deleteInternship(10L)).thenReturn(response);
 
         // Act + Assert
@@ -205,7 +205,7 @@ class InternshipControllerTest {
     void shouldReturnInternshipsMadeByCurrentEmployer() throws Exception {
         // Arrange
         UserResponseDto user = new UserResponseDto(1L, "First Name", "Last Name", "email@example.com", "EMPLOYER");
-        InternshipResponseDto internship = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, 1L);
+        InternshipResponseDto internship = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", LocalDate.of(2027, 1, 10), LocalDate.of(2026, 12, 1), "25$/h", InternshipStatus.PENDING, false, 1L);
 
         when(userAppService.getUserByEmail("email@example.com")).thenReturn(user);
         when(employerService.getInternshipsByEmployerId(1L)).thenReturn(List.of(internship));
@@ -225,7 +225,7 @@ class InternshipControllerTest {
     @WithMockUser(username = "student@example.com", authorities = "STUDENT")
     void shouldReturnAllActiveInternships() throws Exception {
         // Arrange
-        InternshipResponseDto internship = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, 1L);
+        InternshipResponseDto internship = new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", LocalDate.of(2027, 1, 10), LocalDate.of(2026, 12, 1), "25$/h", InternshipStatus.PENDING, false, 1L);
         when(employerService.getAllActiveInternships()).thenReturn(List.of(internship));
 
         // Act + Assert

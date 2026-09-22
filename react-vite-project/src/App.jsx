@@ -60,6 +60,7 @@ function App() {
         return () => {
             cancelled = true;
         };
+        // Re-run on every navigation so state updates right after login/logout, not just once on mount.
     }, [location.pathname]);
 
     return (
