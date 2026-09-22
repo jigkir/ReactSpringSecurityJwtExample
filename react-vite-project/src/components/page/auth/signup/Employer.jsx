@@ -45,12 +45,12 @@ const validatePhoneNumber = (value) => {
 
 const validateSectorActivity = (value) => value ? "" : "Please select a sector of activity.";
 
-const validateEmployerField = (field, value, formValues = {}) => {
+const validateEmployerField = (field, value, formValues = {}, t) => {
     switch (field) {
         case "companyName":    return validateCompanyName(value);
         case "phoneNumber":    return validatePhoneNumber(value);
         case "sectorActivity": return validateSectorActivity(value);
-        default:               return validateField(field, value, formValues);
+        default:               return validateField(field, value, formValues, t);
     }
 };
 
@@ -96,7 +96,7 @@ const Employer = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorCla
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateEmployerField(key, form[key], form);
+            const msg = validateEmployerField(key, form[key], form, t);
             newWarnings[key] = msg;
             if (msg) valid = false;
         }

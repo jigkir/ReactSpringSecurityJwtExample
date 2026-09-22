@@ -5,6 +5,7 @@ export const RoleField = ({
     label = 'Role', options = [], loading = false, fetchError = '',
 }) => {
     const { t } = useTranslation();
+    const roleOptions = options.map(v => ({ value: v, label: t(`signup.${v}`) }));
     return(
     <Field id="role" label={label} warning={fetchError} labelClass={labelClass} errorClass={errorClass}>
         <select
@@ -17,7 +18,7 @@ export const RoleField = ({
                 {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectXText", {selectType:label.toLowerCase()})}
 
             </option>
-            {options.map(({value: v, label: l}) => (
+            {roleOptions.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
             ))}
         </select>
@@ -53,7 +54,7 @@ const withSanitizer = (sanitize, onChange) => (e) => {
     onChange({target: {name, value: sanitize(value)}});
 };
 
-export const validateDiscipline = (value) => value ? '' : t("commonFields.disciplineSelect");
+export const validateDiscipline = (value, t) => value ? '' : t("commonFields.disciplineSelect");
 
 export const validateId = (value, length = 7) => {
     const t = value.trim();
@@ -62,8 +63,8 @@ export const validateId = (value, length = 7) => {
     return '';
 };
 
-export function validateField(field, value, formValues = {}) {
-    const { t } = useTranslation();
+export function validateField(field, value, formValues = {}, t) {
+
     switch (field) {
         case 'firstName':
         case 'lastName': {
@@ -102,7 +103,7 @@ export function validateField(field, value, formValues = {}) {
             if (value !== formValues.password) return t("commonFields.noMatchingPasswords");
             return '';
         case 'discipline':
-            return validateDiscipline(value);
+            return validateDiscipline(value, t);
         case 'studentId':
             return validateId(value, 7);
         case 'teacherId':
@@ -202,6 +203,12 @@ export const DisciplineField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, options = [], loading = false, fetchError = '', name = "discipline"
 }) => {
     const { t } = useTranslation();
+
+    const disciplineOptions = options.map(({ value: v, label: l }) => ({
+        value: v,
+        label: t(`disciplines.${v.toLowerCase()}`),
+    }));
+
     return(
         <Field id="discipline" label={t("commonFields.discipline")} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
             <select
@@ -211,9 +218,9 @@ export const DisciplineField = ({
                 disabled={loading}
             >
                 <option value="">
-                    {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectRoleText")}
+                    {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectDisciplineText")}
                 </option>
-                {options.map(({value: v, label: l}) => (
+                {disciplineOptions.map(({value: v, label: l}) => (
                     <option key={v} value={v}>{l}</option>
                 ))}
             </select>

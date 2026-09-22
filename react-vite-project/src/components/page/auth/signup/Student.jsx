@@ -79,7 +79,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateField(key, form[key], form);
+            const msg = validateField(key, form[key], form, t);
             newWarnings[key] = msg;
             if (msg) valid = false;
         }

@@ -47,24 +47,15 @@ i18n
                         switchFench:"FR",
                         switchEnglish:"EN",
                     },
-                    managerPage:{
-                        pageInfo:"Manager home page",
-                        buttonInfo:"Access the manager endpoint",
-                    },
-                    borrowerPage:{
-                        pageInfo:"Borrower home page",
-                        buttonInfo:"Access the manager endpoint",
-                    },
-                    attendantPage:{
-                        pageInfo:"Attendant home page",
-                        buttonInfo:"Access the manager endpoint",
-                    },
                     signup:{
                         signupInfo:"Create an account",
                         noSignup:"No signup form available for this role yet.",
                         signupFormConfirm:"Sign in",
                         couldNotLoadRoles:'Could not load roles.',
                         alreadyHaveAnAccount:"Already have an account?",
+                        student:"Student",
+                        employer:"Employer",
+                        teacher:"Teacher",
                     },
                     login:{
                         error401:'Not authorized',
@@ -120,6 +111,7 @@ i18n
                         fetchError:'Failed to load',
                         selectXText:'-- Select a {{selectType}} --',
                         selectRoleText:'-- Select a role --',
+                        selectDisciplineText:'-- Select a discipline --',
                         disciplineSelect:'Please select a discipline.',
                         requiredId:'ID is required.',
                         requiredIdLength:"ID must be exactly {{length}} digits.",
@@ -142,7 +134,18 @@ i18n
                         showPassword:"Show password",
                         hideConfirmation:'Hide confirmation',
                         showConfirmation:'Show confirmation',
-                    }
+                        student:"Student",
+                        employer:"Employer",
+                        teacher:"Teacher",
+                        role:"Role",
+                    },
+                    disciplines:{
+                        computer_science:"Computer science",
+                        civil_engineering:"Civil engineering",
+                        electrical_engineering:"Electrical engineering",
+                        marketing:"Marketing",
+                        nursing:"Nursing",
+                    },
                 }
             },
             fr:{
@@ -156,7 +159,7 @@ i18n
                         apiError: "Erreur API"
                     },
                     footer:{
-                        copyright:"Copyright © 2026",
+                        copyright:"Droits d'auteur © 2026",
                         about:"À propos",
                     },
                     mainContainer:{
@@ -176,24 +179,15 @@ i18n
                         login:"Connecter",
                         signup:"S'enregistrer",
                     },
-                    managerPage:{
-                        pageInfo:"Page accueil gestionnaire",
-                        buttonInfo:"Accéder à l'endpoint gestionnaire",
-                    },
-                    borrowerPage:{
-                        pageInfo:"Page accueil emprunteur",
-                        buttonInfo:"Accéder à l'endpoint gestionnaire",
-                    },
-                    attendantPage:{
-                        pageInfo:"Page accueil prepose",
-                        buttonInfo:"Accéder à l'endpoint gestionnaire",
-                    },
                     signup:{
                         signupInfo:"Créer un compte",
                         noSignup:"Aucun formulaire d'inscription n'est disponible pour ce rôle.",
                         signupFormConfirm:"Se Connecter",
                         couldNotLoadRoles:'Échec du téléchargement des rôles.',
                         alreadyHaveAnAccount:"Vous avez déjà un compte?",
+                        student:"Étudiant",
+                        employer:"Employeur",
+                        teacher:"Professeur",
                     },
                     login:{
                         error401:'Non autorisé',
@@ -247,8 +241,9 @@ i18n
                         confirmPassword:'Confirmer mot de passe',
                         loading:'Chargement…',
                         fetchError:'Échec du chargement',
+                        selectXText:'-- Selectionne un(e) {{selectType}} --',
                         selectRoleText:'-- Selectionne un rôle --',
-                        selectXText:'-- Selectionne un {{selectType}} --',
+                        selectDisciplineText:'-- Selectionne une discipline --',
                         disciplineSelect:'Veuillez choisir une discipline.',
                         requiredId:'Matricule est obligatoire.',
                         requiredIdLength:"Le matricule doit comporter exactement {{length}} chiffres.",
@@ -271,7 +266,18 @@ i18n
                         showPassword:"Afficher le mot de passe",
                         hideConfirmation:'Masquer la confirmation',
                         showConfirmation:'Afficher la confirmation',
-                    }
+                        student:"Étudiant",
+                        employer:"Employeur",
+                        teacher:"Professeur",
+                        role:"Rôle",
+                    },
+                    disciplines:{
+                        computer_science:"Informatique",
+                        civil_engineering:"Génie civil",
+                        electrical_engineering:"Génie électrique",
+                        marketing:"Marketing",
+                        nursing:"Soins infirmiers",
+                    },
                 }
             }
         }
