@@ -1,7 +1,19 @@
+import { useTranslation } from "react-i18next";
 import { getInternshipCardClasses } from "../styles/appStyles.jsx";
 
+const STATUS_KEY_MAP = {
+    "Pending Validation": "internshipCard.status.pendingValidation",
+    "Approved": "internshipCard.status.approved",
+    "Rejected": "internshipCard.status.rejected",
+};
+
 export default function InternshipCard({ internship, OnDelete, dark }) {
+    const { t } = useTranslation();
     const s = getInternshipCardClasses(dark);
+
+    const statusLabel = STATUS_KEY_MAP[internship.status]
+        ? t(STATUS_KEY_MAP[internship.status])
+        : internship.status;
 
     return (
         <div className={s.card}>
@@ -29,13 +41,13 @@ export default function InternshipCard({ internship, OnDelete, dark }) {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     )}
-                    {internship.status}
+                    {statusLabel}
                 </span>
             </div>
 
             {/* Required Skills */}
             <div className={s.skillsRow}>
-                <span className="font-semibold">Required Skills: </span>
+                <span className="font-semibold">{t("internshipCard.requiredSkills")} </span>
                 <span className={s.skillBadge}>{internship.requiredSkills}</span>
             </div>
 
@@ -96,7 +108,7 @@ export default function InternshipCard({ internship, OnDelete, dark }) {
                 {/* Delete */}
                 <button
                     className={s.deleteBtn}
-                    aria-label="Delete internship"
+                    aria-label={t("internshipCard.deleteAria")}
                     onClick={() => OnDelete(internship.id)}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

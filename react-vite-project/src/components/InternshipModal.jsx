@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getInternshipModalClasses } from "../styles/appStyles.jsx";
 
 export default function InternshipModal({ isOpen, onClose, onAddInternship, user, dark }) {
+    const { t } = useTranslation();
     const s = getInternshipModalClasses(dark);
 
     const [formData, setFormData] = useState({
@@ -54,25 +56,25 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
             .filter((skill) => skill.length > 0);
 
         if (skillsArray.length === 0) {
-            setError("Please enter at least one valid skill.");
+            setError(t("internshipModal.errorSkills"));
             return;
         }
 
         const compensationRegex = /^\$\d+(\.\d+)?\/h$|^unpaid$|^non\s*rémunéré$/i;
         if (!compensationRegex.test(formData.compensation.trim())) {
-            setError("Compensation must be in format like '$20/h' or 'unpaid'.");
+            setError(t("internshipModal.errorCompensation"));
             return;
         }
 
         const durationNumber = parseInt(formData.duration, 10);
         if (isNaN(durationNumber) || durationNumber <= 0) {
-            setError("Duration must be a valid number of months.");
+            setError(t("internshipModal.errorDuration"));
             return;
         }
 
         const newInternship = {
             ...formData,
-            duration: `${durationNumber} mois`,
+            duration: t("internshipModal.duration", { count: durationNumber }),
             status: "Pending Validation",
             submittedAt: new Date().toISOString(),
             isDeleted: false,
@@ -88,7 +90,7 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
             <div className={s.panel}>
                 {/* Header */}
                 <div className={s.header}>
-                    <h2 className={s.title}>Post a New Internship</h2>
+                    <h2 className={s.title}>{t("internshipModal.title")}</h2>
                     <button type="button" onClick={onClose} className={s.closeBtn}>
                         &times;
                     </button>
@@ -103,7 +105,7 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
 
                     {/* Title */}
                     <div>
-                        <label className={s.label}>Title :</label>
+                        <label className={s.label}>{t("internshipModal.titleLabel")}</label>
                         <input
                             type="text" name="title" value={formData.title}
                             onChange={handleChange} className={s.input} required
@@ -112,7 +114,7 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
 
                     {/* Description */}
                     <div>
-                        <label className={s.label}>Description :</label>
+                        <label className={s.label}>{t("internshipModal.descriptionLabel")}</label>
                         <textarea
                             name="description" rows="3" value={formData.description}
                             onChange={handleChange} className={s.textarea} required
@@ -121,30 +123,30 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
 
                     {/* Required skills */}
                     <div>
-                        <label className={s.label}>Required skills :</label>
+                        <label className={s.label}>{t("internshipModal.skillsLabel")}</label>
                         <input
                             type="text" name="requiredSkills" value={formData.requiredSkills}
-                            onChange={handleChange} placeholder="ex: React, Node.js, Python"
+                            onChange={handleChange} placeholder={t("internshipModal.skillsPlaceholder")}
                             className={s.input} required
                         />
-                        <p className={s.hint}>Separate each skill with a comma.</p>
+                        <p className={s.hint}>{t("internshipModal.skillsHint")}</p>
                     </div>
 
                     {/* Duration + Location */}
                     <div className={s.grid2}>
                         <div>
-                            <label className={s.label}>Duration (months) :</label>
+                            <label className={s.label}>{t("internshipModal.durationLabel")}</label>
                             <input
                                 type="number" name="duration" min="1" value={formData.duration}
-                                onChange={handleChange} placeholder="ex: 3"
+                                onChange={handleChange} placeholder={t("internshipModal.durationPlaceholder")}
                                 className={s.input} required
                             />
                         </div>
                         <div>
-                            <label className={s.label}>Location :</label>
+                            <label className={s.label}>{t("internshipModal.locationLabel")}</label>
                             <input
                                 type="text" name="location" value={formData.location}
-                                onChange={handleChange} placeholder="ex: Montréal (Hybride)"
+                                onChange={handleChange} placeholder={t("internshipModal.locationPlaceholder")}
                                 className={s.input} required
                             />
                         </div>
@@ -153,7 +155,7 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
                     {/* Start date + Deadline */}
                     <div className={s.grid2}>
                         <div>
-                            <label className={s.label}>Start date :</label>
+                            <label className={s.label}>{t("internshipModal.startDateLabel")}</label>
                             <input
                                 type="date" name="startDate" value={formData.startDate}
                                 min={minStartDay} onChange={handleChange}
@@ -161,7 +163,7 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
                             />
                         </div>
                         <div>
-                            <label className={s.label}>Deadline to post :</label>
+                            <label className={s.label}>{t("internshipModal.deadlineLabel")}</label>
                             <input
                                 type="date" name="deadline" min={today} max={maxDeadline}
                                 value={formData.deadline} onChange={handleChange}
@@ -172,10 +174,10 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
 
                     {/* Compensation */}
                     <div>
-                        <label className={s.label}>Compensation :</label>
+                        <label className={s.label}>{t("internshipModal.compensationLabel")}</label>
                         <input
                             type="text" name="compensation" value={formData.compensation}
-                            onChange={handleChange} placeholder="ex: 20$/h or Unpaid"
+                            onChange={handleChange} placeholder={t("internshipModal.compensationPlaceholder")}
                             className={s.input} required
                         />
                     </div>
@@ -183,10 +185,10 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship, user
                     {/* Footer */}
                     <div className={s.footer}>
                         <button type="button" onClick={onClose} className={s.cancelBtn}>
-                            Cancel
+                            {t("internshipModal.cancelBtn")}
                         </button>
                         <button type="submit" className={s.submitBtn}>
-                            Submit
+                            {t("internshipModal.submitBtn")}
                         </button>
                     </div>
                 </form>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import InternshipModal from "../InternshipModal.jsx";
 import InternshipCard from "../InternshipCard.jsx";
 import fetcher from "../../utils/fetcher.js";
@@ -7,6 +8,7 @@ import { getPostInternshipClasses } from "../../styles/appStyles.jsx";
 
 function PostInternship({ user }) {
     const { dark } = useOutletContext();
+    const { t } = useTranslation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState("");
@@ -22,9 +24,9 @@ function PostInternship({ user }) {
                 const list = Array.isArray(data) ? data : (data.internships ?? []);
                 setInternships(list);
             })
-            .catch(() => setError("Could not load your internships."))
+            .catch(() => setError(t("postInternship.loadError")))
             .finally(() => setLoading(false));
-    }, []);
+    }, [t]);
 
     const handleAddInternship = async (newOffer) => {
         try {
@@ -36,7 +38,7 @@ function PostInternship({ user }) {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to create internship");
+                throw new Error(errorData.message || t("postInternship.createError"));
             }
 
             const savedInternship = await response.json();
@@ -46,7 +48,7 @@ function PostInternship({ user }) {
             return { success: true };
         } catch (err) {
             console.error(err);
-            return { success: false, message: err.message || "Could not save internship offer." };
+            return { success: false, message: err.message || t("postInternship.createGenericError") };
         }
     };
 
@@ -55,7 +57,7 @@ function PostInternship({ user }) {
             const response = await fetcher(`internship/delete?id=${id}`, { method: "PUT" });
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to delete internship");
+                throw new Error(errorData.message || t("postInternship.deleteError"));
             }
             const updatedInternship = await response.json();
             setInternships((prev) =>
@@ -63,7 +65,7 @@ function PostInternship({ user }) {
             );
         } catch (err) {
             console.error(err);
-            alert(err.message || "Could not delete internship.");
+            alert(err.message || t("postInternship.deleteGenericError"));
         }
     };
 
@@ -73,29 +75,29 @@ function PostInternship({ user }) {
             {/* Top Header & Button Section */}
             <div className={s.headerSection}>
                 <div>
-                    <h1 className={s.title}>Manage Postings</h1>
-                    <p className={s.subtitle}>Manage and post your internship offers for students.</p>
+                    <h1 className={s.title}>{t("postInternship.pageTitle")}</h1>
+                    <p className={s.subtitle}>{t("postInternship.pageSubtitle")}</p>
                 </div>
                 <button onClick={() => setIsModalOpen(true)} className={s.addBtn}>
-                    Submit an internship offer
+                    {t("postInternship.addBtn")}
                 </button>
             </div>
 
             {/* Internship List Section (Takes up remaining height) */}
             <div className={s.listSection}>
-                <h2 className={s.listHeading}>Your Posted Internships</h2>
+                <h2 className={s.listHeading}>{t("postInternship.listTitle")}</h2>
 
                 {/* 2. Scrollable container for the cards */}
                 <div className={s.scrollArea}>
                     {loading && (
-                        <p className={s.loadingText}>Loading your internships...</p>
+                        <p className={s.loadingText}>{t("postInternship.loading")}</p>
                     )}
                     {error && (
                         <p className={s.errorText}>{error}</p>
                     )}
                     {!loading && !error && internships.filter((i) => !i.isDeleted).length === 0 && (
                         <p className={s.emptyText}>
-                            You haven't posted any internships yet.
+                            {t("postInternship.empty")}
                         </p>
                     )}
                     {!loading &&
