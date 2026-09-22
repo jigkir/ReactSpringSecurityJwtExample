@@ -13,17 +13,12 @@
  */
 
 import {useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import CvButton from './CvButton.jsx';
 import {getCvPreviewClasses} from '../../../../styles/appStyles.jsx';
 
-const TEXTS = {
-    loading: "Loading document…",
-    error: "Unable to display this document.",
-    newTabBtn: "Open in new tab",
-    closeBtn: "Close",
-};
-
 const CvPreview = ({doc, dark, getUrl, onClose}) => {
+    const {t} = useTranslation();
     const [url, setUrl] = useState(null);
     const [error, setError] = useState(false);
 
@@ -91,10 +86,10 @@ const CvPreview = ({doc, dark, getUrl, onClose}) => {
                     <div className="flex shrink-0 items-center gap-2">
                         <CvButton tone="neutral" dark={dark} disabled={!url}
                                   onClick={() => url && window.open(url, "_blank", "noopener,noreferrer")}>
-                            {TEXTS.newTabBtn}
+                            {t("cvPreview.newTabBtn")}
                         </CvButton>
                         <CvButton tone="accent" dark={dark} onClick={onClose} autoFocus>
-                            {TEXTS.closeBtn}
+                            {t("cvPreview.closeBtn")}
                         </CvButton>
                     </div>
                 </div>
@@ -102,9 +97,9 @@ const CvPreview = ({doc, dark, getUrl, onClose}) => {
                 {/* Body */}
                 <div className={cls.body}>
                     {error ? (
-                        <p className={`${cls.muted} pt-16`} role="alert">{TEXTS.error}</p>
+                        <p className={`${cls.muted} pt-16`} role="alert">{t("cvPreview.error")}</p>
                     ) : !url ? (
-                        <p className={`${cls.muted} pt-16`} aria-busy="true">{TEXTS.loading}</p>
+                        <p className={`${cls.muted} pt-16`} aria-busy="true">{t("cvPreview.loading")}</p>
                     ) : (
                         <iframe src={url} title={doc.fileName} className="h-full w-full border-0 bg-white"/>
                     )}

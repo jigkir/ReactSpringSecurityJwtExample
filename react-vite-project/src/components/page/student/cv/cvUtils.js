@@ -30,14 +30,17 @@ export function resolveStudentId(user) {
 
 // ─── File validation ──────────────────────────────────────────────────────────
 
-/** Returns an error string, or null when the file is acceptable. */
+/**
+ * Returns { key, options } for t() when the file is invalid, or null when acceptable.
+ * Keeping translation out of this utility preserves its framework-agnostic nature.
+ */
 export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
-    if (!file) return "No file selected.";
+    if (!file) return { key: "cvUpload.validation.noFile" };
     if (file.type !== ACCEPTED_MIME && !file.name.toLowerCase().endsWith(ACCEPTED_EXT)) {
-        return "Invalid file format. Please select a PDF file.";
+        return { key: "cvUpload.validation.invalidFormat" };
     }
     if (file.size > maxBytes) {
-        return `Your file is too large. The maximum allowed size is ${(maxBytes / (1024 * 1024)).toFixed(0)} MB.`;
+        return { key: "cvUpload.validation.tooLarge", options: { mb: (maxBytes / (1024 * 1024)).toFixed(0) } };
     }
     return null;
 }
