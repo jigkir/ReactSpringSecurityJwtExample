@@ -1,12 +1,19 @@
 import {Link, useLocation} from "react-router-dom";
 import {useTranslation} from 'react-i18next';
+import {getNavbarClasses} from "../styles/appStyles.jsx";
 
 function Navbar({user, dark, toggleDark}) {
-    const { t, i18n} = useTranslation();
+    const {t, i18n} = useTranslation();
     const location = useLocation();
 
     const role = (user?.role?.toString() ?? '').replace('ROLE_', '');
-    const toggleLang = () => {if (i18n.language === 'en') {i18n.changeLanguage('fr')}else {i18n.changeLanguage('en')}};
+    const toggleLang = () => {
+        if (i18n.language === 'en') {
+            i18n.changeLanguage('fr')
+        } else {
+            i18n.changeLanguage('en')
+        }
+    };
     const formatRole = (roleString) => {
         if (!roleString) return '';
         const name = roleString.replace('ROLE_', '');
@@ -20,22 +27,10 @@ function Navbar({user, dark, toggleDark}) {
 
     const homePath = user?.isLoggedIn ? '/home' : '/';
 
-    const theme = {
-        header: dark ? 'bg-slate-800/95 backdrop-blur border-b border-slate-700 shadow-md shadow-black/20'
-            : 'bg-indigo-600 border-b border-indigo-700 shadow-md',
-        brand: dark ? 'text-white hover:text-indigo-300' : 'text-white hover:text-indigo-100',
-        linkActive: dark ? 'bg-slate-700 text-white' : 'bg-white/15 text-white',
-        linkIdle: dark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-indigo-100 hover:text-white hover:bg-white/10',
-        authBtn: dark ? 'bg-indigo-500 hover:bg-indigo-400 text-white' : 'bg-white text-indigo-700 hover:bg-indigo-50',
-        greeting: dark ? 'text-slate-400' : 'text-indigo-100',
-        greetingName: dark ? 'text-white' : 'text-white',
-        badge: dark ? 'bg-slate-700 text-slate-200 ring-1 ring-slate-600' : 'bg-white/15 text-white ring-1 ring-white/25',
-        toggleBtn: dark ? 'bg-slate-700 hover:bg-slate-600 text-amber-300' : 'bg-white/15 hover:bg-white/25 text-white',
-    };
+    const theme = getNavbarClasses(dark);
 
     const linkClass = (path) =>
-        `text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-150
-        ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
+        `${theme.linkBase} ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
 
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), show: true},
@@ -63,7 +58,7 @@ function Navbar({user, dark, toggleDark}) {
                 <div className="flex items-center justify-between h-14">
 
                     <div className="flex items-center gap-6">
-                        <Link to="/"
+                        <Link to={homePath}
                               className={`flex items-center gap-2 font-bold text-lg tracking-tight transition-colors duration-150 ${theme.brand}`}>
                             {t("navbar.appName")}
                         </Link>
@@ -94,7 +89,7 @@ function Navbar({user, dark, toggleDark}) {
 
                         <button
                             onClick={toggleLang}
-                            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.toggleBtn}`}
+                            className={`${theme.toggleBase} ${theme.toggleBtn}`}
                             aria-label={i18n.language === 'en' ? 'Passer en français' : 'Switch to english'}
                         >
                             {i18n.language === 'en' ? t("navbar.switchFench") : t("navbar.switchEnglish")}
@@ -102,7 +97,7 @@ function Navbar({user, dark, toggleDark}) {
 
                         <button
                             onClick={toggleDark}
-                            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.toggleBtn}`}
+                            className={`${theme.toggleBase} ${theme.toggleBtn}`}
                             aria-label={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
                         >
                             <ToggleIcon/>
@@ -123,11 +118,7 @@ function Navbar({user, dark, toggleDark}) {
                                 </Link>
                                 <Link
                                     to="/signup"
-                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${
-                                        dark
-                                            ? 'bg-transparent border border-indigo-400 text-indigo-300 hover:bg-indigo-500/20'
-                                            : 'bg-transparent border border-white text-white hover:bg-white/15'
-                                    }`}
+                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.signupBtn}`}
                                 >
                                     {t("navbar.signup")}
                                 </Link>
