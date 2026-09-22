@@ -159,43 +159,51 @@ export const MatriculeField = ({
     );
 };
 
-export const FirstNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'First Name'}) => (
-    <Field id="firstName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <input
-            id="firstName" name="firstName" type="text"
-            value={value} onChange={withSanitizer(sanitizeName, onChange)}
-            maxLength={50} required className={fieldClass}
-        />
-    </Field>
-);
+export const FirstNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="firstName" label={t("commonFields.firstName")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id="firstName" name="firstName" type="text"
+                value={value} onChange={withSanitizer(sanitizeName, onChange)}
+                maxLength={50} required className={fieldClass}
+            />
+        </Field>
+    );
+}
 
-export const LastNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'Last Name'}) => (
-    <Field id="lastName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <input
-            id="lastName" name="lastName" type="text"
-            value={value} onChange={withSanitizer(sanitizeName, onChange)}
-            maxLength={50} required className={fieldClass}
-        />
-    </Field>
-);
+export const LastNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="lastName" label={t("commonFields.lastName")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id="lastName" name="lastName" type="text"
+                value={value} onChange={withSanitizer(sanitizeName, onChange)}
+                maxLength={50} required className={fieldClass}
+            />
+        </Field>
+    );
+}
 
-export const EmailField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'Email'}) => (
-    <Field id="email" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <input
-            id="email" name="email" type="email"
-            value={value} onChange={withSanitizer(sanitizeEmail, onChange)}
-            maxLength={100} required className={fieldClass}
-        />
-    </Field>
-);
+export const EmailField = ({value, onChange, warning, labelClass, errorClass, fieldClass}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="email" label={t("commonFields.email")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id="email" name="email" type="email"
+                value={value} onChange={withSanitizer(sanitizeEmail, onChange)}
+                maxLength={100} required className={fieldClass}
+            />
+        </Field>
+    );
+}
 
 export const DisciplineField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass,
-    label = 'Discipline', options = [], loading = false, fetchError = '', name = "discipline"
+    value, onChange, warning, labelClass, errorClass, fieldClass, options = [], loading = false, fetchError = '', name = "discipline"
 }) => {
     const { t } = useTranslation();
     return(
-        <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
+        <Field id="discipline" label={t("commonFields.discipline")} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
             <select
                 id="discipline" name={name}
                 value={value} onChange={onChange}
@@ -216,11 +224,11 @@ export const DisciplineField = ({
 
 export const PasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-    show, onToggleShow, hint, passwordHintClass, label = 'Password',
+    show, onToggleShow, hint, passwordHintClass,
 }) => {
     const { t } = useTranslation();
     return(
-        <Field id="password" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+        <Field id="password" label={t("commonFields.password")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
             <div className="flex gap-2">
                 <input
                     id="password" name="password"
@@ -240,11 +248,11 @@ export const PasswordField = ({
 
 export const ConfirmPasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-    show, onToggleShow, label = 'Confirm Password',
+    show, onToggleShow,
 }) => {
     const { t } = useTranslation();
     return(
-        <Field id="confirmPassword" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+        <Field id="confirmPassword" label={t("commonFields.confirmPassword")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
             <div className="flex gap-2">
                 <input
                     id="confirmPassword" name="confirmPassword"

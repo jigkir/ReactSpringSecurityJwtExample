@@ -52,7 +52,7 @@ const Signup = () => {
                 setRoles(mapped);
                 if (mapped.length > 0) setRole(mapped[0].value);
             })
-            .catch(() => setRolesFetchError('Could not load roles.'))
+            .catch(() => setRolesFetchError(t("signup.couldNotLoadRoles")))
             .finally(() => setRolesLoading(false));
     }, []);
 
@@ -83,7 +83,7 @@ const Signup = () => {
                 ))}
 
                 <p className={subtextClass}>
-                    Already have an account?{' '}
+                    {t("signup.alreadyHaveAnAccount")}{' '}
                     <button onClick={() => navigate('/login')} className="text-blue-500 hover:underline font-medium">
                         {t("signup.signupFormConfirm")}
                     </button>
