@@ -1,6 +1,5 @@
 import {Link, useLocation} from "react-router-dom";
 import {useTranslation} from 'react-i18next';
-import home from "./page/Home.jsx";
 
 function Navbar({user, dark, toggleDark}) {
     const { t, i18n} = useTranslation();
@@ -42,6 +41,7 @@ function Navbar({user, dark, toggleDark}) {
         {to: homePath, label: t("navbar.acceuil"), show: true},
         {to: '/about', label: t("navbar.about"), show: true},
         {to: '/cv', label: 'CV', show: role === 'STUDENT'},
+        {to: '/post', label: 'Post Internship', show: role === 'EMPLOYER'},
     ].filter(item => item.show);
 
     const ToggleIcon = () => dark ? (
