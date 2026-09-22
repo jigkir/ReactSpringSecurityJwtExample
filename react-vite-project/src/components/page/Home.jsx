@@ -2,18 +2,20 @@ import {useEffect, useState} from "react";
 import {useOutletContext} from "react-router-dom";
 import fetcher from "../../utils/fetcher.js";
 import {getHomeClasses} from "../../styles/appStyles.jsx";
+import {useTranslation} from 'react-i18next';
 
 const Home = () => {
     const {dark} = useOutletContext();
     const classes = getHomeClasses(dark);
+    const { t } = useTranslation();
 
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        fetcher('users/current', {})
+        fetcher("users/current", {})
             .then(async (response) => {
                 if (!response.ok) {
-                    throw new Error(`Erreur API (${response.status})`);
+                    throw new Error(t("home.apiError", {status: response.status}));
                 }
 
                 const data = await response.json();
@@ -26,31 +28,31 @@ const Home = () => {
 
     const homeByRole = () => {
         switch (user?.role) {
-            case 'STUDENT':
+            case "STUDENT":
                 return (
                     <div>
-                        <h2 className={classes.subhead}>Student</h2>
+                        <h2 className={classes.subhead}>{t("home.roleStudent")}</h2>
                     </div>
                 );
 
-            case 'TEACHER':
+            case "TEACHER":
                 return (
                     <div>
-                        <h2 className={classes.subhead}>Teacher</h2>
+                        <h2 className={classes.subhead}>{t("home.roleTeacher")}</h2>
                     </div>
                 );
 
-            case 'EMPLOYER':
+            case "EMPLOYER":
                 return (
                     <div>
-                        <h2 className={classes.subhead}>Employer</h2>
+                        <h2 className={classes.subhead}>{t("home.roleEmployer")}</h2>
                     </div>
                 );
 
-            case 'MANAGER':
+            case "MANAGER":
                 return (
                     <div>
-                        <h2 className={classes.subhead}>Manager</h2>
+                        <h2 className={classes.subhead}>{t("home.roleManager")}</h2>
                     </div>
                 );
 
@@ -62,7 +64,7 @@ const Home = () => {
     return (
         <div className={classes.page}>
             <h1 className={classes.heading}>
-                Welcome {user?.firstName || ''}
+                {t("home.welcome")} {user?.firstName || ""}
             </h1>
 
             {homeByRole()}
