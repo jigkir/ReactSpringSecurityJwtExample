@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import fetcher from "../../utils/fetcher.js";
 import {useTranslation} from 'react-i18next';
 
-const PreposeHome = () => {
+const TeacherHome = () => {
   const [message, setMessage] = useState("");
   const {dark} = useOutletContext();
   const { t } = useTranslation();
@@ -36,4 +36,4 @@ const PreposeHome = () => {
     </div>
   );
 }
-export default PreposeHome;
+export default TeacherHome;
