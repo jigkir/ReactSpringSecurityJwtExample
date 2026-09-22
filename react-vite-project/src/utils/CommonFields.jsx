@@ -141,13 +141,16 @@ export const MatriculeField = ({
     name = 'studentId',
     limit = 7,
 }) => {
+    const { t } = useTranslation();
     const handleChange = (e) => {
         const digits = e.target.value.replace(/\D/g, '').slice(0, limit);
         onChange({target: {name, value: digits}});
     };
 
+    const labelKey = name === 'teacherId' ? 'commonFields.teacherIdLabel' : 'commonFields.studentIdLabel';
+
     return (
-        <Field id={name} label={`${role} ID`} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+        <Field id={name} label={t(labelKey)} warning={warning} labelClass={labelClass} errorClass={errorClass}>
             <input
                 id={name} name={name} type="text"
                 inputMode="numeric"

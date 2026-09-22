@@ -38,7 +38,7 @@ function Navbar({user, dark, toggleDark}) {
         ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
 
     const navItems = [
-        {to: homePath, label: t("navbar.acceuil"), show: true},
+        {to: homePath, label: t("navbar.accueil"), show: true},
         {to: '/about', label: t("navbar.about"), show: true},
         {to: '/cv', label: 'CV', show: role === 'STUDENT'},
         {to: '/post', label: 'Post Internship', show: role === 'EMPLOYER'},

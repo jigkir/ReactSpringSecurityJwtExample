@@ -8,10 +8,10 @@ import {
 } from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
 
-const Login = ({user,setError}) => {
+const Login = ({user, setError}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +31,8 @@ const Login = ({user,setError}) => {
         subtextClass,
         errorClass,
         eyeClass,
-        submitClass
+        submitClass,
+        serverErrorClass,
     } = classes;
 
     const validateEmail = () => {
@@ -135,14 +136,11 @@ const Login = ({user,setError}) => {
                                 setWarnings({...warnings, email: ""});
                                 setEmail(e.target.value.trim());
                             }}
-                            labelClass={labelClass} fieldClass={fieldClass}
-                            required
+                            warning={warnings.email}
+                            labelClass={labelClass}
+                            fieldClass={fieldClass}
+                            errorClass={errorClass}
                         />
-                        {warnings.email && (
-                            <p className={errorClass}>
-                                {warnings.email}
-                            </p>
-                        )}
                     </div>
 
                     <div>
@@ -152,22 +150,18 @@ const Login = ({user,setError}) => {
                                 setWarnings({...warnings, password: ""});
                                 setPassword(e.target.value);
                             }}
+                            warning={warnings.password}
                             labelClass={labelClass}
                             fieldClass={fieldClass}
                             eyeClass={eyeClass}
+                            errorClass={errorClass}
                             show={showPassword}
                             onToggleShow={() => setShowPassword(!showPassword)}
-                            required
                         />
-                        {warnings.password && (
-                            <p className={errorClass}>
-                                {warnings.password}
-                            </p>
-                        )}
                     </div>
 
                     {serverError && (
-                        <div className={errorClass}>
+                        <div className={serverErrorClass} role="alert">
                             {serverError}
                         </div>
                     )}
