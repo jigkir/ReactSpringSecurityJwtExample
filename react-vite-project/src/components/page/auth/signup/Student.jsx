@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import fetcher from "../../../../utils/fetcher.js";
+import {useTranslation} from 'react-i18next';
 import {
     FirstNameField,
     LastNameField,
@@ -26,6 +27,8 @@ const DEFAULT_FORM = {
     confirmPassword: "",
 };
 
+
+
 // Mirror DEFAULT_FORM shape with empty strings — one warning slot per field
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
@@ -34,7 +37,7 @@ const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
 const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass }) => {
     const navigate = useNavigate();
-
+    const { t } = useTranslation();
     const [form, setForm] = useState(DEFAULT_FORM);
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
@@ -76,7 +79,7 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateField(key, form[key], form);
+            const msg = validateField(key, form[key], form, t);
             newWarnings[key] = msg;
             if (msg) valid = false;
         }
@@ -116,22 +119,22 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                     try { body = await response.json(); } catch {}
                     const { field: conflictField = "" } = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({ ...w, [ID_FIELD]: "This student ID is already in use." }));
+                        setWarnings(w => ({ ...w, [ID_FIELD]: t("student.existingId") }));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({ ...w, email: "This email address is already in use." }));
+                        setWarnings(w => ({ ...w, email: t("student.emailInUse") }));
                     } else {
-                        setServerError("An account with this student ID or email already exists.");
+                        setServerError(t("student.eitherEmailOrIdInUse"));
                     }
                     break;
                 }
                 case 400:
-                    setServerError("The submitted data is invalid. Please review the fields.");
+                    setServerError(t("student.invalidData"));
                     break;
                 default:
-                    setServerError(`Server error (${response.status}). Please try again.`);
+                    setServerError(t("student.genericServerError", {errorCode:response.status}));
             }
         } catch {
-            setServerError("Unable to reach the server. Please try again.");
+            setServerError(t("student.unableToReachServerError"));
         } finally {
             setSubmitting(false);
         }
@@ -161,8 +164,8 @@ const Student = ({ fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             <SubmitButton
                 disabled={!isAllFilled(form) || submitting}
                 loading={submitting}
-                loadingLabel="Creating account…"
-                label="Create account"
+                loadingLabel={t("student.accountCreationButton")}
+                label={t("student.accountCreationButtonLoading")}
                 submitClass={submitClass}
             />
         </form>

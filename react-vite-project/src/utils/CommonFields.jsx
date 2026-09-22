@@ -1,7 +1,12 @@
+import {useTranslation} from 'react-i18next';
+
 export const RoleField = ({
     value, onChange, labelClass, errorClass, fieldClass,
     label = 'Role', options = [], loading = false, fetchError = '',
-}) => (
+}) => {
+    const { t } = useTranslation();
+    const roleOptions = options.map(v => ({ value: v, label: t(`signup.${v}`) }));
+    return(
     <Field id="role" label={label} warning={fetchError} labelClass={labelClass} errorClass={errorClass}>
         <select
             id="role" name="role"
@@ -10,14 +15,15 @@ export const RoleField = ({
             disabled={loading}
         >
             <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a role --'}
+                {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectXText", {selectType:label.toLowerCase()})}
+
             </option>
-            {options.map(({value: v, label: l}) => (
+            {roleOptions.map(({value: v, label: l}) => (
                 <option key={v} value={v}>{l}</option>
             ))}
         </select>
     </Field>
-);
+);}
 
 export const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])\S+$/;
@@ -48,55 +54,56 @@ const withSanitizer = (sanitize, onChange) => (e) => {
     onChange({target: {name, value: sanitize(value)}});
 };
 
-export const validateDiscipline = (value) => value ? '' : 'Please select a discipline.';
+export const validateDiscipline = (value, t) => value ? '' : t("commonFields.disciplineSelect");
 
 export const validateId = (value, length = 7) => {
     const t = value.trim();
-    if (!t) return 'ID is required.';
-    if (t.length !== length) return `ID must be exactly ${length} digits.`;
+    if (!t) return t("commonFields.requiredId");
+    if (t.length !== length) return t("commonFields.requiredIdLength",{length:length});
     return '';
 };
 
-export function validateField(field, value, formValues = {}) {
+export function validateField(field, value, formValues = {}, t) {
+
     switch (field) {
         case 'firstName':
         case 'lastName': {
-            const t = value.trim();
-            if (!t) return 'This field is required.';
-            if (t.length < 2) return 'Must be at least 2 characters.';
-            if (t.length > 50) return 'Must be at most 50 characters.';
-            if (!NAME_REGEX.test(t))
-                return 'Must contain at least one letter. Only letters, spaces, hyphens, apostrophes and periods are allowed.';
+            const tr = value.trim();
+            if (!tr) return t("commonFields.requiredField");
+            if (tr.length < 2) return t("commonFields.atLeastXCharacters",{amount:2});
+            if (tr.length > 50) return t("commonFields.atMostXCharacters", {amount:50});
+            if (!NAME_REGEX.test(tr))
+                return t("commonFields.nameRequirements");
             return '';
         }
         case 'email': {
-            const t = value.trim();
-            if (!t) return 'Email address is required.';
-            if (t.length > 100) return 'Must be at most 100 characters.';
-            if (!EMAIL_REGEX.test(t)) return 'Invalid email format.';
+            const tr = value.trim();
+            if (!tr) return t("commonFields.requiredEmail");
+            if (tr.length > 100) return t("commonFields.atMostXCharacters", {amount:100});
+            if (!EMAIL_REGEX.test(tr)) return t("commonFields.invalidEmailFormat");
             return '';
         }
         case 'password': {
-            if (!value) return 'Password is required.';
-            if (value.length < 8) return 'Must be at least 8 characters.';
-            if (value.length > 50) return 'Must be at most 50 characters.';
-            if (/\s/.test(value)) return 'Must not contain spaces.';
+            if (!value) return t("commonFields.requiredPassword");
+            if (value.length < 8) return t("commonFields.atLeastXCharacters",{amount:8});
+            if (value.length > 50) return t("commonFields.atMostXCharacters", {amount:50});
+            if (/\s/.test(value)) return t("commonFields.mustNotContainSpaces");
             if (!PASSWORD_REGEX.test(value)) {
                 const missing = [];
-                if (!/[0-9]/.test(value)) missing.push('one digit');
-                if (!/[a-z]/.test(value)) missing.push('one lowercase letter');
-                if (!/[A-Z]/.test(value)) missing.push('one uppercase letter');
-                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push('one special character');
+                if (!/[0-9]/.test(value)) missing.push(t("commonFields.missingDigit"));
+                if (!/[a-z]/.test(value)) missing.push(t("commonFields.missingLowercaseLetter"));
+                if (!/[A-Z]/.test(value)) missing.push(t("commonFields.missingUppercaseLetter"));
+                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push(t("commonFields.missingSpecialCharacter"));
                 return `Missing: ${missing.join(', ')}.`;
             }
             return '';
         }
         case 'confirmPassword':
-            if (!value) return 'Please confirm your password.';
-            if (value !== formValues.password) return 'Passwords do not match.';
+            if (!value) return t("commonFields.missingConfirmPassword");
+            if (value !== formValues.password) return t("commonFields.noMatchingPasswords");
             return '';
         case 'discipline':
-            return validateDiscipline(value);
+            return validateDiscipline(value, t);
         case 'studentId':
             return validateId(value, 7);
         case 'teacherId':
@@ -153,98 +160,121 @@ export const MatriculeField = ({
     );
 };
 
-export const FirstNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'First Name'}) => (
-    <Field id="firstName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <input
-            id="firstName" name="firstName" type="text"
-            value={value} onChange={withSanitizer(sanitizeName, onChange)}
-            maxLength={50} required className={fieldClass}
-        />
-    </Field>
-);
+export const FirstNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="firstName" label={t("commonFields.firstName")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id="firstName" name="firstName" type="text"
+                value={value} onChange={withSanitizer(sanitizeName, onChange)}
+                maxLength={50} required className={fieldClass}
+            />
+        </Field>
+    );
+}
 
-export const LastNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'Last Name'}) => (
-    <Field id="lastName" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <input
-            id="lastName" name="lastName" type="text"
-            value={value} onChange={withSanitizer(sanitizeName, onChange)}
-            maxLength={50} required className={fieldClass}
-        />
-    </Field>
-);
+export const LastNameField = ({value, onChange, warning, labelClass, errorClass, fieldClass}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="lastName" label={t("commonFields.lastName")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id="lastName" name="lastName" type="text"
+                value={value} onChange={withSanitizer(sanitizeName, onChange)}
+                maxLength={50} required className={fieldClass}
+            />
+        </Field>
+    );
+}
 
-export const EmailField = ({value, onChange, warning, labelClass, errorClass, fieldClass, label = 'Email'}) => (
-    <Field id="email" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <input
-            id="email" name="email" type="email"
-            value={value} onChange={withSanitizer(sanitizeEmail, onChange)}
-            maxLength={100} required className={fieldClass}
-        />
-    </Field>
-);
+export const EmailField = ({value, onChange, warning, labelClass, errorClass, fieldClass}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="email" label={t("commonFields.email")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <input
+                id="email" name="email" type="email"
+                value={value} onChange={withSanitizer(sanitizeEmail, onChange)}
+                maxLength={100} required className={fieldClass}
+            />
+        </Field>
+    );
+}
 
 export const DisciplineField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass,
-    label = 'Discipline', options = [], loading = false, fetchError = '', name = "discipline"
-}) => (
-    <Field id="discipline" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
-        <select
-            id="discipline" name={name}
-            value={value} onChange={onChange}
-            required className={fieldClass}
-            disabled={loading}
-        >
-            <option value="">
-                {loading ? 'Loading…' : fetchError ? 'Failed to load' : '-- Select a ' + label.toLowerCase() + ' --'}
-            </option>
-            {options.map(({value: v, label: l}) => (
-                <option key={v} value={v}>{l}</option>
-            ))}
-        </select>
-        {fetchError && <p className={errorClass}>{fetchError}</p>}
-    </Field>
-);
+    value, onChange, warning, labelClass, errorClass, fieldClass, options = [], loading = false, fetchError = '', name = "discipline"
+}) => {
+    const { t } = useTranslation();
+
+    const disciplineOptions = options.map(({ value: v, label: l }) => ({
+        value: v,
+        label: t(`disciplines.${v.toLowerCase()}`),
+    }));
+
+    return(
+        <Field id="discipline" label={t("commonFields.discipline")} warning={warning} labelClass={labelClass} errorClass={errorClass} name={name}>
+            <select
+                id="discipline" name={name}
+                value={value} onChange={onChange}
+                required className={fieldClass}
+                disabled={loading}
+            >
+                <option value="">
+                    {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectDisciplineText")}
+                </option>
+                {disciplineOptions.map(({value: v, label: l}) => (
+                    <option key={v} value={v}>{l}</option>
+                ))}
+            </select>
+            {fetchError && <p className={errorClass}>{fetchError}</p>}
+        </Field>
+    );
+}
 
 export const PasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-    show, onToggleShow, hint, passwordHintClass, label = 'Password',
-}) => (
-    <Field id="password" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <div className="flex gap-2">
-            <input
-                id="password" name="password"
-                type={show ? 'text' : 'password'}
-                value={value} onChange={withSanitizer(sanitizePassword, onChange)}
-                maxLength={50} required className={fieldClass}
-            />
-            <button type="button" onClick={onToggleShow}
-                    aria-label={show ? 'Hide password' : 'Show password'} className={eyeClass}>
-                <EyeIcon open={show}/>
-            </button>
-        </div>
-        {hint && <p className={passwordHintClass}>{hint}</p>}
-    </Field>
-);
+    show, onToggleShow, hint, passwordHintClass,
+}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="password" label={t("commonFields.password")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <div className="flex gap-2">
+                <input
+                    id="password" name="password"
+                    type={show ? t("commonFields.text") : t("commonFields.password")}
+                    value={value} onChange={withSanitizer(sanitizePassword, onChange)}
+                    maxLength={50} required className={fieldClass}
+                />
+                <button type="button" onClick={onToggleShow}
+                        aria-label={show ? t("commonFields.hidePassword") : t("commonFields.showPassword")} className={eyeClass}>
+                    <EyeIcon open={show}/>
+                </button>
+            </div>
+            {hint && <p className={passwordHintClass}>{hint}</p>}
+        </Field>
+    );
+}
 
 export const ConfirmPasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-    show, onToggleShow, label = 'Confirm Password',
-}) => (
-    <Field id="confirmPassword" label={label} warning={warning} labelClass={labelClass} errorClass={errorClass}>
-        <div className="flex gap-2">
-            <input
-                id="confirmPassword" name="confirmPassword"
-                type={show ? 'text' : 'password'}
-                value={value} onChange={withSanitizer(sanitizePassword, onChange)}
-                required className={fieldClass}
-            />
-            <button type="button" onClick={onToggleShow}
-                    aria-label={show ? 'Hide confirmation' : 'Show confirmation'} className={eyeClass}>
-                <EyeIcon open={show}/>
-            </button>
-        </div>
-    </Field>
-);
+    show, onToggleShow,
+}) => {
+    const { t } = useTranslation();
+    return(
+        <Field id="confirmPassword" label={t("commonFields.confirmPassword")} warning={warning} labelClass={labelClass} errorClass={errorClass}>
+            <div className="flex gap-2">
+                <input
+                    id="confirmPassword" name="confirmPassword"
+                    type={show ? t("commonFields.text") : t("commonFields.password")}
+                    value={value} onChange={withSanitizer(sanitizePassword, onChange)}
+                    required className={fieldClass}
+                />
+                <button type="button" onClick={onToggleShow}
+                        aria-label={show ? t("commonFields.hideConfirmation") : t("commonFields.showConfirmation")} className={eyeClass}>
+                    <EyeIcon open={show}/>
+                </button>
+            </div>
+        </Field>
+    );
+}
 
 export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClass}) => (
     <button

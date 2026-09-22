@@ -40,19 +40,11 @@ const Signup = () => {
                 const data = await res.json();
                 // backend returns { roles: ['STUDENT', 'EMPLOYER', ...] } or a plain array
                 const list = Array.isArray(data) ? data : (data.roles ?? []);
-                const mapped = list
-                    .map((r) => {
-                        const raw = typeof r === 'string' ? r : r.value ?? r;
-                        return {
-                            value: raw.toLowerCase(),
-                            label: raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase(),
-                        };
-                    })
-                    .filter(({value}) => SIGNUP_ROLES.includes(value));
+                const mapped = list.map((r) => (typeof r === 'string' ? r : r.value ?? r).toLowerCase());
                 setRoles(mapped);
                 if (mapped.length > 0) setRole(mapped[0].value);
             })
-            .catch(() => setRolesFetchError('Could not load roles.'))
+            .catch(() => setRolesFetchError(t("signup.couldNotLoadRoles")))
             .finally(() => setRolesLoading(false));
     }, []);
 
@@ -73,6 +65,7 @@ const Signup = () => {
                         labelClass={labelClass}
                         errorClass={classes.errorClass}
                         fieldClass={fieldClass}
+                        label={t("commonFields.role")}
                     />
                 </div>
 
@@ -83,7 +76,7 @@ const Signup = () => {
                 ))}
 
                 <p className={subtextClass}>
-                    Already have an account?{' '}
+                    {t("signup.alreadyHaveAnAccount")}{' '}
                     <button onClick={() => navigate('/login')} className="text-blue-500 hover:underline font-medium">
                         {t("signup.signupFormConfirm")}
                     </button>
