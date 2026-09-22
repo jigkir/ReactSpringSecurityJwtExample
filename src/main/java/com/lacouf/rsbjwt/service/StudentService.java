@@ -99,7 +99,7 @@ public class StudentService {
         Student student = findById(studentId);
         String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
 
-        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, false);
+        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, CvVisibility.VISIBLE);
         saveCV(cvDto, student);
     }
 
