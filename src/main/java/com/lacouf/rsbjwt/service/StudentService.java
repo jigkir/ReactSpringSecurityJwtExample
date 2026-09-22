@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -81,6 +82,25 @@ public class StudentService {
     public Student findById(Long id) throws UserNotFoundException {
         return studentRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    public void uploadCV(MultipartFile file, Long studentId)
+            throws InvalidFileTypeException, InvalidFileSizeException, CorruptedFileException, UserNotFoundException, IOException, NoSuchAlgorithmException {
+
+        if (file == null || file.isEmpty()) {
+            throw new InvalidFileTypeException("Uploaded file is empty or null.");
+        }
+
+        byte[] bytes = file.getBytes();
+        if (bytes.length == 0) {
+            throw new InvalidFileTypeException("Uploaded file contains no data.");
+        }
+
+        Student student = findById(studentId);
+        String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
+
+        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, false);
+        saveCV(cvDto, student);
     }
 
     public void saveCV(CVDto cvDto, Student student) throws CorruptedFileException, InvalidFileTypeException, NoSuchAlgorithmException, InvalidFileSizeException {

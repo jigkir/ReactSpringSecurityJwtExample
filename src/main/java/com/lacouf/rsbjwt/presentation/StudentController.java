@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.presentation;
 
-import com.lacouf.rsbjwt.model.CVSharingScope;
 import com.lacouf.rsbjwt.model.Student;
 import com.lacouf.rsbjwt.security.exception.*;
 import com.lacouf.rsbjwt.service.StudentService;
@@ -36,19 +35,7 @@ public class StudentController {
             @RequestParam("file") MultipartFile file,
             @PathVariable Long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException {
 
-        if (file == null || file.isEmpty()) {
-            throw new InvalidFileTypeException("Uploaded file is empty or null.");
-        }
-
-        Student student = studentService.findById(id);
-
-        byte[] bytes = file.getBytes();
-        if (bytes.length == 0) {
-            throw new InvalidFileTypeException("Uploaded file contains no data.");
-        }
-
-        String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
-        studentService.saveCV(new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, false), student);
+        studentService.uploadCV(file, id);
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
