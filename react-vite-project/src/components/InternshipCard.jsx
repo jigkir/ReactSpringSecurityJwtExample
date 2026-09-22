@@ -1,7 +1,7 @@
 import { getInternshipCardClasses } from "../styles/appStyles.jsx";
 
-export default function InternshipCard({ internship, OnDelete }) {
-    const s = getInternshipCardClasses();
+export default function InternshipCard({ internship, OnDelete, dark }) {
+    const s = getInternshipCardClasses(dark);
 
     return (
         <div className={s.card}>

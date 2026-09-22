@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { getInternshipModalClasses } from "../styles/appStyles.jsx";
 
-export default function InternshipModal({ isOpen, onClose, onAddInternship, user }) {
-    const s = getInternshipModalClasses();
+export default function InternshipModal({ isOpen, onClose, onAddInternship, user, dark }) {
+    const s = getInternshipModalClasses(dark);
 
     const [formData, setFormData] = useState({
         title: "",

@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import InternshipModal from "../InternshipModal.jsx";
 import InternshipCard from "../InternshipCard.jsx";
 import fetcher from "../../utils/fetcher.js";
 import { getPostInternshipClasses } from "../../styles/appStyles.jsx";
 
 function PostInternship({ user }) {
+    const { dark } = useOutletContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
-    const s = getPostInternshipClasses();
+    const s = getPostInternshipClasses(dark);
 
     useEffect(() => {
         fetcher("internship/made", {})
@@ -86,13 +88,13 @@ function PostInternship({ user }) {
                 {/* 2. Scrollable container for the cards */}
                 <div className={s.scrollArea}>
                     {loading && (
-                        <p className="text-gray-500 text-center py-8">Loading your internships...</p>
+                        <p className={s.loadingText}>Loading your internships...</p>
                     )}
                     {error && (
-                        <p className="text-red-500 bg-red-50 p-4 rounded-lg text-center">{error}</p>
+                        <p className={s.errorText}>{error}</p>
                     )}
                     {!loading && !error && internships.filter((i) => !i.isDeleted).length === 0 && (
-                        <p className="text-gray-500 text-center py-8">
+                        <p className={s.emptyText}>
                             You haven't posted any internships yet.
                         </p>
                     )}
@@ -105,6 +107,7 @@ function PostInternship({ user }) {
                                         key={internship.id}
                                         internship={internship}
                                         OnDelete={handleDelete}
+                                        dark={dark}
                                     />
                                 )
                         )}
@@ -117,6 +120,7 @@ function PostInternship({ user }) {
                 onClose={() => setIsModalOpen(false)}
                 onAddInternship={handleAddInternship}
                 user={user}
+                dark={dark}
             />
         </div>
     );
