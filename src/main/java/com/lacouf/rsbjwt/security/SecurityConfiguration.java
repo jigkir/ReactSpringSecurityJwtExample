@@ -70,12 +70,12 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
-                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).permitAll()
                         .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
 
                         // Use Role enum names for authorities
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAKE_CV_PUBLIC_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAKE_CV_PRIVATE_PATH).hasAnyAuthority(Role.STUDENT.name())
