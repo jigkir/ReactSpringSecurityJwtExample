@@ -165,7 +165,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldSaveCVSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto(validPdfBytes, null, CVSharingScope.PRIVATE, "cv.pdf", validPdfBytes.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(validPdfBytes, null, CVSharingScope.PRIVATE, "cv.pdf", validPdfBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         studentService.saveCV(cvDto, dummyStudent);
 
@@ -180,7 +180,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsNull() {
-        CVDto cvDto = new CVDto(null, null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(null, null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
@@ -192,7 +192,7 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsEmpty() {
-        CVDto cvDto = new CVDto(new byte[0], null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(new byte[0], null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
@@ -205,7 +205,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileSizeExceptionWhenFileExceedsMaxSize() {
         byte[] oversizedContent = new byte[2 * 1024 * 1024 + 1];
-        CVDto cvDto = new CVDto(oversizedContent, null, CVSharingScope.PRIVATE, "large.pdf", oversizedContent.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(oversizedContent, null, CVSharingScope.PRIVATE, "large.pdf", oversizedContent.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         assertThrows(
                 InvalidFileSizeException.class,
@@ -216,7 +216,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenMimeTypeIsNotPdf() {
         byte[] textFileBytes = "Hello World".getBytes();
-        CVDto cvDto = new CVDto(textFileBytes, null, CVSharingScope.PRIVATE, "file.txt", textFileBytes.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(textFileBytes, null, CVSharingScope.PRIVATE, "file.txt", textFileBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
@@ -229,7 +229,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowCorruptedFileExceptionWhenPdfIsCorrupted() {
         byte[] corruptedPdfBytes = "%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes();
-        CVDto cvDto = new CVDto(corruptedPdfBytes, null, CVSharingScope.PRIVATE, "corrupted.pdf", corruptedPdfBytes.length, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto(corruptedPdfBytes, null, CVSharingScope.PRIVATE, "corrupted.pdf", corruptedPdfBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
 
         assertThrows(
                 CorruptedFileException.class,

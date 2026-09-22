@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.model.CvVisibility;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.Student;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -172,7 +173,7 @@ public class StudentControllerTest {
 
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), true);
+        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvVisibility.VISIBLE);
         when(studentService.findById(1L)).thenReturn(dummyStudent);
         when(studentService.getCVs(dummyStudent)).thenReturn(List.of(cvDto));
 
@@ -182,7 +183,7 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].fileName").value("my_cv.pdf"))
                 .andExpect(jsonPath("$[0].sharingScope").value("PRIVATE"))
-                .andExpect(jsonPath("$[0].visible").value(true));
+                .andExpect(jsonPath("$[0].visibility").value(CvVisibility.VISIBLE.name()));
     }
 
     @Test
