@@ -2,10 +2,15 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.Employer;
+import com.lacouf.rsbjwt.model.Internship;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
+import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.InternshipResponseDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,16 +39,29 @@ public class EmployerServiceTest {
     @Mock
     private UserAppRepository userAppRepository;
     @Mock
+    private InternshipRepository internshipRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Captor
     private ArgumentCaptor<Employer> employerArgumentCaptor;
 
     private static EmployerSignUpDto employerSignUpDto;
+    private static InternshipRequestDto internshipRequestDto;
+    private static Employer employer;
+    private static Internship internship;
 
     @BeforeAll
-    static void createEmployerSignUpDto() {
+    static void setUp() {
         employerSignUpDto = new EmployerSignUpDto("First Name", "Last Name", "email@example.com", "Test123@", "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
+
+        employer = new Employer("First Name", "Last Name", null, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
+        employer.setId(1L);
+
+        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, 1L);
+
+        internship = new Internship("Software Developer", "Develop applications", "Java Spring", "4 months", "Montreal", "2027-01-10", "2026-12-01", "25$/h", "PENDING", false, employer);
+        internship.setId(10L);
     }
 
     @Test
@@ -91,4 +109,51 @@ public class EmployerServiceTest {
         verify(employerRepository, never()).save(any(Employer.class));
     }
 
+    @Test
+    void shouldSaveInternship() throws UserNotFoundException {
+        // Arrange
+        when(userAppRepository.findById(1L)).thenReturn(Optional.of(employer));
+
+        when(internshipRepository.save(any(Internship.class)))
+                .thenAnswer(invocation -> {
+                    Internship internship = invocation.getArgument(0);
+                    internship.setId(10L);
+                    return internship;
+                });
+
+        // Act
+        InternshipResponseDto response = employerService.save(internshipRequestDto);
+
+        // Assert
+        assert(Long.valueOf(10L)).equals(response.id());
+        assert("Software Developer").equals(response.title());
+        assert("Develop applications").equals(response.description());
+        assert("Java, Spring").equals(response.requiredSkills());
+        assert("4 months").equals(response.duration());
+        assert("Montreal").equals(response.location());
+        assert("2027-01-10").equals(response.startDate());
+        assert("2026-12-01").equals(response.deadline());
+        assert("25$/h").equals(response.compensation());
+        assert("PENDING").equals(response.status());
+        assert(Boolean.FALSE).equals(response.isDeleted());
+        assert(Long.valueOf(1L)).equals(response.employerId());
+
+        verify(internshipRepository).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldSoftDeleteInternship() {
+        // Arrange
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+
+        // Act
+        InternshipResponseDto response = employerService.deleteInternship(10L);
+
+        // Assert
+        assert(Boolean.TRUE).equals(internship.getIsDeleted());
+        assert(Boolean.TRUE).equals(response.isDeleted());
+        assert(Long.valueOf(10L)).equals(response.id());
+
+        verify(internshipRepository).save(internship);
+    }
 }
