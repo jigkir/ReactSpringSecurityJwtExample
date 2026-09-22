@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function InternshipModal({ isOpen, onClose, onAddInternship }) {
+export default function InternshipModal({ isOpen, onClose, onAddInternship,user }) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -72,12 +72,12 @@ export default function InternshipModal({ isOpen, onClose, onAddInternship }) {
         }
 
         const newInternship = {
-            id: crypto.randomUUID(), //Temporary until backend is made
             ...formData,
             duration: `${durationNumber} mois`,
             status: "Pending Validation",
             submittedAt: new Date().toISOString(),
-            isDeleted: false
+            isDeleted: false,
+            employerId: user.id
         };
         // Handle form submission logic here
         console.log("Form submitted:", newInternship);

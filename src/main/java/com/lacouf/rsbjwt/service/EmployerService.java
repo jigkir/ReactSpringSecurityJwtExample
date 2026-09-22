@@ -1,17 +1,24 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.model.Internship;
 import com.lacouf.rsbjwt.model.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
 import com.lacouf.rsbjwt.model.Employer;
+import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.security.exception.InternshipNotFoundException;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,11 +26,13 @@ public class EmployerService {
     private final EmployerRepository employerRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
+    private final InternshipRepository internshipRepository;
 
-    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository) {
+    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository) {
         this.employerRepository = employerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
+        this.internshipRepository = internshipRepository;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -53,11 +62,52 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
+    public InternshipResponseDto save(InternshipRequestDto internshipDto) throws UserNotFoundException {
+        Employer employer = (Employer) userAppRepository.findById(internshipDto.employerId())
+                .orElseThrow(UserNotFoundException::new);
+        Internship internship = new Internship(
+                internshipDto.title(),
+                internshipDto.description(),
+                internshipDto.requiredSkills(),
+                internshipDto.duration(),
+                internshipDto.location(),
+                internshipDto.startDate(),
+                internshipDto.deadline(),
+                internshipDto.compensation(),
+                internshipDto.status(),
+                internshipDto.isDeleted(),
+                employer
+        );
+
+        internshipRepository.save(internship);
+        return InternshipResponseDto.of(internship);
+    }
+
     private void verifyIfEmployerExists(String email) throws UserAlreadyExistsException {
         Optional<UserApp> employerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
 
         if (employerFoundByEmail.isPresent()) {
             throw new UserAlreadyExistsException("email");
         }
+    }
+
+    public InternshipResponseDto deleteInternship(Long id) throws InternshipNotFoundException{
+        Internship internship = internshipRepository.findById(id)
+                .orElseThrow(() -> new InternshipNotFoundException("Internship not found with id: " + id));
+
+        internship.setIsDeleted(true);
+        internshipRepository.save(internship);
+        return InternshipResponseDto.of(internship);
+    }
+
+    public List<InternshipResponseDto> getInternshipsByEmployerId(Long employerId) {
+         List<Internship> internships = internshipRepository.findByPostedBy_IdAndIsDeletedIsFalse(employerId);
+        return internships.stream()
+                .map(InternshipResponseDto::of)
+                .toList();
+    }
+
+    public List<InternshipResponseDto> getAllActiveInternships() {
+        return internshipRepository.findByIsDeletedFalse().stream().map(InternshipResponseDto::of).toList();
     }
 }

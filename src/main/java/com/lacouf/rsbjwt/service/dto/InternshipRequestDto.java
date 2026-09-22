@@ -1,13 +1,10 @@
 package com.lacouf.rsbjwt.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record InternshipDto(
-        Long id,
-
+public record InternshipRequestDto(
         @NotBlank
         @Size(min = 2, max = 50)
         @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "Title must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
@@ -34,7 +31,6 @@ public record InternshipDto(
         String deadline,
 
         @NotBlank
-        @Pattern(regexp = "(?i)^\\\\$\\\\d+(\\\\.\\\\d+)?/h$|^unpaid$|^non\\\\s*rémunéré$", message = "Compensation must be a valid format (e.g., $20/h, unpaid, or non rémunéré)")
         String compensation,
 
         String status,
@@ -43,7 +39,7 @@ public record InternshipDto(
 
         Long employerId
 ) {
-    public InternshipDto {
+    public InternshipRequestDto {
         if (title != null) {
             title = title.trim();
         }

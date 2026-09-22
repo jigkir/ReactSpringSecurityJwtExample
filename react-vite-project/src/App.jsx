@@ -9,12 +9,10 @@ import Signup from "./components/page/auth/Signup.jsx";
 import fetcher from "./utils/fetcher.js";
 import ErrorPage from "./components/ErrorPage.jsx";
 import Logout from "./components/page/auth/Logout.jsx";
-import EmprunteurHome from "./components/page/EmprunteurHome.jsx";
 import PreposeHome from "./components/page/PreposeHome.jsx";
-import GestionnaireHome from "./components/page/GestionnaireHome.jsx";
-import Home from "./components/page/Home.jsx";
-
 import PostInternship from "./components/page/PostInternship.jsx";
+import Cv from "./components/page/student/Cv.jsx";
+
 function App() {
     const [user, setUser] = useState({});
     const [error, setError] = useState(null);
@@ -73,12 +71,10 @@ function App() {
                     <Route path="about" element={<About/>}/>
                     <Route path="login" element={<Login user={user} setError={setError}/>}/>
                     <Route path="signup" element={<Signup/>}/>
-                    <Route path="home" element={<Home user={user}/>}/>
                     <Route path="logout" element={<Logout setUser={setUser}/>}/>
-                    <Route path="emprunteur" element={<EmprunteurHome/>}/>
                     <Route path="prepose" element={<PreposeHome/>}/>
-                    <Route path='post' element={<PostInternship/>}/>
-                    <Route path="gestionnaire" element={<GestionnaireHome/>}/>
+                    <Route path='post' element={<PostInternship user={user}/>}/>
+                    <Route path="cv" element={<Cv user={user}/>}/>
                     <Route path="error" element={<ErrorPage error={error}/>}/>
                 </Route>
             </Routes>
