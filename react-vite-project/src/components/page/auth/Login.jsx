@@ -1,23 +1,24 @@
-import {useState} from "react";
-import {useNavigate, useOutletContext} from "react-router-dom";
+import {useState} from 'react';
+import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
-import fetcher from "../../../utils/fetcher.js";
+import fetcher from '../../../utils/fetcher.js';
 import {
     EmailField,
     PasswordField,
-} from "../../../utils/CommonFields.jsx";
+} from '../../../utils/CommonFields.jsx';
+import {useTranslation} from 'react-i18next';
 
 const Login = ({user,setError}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
-    // const [role, setRole] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const { t } = useTranslation();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [serverError, setServerError] = useState('');
+    const [serverError, setServerError] = useState("");
     const [warnings, setWarnings] = useState({
-        email: '',
-        password: ''
+        email: "",
+        password: ""
     });
 
     const classes = getAuthClasses(dark);
@@ -43,20 +44,20 @@ const Login = ({user,setError}) => {
         const updatedWarnings = {...warnings};
 
         if (!email) {
-            updatedWarnings.email = 'Le courriel est obligatoire.';
+            updatedWarnings.email = t("login.emailRequired");
             isValid = false;
         } else if (!validateEmail()) {
-            updatedWarnings.email = 'Le courriel est invalide.';
+            updatedWarnings.email = t("login.emailInvalid");
             isValid = false;
         } else {
-            updatedWarnings.email = '';
+            updatedWarnings.email = "";
         }
 
         if (!password) {
-            updatedWarnings.password = 'Le mot de passe est obligatoire.';
+            updatedWarnings.password = t("login.passwordRequired");
             isValid = false;
         } else {
-            updatedWarnings.password = '';
+            updatedWarnings.password = "";
         }
 
         setWarnings(updatedWarnings);
@@ -65,11 +66,11 @@ const Login = ({user,setError}) => {
 
     const fetchFunc = async () => {
         try {
-            const response = await fetcher('login', {
-                method: 'POST',
+            const response = await fetcher("login", {
+                method: "POST",
                 headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json;charset=UTF-8',
+                    Accept: "application/json",
+                    "Content-Type": "application/json;charset=UTF-8",
                 },
                 body: JSON.stringify({
                     email: email.toLowerCase(),
@@ -79,39 +80,39 @@ const Login = ({user,setError}) => {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        setServerError('Email or password not valid');
+                        setServerError(t("login.invalidCredentials"));
                         return;
                     case 404:
-                        throw new Error('No server available');
+                        throw new Error(t("login.noServer"));
                     default:
-                        throw new Error('Not ok');
+                        throw new Error(t("login.genericError"));
                 }
             }
             const data = await response.json();
-            localStorage.setItem('token', data.accessToken);
+            localStorage.setItem("token", data.accessToken);
 
-            const userResponse = await fetcher('users/current', {});
+            const userResponse = await fetcher("users/current", {});
             if (!userResponse.ok) {
-                throw new Error('Failed to fetch user info');
+                throw new Error(t("login.userFetchFailed"));
             }
 
             const userData = await userResponse.json();
 
-            if (userData.role === 'STUDENT') {
-                navigate('/cv');
+            if (userData.role === "STUDENT") {
+                navigate("/cv");
             } else {
-                navigate('/home');
+                navigate("/home");
             }
 
         } catch (error) {
             setError(error);
-            navigate('/error');
+            navigate("/error");
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setServerError('');
+        setServerError("");
 
         if (validateUser()) {
             fetchFunc();
@@ -119,19 +120,19 @@ const Login = ({user,setError}) => {
     };
 
     if (user?.isLoggedIn) {
-        navigate('/home');
+        navigate("/home");
     }
 
     return (
         <div className={pageClass}>
             <div className={cardClass}>
-                <h2 className={titleClass}>Sign In</h2>
+                <h2 className={titleClass}>{t("login.title")}</h2>
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
                     <div>
                         <EmailField
                             value={email}
                             onChange={(e) => {
-                                setWarnings({...warnings, email: ''});
+                                setWarnings({...warnings, email: ""});
                                 setEmail(e.target.value.trim());
                             }}
                             labelClass={labelClass} fieldClass={fieldClass}
@@ -148,7 +149,7 @@ const Login = ({user,setError}) => {
                         <PasswordField
                             value={password}
                             onChange={(e) => {
-                                setWarnings({...warnings, password: ''});
+                                setWarnings({...warnings, password: ""});
                                 setPassword(e.target.value);
                             }}
                             labelClass={labelClass}
@@ -162,7 +163,7 @@ const Login = ({user,setError}) => {
                             <p className={errorClass}>
                                 {warnings.password}
                             </p>
-                            )}
+                        )}
                     </div>
 
                     {serverError && (
@@ -172,13 +173,13 @@ const Login = ({user,setError}) => {
                     )}
 
                     <button type="submit" className={submitClass}>
-                        Sign in
+                        {t("login.submit")}
                     </button>
                 </form>
                 <p className={subtextClass}>
-                    No account yet?{' '}
-                    <button onClick={() => navigate('/signup')} className="text-blue-500 hover:underline font-medium">
-                        Sign up
+                    {t("login.noAccount")}{" "}
+                    <button onClick={() => navigate("/signup")} className="text-blue-500 hover:underline font-medium">
+                        {t("login.signupLink")}
                     </button>
                 </p>
             </div>
