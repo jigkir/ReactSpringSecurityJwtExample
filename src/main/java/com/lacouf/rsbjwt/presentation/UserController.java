@@ -1,49 +1,46 @@
 package com.lacouf.rsbjwt.presentation;
 
+import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
+import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.UserAppService;
-import com.lacouf.rsbjwt.service.dto.JWTAuthResponse;
-import com.lacouf.rsbjwt.service.dto.LoginDTO;
-import com.lacouf.rsbjwt.service.dto.UserDTO;
-import jakarta.servlet.http.HttpServletRequest;
+import com.lacouf.rsbjwt.service.dto.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api")
 public class UserController {
 
-	private final UserAppService userService;
+	private final UserAppService userAppService;
+	private final StudentService studentService;
+
 
 	@PostMapping("/login")
-	public ResponseEntity<JWTAuthResponse> authenticateUser(@RequestBody LoginDTO loginDto){
-		try {
-			String accessToken = userService.authenticateUser(loginDto);
-			final JWTAuthResponse authResponse = new JWTAuthResponse(accessToken);
-			return ResponseEntity.accepted()
-					.contentType(MediaType.APPLICATION_JSON)
-					.body(authResponse);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new JWTAuthResponse());
-		}
+	public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody UserLoginDTO userLoginDto) {
+		return ResponseEntity.ok(userAppService.login(userLoginDto));
 	}
 
-	@GetMapping("/me")
-	public ResponseEntity<UserDTO> getMe(HttpServletRequest request){
-		return ResponseEntity.accepted().contentType(MediaType.APPLICATION_JSON).body(
-			userService.getMe(request.getHeader("Authorization")));
+	@GetMapping("/users/current")
+	public ResponseEntity<UserResponseDto> getCurrentUser(Authentication authentication) throws UserNotFoundException {
+		return ResponseEntity.ok(userAppService.getUserByEmail(authentication.getName()));
 	}
 
-	@GetMapping("/gestionnaire/demo")
-	@PreAuthorize("hasAuthority('GESTIONNAIRE')")
-	public ResponseEntity<String> gestionnaireDemoEndpoint() {
-		return ResponseEntity.ok("tout est beau");
+	@GetMapping("/disciplines")
+	public ResponseEntity<DisciplineDto> getAllDisciplines() {
+		return ResponseEntity.ok(userAppService.getAllDisciplines());
 	}
 
+	@GetMapping("/roles")
+	public ResponseEntity<RoleDto> getAllRoles() {
+		return ResponseEntity.ok(userAppService.getAllRoles());
+	}
+
+	@GetMapping("/max-cv-size")
+	public ResponseEntity<Integer> getMaxCVSize() {
+		return ResponseEntity.ok(studentService.getMaxCVSize());
+	}
 }
