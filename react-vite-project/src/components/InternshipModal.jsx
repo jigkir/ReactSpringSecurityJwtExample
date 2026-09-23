@@ -60,7 +60,7 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
             return;
         }
 
-        const compensationRegex = /^(?:\d+\$\/h|non rémunéré)$/i;
+        const compensationRegex = /^(?:(?:\$\d+|\d+\$)\/h|non rémunéré|unpaid)$/i;
         if (!compensationRegex.test(formData.compensation.trim())) {
             setError(t("internshipModal.errorCompensation"));
             return;
