@@ -43,7 +43,7 @@ i18n
                         gestionnaire: "Manager",
                         lightmode: "Light",
                         darkmode: "Dark",
-                        disconnect: "Disconnect",
+                        disconnect: "Logout",
                         login: "Login",
                         signup: "Sign Up",
                         switchFench: "FR",
