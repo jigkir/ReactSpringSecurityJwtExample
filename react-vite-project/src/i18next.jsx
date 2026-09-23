@@ -177,7 +177,7 @@ i18n
                         teacher: "Teacher",
                         role: "Role",
                         studentIdLabel: "Student ID",
-                        teacherIdLabel: "Teacher ID",
+                        teacherIdLabel: "Employee number",
                     },
                     disciplines: {
                         computer_science: "Computer science",
@@ -459,7 +459,7 @@ i18n
                         teacher: "Professeur",
                         role: "Rôle",
                         studentIdLabel: "Matricule étudiant",
-                        teacherIdLabel: "Matricule enseignant",
+                        teacherIdLabel: "Numéro d'employé",
                     },
                     disciplines: {
                         computer_science: "Informatique",
