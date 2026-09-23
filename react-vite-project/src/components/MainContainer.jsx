@@ -1,10 +1,17 @@
-import React from "react";
+import {useOutletContext} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {getMainContainerClasses} from '../styles/appStyles.jsx';
+
 function MainContainer() {
-  return (
-    <div className="maincontainer">
-      <h1>Example de Spring security avec JWT</h1>
-      <p>Dans cet exemple, vous trouverez le nécessaire pour implanter la sécurité avec des tokens JWT</p>
-    </div>
-  );
+    const {t} = useTranslation();
+    const {dark} = useOutletContext();
+    const classes = getMainContainerClasses(dark);
+    return (
+        <div className={classes.page}>
+            <h1>{t("mainContainer.title")}</h1>
+            <p>{t("mainContainer.subtitle")}</p>
+        </div>
+    );
 }
+
 export default MainContainer;

@@ -11,20 +11,27 @@ import java.util.Collection;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
-@ToString
 public abstract class UserApp  {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String firstName;
 
+    @Column(nullable = false)
     private String lastName;
 
     @Embedded
     private Credentials credentials;
+
+    public UserApp(String firstName, String lastName, Credentials credentials) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.credentials = credentials;
+    }
 
     public String getEmail(){
         return credentials.getEmail();
@@ -37,7 +44,6 @@ public abstract class UserApp  {
     public Role getRole(){
         return credentials.getRole();
     }
-
 
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return credentials.getAuthorities();
