@@ -19,7 +19,7 @@ export default function InternshipCard({internship, OnDelete, dark}) {
         <div className={s.card}>
             {/* Top row */}
             <div className={s.topRow}>
-                <div>
+                <div className="min-w-0 flex-1">
                     <h3 className={s.title}>{internship.title}</h3>
                     <p className={s.description}>{internship.description}</p>
                 </div>

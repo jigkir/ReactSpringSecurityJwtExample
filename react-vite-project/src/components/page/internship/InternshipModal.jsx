@@ -50,6 +50,11 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
         e.preventDefault();
         setError("");
 
+        if (formData.title.trim().length < 2 || formData.title.trim().length > 50) {
+            setError(t("internshipModal.titleTooShort"));
+            return;
+        }
+
         const skillsArray = formData.requiredSkills
             .split(",")
             .map((skill) => skill.trim())

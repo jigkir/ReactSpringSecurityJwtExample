@@ -13,7 +13,7 @@ public record InternshipRequestDto(
         String title,
 
         @NotBlank
-        @Size(min = 2, max = 255)
+        @Size(min = 2)
         String description,
 
         @NotBlank

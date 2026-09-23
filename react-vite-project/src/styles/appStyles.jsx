@@ -187,10 +187,10 @@ export function getPostInternshipClasses(dark) {
 
 export function getInternshipCardClasses(dark) {
     return {
-        card: `rounded-xl shadow-sm border p-6 text-left space-y-3 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
-        topRow: "flex justify-between items-start gap-4",
-        title: `text-xl font-bold ${dark ? "text-white" : "text-gray-900"}`,
-        description: `text-md mt-1 ${dark ? "text-slate-400" : "text-gray-600"}`,
+        card: `rounded-xl shadow-sm border p-6 text-left space-y-3 overflow-hidden min-w-0 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        topRow: "flex justify-between items-start gap-4 min-w-0",
+        title: `text-xl font-bold break-words break-all min-w-0 w-full ${dark ? "text-white" : "text-gray-900"}`,
+        description: `text-md mt-1 break-words whitespace-normal min-w-0 ${dark ? "text-slate-400" : "text-gray-600"}`,
         skillsRow: `text-md ${dark ? "text-slate-300" : "text-gray-700"}`,
         skillBadge: `px-2 py-0.5 rounded font-medium ${dark ? "bg-blue-900/40 text-blue-300" : "bg-blue-50 text-blue-700"}`,
         detailsRow: `flex flex-wrap gap-2 text-md pt-1 border-t ${dark ? "text-slate-400 border-slate-700" : "text-gray-500 border-gray-100"}`,
