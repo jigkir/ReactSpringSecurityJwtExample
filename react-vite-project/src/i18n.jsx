@@ -12,7 +12,7 @@ i18n
     // for all options read: https://www.i18next.com/overview/configuration-options
     .init({
         debug: true,
-        fallbackLng: "en",
+        fallbackLng: "fr",
         resources: {
             en: {
                 translation: {
@@ -326,7 +326,7 @@ i18n
                         darkmode: "Sombre",
                         disconnect: "Déconnection",
                         login: "Connecter",
-                        signup: "S'enregistrer",
+                        signup: "S'inscrire",
                         switchFench: "FR",
                         switchEnglish: "EN",
                     },
