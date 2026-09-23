@@ -16,8 +16,10 @@ function Navbar({user, dark, toggleDark}) {
     };
     const formatRole = (roleString) => {
         if (!roleString) return "";
-        const name = roleString.replace("ROLE_", "");
-        return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        const name = roleString.replace("ROLE_", "").toLowerCase();
+        const key = `navbar.${name}`;
+        const translated = t(key);
+        return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
     const isActive = (path) =>
@@ -36,7 +38,7 @@ function Navbar({user, dark, toggleDark}) {
         {to: homePath, label: t("navbar.accueil"), show: true},
         {to: "/about", label: t("navbar.about"), show: true},
         {to: "/cv", label: "CV", show: role === "STUDENT"},
-        {to: "/post", label: "Post Internship", show: role === "EMPLOYER"},
+        {to: "/post", label: t("navbar.postInternship"), show: role === "EMPLOYER"},
     ].filter(item => item.show);
 
     const ToggleIcon = () => dark ? (
@@ -75,7 +77,7 @@ function Navbar({user, dark, toggleDark}) {
                     <div className="flex items-center gap-3 ml-auto">
                         {user?.isLoggedIn && (
                             <div className={`flex items-center gap-2 text-sm ${theme.greeting}`}>
-                                <span>Bonjour,</span>
+                                <span>{t("navbar.hello")}</span>
                                 <span className={`font-semibold ${theme.greetingName}`}>
                                     {user.firstName} {user.lastName}
                                 </span>
