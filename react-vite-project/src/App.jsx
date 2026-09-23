@@ -9,7 +9,7 @@ import Signup from './components/page/auth/Signup.jsx';
 import fetcher from './utils/fetcher.js';
 import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
-import PostInternship from './components/page/PostInternship.jsx';
+import PostInternship from './components/page/Internship/PostInternship.jsx';
 import Home from './components/page/Home.jsx';
 import Cv from './components/page/student/Cv.jsx';
 

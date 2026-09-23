@@ -1,10 +1,10 @@
 import {useEffect, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import InternshipModal from '../InternshipModal.jsx';
-import InternshipCard from '../InternshipCard.jsx';
-import fetcher from '../../utils/fetcher.js';
-import {getPostInternshipClasses} from '../../styles/appStyles.jsx';
+import InternshipModal from './InternshipModal.jsx';
+import InternshipCard from './InternshipCard.jsx';
+import fetcher from '../../../utils/fetcher.js';
+import {getPostInternshipClasses} from '../../../styles/appStyles.jsx';
 
 function PostInternship({user}) {
     const {dark} = useOutletContext();

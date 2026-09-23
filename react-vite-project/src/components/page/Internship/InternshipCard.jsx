@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {getInternshipCardClasses} from '../styles/appStyles.jsx';
+import {getInternshipCardClasses} from '../../../styles/appStyles.jsx';
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
