@@ -1,36 +1,44 @@
 package com.lacouf.rsbjwt.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    @Column
-    String message;
+    @Column(nullable = false)
+    private String title;
 
-    @Enumerated (EnumType.STRING)
-    @Column
-    NotificationStatus status;
+    @Column(nullable = false, length = 1000)
+    private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationType type;
+
+    @Enumerated(EnumType.STRING)
+    private TargetType targetType;
+
+    private Long targetId; // genre CV ID ou wtv
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    UserApp user;
-
-    public Notification() {
-    }
-
-    public Notification(String message, NotificationStatus status, UserApp user) {
-        this.message = message;
-        this.status = status;
-        this.user = user;
-    }
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserApp user;
 }
