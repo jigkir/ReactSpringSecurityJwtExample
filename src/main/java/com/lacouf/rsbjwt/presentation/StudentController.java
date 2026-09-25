@@ -79,6 +79,17 @@ public class StudentController {
         return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
     }
 
+    @PutMapping("/{id}/cvs/{cvId}/secondary")
+    public ResponseEntity<String> makeCVSecondary(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = studentService.findById(id);
+        studentService.setCVAsSecondary(student, cvId);
+        return new ResponseEntity<>("CV made secondary successfully", HttpStatus.OK);
+    }
 
-
+    @PutMapping("/{id}/cvs/{cvId}/main")
+    public ResponseEntity<String> makeCVMain(@PathVariable Long id, @PathVariable Long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = studentService.findById(id);
+        studentService.setCVAsMain(student, cvId);
+        return new ResponseEntity<>("CV made main successfully", HttpStatus.OK);
+    }
 }

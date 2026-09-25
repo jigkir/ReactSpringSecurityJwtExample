@@ -96,7 +96,7 @@ public class StudentService {
         Student student = findById(studentId);
         String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
 
-        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, CvVisibility.VISIBLE);
+        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null,CvPriority.SECONDARY, CvVisibility.VISIBLE);
         saveCV(cvDto, student);
     }
 
@@ -206,6 +206,26 @@ public class StudentService {
         }
         cv.setSharingScope(CVSharingScope.PUBLIC);
         cvRepository.save(cv);
+    }
+
+    public void setCVAsSecondary(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+        CV cv = validateAndGetStudentCv(student, cvId);
+        cv.setPriority(CvPriority.SECONDARY);
+        cvRepository.save(cv);
+    }
+
+
+    public void setCVAsMain(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+        CV cv = validateAndGetStudentCv(student, cvId);
+        CV currentMainCv = cvRepository.findByStudentAndPriority(student, CvPriority.MAIN);
+        if (currentMainCv != null && !currentMainCv.getId().equals(cvId)) {
+            currentMainCv.setPriority(CvPriority.SECONDARY);
+            cvRepository.save(currentMainCv);
+        }
+        else {
+            cv.setPriority(CvPriority.MAIN);
+            cvRepository.save(cv);
+        }
     }
 
     public void setCvAsPrivate(Student student, Long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {

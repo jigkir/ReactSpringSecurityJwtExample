@@ -2,14 +2,11 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.model.CvVisibility;
-import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.Student;
+import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.StudentService;
-import com.lacouf.rsbjwt.model.CVSharingScope;
 import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.UserResponseDto;
 import org.junit.jupiter.api.Test;
@@ -173,7 +170,7 @@ public class StudentControllerTest {
 
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE);
         when(studentService.findById(1L)).thenReturn(dummyStudent);
         when(studentService.getCVs(dummyStudent)).thenReturn(List.of(cvDto));
 
@@ -276,6 +273,64 @@ public class StudentControllerTest {
 
         mockMvc.perform(put("/api/student/1/cvs/10/private"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldMakeCVSecondarySuccessfully() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doNothing().when(studentService).setCVAsSecondary(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/secondary"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("CV made secondary successfully"));
+
+        verify(studentService).setCVAsSecondary(dummyStudent, 10L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenMakingCVSecondaryForNonExistentStudent() throws Exception {
+        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(put("/api/student/99/cvs/10/secondary"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenMakingSecondaryForNonExistentCv() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsSecondary(dummyStudent, 999L);
+
+        mockMvc.perform(put("/api/student/1/cvs/999/secondary"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldMakeCVMainSuccessfully() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doNothing().when(studentService).setCVAsMain(dummyStudent, 10L);
+
+        mockMvc.perform(put("/api/student/1/cvs/10/main"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("CV made main successfully"));
+
+        verify(studentService).setCVAsMain(dummyStudent, 10L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenMakingCVMainForNonExistentStudent() throws Exception {
+        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+
+        mockMvc.perform(put("/api/student/99/cvs/10/main"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenMakingMainForNonExistentCv() throws Exception {
+        when(studentService.findById(1L)).thenReturn(dummyStudent);
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsMain(dummyStudent, 999L);
+
+        mockMvc.perform(put("/api/student/1/cvs/999/main"))
+                .andExpect(status().isNotFound());
     }
 }
 

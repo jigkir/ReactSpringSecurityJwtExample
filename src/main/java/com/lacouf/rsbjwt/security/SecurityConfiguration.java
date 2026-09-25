@@ -48,6 +48,8 @@ public class SecurityConfiguration {
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/{studentId}/cvs";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/{studentId}/cvs/**";
     private static final String HIDE_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/hide";
+    private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/main";
+    private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
     private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
     private static final String MANAGER_PATH = "/api/manager/**";
@@ -74,6 +76,8 @@ public class SecurityConfiguration {
 
                         // Use Role enum names for authorities
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, MAIN_STUDENT_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, SECONDARY_STUDENT_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
