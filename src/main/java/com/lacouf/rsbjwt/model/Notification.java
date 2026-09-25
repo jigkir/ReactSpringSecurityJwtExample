@@ -41,4 +41,19 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserApp user;
+
+    public Notification(String title, String message, NotificationStatus status, NotificationType type, TargetType targetType, Long targetId, UserApp user) {
+        this.title = title;
+        this.message = message;
+        this.status = status;
+        this.type = type;
+        this.targetType = targetType;
+        this.targetId = targetId;
+        this.user = user;
+    }
+
+    public void markAsRead() {
+        this.status = NotificationStatus.READ;
+    }
+
 }
