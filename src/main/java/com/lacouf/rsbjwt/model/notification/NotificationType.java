@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.model;
+package com.lacouf.rsbjwt.model.notification;
 
 public enum NotificationType {
     CV_APPROVED,

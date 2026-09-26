@@ -1,5 +1,6 @@
-package com.lacouf.rsbjwt.model;
+package com.lacouf.rsbjwt.model.notification;
 
+import com.lacouf.rsbjwt.model.user.UserApp;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import com.lacouf.rsbjwt.model.notification.Notification;
 
 import java.util.ArrayList;
 import java.util.Collection;

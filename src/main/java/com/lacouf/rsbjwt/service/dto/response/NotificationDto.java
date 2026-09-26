@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto;
+package com.lacouf.rsbjwt.service.dto.response;
 
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
