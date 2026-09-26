@@ -3,23 +3,38 @@ package com.lacouf.rsbjwt.service.dto;
 import com.lacouf.rsbjwt.model.Internship;
 import com.lacouf.rsbjwt.model.InternshipStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Period;
 
 public record InternshipResponseDto(
-        Long id,
+        long id,
         String title,
         String description,
         String requiredSkills,
-        String duration,
+        Period durationInWeeks,
         String location,
-        LocalDate  startDate,
-        LocalDate deadline,
-        String compensation,
+        LocalDate startDate,
+        LocalDate applicationDeadline,
+        BigDecimal compensationAmount,
+        boolean compensationNegotiable,
         InternshipStatus status,
-        Boolean isDeleted,
-        Long employerId
+        long employerId
 ) {
     public static InternshipResponseDto of(Internship internship){
-        return new InternshipResponseDto(internship.getId(),internship.getTitle(),internship.getDescription(),internship.getRequiredSkills(),internship.getDuration(),internship.getLocation(),internship.getStartDate(),internship.getDeadline(),internship.getCompensation(),internship.getStatus(),internship.getIsDeleted(),internship.getPostedBy().getId());
+        return new InternshipResponseDto(
+                internship.getId(),
+                internship.getTitle(),
+                internship.getDescription(),
+                internship.getRequiredSkills(),
+                internship.getDurationInWeeks(),
+                internship.getLocation(),
+                internship.getStartDate(),
+                internship.getApplicationDeadline(),
+                internship.getCompensationAmount(),
+                internship.isCompensationNegotiable(),
+                internship.getStatus(),
+                internship.getPostedBy().getId()
+        );
     }
 }

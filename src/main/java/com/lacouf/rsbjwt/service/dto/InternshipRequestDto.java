@@ -1,11 +1,10 @@
 package com.lacouf.rsbjwt.service.dto;
 
-import com.lacouf.rsbjwt.model.InternshipStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Period;
 
 public record InternshipRequestDto(
         @NotBlank
@@ -17,28 +16,29 @@ public record InternshipRequestDto(
         String description,
 
         @NotBlank
+        @Size(min = 2)
         String requiredSkills,
 
-        @NotBlank
-        String duration,
+        @NotNull
+        Period durationInWeeks,
 
         @NotBlank
+        @Size(min = 2)
         String location,
 
         @NotNull
+        @Future
         LocalDate startDate,
 
         @NotNull
-        LocalDate deadline,
+        @Future
+        LocalDate applicationDeadline,
 
-        @NotBlank
-        String compensation,
+        @NotNull
+        @Digits(integer=2, fraction=2)
+        BigDecimal compensationAmount,
 
-        InternshipStatus status,
-
-        Boolean isDeleted,
-
-        Long employerId
+        boolean compensationNegotiable
 ) {
     public InternshipRequestDto {
         if (title != null) {
@@ -55,10 +55,6 @@ public record InternshipRequestDto(
 
         if (location != null) {
             location = location.trim();
-        }
-
-        if (compensation != null) {
-            compensation = compensation.trim();
         }
     }
 }
