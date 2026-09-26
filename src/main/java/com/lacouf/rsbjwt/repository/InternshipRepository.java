@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.repository;
 
-import com.lacouf.rsbjwt.model.Internship;
+import com.lacouf.rsbjwt.model.internship.Internship;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,22 +1,22 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.model.Internship;
-import com.lacouf.rsbjwt.model.InternshipStatus;
-import com.lacouf.rsbjwt.model.UserApp;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
-import com.lacouf.rsbjwt.model.Employer;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.InternshipNotFoundException;
-import com.lacouf.rsbjwt.security.exception.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
-import com.lacouf.rsbjwt.service.dto.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

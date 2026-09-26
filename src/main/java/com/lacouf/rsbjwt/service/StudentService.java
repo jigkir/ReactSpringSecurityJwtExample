@@ -1,15 +1,22 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.model.*;
+import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.cv.CVSharingScope;
+import com.lacouf.rsbjwt.model.cv.CvPriority;
+import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.*;
-import com.lacouf.rsbjwt.service.dto.CVDto;
-import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
@@ -66,25 +73,12 @@ public class StudentService {
         return UserResponseDto.of(student);
     }
 
-    private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
-        Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-        Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
-
-        if (studentFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException("email");
-        }
-
-        if (studentFoundByStudentId.isPresent()) {
-            throw new UserAlreadyExistsException("studentId");
-        }
-    }
-
-    public Student findById(Long id) throws UserNotFoundException {
+    public Student findById(long id) throws UserNotFoundException {
         return studentRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    public void uploadCV(MultipartFile file, Long studentId)
+    public void uploadCV(MultipartFile file, long studentId)
             throws InvalidFileTypeException, InvalidFileSizeException, IOException, NoSuchAlgorithmException, CorruptedFileException, UserNotFoundException {
 
         if (file == null || file.isEmpty()) {
@@ -96,7 +90,7 @@ public class StudentService {
         Student student = findById(studentId);
         String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "cv.pdf";
 
-        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null,CvPriority.SECONDARY, CvVisibility.VISIBLE);
+        CVDto cvDto = new CVDto(bytes, null, CVSharingScope.PRIVATE, fileName, bytes.length, null, CvPriority.SECONDARY, CvVisibility.VISIBLE);
         saveCV(cvDto, student);
     }
 
@@ -185,13 +179,13 @@ public class StudentService {
         return MAX_FILE_SIZE;
     }
 
-    public void setCvAsInvisible(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCvAsInvisible(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         CV cv = validateAndGetStudentCv(student, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
     }
 
-    public CV findCvById(Long cvId) throws CvNotFoundException {
+    public CV findCvById(long cvId) throws CvNotFoundException {
         CV cv = cvRepository.findById(cvId).orElse(null);
         if (cv == null) {
             throw new CvNotFoundException("CV with ID " + cvId + " not found.");
@@ -199,7 +193,7 @@ public class StudentService {
         return cv;
     }
 
-    public void setCvAsPublic(Student student, Long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
+    public void setCvAsPublic(Student student, long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         CV cv = validateAndGetStudentCv(student, cvId);
         if (cv.getSharingScope() == CVSharingScope.PUBLIC) {
             throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
@@ -208,14 +202,14 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
-    public void setCVAsSecondary(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCVAsSecondary(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         CV cv = validateAndGetStudentCv(student, cvId);
         cv.setPriority(CvPriority.SECONDARY);
         cvRepository.save(cv);
     }
 
 
-    public void setCVAsMain(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCVAsMain(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         CV cv = validateAndGetStudentCv(student, cvId);
         CV currentMainCv = cvRepository.findByStudentAndPriority(student, CvPriority.MAIN);
         if (currentMainCv != null && !currentMainCv.getId().equals(cvId)) {
@@ -228,7 +222,7 @@ public class StudentService {
         }
     }
 
-    public void setCvAsPrivate(Student student, Long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+    public void setCvAsPrivate(Student student, long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
         CV cv = validateAndGetStudentCv(student, cvId);
         if (cv.getSharingScope() == CVSharingScope.PRIVATE) {
             throw new CVAlredyPrivateException("The CV with ID " + cvId + " is already private.");
@@ -237,7 +231,7 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
-    private CV validateAndGetStudentCv(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+    private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         if (student == null) {
             throw new UserNotFoundException();
         }
@@ -246,5 +240,18 @@ public class StudentService {
             throw new UserNotFoundException();
         }
         return cv;
+    }
+
+    private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
+        Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
+        Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
+
+        if (studentFoundByEmail.isPresent()) {
+            throw new UserAlreadyExistsException("email");
+        }
+
+        if (studentFoundByStudentId.isPresent()) {
+            throw new UserAlreadyExistsException("studentId");
+        }
     }
 }
