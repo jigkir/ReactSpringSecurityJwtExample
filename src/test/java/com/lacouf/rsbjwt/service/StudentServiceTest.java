@@ -1,14 +1,21 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.cv.CVSharingScope;
+import com.lacouf.rsbjwt.model.cv.CvPriority;
+import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.*;
-import com.lacouf.rsbjwt.service.dto.CVDto;
-import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeAll;

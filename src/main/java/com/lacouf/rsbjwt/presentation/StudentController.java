@@ -1,11 +1,13 @@
 package com.lacouf.rsbjwt.presentation;
 
-import com.lacouf.rsbjwt.model.Student;
-import com.lacouf.rsbjwt.security.exception.*;
+import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.StudentService;
-import com.lacouf.rsbjwt.service.dto.CVDto;
-import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;

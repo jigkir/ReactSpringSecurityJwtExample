@@ -1,15 +1,15 @@
 package com.lacouf.rsbjwt.presentation;
 
 
-import com.lacouf.rsbjwt.security.exception.InternshipNotFoundException;
-import com.lacouf.rsbjwt.security.exception.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.EmployerService;
-import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
-import com.lacouf.rsbjwt.service.dto.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

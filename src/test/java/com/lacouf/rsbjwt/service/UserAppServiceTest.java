@@ -1,13 +1,17 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.Student;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.security.JwtTokenProvider;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.*;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.UserLoginDTO;
+import com.lacouf.rsbjwt.service.dto.response.DisciplineDto;
+import com.lacouf.rsbjwt.service.dto.response.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.response.RoleDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

@@ -1,8 +1,8 @@
 package com.lacouf.rsbjwt.repository;
 
-import com.lacouf.rsbjwt.model.CV;
-import com.lacouf.rsbjwt.model.CvPriority;
-import com.lacouf.rsbjwt.model.Student;
+import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.cv.CvPriority;
+import com.lacouf.rsbjwt.model.user.Student;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
