@@ -56,23 +56,18 @@ public class ManagerService {
         }
     }
 
-    public void addNewCVNotificationToManager(Long managerId, String title, String message) throws UserNotFoundException {
-        Optional<Manager> managerOptional = managerRepository.findById(managerId);
-        if (managerOptional.isPresent()) {
-            Manager manager = managerOptional.get();
-            notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, managerId, manager));
-        } else {
-            throw new UserNotFoundException();
-        }
+    public void addNewCVNotificationToManager(Long managerId, String title, String message, Long cvId) throws UserNotFoundException {
+        Manager manager = managerRepository.findById(managerId)
+                .orElseThrow(UserNotFoundException::new);
+            notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cvId, manager));
     }
 
-    public List<NotificationDto> getNotificationsForManager(Long managerId) throws UserNotFoundException {
-        Optional<Manager> managerOptional = managerRepository.findById(managerId);
-        if (managerOptional.isPresent()) {
-            Manager manager = managerOptional.get();
-            return notificationRepository.findByUserId(manager.getId()).stream()
-                    .map(notification -> new NotificationDto(
-                            notification.getId(),
+    public List<NotificationDto> getNotificationsForManager(long managerId) throws UserNotFoundException {
+        Manager manager = managerRepository.findById(managerId)
+                .orElseThrow(UserNotFoundException::new);
+        return notificationRepository.findByUserId(manager.getId()).stream()
+                .map(notification -> new NotificationDto(
+                        notification.getId(),
                             notification.getTitle(),
                             notification.getMessage(),
                             notification.getStatus(),
@@ -83,8 +78,5 @@ public class ManagerService {
                             notification.getUser()
                     ))
                     .toList();
-        } else {
-            throw new UserNotFoundException();
-        }
     }
 }
