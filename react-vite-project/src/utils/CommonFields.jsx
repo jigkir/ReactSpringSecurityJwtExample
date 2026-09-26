@@ -54,58 +54,58 @@ const withSanitizer = (sanitize, onChange) => (e) => {
     onChange({target: {name, value: sanitize(value)}});
 };
 
-export const validateDiscipline = (value, t) => value ? "" : t("commonFields.disciplineSelect");
+export const validateDiscipline = (value) => value ? "" : {key:"commonFields.disciplineSelect"};
 
-export const validateId = (value, length = 7, t) => {
+export const validateId = (value, length = 7) => {
     const trimmed = value.trim();
-    if (!trimmed) return t("commonFields.requiredId");
-    if (trimmed.length !== length) return t("commonFields.requiredIdLength", {length});
+    if (!trimmed) return {key:"commonFields.requiredId"};
+    if (trimmed.length !== length) return {key:"commonFields.requiredIdLength", options:{length}};
     return "";
 };
 
-export function validateField(field, value, formValues = {}, t) {
+export function validateField(field, value, formValues = {}) {
     switch (field) {
         case "firstName":
         case "lastName": {
             const tr = value.trim();
-            if (!tr) return t("commonFields.requiredField");
-            if (tr.length < 2) return t("commonFields.atLeastXCharacters", {amount: 2});
-            if (tr.length > 50) return t("commonFields.atMostXCharacters", {amount: 50});
-            if (!NAME_REGEX.test(tr)) return t("commonFields.nameRequirements");
+            if (!tr) return {key:"commonFields.requiredField"}
+            if (tr.length < 2) return {key:"commonFields.atLeastXCharacters", options: {amount: 2}};
+            if (tr.length > 50) return {key:"commonFields.atMostXCharacters", options: {amount: 50}};
+            if (!NAME_REGEX.test(tr)) return {key:"commonFields.nameRequirements"};
             return "";
         }
         case "email": {
             const tr = value.trim();
-            if (!tr) return t("commonFields.requiredEmail");
-            if (tr.length > 100) return t("commonFields.atMostXCharacters", {amount: 100});
-            if (!EMAIL_REGEX.test(tr)) return t("commonFields.invalidEmailFormat");
+            if (!tr) return {key:"commonFields.requiredEmail"};
+            if (tr.length > 100) return {key:"commonFields.atMostXCharacters", options:{amount: 100}};
+            if (!EMAIL_REGEX.test(tr)) return {key:"commonFields.invalidEmailFormat"};
             return "";
         }
         case "password": {
-            if (!value) return t("commonFields.requiredPassword");
-            if (value.length < 8) return t("commonFields.atLeastXCharacters", {amount: 8});
-            if (value.length > 50) return t("commonFields.atMostXCharacters", {amount: 50});
-            if (/\s/.test(value)) return t("commonFields.mustNotContainSpaces");
+            if (!value) return {key: "commonFields.requiredPassword"};
+            if (value.length < 8) return {key: "commonFields.atLeastXCharacters", options: {amount: 8}};
+            if (value.length > 50) return {key: "commonFields.atMostXCharacters", options: {amount: 50}};
+            if (/\s/.test(value)) return {key: "commonFields.mustNotContainSpaces"};
             if (!PASSWORD_REGEX.test(value)) {
                 const missing = [];
-                if (!/[0-9]/.test(value)) missing.push(t("commonFields.missingDigit"));
-                if (!/[a-z]/.test(value)) missing.push(t("commonFields.missingLowercaseLetter"));
-                if (!/[A-Z]/.test(value)) missing.push(t("commonFields.missingUppercaseLetter"));
-                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push(t("commonFields.missingSpecialCharacter"));
-                return `Missing: ${missing.join(", ")}.`;
+                if (!/[0-9]/.test(value)) missing.push("commonFields.missingDigit");
+                if (!/[a-z]/.test(value)) missing.push("commonFields.missingLowercaseLetter");
+                if (!/[A-Z]/.test(value)) missing.push("commonFields.missingUppercaseLetter");
+                if (!/[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(value)) missing.push("commonFields.missingSpecialCharacter");
+                return {key: "commonFields.missingComposite", missing};
             }
             return "";
         }
         case "confirmPassword":
-            if (!value) return t("commonFields.missingConfirmPassword");
-            if (value !== formValues.password) return t("commonFields.noMatchingPasswords");
+            if (!value) return {key:"commonFields.missingConfirmPassword"};
+            if (value !== formValues.password) return {key:"commonFields.noMatchingPasswords"};
             return "";
         case "discipline":
-            return validateDiscipline(value, t);
+            return validateDiscipline(value);
         case "studentId":
-            return validateId(value, 7, t);
+            return validateId(value, 7);
         case "teacherId":
-            return validateId(value, 5, t);
+            return validateId(value, 5);
         default:
             return "";
     }
@@ -298,3 +298,11 @@ export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClas
         {loading ? loadingLabel : label}
     </button>
 );
+
+export function translateWarning(t, warning) {
+    if (!warning) return "";
+    if (warning.key === "commonFields.missingComposite") {
+        return `Missing: ${warning.missingKeys.map(k => t(k)).join(", ")}.`;
+    }
+    return t(warning.key, warning.options);
+}

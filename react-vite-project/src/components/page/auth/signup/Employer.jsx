@@ -11,6 +11,7 @@ import {
     LastNameField,
     PasswordField,
     SubmitButton,
+    translateWarning,
     validateField,
 } from '../../../../utils/CommonFields.jsx';
 

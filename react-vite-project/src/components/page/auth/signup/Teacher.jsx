@@ -11,6 +11,7 @@ import {
     MatriculeField,
     PasswordField,
     SubmitButton,
+    translateWarning,
     validateField,
 } from '../../../../utils/CommonFields.jsx';
 

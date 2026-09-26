@@ -11,6 +11,7 @@ import {
     MatriculeField,
     PasswordField,
     SubmitButton,
+    translateWarning,
     validateField,
 } from "../../../../utils/CommonFields.jsx";
 
@@ -78,9 +79,9 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateField(key, form[key], form, t);
-            newWarnings[key] = msg;
-            if (msg) valid = false;
+            const warn = validateField(key, form[key], form);
+            newWarnings[key] = warn;
+            if (warn) valid = false;
         }
         setWarnings(newWarnings);
         return valid;
@@ -124,9 +125,9 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                     }
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({...w, [ID_FIELD]: t("student.existingId")}));
+                        setWarnings(w => ({...w, [ID_FIELD]: {key:"student.existingId"}}));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({...w, email: t("student.emailInUse")}));
+                        setWarnings(w => ({...w, email: {key:"student.emailInUse"}}));
                     } else {
                         setServerError(t("student.eitherEmailOrIdInUse"));
                     }
@@ -152,18 +153,18 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {serverError && <div className={serverErrorClass}>{serverError}</div>}
 
-            <FirstNameField  {...sharedProps} value={form.firstName} warning={warnings.firstName}/>
-            <LastNameField   {...sharedProps} value={form.lastName} warning={warnings.lastName}/>
-            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={warnings[ID_FIELD]} name={ID_FIELD}
+            <FirstNameField  {...sharedProps} value={form.firstName} warning={translateWarning(t, warnings.firstName)}/>
+            <LastNameField   {...sharedProps} value={form.lastName} warning={translateWarning(t, warnings.lastName)}/>
+            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={translateWarning(t, warnings[ID_FIELD])} name={ID_FIELD}
                              role="Student"/>
-            <DisciplineField {...sharedProps} value={form.discipline} warning={warnings.discipline}
+            <DisciplineField {...sharedProps} value={form.discipline} warning={translateWarning(t, warnings.discipline)}
                              options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}/>
-            <EmailField      {...sharedProps} value={form.email} warning={warnings.email}/>
-            <PasswordField   {...sharedProps} value={form.password} warning={warnings.password}
+            <EmailField      {...sharedProps} value={form.email} warning={translateWarning(t, warnings.email)}/>
+            <PasswordField   {...sharedProps} value={form.password} warning={translateWarning(t, warnings.password)}
                              eyeClass={eyeClass} show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
                              hint={t("student.passwordRequirements")}
                              passwordHintClass={passwordHintClass}/>
-            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={warnings.confirmPassword}
+            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={translateWarning(t, warnings.confirmPassword)}
                                   eyeClass={eyeClass} show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}/>
 
             <SubmitButton

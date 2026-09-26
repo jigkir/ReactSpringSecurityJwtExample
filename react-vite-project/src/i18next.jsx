@@ -333,7 +333,7 @@ i18n
                         signup: "S'inscrire",
                         switchFench: "FR",
                         switchEnglish: "EN",
-                        postInternship: "Offres de stage",
+                        postInternship: "Offrir un stage",
                         hello: "Bonjour,",
                     },
                     managerPage: {
