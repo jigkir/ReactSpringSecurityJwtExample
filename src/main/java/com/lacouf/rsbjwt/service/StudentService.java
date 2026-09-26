@@ -179,7 +179,7 @@ public class StudentService {
         return MAX_FILE_SIZE;
     }
 
-    public void setCvAsInvisible(Student student, Long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCvAsInvisible(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         CV cv = validateAndGetStudentCv(student, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
