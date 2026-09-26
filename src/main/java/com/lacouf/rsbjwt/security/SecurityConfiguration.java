@@ -47,6 +47,9 @@ public class SecurityConfiguration {
     private static final String MAKE_CV_PRIVATE_PATH = "/api/student/{studentId}/cvs/{cvId}/private";
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/{studentId}/cvs";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/{studentId}/cvs/**";
+    private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
+    private static final String EMPLOYER_INTERNSHIP_DELETION_PATH = "/api/employer/internships/{internshipId}";
+    private static final String EMPLOYER_INTERNSHIPS_BY_ID_PATH = "/api/employer/{employerId}/internships";
     private static final String HIDE_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/hide";
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/secondary";
@@ -76,11 +79,14 @@ public class SecurityConfiguration {
 
                         // Use Role enum names for authorities
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
+                        .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
+                        .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, MAIN_STUDENT_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, SECONDARY_STUDENT_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAKE_CV_PUBLIC_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAKE_CV_PRIVATE_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, HIDE_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
