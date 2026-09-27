@@ -61,6 +61,8 @@ public class SecurityConfiguration {
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
+    private static final String STUDENT_CV_BY_ID_PATH = "/api/student/{studentId}/cvs/{cvId}";
+    private static final String STUDENT_BY_CV_ID_PATH = "/api/student/cvs/{cvId}";
 
     // INTERNSHIP PATHS
     private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
@@ -69,6 +71,8 @@ public class SecurityConfiguration {
 
     // MANAGER PATH
     private static final String MANAGER_PATH = "/api/manager/**";
+    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
+    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -103,6 +107,10 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, STUDENT_BY_CV_ID_PATH).hasAnyAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, STUDENT_CV_BY_ID_PATH).hasAnyAuthority(Role.MANAGER.name())
 
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 )
