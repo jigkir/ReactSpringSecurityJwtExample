@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
-import {RoleField} from '../../../utils/CommonFields.jsx';
+import {RoleField, translateWarning} from '../../../utils/CommonFields.jsx';
 import fetcher from '../../../utils/fetcher.js';
 import Student from './signup/Student.jsx';
 import Employer from './signup/Employer.jsx';
@@ -46,7 +46,7 @@ const Signup = () => {
                 setRoles(mapped);
                 if (mapped.length > 0) setRole(mapped[0]);
             })
-            .catch(() => setRolesFetchError(t("signup.couldNotLoadRoles")))
+            .catch(() => setRolesFetchError({key:"signup.couldNotLoadRoles"}))
             .finally(() => setRolesLoading(false));
     }, []);
 
@@ -63,7 +63,7 @@ const Signup = () => {
                         onChange={(e) => setRole(e.target.value)}
                         options={roles}
                         loading={rolesLoading}
-                        fetchError={rolesFetchError}
+                        fetchError={translateWarning(t, rolesFetchError)}
                         labelClass={labelClass}
                         errorClass={classes.errorClass}
                         fieldClass={fieldClass}
