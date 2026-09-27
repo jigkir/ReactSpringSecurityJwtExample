@@ -85,4 +85,23 @@ public class ManagerService {
                 ))
                 .toList();
     }
+
+    public NotificationDto markNotificationAsRead(long notificationId) throws UserNotFoundException {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(UserNotFoundException::new);
+        notification.setStatus(NotificationStatus.READ);
+        notificationRepository.save(notification);
+        return new NotificationDto(
+                notification.getId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getStatus(),
+                notification.getTargetType(),
+                notification.getType(),
+                notification.getTargetId(),
+                notification.getCreatedAt(),
+                notification.getUser()
+        );
+    }
+
 }

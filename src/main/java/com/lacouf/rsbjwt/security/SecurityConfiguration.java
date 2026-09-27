@@ -69,6 +69,8 @@ public class SecurityConfiguration {
 
     // MANAGER PATH
     private static final String MANAGER_PATH = "/api/manager/**";
+    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
+    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -103,6 +105,8 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
 
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 )

@@ -22,4 +22,10 @@ public class ManagerController {
         List<NotificationDto> notifications = managerService.getNotificationsForManager(managerId);
         return ResponseEntity.ok(notifications);
     }
+
+    @PutMapping("/notifications/{notificationId}/read")
+    public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId) throws UserNotFoundException {
+        NotificationDto updatedNotification = managerService.markNotificationAsRead(notificationId);
+        return ResponseEntity.ok(updatedNotification);
+    }
 }
