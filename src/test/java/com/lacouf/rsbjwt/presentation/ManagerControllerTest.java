@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvPriority;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.response.CVDto;
@@ -36,7 +37,7 @@ public class ManagerControllerTest {
 
     @BeforeAll
     static void setup() {
-        cvDto = new CVDto("pdf".getBytes(), 1L, CVSharingScope.PUBLIC, "cv.pdf", 3L, LocalDateTime.of(2026, 9, 1, 10, 0), CvPriority.MAIN, CvVisibility.VISIBLE);
+        cvDto = new CVDto("pdf".getBytes(), 1L, CVSharingScope.PUBLIC, "cv.pdf", 3L, LocalDateTime.of(2026, 9, 1, 10, 0), CvPriority.MAIN, CvVisibility.VISIBLE, CvStatus.PENDING);
     }
 
     @Test
@@ -50,7 +51,8 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].fileName").value("cv.pdf"))
-                .andExpect(jsonPath("$[0].sharingScope").value("PUBLIC"));
+                .andExpect(jsonPath("$[0].sharingScope").value("PUBLIC"))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
 
         verify(managerService).getPendingPublicCvs();
     }
