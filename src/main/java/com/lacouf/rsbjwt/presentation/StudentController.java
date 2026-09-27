@@ -103,12 +103,8 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/cvs/{cvId}")
-    public ResponseEntity<CVDto> getCVByStudentId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
-        Student student = studentService.findById(id);
-        CV cv = studentService.findCvById(cvId);
-        if (!cv.isOwnedBy(student)) {
-            throw new UserNotFoundException();
-        }
-        return new ResponseEntity<>(CVDto.fromCV(cv), HttpStatus.OK);
+    public ResponseEntity<CVDto> getCVByStudentId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+        CVDto cvDto = studentService.getCVByStudentId(id, cvId);
+        return new ResponseEntity<>(cvDto, HttpStatus.OK);
     }
 }
