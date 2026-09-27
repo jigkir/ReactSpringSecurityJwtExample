@@ -245,7 +245,7 @@ public class StudentService {
             throw new UserNotFoundException();
         }
         CV cv = findCvById(cvId);
-        if (!cv.isOwnedBy(student)) {
+        if (student != cv.getStudent()) {
             throw new UserNotFoundException();
         }
         return cv;
