@@ -63,8 +63,4 @@ public class CV {
         this.status = CvStatus.PENDING;
     }
 
-    public boolean isOwnedBy(Student student) {
-        return this.student != null && this.student.equals(student);
-    }
-
 }
