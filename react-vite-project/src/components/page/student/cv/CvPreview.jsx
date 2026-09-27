@@ -14,7 +14,7 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import CvButton from './CvButton.jsx';
+import Button from '../../../../styles/Button.jsx';
 import {getCvPreviewClasses} from '../../../../styles/appStyles.jsx';
 
 const CvPreview = ({doc, dark, getUrl, onClose}) => {
@@ -66,9 +66,9 @@ const CvPreview = ({doc, dark, getUrl, onClose}) => {
             <div className={cls.header}>
                 <h3 id="cv-preview-title" className={cls.title}>{doc.fileName}</h3>
                 <div className="flex shrink-0 items-center gap-2">
-                    <CvButton tone="accent" dark={dark} onClick={onClose} autoFocus>
+                    <Button tone="accent" dark={dark} onClick={onClose} autoFocus>
                         {t("cvPreview.closeBtn")}
-                    </CvButton>
+                    </Button>
                 </div>
             </div>
 

@@ -1,11 +1,11 @@
-import {CV_BUTTON_BASE, CV_BUTTON_TONES} from '../../../../styles/appStyles.jsx';
+import {CV_BUTTON_BASE, CV_BUTTON_TONES} from './appStyles.jsx';
 
 export function useButtonClasses(dark) {
     const btnTone = dark ? CV_BUTTON_TONES.dark : CV_BUTTON_TONES.light;
     return {btn: CV_BUTTON_BASE, btnTone};
 }
 
-const CvButton = ({tone = "neutral", dark, className = "", children, ...rest}) => {
+const Button = ({tone = "neutral", dark, className = "", children, ...rest}) => {
     const {btn, btnTone} = useButtonClasses(dark);
     return (
         <button className={`${btn} ${btnTone[tone]} ${className}`} {...rest}>
@@ -14,4 +14,4 @@ const CvButton = ({tone = "neutral", dark, className = "", children, ...rest}) =
     );
 };
 
-export default CvButton;
+export default Button;

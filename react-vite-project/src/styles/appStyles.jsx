@@ -232,7 +232,7 @@ export function getInternshipModalClasses(dark) {
     };
 }
 
-// ─── CvButton ─────────────────────────────────────────────────────────────────
+// ─── Button ─────────────────────────────────────────────────────────────────
 
 export const CV_BUTTON_BASE =
     "text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors duration-150 whitespace-nowrap " +
