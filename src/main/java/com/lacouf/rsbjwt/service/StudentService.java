@@ -240,6 +240,15 @@ public class StudentService {
         return UserResponseDto.of(student);
     }
 
+    public CVDto getCVByStudentId(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+        Student student = findById(studentId);
+        CV cv = validateAndGetStudentCv(student, cvId);
+        if (!isCVReadable(cv)) {
+            throw new CorruptedFileException("The CV with ID " + cv.getId() + " is corrupted or unreadable.");
+        }
+        return CVDto.fromCV(cv);
+    }
+
     private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         if (student == null) {
             throw new UserNotFoundException();
