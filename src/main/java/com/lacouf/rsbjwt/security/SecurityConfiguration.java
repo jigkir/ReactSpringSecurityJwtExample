@@ -69,10 +69,13 @@ public class SecurityConfiguration {
     private static final String EMPLOYER_INTERNSHIP_DELETION_PATH = "/api/employer/internships/{internshipId}";
     private static final String EMPLOYER_INTERNSHIPS_BY_ID_PATH = "/api/employer/{employerId}/internships";
 
-    // MANAGER PATH
+    // MANAGER PATHS
     private static final String MANAGER_PATH = "/api/manager/**";
     private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
     private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
+    private static final String MANAGER_PENDING_CVS_PATH = "/api/manager/cvs/pending";
+    private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
+    private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -106,6 +109,9 @@ public class SecurityConfiguration {
                         .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
+                        .requestMatchers(GET, MANAGER_PENDING_CVS_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_APPROVE_CV_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_REJECT_CV_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
