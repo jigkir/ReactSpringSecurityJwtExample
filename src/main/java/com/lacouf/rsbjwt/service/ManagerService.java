@@ -43,7 +43,7 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    public void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
+    private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
         Optional<UserApp> managerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
 
         if (managerFoundByEmail.isPresent()) {
