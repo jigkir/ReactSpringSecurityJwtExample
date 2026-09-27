@@ -54,14 +54,6 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
-        Optional<UserApp> managerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-
-        if (managerFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException("email");
-        }
-    }
-
     public void addNewCVNotificationToManager(Long managerId, String title, String message, Long cvId) throws UserNotFoundException {
         Manager manager = managerRepository.findById(managerId)
                 .orElseThrow(UserNotFoundException::new);
@@ -104,4 +96,11 @@ public class ManagerService {
         );
     }
 
+    private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
+        Optional<UserApp> managerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
+
+        if (managerFoundByEmail.isPresent()) {
+            throw new UserAlreadyExistsException("email");
+        }
+    }
 }
