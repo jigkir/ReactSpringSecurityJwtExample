@@ -46,6 +46,10 @@ public class CV {
     @JoinColumn(name = "student_id")
     private Student student;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CvStatus status;
+
     public CV() {
     }
 
@@ -56,6 +60,7 @@ public class CV {
         this.priority = priority;
         this.fileName = fileName;
         this.uploadDate = uploadDate;
+        this.status = CvStatus.PENDING;
     }
 
     public boolean isOwnedBy(Student student) {
