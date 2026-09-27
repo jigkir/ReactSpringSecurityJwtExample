@@ -58,8 +58,4 @@ public class CV {
         this.uploadDate = uploadDate;
     }
 
-    public boolean isOwnedBy(Student student) {
-        return this.student != null && this.student.equals(student);
-    }
-
 }
