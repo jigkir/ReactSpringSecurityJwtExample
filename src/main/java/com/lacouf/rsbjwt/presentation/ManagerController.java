@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
+import com.lacouf.rsbjwt.service.dto.response.CVDto;
 import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +28,10 @@ public class ManagerController {
     public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId) throws UserNotFoundException {
         NotificationDto updatedNotification = managerService.markNotificationAsRead(notificationId);
         return ResponseEntity.ok(updatedNotification);
+    }
+
+    @GetMapping("/cvs/pending")
+    public ResponseEntity<List<CVDto>> getPendingPublicCvs() {
+        return ResponseEntity.ok(managerService.getPendingPublicCvs());
     }
 }

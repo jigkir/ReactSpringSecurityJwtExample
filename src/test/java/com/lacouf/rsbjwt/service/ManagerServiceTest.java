@@ -1,10 +1,14 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,10 +38,20 @@ public class ManagerServiceTest {
     @Mock
     private UserAppRepository userAppRepository;
     @Mock
+    private CVRepository cvRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
+
+    private static CV cv;
+
+    @BeforeAll
+    public static void setUp() {
+        cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
+        cv.setId(1L);
+    }
 
     @Test
     void shouldSaveManager() throws UserAlreadyExistsException {
@@ -79,5 +95,20 @@ public class ManagerServiceTest {
         assert("user already exists").equals(exception.getMessage());
 
         verify(managerRepository, never()).save(any(Manager.class));
+    }
+
+    @Test
+    void shouldReturnPendingPublicCvs() {
+        when(cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
+
+        // Act
+        List<CVDto> result = managerService.getPendingPublicCvs();
+
+        // Assert
+        assert(Integer.valueOf(1)).equals(result.size());
+        assert(Long.valueOf(1L)).equals(result.getFirst().id());
+        assert("cv.pdf").equals(result.getFirst().fileName());
+        assert(CVSharingScope.PUBLIC).equals(result.getFirst().sharingScope());
+        verify(cvRepository).findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC);
     }
 }

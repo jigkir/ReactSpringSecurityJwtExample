@@ -1,12 +1,16 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.model.cv.CVSharingScope;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.service.dto.response.CVDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,12 +32,14 @@ public class ManagerService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final NotificationRepository notificationRepository;
+    private final CVRepository cvRepository;
 
-    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository) {
+    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository) {
         this.managerRepository = managerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.notificationRepository = notificationRepository;
+        this.cvRepository = cvRepository;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -94,6 +100,10 @@ public class ManagerService {
                 notification.getCreatedAt(),
                 notification.getUser()
         );
+    }
+
+    public List<CVDto> getPendingPublicCvs() {
+        return cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC).stream().map(CVDto::fromCV).toList();
     }
 
     private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
