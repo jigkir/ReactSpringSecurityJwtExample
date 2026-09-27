@@ -231,6 +231,15 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
+    public UserResponseDto getUserByCVId(long cvId) throws CvNotFoundException {
+        CV cv = findCvById(cvId);
+        Student student = cv.getStudent();
+        if (student == null) {
+            throw new CvNotFoundException("No student associated with CV ID " + cvId);
+        }
+        return UserResponseDto.of(student);
+    }
+
     private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         if (student == null) {
             throw new UserNotFoundException();
@@ -254,4 +263,5 @@ public class StudentService {
             throw new UserAlreadyExistsException("studentId");
         }
     }
+
 }

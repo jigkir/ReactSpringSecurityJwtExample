@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -93,5 +94,21 @@ public class StudentController {
         Student student = studentService.findById(id);
         studentService.setCVAsMain(student, cvId);
         return new ResponseEntity<>("CV made main successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/cvs/{id}")
+    public ResponseEntity<UserResponseDto> getUserByCVId(@PathVariable long id) throws CvNotFoundException {
+        UserResponseDto userResponseDto = studentService.getUserByCVId(id);
+        return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/cvs/{cvId}")
+    public ResponseEntity<CVDto> getCVByStudentId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = studentService.findById(id);
+        CV cv = studentService.findCvById(cvId);
+        if (!cv.isOwnedBy(student)) {
+            throw new UserNotFoundException();
+        }
+        return new ResponseEntity<>(CVDto.fromCV(cv), HttpStatus.OK);
     }
 }
