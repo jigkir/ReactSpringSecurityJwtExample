@@ -148,7 +148,8 @@ public class StudentService {
         }
     }
 
-    public long getCVCountByStudent(Student student) {
+    public long getCVCountByStudentId(long id) throws UserNotFoundException {
+        Student student = findById(id);
         if (student == null) {
             return 0;
         }
@@ -157,7 +158,9 @@ public class StudentService {
 
 
 
-    public List<CVDto> getCVs(Student student) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
+
+    public List<CVDto> getCVs(long id) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
+        Student student = findById(id);
         if (student == null) {
             throw new UserNotFoundException();
         }
@@ -179,7 +182,8 @@ public class StudentService {
         return MAX_FILE_SIZE;
     }
 
-    public void setCvAsInvisible(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCvAsInvisible(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
@@ -193,7 +197,8 @@ public class StudentService {
         return cv;
     }
 
-    public void setCvAsPublic(Student student, long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
+    public void setCvAsPublic(long id, long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
+        Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
         if (cv.getSharingScope() == CVSharingScope.PUBLIC) {
             throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
@@ -202,14 +207,16 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
-    public void setCVAsSecondary(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCVAsSecondary(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
         cv.setPriority(CvPriority.SECONDARY);
         cvRepository.save(cv);
     }
 
 
-    public void setCVAsMain(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
+    public void setCVAsMain(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
         CV currentMainCv = cvRepository.findByStudentAndPriority(student, CvPriority.MAIN);
         if (currentMainCv != null && !currentMainCv.getId().equals(cvId)) {
@@ -222,7 +229,8 @@ public class StudentService {
         }
     }
 
-    public void setCvAsPrivate(Student student, long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+    public void setCvAsPrivate(long id, long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+        Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
         if (cv.getSharingScope() == CVSharingScope.PRIVATE) {
             throw new CVAlredyPrivateException("The CV with ID " + cvId + " is already private.");
