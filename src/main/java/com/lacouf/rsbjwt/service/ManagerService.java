@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
@@ -63,8 +64,9 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    public void addNewCVNotificationToManager(Long managerId, String title, String message, Long cvId) throws UserNotFoundException {
-        Manager manager = managerRepository.findById(managerId)
+    public void addNewCVNotificationToManager(String title, String message, Long cvId) throws UserNotFoundException {
+        List <Manager> managers = getAllManagers();
+        Manager manager = managers.stream().findFirst()
                 .orElseThrow(UserNotFoundException::new);
         notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cvId, manager));
     }
@@ -87,9 +89,9 @@ public class ManagerService {
                 .toList();
     }
 
-    public NotificationDto markNotificationAsRead(long notificationId) throws UserNotFoundException {
+    public NotificationDto markNotificationAsRead(long notificationId) throws NotificationNotFoundException {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> new NotificationNotFoundException("Notification not found with ID: " + notificationId));
         notification.setStatus(NotificationStatus.READ);
         notificationRepository.save(notification);
         return new NotificationDto(
@@ -136,5 +138,14 @@ public class ManagerService {
         if (managerFoundByEmail.isPresent()) {
             throw new UserAlreadyExistsException("email");
         }
+    }
+
+    private List<Manager> getAllManagers() throws UserNotFoundException {
+        List<Manager> managers = managerRepository.findAll();
+
+        if (managers.isEmpty()) {
+            throw new UserNotFoundException();
+        }
+        return managers;
     }
 }

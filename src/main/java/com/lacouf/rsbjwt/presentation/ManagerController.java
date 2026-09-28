@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.response.CVDto;
@@ -27,7 +28,7 @@ public class ManagerController {
     }
 
     @PutMapping("/notifications/{notificationId}/read")
-    public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId) throws UserNotFoundException {
+    public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId) throws NotificationNotFoundException {
         NotificationDto updatedNotification = managerService.markNotificationAsRead(notificationId);
         return ResponseEntity.ok(updatedNotification);
     }
