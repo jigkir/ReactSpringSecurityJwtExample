@@ -63,6 +63,7 @@ public class SecurityConfiguration {
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
     private static final String STUDENT_CV_BY_ID_PATH = "/api/student/{studentId}/cvs/{cvId}";
     private static final String STUDENT_BY_CV_ID_PATH = "/api/student/cvs/{cvId}";
+    private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/pending";
 
     // INTERNSHIP PATHS
     private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
@@ -104,7 +105,7 @@ public class SecurityConfiguration {
                         .requestMatchers(PUT, MAKE_CV_PUBLIC_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAKE_CV_PRIVATE_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, HIDE_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
-
+                        .requestMatchers(PUT, STUDENT_PENDING_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
                         .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())

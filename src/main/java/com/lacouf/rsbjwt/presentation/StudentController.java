@@ -22,9 +22,11 @@ import java.util.List;
 @RequestMapping("/api/student")
 public class StudentController {
     private final StudentService studentService;
+    private final ManagerService managerService;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, ManagerService managerService) {
         this.studentService = studentService;
+        this.managerService = managerService;
     }
 
     @PostMapping("/signup")
@@ -87,6 +89,13 @@ public class StudentController {
     public ResponseEntity<String> makeCVMain(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
         studentService.setCVAsMain(id, cvId);
         return new ResponseEntity<>("CV made main successfully", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/cvs/{cvId}/pending")
+    public ResponseEntity<String> makeCVPending(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
+        studentService.setCVAsPending(id, cvId);
+        managerService.addNewCVNotificationToManager(1L, "New CV Pending Review", "A new CV has been submitted for review.", cvId);
+        return new ResponseEntity<>("CV made pending successfully", HttpStatus.OK);
     }
 
     @GetMapping("/cvs/{id}")
