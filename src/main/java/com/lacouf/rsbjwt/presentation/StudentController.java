@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.response.CVDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;

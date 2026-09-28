@@ -15,6 +15,7 @@ import com.lacouf.rsbjwt.exception.cv.CVAlredyPrivateException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
@@ -45,7 +46,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
-
 @WebMvcTest(StudentController.class)
 public class StudentControllerTest {
 
@@ -69,6 +69,10 @@ public class StudentControllerTest {
 
     @MockitoBean
     private StudentService studentService;
+
+    @MockitoBean
+    private ManagerService managerService;
+
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
@@ -217,9 +221,7 @@ public class StudentControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-
     // Hide, Make Public & Make Private CV Tests
-
 
     @Test
     void shouldHideCVSuccessfully() throws Exception {
@@ -341,4 +343,3 @@ public class StudentControllerTest {
                 .andExpect(status().isNotFound());
     }
 }
-
