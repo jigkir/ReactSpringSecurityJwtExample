@@ -1,13 +1,13 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.model.Manager;
-import com.lacouf.rsbjwt.model.UserApp;
+import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

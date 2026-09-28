@@ -19,31 +19,28 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
 
     const [error, setError] = useState("");
 
+    const [selection, setSelection] = useState("");
+
     const today = new Date().toISOString().split("T")[0];
 
-    const maxDeadline = formData.startDate
-        ? (() => {
-            const d = new Date(formData.startDate + "T00:00:00");
-            // Check if the date is valid before doing math
-            if (isNaN(d.getTime())) return "";
-            d.setDate(d.getDate() - 14);
-            return d.toISOString().split("T")[0];
-        })()
-        : "";
-
-    const minStartDay = today
-        ? (() => {
-            const d = new Date(today + 'T00:00:00');
-            if (isNaN(d.getTime())) return "";
-            d.setDate(d.getDate() + 14);
-            return d.toISOString().split("T")[0]
-        })() : "";
-
     if (!isOpen) return null;
+
+    const handleSelectionChange = (e) => {
+        const value = e.target.value;
+        setSelection(value);
+
+        if (value === 'to_be_discussed') {
+            setFormData(prev => ({ ...prev, compensation: 'To be discussed' }));
+        }else{
+            setFormData(prev => ({ ...prev, compensation: '' }));
+        }
+        console.log(formData)
+    };
 
     const handleChange = (e) => {
         const {name, value} = e.target;
         setFormData((prev) => ({...prev, [name]: value}));
+        console.log(formData);
     };
 
     const handleSubmit = async (e) => {
@@ -167,14 +164,14 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                             <label className={s.label}>{t("internshipModal.startDateLabel")}</label>
                             <input
                                 type="date" name="startDate" value={formData.startDate}
-                                min={minStartDay} onChange={handleChange}
+                                min={today} onChange={handleChange}
                                 className={s.input} required
                             />
                         </div>
                         <div>
                             <label className={s.label}>{t("internshipModal.deadlineLabel")}</label>
                             <input
-                                type="date" name="deadline" min={today} max={maxDeadline}
+                                type="date" name="deadline" min={today}
                                 value={formData.deadline} onChange={handleChange}
                                 className={s.input} required
                             />
@@ -182,14 +179,45 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                     </div>
 
                     {/* Compensation */}
+                    {/*<div>*/}
+                    {/*    <label className={s.label}>{t("internshipModal.compensationLabel")}</label>*/}
+                    {/*    <input*/}
+                    {/*        type="text" name="compensation" value={formData.compensation}*/}
+                    {/*        onChange={handleChange} placeholder={t("internshipModal.compensationPlaceholder")}*/}
+                    {/*        className={s.input} required*/}
+                    {/*    />*/}
+                    {/*</div>*/}
+
                     <div>
                         <label className={s.label}>{t("internshipModal.compensationLabel")}</label>
-                        <input
-                            type="text" name="compensation" value={formData.compensation}
-                            onChange={handleChange} placeholder={t("internshipModal.compensationPlaceholder")}
-                            className={s.input} required
-                        />
+                        <select
+                            name="selection"
+                            value={selection}
+                            onChange={handleSelectionChange}
+                            className={s.input}
+                            required
+                        >
+                            <option value="" disabled>{t("internshipModal.selectPlaceholder")}</option>
+                            <option value="amount">{t("internshipModal.amountOption")}</option>
+                            <option value="to_be_discussed">{t("internshipModal.tbdOption")}</option>
+                        </select>
                     </div>
+
+                    {selection === 'amount' && (
+                        <div style={{ marginTop: '1rem' }}>
+                            <label className={s.label}>{t("internshipModal.amountLabel")}</label>
+                            <input
+                                type="number"
+                                name="compensation"
+                                value={formData.compensation}
+                                onChange={handleChange}
+                                className={s.input}
+                                placeholder={t("internshipModal.compensationPlaceholder")}
+                                min="0"
+                                step="any"
+                                required
+                            />
+                        </div>)}
 
                     {/* Footer */}
                     <div className={s.footer}>

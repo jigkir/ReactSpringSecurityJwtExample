@@ -19,7 +19,7 @@
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import CvButton, {useButtonClasses} from './CvButton.jsx';
+import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
 import CvPreview from './CvPreview.jsx';
 import fetcher from '../../../../utils/fetcher.js';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
@@ -169,22 +169,22 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                                 {confirming ? (
                                     <>
                                         <span className={th.confirmText}>{t("cvDocuments.hideAsk")}</span>
-                                        <CvButton tone="danger" dark={dark} onClick={() => hideDoc(doc)} disabled={busy}
-                                                  autoFocus>{t("cvDocuments.confirmBtn")}</CvButton>
-                                        <CvButton tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
-                                                  disabled={busy}>{t("cvDocuments.cancelBtn")}</CvButton>
+                                        <Button tone="danger" dark={dark} onClick={() => hideDoc(doc)} disabled={busy}
+                                                autoFocus>{t("cvDocuments.confirmBtn")}</Button>
+                                        <Button tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
+                                                disabled={busy}>{t("cvDocuments.cancelBtn")}</Button>
                                     </>
                                 ) : (
                                     <>
-                                        <CvButton tone="accent" dark={dark} onClick={() => setPreviewDoc(doc)}
-                                                  disabled={busy || !doc.content}
-                                                  aria-label={`${t("cvDocuments.viewBtn")} : ${doc.fileName}`}>{t("cvDocuments.viewBtn")}</CvButton>
-                                        <CvButton tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                  disabled={busy}
-                                                  aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</CvButton>
-                                        <CvButton tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
-                                                  disabled={busy}
-                                                  aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</CvButton>
+                                        <Button tone="accent" dark={dark} onClick={() => setPreviewDoc(doc)}
+                                                disabled={busy || !doc.content}
+                                                aria-label={`${t("cvDocuments.viewBtn")} : ${doc.fileName}`}>{t("cvDocuments.viewBtn")}</Button>
+                                        <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
+                                                disabled={busy}
+                                                aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</Button>
+                                        <Button tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
+                                                disabled={busy}
+                                                aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</Button>
                                     </>
                                 )}
                             </div>

@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
-import fetcher from '../../../utils/fetcher.js';
+import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
 import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
 
@@ -62,60 +62,47 @@ const Login = ({user, setError}) => {
         return isValid;
     };
 
+    // region Api.jsx communication
     const fetchFunc = async () => {
         try {
-            const response = await fetcher("login", {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json;charset=UTF-8",
-                },
-                body: JSON.stringify({
-                    email: email.toLowerCase(),
-                    password
-                }),
-            });
-            if (!response.ok) {
-                switch (response.status) {
-                    case 401:
-                        setServerError({key:"login.invalidCredentials"});
-                        return;
-                    case 404:
-                        throw new Error({key:"login.noServer"});
-                    default:
-                        throw new Error({key:"login.genericError"});
-                }
-            }
-            const data = await response.json();
+            const data = await login(email.toLowerCase(), password);
             localStorage.setItem("token", data.accessToken);
 
-            const userResponse = await fetcher("users/current", {});
-            if (!userResponse.ok) {
-                throw new Error({key:"login.userFetchFailed"});
+            let userData;
+            try {
+                userData = await getCurrentUser();
+            } catch {
+                throw new Error(t("login.userFetchFailed"));
             }
-
-            const userData = await userResponse.json();
 
             if (userData.role === "STUDENT") {
                 const studentId = userData.studentId || userData.matricule || userData.id;
                 let hasCv = false;
                 try {
-                    const countRes = await fetcher(`student/${studentId}/cvs/count`, {});
-                    if (countRes.ok) {
-                        const count = await countRes.json();
-                        hasCv = count > 0;
-                    }
+                    const count = await getCvCount(studentId);
+                    hasCv = count > 0;
                 } catch { /* fallback: send to /cv */ }
                 navigate(hasCv ? "/home" : "/cv");
             } else {
                 navigate("/home");
             }
-
-        } catch (error) {
-            setError(error);
-            navigate("/error");
+        } catch (err) {
+            switch (err.status) {
+                case 401:
+                    setServerError(t("login.invalidCredentials"));
+                    return;
+                case 404:
+                    setError(new Error(t("login.noServer")));
+                    navigate("/error");
+                    return;
+                default:
+                    setError(new Error(t("login.genericError")));
+                    navigate("/error");
+                    return;
+            }
         }
     };
+    // endregion
 
     const handleSubmit = (e) => {
         e.preventDefault();

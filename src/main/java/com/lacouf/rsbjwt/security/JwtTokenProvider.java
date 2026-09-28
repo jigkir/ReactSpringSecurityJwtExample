@@ -5,7 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import com.lacouf.rsbjwt.security.exception.InvalidJwtTokenException;
+import com.lacouf.rsbjwt.exception.user.InvalidJwtTokenException;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
