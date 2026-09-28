@@ -24,10 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class StudentService {
@@ -220,10 +217,8 @@ public class StudentService {
             currentMainCv.setPriority(CvPriority.SECONDARY);
             cvRepository.save(currentMainCv);
         }
-        else {
-            cv.setPriority(CvPriority.MAIN);
-            cvRepository.save(cv);
-        }
+        cv.setPriority(CvPriority.MAIN);
+        cvRepository.save(cv);
     }
 
     public void setCvAsPrivate(long id, long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
@@ -259,7 +254,8 @@ public class StudentService {
             throw new UserNotFoundException();
         }
         CV cv = findCvById(cvId);
-        if (student != cv.getStudent()) {
+        Student cvStudent = cv.getStudent();
+        if (!Objects.equals(student.getId(), cvStudent.getId())) {
             throw new UserNotFoundException();
         }
         return cv;
