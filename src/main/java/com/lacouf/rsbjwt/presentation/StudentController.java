@@ -1,7 +1,6 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
