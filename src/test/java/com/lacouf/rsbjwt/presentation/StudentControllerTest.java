@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvPriority;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.exception.cv.CVAlreadyPublicException;
@@ -177,7 +178,7 @@ public class StudentControllerTest {
 
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE);
+        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
         when(studentService.findById(1L)).thenReturn(dummyStudent);
         when(studentService.getCVs(dummyStudent.getId())).thenReturn(List.of(cvDto));
 

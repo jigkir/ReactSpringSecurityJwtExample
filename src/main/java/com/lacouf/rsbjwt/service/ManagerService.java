@@ -1,5 +1,8 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.user.Manager;
@@ -104,6 +107,27 @@ public class ManagerService {
 
     public List<CVDto> getPendingPublicCvs() {
         return cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC).stream().map(CVDto::fromCV).toList();
+    }
+
+    public CVDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+        return updateCvStatus(cvId, CvStatus.APPROVED);
+    }
+
+    public CVDto rejectCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+        return updateCvStatus(cvId, CvStatus.REJECTED);
+    }
+
+    private CVDto updateCvStatus(long cvId, CvStatus cvStatus) throws CvNotFoundException, CvAlreadyReviewedException {
+        CV cv = cvRepository.findById(cvId).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+
+        if (cv.getStatus() != CvStatus.PENDING) {
+            throw new CvAlreadyReviewedException(cvId);
+        }
+
+        cv.setStatus(cvStatus);
+        cvRepository.save(cv);
+
+        return CVDto.fromCV(cv);
     }
 
     private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {

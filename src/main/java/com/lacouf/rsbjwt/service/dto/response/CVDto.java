@@ -1,9 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.response;
 
-import com.lacouf.rsbjwt.model.cv.CV;
-import com.lacouf.rsbjwt.model.cv.CVSharingScope;
-import com.lacouf.rsbjwt.model.cv.CvPriority;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.cv.*;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +12,8 @@ public record CVDto(
         long sizeBytes,
         LocalDateTime uploadedAt,
         CvPriority priority,
-        CvVisibility visibility
+        CvVisibility visibility,
+        CvStatus status
 ) {
     public static CVDto fromCV(CV cv) {
         return new CVDto(
@@ -26,7 +24,8 @@ public record CVDto(
                 cv.getContent() != null ? cv.getContent().length : 0,
                 cv.getUploadDate(),
                 cv.getPriority(),
-                cv.getVisibility()
+                cv.getVisibility(),
+                cv.getStatus()
         );
     }
 

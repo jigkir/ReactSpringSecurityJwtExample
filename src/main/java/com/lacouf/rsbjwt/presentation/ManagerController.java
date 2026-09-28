@@ -1,5 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
+import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.response.CVDto;
@@ -33,5 +35,15 @@ public class ManagerController {
     @GetMapping("/cvs/pending")
     public ResponseEntity<List<CVDto>> getPendingPublicCvs() {
         return ResponseEntity.ok(managerService.getPendingPublicCvs());
+    }
+
+    @PutMapping("cvs/{cvId}/approve")
+    public ResponseEntity<CVDto> approveCV(@PathVariable long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+        return ResponseEntity.ok(managerService.approveCv(cvId));
+    }
+
+    @PutMapping("cvs/{cvId}/reject")
+    public ResponseEntity<CVDto> rejectCV(@PathVariable long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+        return ResponseEntity.ok(managerService.rejectCv(cvId));
     }
 }

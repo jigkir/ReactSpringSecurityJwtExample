@@ -1,5 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.auth.Role;
@@ -8,7 +10,7 @@ import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.response.CVDto;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -45,10 +47,10 @@ public class ManagerServiceTest {
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
 
-    private static CV cv;
+    private CV cv;
 
-    @BeforeAll
-    public static void setUp() {
+    @BeforeEach
+    void setUp() {
         cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
     }
@@ -109,6 +111,108 @@ public class ManagerServiceTest {
         assert(Long.valueOf(1L)).equals(result.getFirst().id());
         assert("cv.pdf").equals(result.getFirst().fileName());
         assert(CVSharingScope.PUBLIC).equals(result.getFirst().sharingScope());
+
         verify(cvRepository).findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC);
+    }
+
+    @Test
+    void shouldApproveCv() throws CvNotFoundException, CvAlreadyReviewedException {
+        // Arrange
+        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+
+        // Act
+        managerService.approveCv(1L);
+
+        // Assert
+        assert(CvStatus.APPROVED).equals(cv.getStatus());
+
+        verify(cvRepository).save(cv);
+    }
+
+    @Test
+    void shouldRejectCv() throws CvNotFoundException, CvAlreadyReviewedException {
+        // Arrange
+        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+
+        // Act
+        managerService.rejectCv(1L);
+
+        // Assert
+        assert(CvStatus.REJECTED).equals(cv.getStatus());
+
+        verify(cvRepository).save(cv);
+    }
+
+    @Test
+    void shouldThrowCvNotFoundWhenApprovingUnknownCv() {
+        // Arrange
+        when(cvRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(CvNotFoundException.class, () -> managerService.approveCv(99L));
+
+        verify(cvRepository, never()).save(any(CV.class));
+    }
+
+    @Test
+    void shouldThrowCvNotFoundWhenRejectingUnknownCv() {
+        // Arrange
+        when(cvRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(CvNotFoundException.class, () -> managerService.rejectCv(99L));
+
+        verify(cvRepository, never()).save(any(CV.class));
+    }
+
+    @Test
+    void shouldReturnApprovedStatusInDtoWhenCvIsApproved() throws Exception {
+        // Arrange
+        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+
+        // Act
+        CVDto result = managerService.approveCv(1L);
+
+        // Assert
+        assert(CvStatus.APPROVED).equals(result.status());
+    }
+
+    @Test
+    void shouldReturnRejectedStatusInDtoWhenCvIsRejected() throws Exception {
+        // Arrange
+        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+
+        // Act
+        CVDto result = managerService.rejectCv(1L);
+
+        // Assert
+        assert(CvStatus.REJECTED).equals(result.status());
+    }
+
+    @Test
+    void shouldThrowCvAlreadyReviewedWhenApprovingAlreadyApprovedCv() {
+        // Arrange
+        cv.setStatus(CvStatus.APPROVED);
+        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+
+        // Act
+        CvAlreadyReviewedException exception = assertThrows(CvAlreadyReviewedException.class, () -> managerService.approveCv(1L));
+
+        // Assert
+        assert("The CV with ID 1 has already been reviewed.").equals(exception.getMessage());
+
+        verify(cvRepository, never()).save(any(CV.class));
+    }
+
+    @Test
+    void shouldThrowCvAlreadyReviewedWhenRejectingAlreadyRejectedCv() {
+        // Arrange
+        cv.setStatus(CvStatus.REJECTED);
+        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+
+        // Act + Assert
+        assertThrows(CvAlreadyReviewedException.class, () -> managerService.rejectCv(1L));
+
+        verify(cvRepository, never()).save(any(CV.class));
     }
 }
