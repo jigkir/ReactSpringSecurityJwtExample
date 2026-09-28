@@ -179,7 +179,7 @@ public class StudentControllerTest {
     void shouldGetStudentCVsSuccessfully() throws Exception {
         CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE);
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        when(studentService.getCVs(dummyStudent)).thenReturn(List.of(cvDto));
+        when(studentService.getCVs(dummyStudent.getId())).thenReturn(List.of(cvDto));
 
         mockMvc.perform(get("/api/student/1/cvs"))
                 .andExpect(status().isOk())
@@ -192,7 +192,7 @@ public class StudentControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingCVsForNonExistentStudent() throws Exception {
-        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+        when(studentService.getCVs(99L)).thenThrow(new UserNotFoundException());
 
         mockMvc.perform(get("/api/student/99/cvs"))
                 .andExpect(status().isNotFound());
@@ -201,7 +201,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetCVCountSuccessfully() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        when(studentService.getCVCountByStudent(dummyStudent)).thenReturn(3L);
+        when(studentService.getCVCountByStudentId(dummyStudent.getId())).thenReturn(3L);
 
         mockMvc.perform(get("/api/student/1/cvs/count"))
                 .andExpect(status().isOk())
@@ -210,7 +210,7 @@ public class StudentControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingCVCountForNonExistentStudent() throws Exception {
-        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+        when(studentService.getCVCountByStudentId(99L)).thenThrow(new UserNotFoundException());
 
         mockMvc.perform(get("/api/student/99/cvs/count"))
                 .andExpect(status().isNotFound());
@@ -223,18 +223,18 @@ public class StudentControllerTest {
     @Test
     void shouldHideCVSuccessfully() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCvAsInvisible(dummyStudent, 10L);
+        doNothing().when(studentService).setCvAsInvisible(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/hide"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV hidden successfully"));
 
-        verify(studentService).setCvAsInvisible(dummyStudent, 10L);
+        verify(studentService).setCvAsInvisible(dummyStudent.getId(), 10L);
     }
 
     @Test
     void shouldReturnNotFoundWhenHidingCVForNonExistentStudent() throws Exception {
-        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+        doThrow(new UserNotFoundException()).when(studentService).setCvAsInvisible(99L, 10L);
 
         mockMvc.perform(put("/api/student/99/cvs/10/hide"))
                 .andExpect(status().isNotFound());
@@ -243,19 +243,19 @@ public class StudentControllerTest {
     @Test
     void shouldMakeCVPublicSuccessfully() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCvAsPublic(dummyStudent, 10L);
+        doNothing().when(studentService).setCvAsPublic(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/public"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made public successfully"));
 
-        verify(studentService).setCvAsPublic(dummyStudent, 10L);
+        verify(studentService).setCvAsPublic(dummyStudent.getId(), 10L);
     }
 
     @Test
     void shouldReturnConflictWhenCVAlreadyPublic() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CVAlreadyPublicException("CV is already public")).when(studentService).setCvAsPublic(dummyStudent, 10L);
+        doThrow(new CVAlreadyPublicException("CV is already public")).when(studentService).setCvAsPublic(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/public"))
                 .andExpect(status().isConflict());
@@ -264,19 +264,19 @@ public class StudentControllerTest {
     @Test
     void shouldMakeCVPrivateSuccessfully() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCvAsPrivate(dummyStudent, 10L);
+        doNothing().when(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/private"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made private successfully"));
 
-        verify(studentService).setCvAsPrivate(dummyStudent, 10L);
+        verify(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
     }
 
     @Test
     void shouldReturnConflictWhenCVAlreadyPrivate() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CVAlredyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(dummyStudent, 10L);
+        doThrow(new CVAlredyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/private"))
                 .andExpect(status().isConflict());
@@ -285,18 +285,18 @@ public class StudentControllerTest {
     @Test
     void shouldMakeCVSecondarySuccessfully() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCVAsSecondary(dummyStudent, 10L);
+        doNothing().when(studentService).setCVAsSecondary(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/secondary"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made secondary successfully"));
 
-        verify(studentService).setCVAsSecondary(dummyStudent, 10L);
+        verify(studentService).setCVAsSecondary(dummyStudent.getId(), 10L);
     }
 
     @Test
     void shouldReturnNotFoundWhenMakingCVSecondaryForNonExistentStudent() throws Exception {
-        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+        doThrow(new UserNotFoundException()).when(studentService).setCVAsSecondary(99L, 10L);
 
         mockMvc.perform(put("/api/student/99/cvs/10/secondary"))
                 .andExpect(status().isNotFound());
@@ -305,7 +305,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenMakingSecondaryForNonExistentCv() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsSecondary(dummyStudent, 999L);
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsSecondary(dummyStudent.getId(), 999L);
 
         mockMvc.perform(put("/api/student/1/cvs/999/secondary"))
                 .andExpect(status().isNotFound());
@@ -314,18 +314,18 @@ public class StudentControllerTest {
     @Test
     void shouldMakeCVMainSuccessfully() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCVAsMain(dummyStudent, 10L);
+        doNothing().when(studentService).setCVAsMain(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/main"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made main successfully"));
 
-        verify(studentService).setCVAsMain(dummyStudent, 10L);
+        verify(studentService).setCVAsMain(dummyStudent.getId(), 10L);
     }
 
     @Test
     void shouldReturnNotFoundWhenMakingCVMainForNonExistentStudent() throws Exception {
-        when(studentService.findById(99L)).thenThrow(new UserNotFoundException());
+        doThrow(new UserNotFoundException()).when(studentService).setCVAsMain(99L, 10L);
 
         mockMvc.perform(put("/api/student/99/cvs/10/main"))
                 .andExpect(status().isNotFound());
@@ -334,7 +334,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenMakingMainForNonExistentCv() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsMain(dummyStudent, 999L);
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsMain(dummyStudent.getId(), 999L);
 
         mockMvc.perform(put("/api/student/1/cvs/999/main"))
                 .andExpect(status().isNotFound());
