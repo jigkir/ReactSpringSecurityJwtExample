@@ -50,6 +50,7 @@ i18n
                         switchEnglish: "EN",
                         postInternship: "Post Internship",
                         hello: "Hello,",
+                        cvNotification: "{{amount}} new CVs have been posted",
                     },
                     managerPage: {
                         pageInfo: "Manager home page",
@@ -339,6 +340,7 @@ i18n
                         switchEnglish: "EN",
                         postInternship: "Offrir un stage",
                         hello: "Bonjour,",
+                        cvNotification: "{{amount}} nouveaux CVs ont étés publiés",
                     },
                     managerPage: {
                         pageInfo: "Page accueil gestionnaire",
