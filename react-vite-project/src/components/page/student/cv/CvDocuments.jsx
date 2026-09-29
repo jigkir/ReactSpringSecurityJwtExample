@@ -6,6 +6,13 @@
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
  *
+ * Row layout (md and up): 3 columns
+ *   [ identity (name + meta) ] [ status pills, stacked ] [ actions ]
+ * Student actions are a 2x2 grid:
+ *   Preview            | Share / Make private
+ *   Set as main CV     | Delete   (Delete is always last)
+ * Below md everything stacks vertically.
+ *
  * List fields
  *   student : id, sharingScope, fileName, sizeBytes, uploadedAt, priority,
  *             visibility, status, rejectionComment
@@ -85,9 +92,18 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
-    const textareaClass = `w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+    const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
+
+    // Row = 3 columns on md+: identity (flexible) | pills (auto) | actions (auto).
+    // Defined here (instead of th.row) so the grid and the old flex classes can't conflict.
+    const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 md:grid-cols-[minmax(12rem,1fr)_auto_auto] md:items-center md:gap-6 transition-colors duration-150 ${
+        dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
+    }`;
+
+    // Full-width, centered text inside the 2x2 grid cells.
+    const cellBtn = "w-full justify-center text-center";
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -227,12 +243,17 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                         ? t("cvDocuments.mainCv", "CV principal")
                         : t("cvDocuments.makeMainBtn", "Choisir comme CV principal");
 
+                    // Student normal state → 2x2 grid. Manager / confirm state → wrapping flex row.
+                    const actionsClass = (!isManager && !confirming)
+                        ? "grid grid-cols-2 gap-2"
+                        : "flex flex-wrap items-center gap-2 md:justify-end";
+
                     return (
                         <li key={doc.id} aria-busy={busy}>
-                            <div className={th.row}>
+                            <div className={rowClass}>
 
-                                {/* Identity */}
-                                <div className="min-w-0 md:flex-1">
+                                {/* Column 1 — Identity */}
+                                <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
                                     <p className={th.meta}>
                                         {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
@@ -244,8 +265,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                     )}
                                 </div>
 
-                                {/* Pills: validation status (both modes) + sharing scope (student only) */}
-                                <div className="flex flex-wrap items-center gap-2 md:w-72 md:shrink-0">
+                                {/* Column 2 — Pills: validation status (both modes) + sharing scope (student only) */}
+                                <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
                                     <span className={`${th.pillBase} ${th.statusPill(status)}`}>
                                         {t(statusKey, statusFallback)}
                                     </span>
@@ -256,8 +277,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                     )}
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+                                {/* Column 3 — Actions */}
+                                <div className={actionsClass}>
                                     {confirming ? (
                                         <>
                                             <span className={th.confirmText}>
@@ -290,6 +311,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                         <>
                                             <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
                                                     disabled={busy}
+                                                    className={isManager ? "" : cellBtn}
                                                     aria-expanded={isPreviewOpen}
                                                     aria-label={`${viewLabel} : ${doc.fileName}`}>
                                                 {viewLabel}
@@ -312,20 +334,21 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                 )
                                             ) : (
                                                 <>
+                                                    {/* Order matters for the 2x2 grid: Delete must be last (bottom-right). */}
                                                     <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                            disabled={busy}
+                                                            disabled={busy} className={cellBtn}
                                                             aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
                                                         {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
                                                     </Button>
-                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
-                                                            disabled={busy}
-                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
-                                                        {t("cvDocuments.hideBtn")}
-                                                    </Button>
                                                     <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)}
-                                                            disabled={busy || isMain}
+                                                            disabled={busy || isMain} className={cellBtn}
                                                             aria-label={`${mainLabel} : ${doc.fileName}`}>
                                                         {mainLabel}
+                                                    </Button>
+                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
+                                                            disabled={busy} className={cellBtn}
+                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                                        {t("cvDocuments.hideBtn")}
                                                     </Button>
                                                 </>
                                             )}
