@@ -225,4 +225,33 @@ public class EmployerServiceTest {
         assert("Software Developer").equals(response.getFirst().title());
         assert(Long.valueOf(1L)).equals(response.getFirst().employerId());
     }
+
+    @Test
+    void shouldThrowInvalidCompensationWhenAmountIsMissingAndNotNegotiable() {
+        // Arrange
+        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, null, false);
+
+        // Act + Assert
+        assertThrows(InvalidCompensationException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
+
+        verifyNoInteractions(employerRepository, internshipRepository);
+    }
+
+    @Test
+    void shouldSaveInternshipWithoutAmountWhenNegotiable() throws Exception {
+        // Arrange
+        InternshipRequestDto negotiableDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, null, true);
+
+        when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
+        when(internshipRepository.save(any(Internship.class))).thenAnswer(invocation -> { Internship saved = invocation.getArgument(0); saved.setId(10L); return saved; });
+
+        // Act
+        InternshipResponseDto response = employerService.saveInternship(negotiableDto, EMPLOYER_EMAIL);
+
+        // Assert
+        assert(response.compensationAmount() == null);
+        assert response.compensationNegotiable();
+
+        verify(internshipRepository).save(any(Internship.class));
+    }
 }
