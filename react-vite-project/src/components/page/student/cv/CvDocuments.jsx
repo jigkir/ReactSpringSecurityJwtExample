@@ -42,6 +42,8 @@ function buildApi(studentId) {
         list: () => apiRequest(`student/${studentId}/cvs`, {method: "GET"}).then((r) => r.json()),
         setScope: (cvId, scope) => apiRequest(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"}),
         hide: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/hide`, {method: "PUT"}),
+        makeMain: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"}),
+        makeSecondary: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/secondary`, {method: "PUT"}),
     };
 }
 
@@ -61,7 +63,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
     const [busyId, setBusyId] = useState(null);
     const [confirmHideId, setConfirmHideId] = useState(null);
     const [actionError, setActionError] = useState("");
-    const [previewDoc, setPreviewDoc] = useState(null);
+    const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -101,6 +103,16 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
         runAction(doc.id, () => api.setScope(doc.id, doc.sharingScope === "PUBLIC" ? "private" : "public"));
 
     const hideDoc = (doc) => runAction(doc.id, () => api.hide(doc.id));
+
+    const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
+
+    const togglePreview = (cvId) => {
+        setOpenPreviewIds((prev) =>
+            prev.includes(cvId)
+                ? prev.filter((id) => id !== cvId)
+                : [...prev, cvId]
+        );
+    };
 
     // ── Preview ───────────────────────────────────────────────────────────────
 
@@ -145,49 +157,61 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                     const busy = busyId === doc.id;
                     const confirming = confirmHideId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
+                    const isPreviewOpen = openPreviewIds.includes(doc.id);
+                    const isMain = doc.priority === "MAIN";
 
                     return (
-                        <li key={doc.id} className={th.row} aria-busy={busy}>
+                        <li key={doc.id} aria-busy={busy}>
+                            <div className={th.row}>
 
-                            {/* Identity */}
-                            <div className="min-w-0 md:flex-1">
-                                <p className={th.name}>{doc.fileName}</p>
-                                <p className={th.meta}>
-                                    {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
-                                </p>
-                            </div>
+                                {/* Identity */}
+                                <div className="min-w-0 md:flex-1">
+                                    <p className={th.name}>{doc.fileName}</p>
+                                    <p className={th.meta}>
+                                        {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
+                                    </p>
+                                </div>
 
-                            {/* Sharing-scope pill */}
-                            <div className="flex items-center md:w-56 md:shrink-0">
+                                {/* Sharing-scope pill */}
+                                <div className="flex items-center md:w-56 md:shrink-0">
                                 <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
                                     {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
                                 </span>
-                            </div>
+                                </div>
 
-                            {/* Actions */}
-                            <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
-                                {confirming ? (
-                                    <>
-                                        <span className={th.confirmText}>{t("cvDocuments.hideAsk")}</span>
-                                        <Button tone="danger" dark={dark} onClick={() => hideDoc(doc)} disabled={busy}
-                                                autoFocus>{t("cvDocuments.confirmBtn")}</Button>
-                                        <Button tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
-                                                disabled={busy}>{t("cvDocuments.cancelBtn")}</Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button tone="accent" dark={dark} onClick={() => setPreviewDoc(doc)}
-                                                disabled={busy || !doc.content}
-                                                aria-label={`${t("cvDocuments.viewBtn")} : ${doc.fileName}`}>{t("cvDocuments.viewBtn")}</Button>
-                                        <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                disabled={busy}
-                                                aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</Button>
-                                        <Button tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
-                                                disabled={busy}
-                                                aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</Button>
-                                    </>
-                                )}
+                                {/* Actions */}
+                                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+                                    {confirming ? (
+                                        <>
+                                            <span className={th.confirmText}>{t("cvDocuments.hideAsk")}</span>
+                                            <Button tone="danger" dark={dark} onClick={() => hideDoc(doc)}
+                                                    disabled={busy}
+                                                    autoFocus>{t("cvDocuments.confirmBtn")}</Button>
+                                            <Button tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
+                                                    disabled={busy}>{t("cvDocuments.cancelBtn")}</Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
+                                                    disabled={busy || !doc.content}>{isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn")}</Button>
+                                            <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
+                                                    disabled={busy}
+                                                    aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</Button>
+                                            <Button tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
+                                                    disabled={busy}
+                                                    aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</Button>
+                                            <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)} disabled={busy || isMain}>
+                                                {isMain ? "CV principal" : "Choisir comme CV principal"}
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
+                            {isPreviewOpen && (
+                                <div className="py-4">
+                                    <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
+                                </div>
+                            )}
                         </li>
                     );
                 })}
@@ -215,11 +239,6 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
 
                 {body}
             </section>
-
-            {/* PDF preview modal — rendered outside the card so it overlays the full page */}
-            {previewDoc && (
-                <CvPreview doc={previewDoc} dark={dark} getUrl={getUrl} onClose={() => setPreviewDoc(null)}/>
-            )}
         </>
     );
 };

@@ -1,6 +1,7 @@
 import {Link, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
+import NotificationMenu from './NotificationMenu.jsx';
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
@@ -54,6 +55,17 @@ function Navbar({user, dark, toggleDark}) {
         </svg>
     );
 
+    const cvNotificationCount = 0;
+
+    const notifications = (role === "MANAGER"
+            ? [{
+                id: "cv",
+                count: cvNotificationCount,
+                label: t("navbar.cvNotification", {amount: cvNotificationCount}),
+            }]
+            : []);
+
+
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
             <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,6 +83,9 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </Link>
                             ))}
+                            {notifications.length > 0 && (
+                                <NotificationMenu notifications={notifications} dark={dark}/>
+                            )}
                         </nav>
                     </div>
 

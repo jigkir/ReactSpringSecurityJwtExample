@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
-import {EmailField, PasswordField,} from '../../../utils/CommonFields.jsx';
+import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
 
 const Login = ({user, setError}) => {
@@ -42,17 +42,17 @@ const Login = ({user, setError}) => {
         const updatedWarnings = {...warnings};
 
         if (!email) {
-            updatedWarnings.email = t("login.emailRequired");
+            updatedWarnings.email = {key:"login.emailRequired"};
             isValid = false;
         } else if (!validateEmail()) {
-            updatedWarnings.email = t("login.emailInvalid");
+            updatedWarnings.email = {key:"login.emailInvalid"};
             isValid = false;
         } else {
             updatedWarnings.email = "";
         }
 
         if (!password) {
-            updatedWarnings.password = t("login.passwordRequired");
+            updatedWarnings.password = {key:"login.passwordRequired"};
             isValid = false;
         } else {
             updatedWarnings.password = "";
@@ -129,7 +129,7 @@ const Login = ({user, setError}) => {
                                 setWarnings({...warnings, email: ""});
                                 setEmail(e.target.value.trim());
                             }}
-                            warning={warnings.email}
+                            warning={translateWarning(t, warnings.email)}
                             labelClass={labelClass}
                             fieldClass={fieldClass}
                             errorClass={errorClass}
@@ -143,7 +143,7 @@ const Login = ({user, setError}) => {
                                 setWarnings({...warnings, password: ""});
                                 setPassword(e.target.value);
                             }}
-                            warning={warnings.password}
+                            warning={translateWarning(t, warnings.password)}
                             labelClass={labelClass}
                             fieldClass={fieldClass}
                             eyeClass={eyeClass}
@@ -155,7 +155,7 @@ const Login = ({user, setError}) => {
 
                     {serverError && (
                         <div className={serverErrorClass} role="alert">
-                            {serverError}
+                            {translateWarning(t, serverError)}
                         </div>
                     )}
 
