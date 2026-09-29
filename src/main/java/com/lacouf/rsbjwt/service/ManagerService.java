@@ -14,8 +14,7 @@ import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.response.CVDto;
-import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -23,7 +22,7 @@ import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
-import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
+
 import java.util.List;
 import com.lacouf.rsbjwt.repository.NotificationRepository;
 
@@ -107,29 +106,57 @@ public class ManagerService {
         );
     }
 
-    public List<CVDto> getPendingPublicCvs() {
-        return cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC).stream().map(CVDto::fromCV).toList();
+    public List<ManagerCvResponseDto> getPendingPublicCvs() {
+        return cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC).stream().map(ManagerCvResponseDto::of).toList();
     }
 
-    public CVDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        return updateCvStatus(cvId, CvStatus.APPROVED);
+    public ManagerCvResponseDto getCv(long cvId) throws CvNotFoundException {
+        return ManagerCvResponseDto.of(findPublicCv(cvId));
     }
 
-    public CVDto rejectCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        return updateCvStatus(cvId, CvStatus.REJECTED);
+    public CvFileResponseDto getCvFile(long cvId) throws CvNotFoundException {
+        return CvFileResponseDto.of(findPublicCv(cvId));
     }
 
-    private CVDto updateCvStatus(long cvId, CvStatus cvStatus) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = cvRepository.findById(cvId).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+        CV cv = findPendingCv(cvId);
 
+        cv.setStatus(CvStatus.APPROVED);
+
+        return saveAndConvert(cv);
+    }
+
+    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException, CvAlreadyReviewedException {
+        CV cv = findPendingCv(cvId);
+
+        cv.setStatus(CvStatus.REJECTED);
+        cv.setRejectionComment(comment);
+
+        return saveAndConvert(cv);
+    }
+
+    private CV findPublicCv(long cvId) throws CvNotFoundException {
+        return cvRepository.findByIdAndSharingScope(cvId, CVSharingScope.PUBLIC).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+    }
+
+    private CV findPendingCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+        CV cv = findPublicCv(cvId);
+
+        verifyCvIsPending(cv);
+
+        return cv;
+    }
+
+    private void verifyCvIsPending(CV cv) throws CvAlreadyReviewedException {
         if (cv.getStatus() != CvStatus.PENDING) {
-            throw new CvAlreadyReviewedException(cvId);
+            throw new CvAlreadyReviewedException(cv.getId());
         }
+    }
 
-        cv.setStatus(cvStatus);
+    private ManagerCvResponseDto saveAndConvert(CV cv) {
         cvRepository.save(cv);
 
-        return CVDto.fromCV(cv);
+        return ManagerCvResponseDto.of(cv);
     }
 
     private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
