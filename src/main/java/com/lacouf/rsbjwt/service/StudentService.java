@@ -256,6 +256,12 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
+    public String getCVStatus(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException {
+        Student student = findById(studentId);
+        CV cv = validateAndGetStudentCv(student, cvId);
+        return cv.getStatus().name();
+    }
+
     private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
         if (student == null) {
             throw new UserNotFoundException();

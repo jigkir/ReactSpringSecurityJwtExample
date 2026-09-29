@@ -94,7 +94,7 @@ public class StudentController {
     @PutMapping("/{id}/cvs/{cvId}/pending")
     public ResponseEntity<String> makeCVPending(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
         studentService.setCVAsPending(id, cvId);
-        managerService.addNewCVNotificationToManager(1L, "New CV Pending Review", "A new CV has been submitted for review.", cvId);
+        managerService.addNewCVNotificationToManager( "New CV Pending Review", "A new CV has been submitted for review.", cvId);
         return new ResponseEntity<>("CV made pending successfully", HttpStatus.OK);
     }
 
@@ -105,8 +105,14 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/cvs/{cvId}")
-    public ResponseEntity<CVDto> getCVByStudentId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+    public ResponseEntity<CVDto> getCVByStudentIdAndCvId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
         CVDto cvDto = studentService.getCVByStudentId(id, cvId);
         return new ResponseEntity<>(cvDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/cvs/{cvId}/status")
+    public ResponseEntity<String> getCVStatus(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
+        String status = studentService.getCVStatus(id, cvId);
+        return new ResponseEntity<>(status, HttpStatus.OK);
     }
 }

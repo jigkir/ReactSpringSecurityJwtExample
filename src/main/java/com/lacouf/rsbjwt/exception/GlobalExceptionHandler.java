@@ -95,4 +95,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleCVNotFoundException(CvNotFoundException exception) {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotificationNotFoundException(NotificationNotFoundException exception) {
+        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
+    }
 }
