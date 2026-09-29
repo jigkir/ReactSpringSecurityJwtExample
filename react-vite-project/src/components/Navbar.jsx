@@ -38,6 +38,7 @@ function Navbar({user, dark, toggleDark}) {
         {to: homePath, label: t("navbar.accueil"), show: true},
         {to: "/about", label: t("navbar.about"), show: true},
         {to: "/cv", label: "CV", show: role === "STUDENT"},
+        {to: "/manager/cvs", label: t("navbar.cvReview", "CVs à valider"), show: role === "MANAGER"},
         {to: "/post", label: t("navbar.postInternship"), show: role === "EMPLOYER"},
     ].filter(item => item.show);
 
@@ -54,11 +55,13 @@ function Navbar({user, dark, toggleDark}) {
         </svg>
     );
 
-    const CVNotification = ({ count = 0 }) => role === "MANAGER" && (
-        <button
+    // TODO: replace the hardcoded count with getPendingCvs().length
+    const CVNotification = ({count = 0}) => role === "MANAGER" && (
+        <Link
+            to="/manager/cvs"
             className={`${theme.toggleBase} ${theme.toggleBtn}`}
         >
-            <span className="relative inline-flex">
+            <span className="relative inline-flex items-center gap-1.5">
                 {t("navbar.cvNotification", {amount: count})}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
                      stroke="currentColor" strokeWidth={2}>
@@ -66,12 +69,10 @@ function Navbar({user, dark, toggleDark}) {
                           d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
                 {count > 0 && (
-                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"/>
                 )}
-
             </span>
-        </button>
-
+        </Link>
     );
 
     const newCVs = getNavbarClasses(dark);
@@ -111,9 +112,7 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                         )}
 
-
-                        <CVNotification count={3} />
-
+                        <CVNotification count={3}/>
 
                         <button
                             onClick={toggleLang}
