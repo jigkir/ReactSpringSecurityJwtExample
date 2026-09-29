@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+* { outline: 1px solid red !important; }
+
 .app-dark {
     background-color: #111827;
     color: #f9fafb;

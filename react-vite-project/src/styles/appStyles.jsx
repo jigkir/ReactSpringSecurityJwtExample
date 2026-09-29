@@ -178,14 +178,14 @@ export function getMainContainerClasses(dark) {
 
 export function getPostInternshipClasses(dark) {
     return {
-        page: `h-screen p-6 md:p-10 flex flex-col overflow-hidden ${dark ? "bg-gray-900" : "bg-gray-50"}`,
+        page: `min-h-screen p-4 md:p-10 flex flex-col ${dark ? "bg-gray-900" : "bg-gray-50"}`,
         headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-3xl font-bold ${dark ? "text-white" : "text-gray-900"}`,
         subtitle: `mt-1 ${dark ? "text-slate-400" : "text-gray-600"}`,
         addBtn: "px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shrink-0",
-        listSection: "max-w-5xl w-full mx-auto flex-1 flex flex-col min-h-0",
+        listSection: "max-w-5xl w-full mx-auto flex-1 flex flex-col",
         listHeading: `text-xl font-semibold mb-4 shrink-0 ${dark ? "text-white" : "text-gray-800"}`,
-        scrollArea: "flex-1 overflow-y-auto pr-2 space-y-4 min-h-0",
+        scrollArea: "flex-1 space-y-4",
         emptyText: `text-center py-8 ${dark ? "text-slate-400" : "text-gray-500"}`,
         errorText: `p-4 rounded-lg text-center ${dark ? "bg-red-900/20 text-red-400" : "bg-red-50 text-red-500"}`,
         loadingText: `text-center py-8 ${dark ? "text-slate-400" : "text-gray-500"}`,
