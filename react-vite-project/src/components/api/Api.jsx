@@ -72,7 +72,12 @@ export async function hideCv(studentId, cvId) {
     return handleEmpty(response);
 }
 
-// endregion
+export async function setMainCv(studentId, cvId) {
+    const response = await fetcher(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
+//endregion
 
 // region Manager CVs
 export async function getPendingCvs() {
