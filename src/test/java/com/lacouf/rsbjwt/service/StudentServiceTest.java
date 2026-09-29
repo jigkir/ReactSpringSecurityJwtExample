@@ -11,7 +11,8 @@ import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -157,9 +158,9 @@ public class StudentServiceTest {
 
     @Test
     void shouldSaveCVSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto(validPdfBytes, null, CVSharingScope.PRIVATE, "cv.pdf", validPdfBytes.length, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
+        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
 
-        studentService.saveCV(cvDto, dummyStudent);
+        studentService.saveCV(upload, dummyStudent);
 
         verify(cvRepository).save(cvArgumentCaptor.capture());
         CV savedCv = cvArgumentCaptor.getValue();
@@ -172,11 +173,11 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsNull() {
-        CVDto cvDto = new CVDto(null, null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
+        CvUploadDto upload = new CvUploadDto(null, "cv.pdf");
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
 
         assert "File content cannot be null or empty.".equals(exception.getMessage());
@@ -184,11 +185,11 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsEmpty() {
-        CVDto cvDto = new CVDto(new byte[0], null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
+        CvUploadDto upload = new CvUploadDto(new byte[0], "cv.pdf");
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
 
         assert "File content cannot be null or empty.".equals(exception.getMessage());
@@ -196,23 +197,21 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileSizeExceptionWhenFileExceedsMaxSize() {
-        byte[] oversizedContent = new byte[2 * 1024 * 1024 + 1];
-        CVDto cvDto = new CVDto(oversizedContent, null, CVSharingScope.PRIVATE, "large.pdf", oversizedContent.length, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
+        CvUploadDto upload = new CvUploadDto(new byte[2 * 1024 * 1024 + 1], "large.pdf");
 
         assertThrows(
                 InvalidFileSizeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
     }
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenMimeTypeIsNotPdf() {
-        byte[] textFileBytes = "Hello World".getBytes();
-        CVDto cvDto = new CVDto(textFileBytes, null, CVSharingScope.PRIVATE, "file.txt", textFileBytes.length, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
+        CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
 
         assert "Invalid file type. Only PDF files are allowed.".equals(exception.getMessage());
@@ -220,12 +219,11 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowCorruptedFileExceptionWhenPdfIsCorrupted() {
-        byte[] corruptedPdfBytes = "%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes();
-        CVDto cvDto = new CVDto(corruptedPdfBytes, null, CVSharingScope.PRIVATE, "corrupted.pdf", corruptedPdfBytes.length, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING);
+        CvUploadDto upload = new CvUploadDto("%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes(), "corrupted.pdf");
 
         assertThrows(
                 CorruptedFileException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
     }
 
@@ -289,7 +287,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(visibleCv));
 
-        List<CVDto> cvs = studentService.getCVs(dummyStudent.getId());
+        List<StudentCvResponseDto> cvs = studentService.getCVs(dummyStudent.getId());
 
         assert cvs.size() == 1;
         assert Long.valueOf(1L).equals(cvs.get(0).id());
@@ -307,7 +305,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(hiddenCv));
 
-        List<CVDto> cvs = studentService.getCVs(dummyStudent.getId());
+        List<StudentCvResponseDto> cvs = studentService.getCVs(dummyStudent.getId());
 
         assert cvs.isEmpty();
     }

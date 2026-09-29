@@ -5,8 +5,11 @@ import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
-import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.request.CvRejectionDto;
+import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/manager")
 public class ManagerController {
-    private ManagerService managerService;
+    private final ManagerService managerService;
 
     public ManagerController(ManagerService managerService) {
         this.managerService = managerService;
@@ -34,17 +37,27 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs/pending")
-    public ResponseEntity<List<CVDto>> getPendingPublicCvs() {
+    public ResponseEntity<List<ManagerCvResponseDto>> getPendingPublicCvs() {
         return ResponseEntity.ok(managerService.getPendingPublicCvs());
     }
 
-    @PutMapping("cvs/{cvId}/approve")
-    public ResponseEntity<CVDto> approveCV(@PathVariable long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+    @GetMapping("/cvs/{cvId}")
+    public ResponseEntity<ManagerCvResponseDto> getCv(@PathVariable long cvId) throws CvNotFoundException {
+        return ResponseEntity.ok(managerService.getCv(cvId));
+    }
+
+    @GetMapping("/cvs/{cvId}/file")
+    public ResponseEntity<CvFileResponseDto> getCvFile(@PathVariable long cvId) throws CvNotFoundException {
+        return ResponseEntity.ok(managerService.getCvFile(cvId));
+    }
+
+    @PutMapping("/cvs/{cvId}/approve")
+    public ResponseEntity<ManagerCvResponseDto> approveCv(@PathVariable long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
         return ResponseEntity.ok(managerService.approveCv(cvId));
     }
 
-    @PutMapping("cvs/{cvId}/reject")
-    public ResponseEntity<CVDto> rejectCV(@PathVariable long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        return ResponseEntity.ok(managerService.rejectCv(cvId));
+    @PutMapping("/cvs/{cvId}/reject")
+    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws CvNotFoundException, CvAlreadyReviewedException {
+        return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
 }

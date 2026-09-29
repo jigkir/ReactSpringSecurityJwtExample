@@ -11,6 +11,7 @@ import {
     LastNameField,
     PasswordField,
     SubmitButton,
+    translateWarning,
     validateField,
 } from '../../../../utils/CommonFields.jsx';
 
@@ -29,17 +30,17 @@ const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [
 
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-const validateCompanyName = (value, t) => {
+const validateCompanyName = (value) => {
     const tr = value.trim();
-    if (!tr) return t("employer.requiredCompanyName");
-    if (tr.length < 2) return t("employer.atLeastXCharacters", {amount: 2});
-    if (tr.length > 100) return t("employer.atMostXCharacters", {amount: 100});
+    if (!tr) return {key:"employer.requiredCompanyName"};
+    if (tr.length < 2) return {key:"employer.atLeastXCharacters", options:{amount: 2}};
+    if (tr.length > 100) return {key:"employer.atMostXCharacters", options:{amount: 100}};
     return "";
 };
 
-const validatePhoneNumber = (value, t) => {
-    if (!value) return t("employer.requiredPhoneNumber");
-    if (value.length !== 10) return t("employer.phoneNumberXDigits", {amount: 10});
+const validatePhoneNumber = (value) => {
+    if (!value) return {key:"employer.requiredPhoneNumber"};
+    if (value.length !== 10) return {key:"employer.phoneNumberXDigits", options:{amount: 10}};
     return "";
 };
 
@@ -177,7 +178,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             )}
 
             <Field
-                id="companyName" label={t("employer.companyName")} warning={warnings.companyName}
+                id="companyName" label={t("employer.companyName")} warning={translateWarning(t, warnings.companyName)}
                 labelClass={labelClass} errorClass={errorClass}
             >
                 <input
@@ -188,29 +189,29 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             </Field>
 
             <FirstNameField
-                value={form.firstName} onChange={handleChange} warning={warnings.firstName}
+                value={form.firstName} onChange={handleChange} warning={translateWarning(t, warnings.firstName)}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
             <LastNameField
-                value={form.lastName} onChange={handleChange} warning={warnings.lastName}
+                value={form.lastName} onChange={handleChange} warning={translateWarning(t, warnings.lastName)}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
             <DisciplineField
-                value={form.sectorActivity} onChange={handleChange} warning={warnings.sectorActivity}
+                value={form.sectorActivity} onChange={handleChange} warning={translateWarning(t, warnings.sectorActivity)}
                 label={t("employer.sectorOfActivityLabel")} name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
                 options={sectors} loading={sectorsLoading} fetchError={sectorsFetchError}
             />
 
             <EmailField
-                value={form.email} onChange={handleChange} warning={warnings.email}
+                value={form.email} onChange={handleChange} warning={translateWarning(t, warnings.email)}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
             <Field
-                id="phoneNumber" label={t("employer.phoneNumber")} warning={warnings.phoneNumber}
+                id="phoneNumber" label={t("employer.phoneNumber")} warning={translateWarning(t, warnings.phoneNumber)}
                 labelClass={labelClass} errorClass={errorClass}
             >
                 <input
@@ -223,7 +224,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             </Field>
 
             <PasswordField
-                value={form.password} onChange={handleChange} warning={warnings.password}
+                value={form.password} onChange={handleChange} warning={translateWarning(t, warnings.password)}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass} eyeClass={eyeClass}
                 show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
                 hint={t("employer.passwordRequirements")}
@@ -231,7 +232,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <ConfirmPasswordField
-                value={form.confirmPassword} onChange={handleChange} warning={warnings.confirmPassword}
+                value={form.confirmPassword} onChange={handleChange} warning={translateWarning(t, warnings.confirmPassword)}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass} eyeClass={eyeClass}
                 show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}
             />

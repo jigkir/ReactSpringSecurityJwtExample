@@ -4,20 +4,19 @@ import com.lacouf.rsbjwt.model.cv.*;
 
 import java.time.LocalDateTime;
 
-public record CVDto(
-        byte[] content,
-        Long id,
+public record StudentCvResponseDto(
+        long id,
         CVSharingScope sharingScope,
         String fileName,
         long sizeBytes,
         LocalDateTime uploadedAt,
         CvPriority priority,
         CvVisibility visibility,
-        CvStatus status
+        CvStatus status,
+        String rejectionComment
 ) {
-    public static CVDto fromCV(CV cv) {
-        return new CVDto(
-                cv.getContent(),
+    public static StudentCvResponseDto of(CV cv) {
+        return new StudentCvResponseDto(
                 cv.getId(),
                 cv.getSharingScope(),
                 cv.getFileName(),
@@ -25,13 +24,8 @@ public record CVDto(
                 cv.getUploadDate(),
                 cv.getPriority(),
                 cv.getVisibility(),
-                cv.getStatus()
+                cv.getStatus(),
+                cv.getRejectionComment()
         );
-    }
-
-    public byte[] getContent() { return content; }
-
-    public CV toCV() {
-        return new CV(content, CvVisibility.VISIBLE, CVSharingScope.PRIVATE, CvPriority.SECONDARY, fileName, LocalDateTime.now());
     }
 }
