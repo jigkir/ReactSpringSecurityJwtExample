@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {getInternshipModalClasses} from '../../../styles/appStyles.jsx';
+import Icon from '../../../styles/Icon.jsx';
 
 export default function InternshipModal({isOpen, onClose, onAddInternship, user, dark}) {
     const {t} = useTranslation();
@@ -97,8 +98,8 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                 {/* Header */}
                 <div className={s.header}>
                     <h2 className={s.title}>{t("internshipModal.title")}</h2>
-                    <button type="button" onClick={onClose} className={s.closeBtn}>
-                        &times;
+                    <button type="button" onClick={onClose} className={s.closeBtn} aria-label="Close">
+                        <Icon name="close"/>
                     </button>
                 </div>
 

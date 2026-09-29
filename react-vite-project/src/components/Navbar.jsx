@@ -1,6 +1,7 @@
 import {Link, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
+import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
 function Navbar({user, dark, toggleDark}) {
@@ -43,18 +44,7 @@ function Navbar({user, dark, toggleDark}) {
         {to: "/post", label: t("navbar.postInternship"), show: role === "EMPLOYER"},
     ].filter(item => item.show);
 
-    const ToggleIcon = () => dark ? (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-        </svg>
-    ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
-        </svg>
-    );
+    const ToggleIcon = () => <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>;
 
     // TODO: replace the hardcoded count with getPendingCvs().length
     const cvNotificationCount = 0;
