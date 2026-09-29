@@ -200,7 +200,9 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                                 </div>
                             </div>
                             {isPreviewOpen && (
-                                <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
+                                <div className="py-4">
+                                    <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
+                                </div>
                             )}
                         </li>
                     );
