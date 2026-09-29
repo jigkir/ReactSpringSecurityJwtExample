@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.user.UserApp;
@@ -20,6 +21,7 @@ import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -65,8 +67,10 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
-    public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException {
+    public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
         validateInternshipDates(internshipDto.startDate(), internshipDto.applicationDeadline());
+
+        validateCompensation(internshipDto.compensationAmount(), internshipDto.compensationNegotiable());
 
         Employer employer = employerRepository.findByCredentialsEmail(employerEmail).orElseThrow(UserNotFoundException::new);
 
@@ -122,6 +126,12 @@ public class EmployerService {
 
         if (!applicationDeadline.isAfter(today)) {
             throw new InvalidInternshipDateException("application deadline");
+        }
+    }
+
+    private void validateCompensation(BigDecimal amount, boolean negotiable) throws InvalidCompensationException {
+        if (amount == null && !negotiable) {
+            throw new InvalidCompensationException();
         }
     }
 }

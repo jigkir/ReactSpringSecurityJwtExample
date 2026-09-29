@@ -5,14 +5,13 @@ import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
 
 public record InternshipResponseDto(
         long id,
         String title,
         String description,
         String requiredSkills,
-        Period durationInWeeks,
+        int durationInWeeks,
         String location,
         LocalDate startDate,
         LocalDate applicationDeadline,

@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -28,7 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,9 +80,9 @@ public class EmployerServiceTest {
         employer = new Employer("First Name", "Last Name", credentials, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
         employer.setId(1L);
 
-        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", Period.ofWeeks(16), "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
+        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
-        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", Period.ofWeeks(16), "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, employer);
+        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, employer);
         internship.setId(10L);
     }
 
@@ -132,7 +132,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldSaveInternship() throws UserNotFoundException, InvalidInternshipDateException {
+    void shouldSaveInternship() throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
         // Arrange
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
 
@@ -159,7 +159,7 @@ public class EmployerServiceTest {
         assert("Software Developer").equals(response.title());
         assert("Develop applications").equals(response.description());
         assert("Java, Spring").equals(response.requiredSkills());
-        assert(Period.ofWeeks(16)).equals(response.durationInWeeks());
+        assert(Integer.valueOf(16)).equals(response.durationInWeeks());
         assert("Montreal").equals(response.location());
         assert(START_DATE).equals(response.startDate());
         assert(APPLICATION_DEADLINE).equals(response.applicationDeadline());
@@ -172,7 +172,7 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowInvalidInternshipDateWhenStartDateIsNotInFuture() {
         // Arrange
-        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", Period.ofWeeks(16), "Montreal", LocalDate.now(), APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
+        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", LocalDate.now(), APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
         // Act
         InvalidInternshipDateException exception = assertThrows(InvalidInternshipDateException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
@@ -186,7 +186,7 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowInvalidInternshipDateWhenApplicationDeadlineIsNotInFuture() {
         // Arrange
-        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", Period.ofWeeks(16), "Montreal", START_DATE, LocalDate.now().minusDays(1), new BigDecimal("25.00"), false);
+        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, LocalDate.now().minusDays(1), new BigDecimal("25.00"), false);
 
         // Act
         InvalidInternshipDateException exception = assertThrows(InvalidInternshipDateException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
