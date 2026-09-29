@@ -50,6 +50,9 @@ public class CV {
     @Column(nullable = false)
     private CvStatus status;
 
+    @Lob
+    private String rejectionComment;
+
     public CV() {
     }
 
