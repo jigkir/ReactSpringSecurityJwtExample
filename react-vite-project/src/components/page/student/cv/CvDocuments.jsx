@@ -42,6 +42,8 @@ function buildApi(studentId) {
         list: () => apiRequest(`student/${studentId}/cvs`, {method: "GET"}).then((r) => r.json()),
         setScope: (cvId, scope) => apiRequest(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"}),
         hide: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/hide`, {method: "PUT"}),
+        makeMain: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"}),
+        makeSecondary: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/secondary`, {method: "PUT"}),
     };
 }
 
@@ -102,6 +104,8 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
 
     const hideDoc = (doc) => runAction(doc.id, () => api.hide(doc.id));
 
+    const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
+
     const togglePreview = (cvId) => {
         setOpenPreviewIds((prev) =>
             prev.includes(cvId)
@@ -154,6 +158,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                     const confirming = confirmHideId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
+                    const isMain = doc.priority === "MAIN";
 
                     return (
                         <li key={doc.id} aria-busy={busy}>
@@ -195,6 +200,9 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                                             <Button tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
                                                     disabled={busy}
                                                     aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</Button>
+                                            <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)} disabled={busy || isMain}>
+                                                {isMain ? "CV principal" : "Choisir comme CV principal"}
+                                            </Button>
                                         </>
                                     )}
                                 </div>
