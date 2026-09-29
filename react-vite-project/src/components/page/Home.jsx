@@ -1,33 +1,16 @@
-import {useEffect, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
-import fetcher from '../../utils/fetcher.js';
 import {getHomeClasses} from '../../styles/appStyles.jsx';
 import {useTranslation} from 'react-i18next';
 
 const Home = () => {
-    const {dark} = useOutletContext();
+    const {dark, user} = useOutletContext();
     const classes = getHomeClasses(dark);
     const {t} = useTranslation();
 
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        fetcher("users/current", {})
-            .then(async (response) => {
-                if (!response.ok) {
-                    throw new Error(t("home.apiError", {status: response.status}));
-                }
-
-                const data = await response.json();
-                setUser(data);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    }, []);
+    const role = (user?.role ?? "").toString().replace("ROLE_", "");
 
     const homeByRole = () => {
-        switch (user?.role) {
+        switch (role) {
             case "STUDENT":
                 return (
                     <div>

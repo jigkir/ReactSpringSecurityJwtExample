@@ -14,10 +14,9 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import CvButton from './CvButton.jsx';
 import {getCvPreviewClasses} from '../../../../styles/appStyles.jsx';
 
-const CvPreview = ({doc, dark, getUrl, onClose}) => {
+const CvPreview = ({doc, dark, getUrl}) => {
     const {t} = useTranslation();
     const [url, setUrl] = useState(null);
     const [error, setError] = useState(false);
@@ -59,51 +58,18 @@ const CvPreview = ({doc, dark, getUrl, onClose}) => {
         };
     }, [doc.id, getUrl]);
 
-    // Keyboard + scroll-lock
-    useEffect(() => {
-        const onKey = (e) => {
-            if (e.key === "Escape") onClose();
-        };
-        document.addEventListener("keydown", onKey);
-        const prev = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-        return () => {
-            document.removeEventListener("keydown", onKey);
-            document.body.style.overflow = prev;
-        };
-    }, [onClose]);
-
     return (
-        <div className={cls.overlay} onClick={onClose}>
-            <div
-                role="dialog" aria-modal="true" aria-labelledby="cv-preview-title"
-                onClick={(e) => e.stopPropagation()}
-                className={cls.dialog}
-            >
-                {/* Header */}
-                <div className={cls.header}>
-                    <h3 id="cv-preview-title" className={cls.title}>{doc.fileName}</h3>
-                    <div className="flex shrink-0 items-center gap-2">
-                        <CvButton tone="neutral" dark={dark} disabled={!url}
-                                  onClick={() => url && window.open(url, "_blank", "noopener,noreferrer")}>
-                            {t("cvPreview.newTabBtn")}
-                        </CvButton>
-                        <CvButton tone="accent" dark={dark} onClick={onClose} autoFocus>
-                            {t("cvPreview.closeBtn")}
-                        </CvButton>
-                    </div>
-                </div>
+        <div className={cls.dialog}>
 
-                {/* Body */}
-                <div className={cls.body}>
-                    {error ? (
-                        <p className={`${cls.muted} pt-16`} role="alert">{t("cvPreview.error")}</p>
-                    ) : !url ? (
-                        <p className={`${cls.muted} pt-16`} aria-busy="true">{t("cvPreview.loading")}</p>
-                    ) : (
-                        <iframe src={url} title={doc.fileName} className="h-full w-full border-0 bg-white"/>
-                    )}
-                </div>
+            {/* Body */}
+            <div className={cls.body}>
+                {error ? (
+                    <p className={`${cls.muted} pt-16`} role="alert">{t("cvPreview.error")}</p>
+                ) : !url ? (
+                    <p className={`${cls.muted} pt-16`} aria-busy="true">{t("cvPreview.loading")}</p>
+                ) : (
+                    <iframe src={url} title={doc.fileName} className="h-full w-full border-0 bg-white"/>
+                )}
             </div>
         </div>
     );

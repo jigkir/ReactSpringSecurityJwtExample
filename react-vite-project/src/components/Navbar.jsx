@@ -1,58 +1,60 @@
-import {Link, useLocation} from 'react-router-dom';
+import {Link, NavLink, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
+import Icon from '../styles/Icon.jsx';
+import NotificationMenu from './NotificationMenu.jsx';
+
+// Links by role. `end` = only active on the exact path (needed for "/" and "/home").
+const NAV_BY_ROLE = {
+    STUDENT: [{to: "/cv", label: "CV"}],
+    MANAGER: [{to: "/manager/cvs", label: "CV"}],
+    EMPLOYER: [{to: "/post", labelKey: "navbar.postInternship"}],
+    TEACHER: [],
+};
+
+const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
+    const theme = getNavbarClasses(dark);
 
-    const role = (user?.role?.toString() ?? "").replace("ROLE_", "");
-    const toggleLang = () => {
-        if (i18n.language === "en") {
-            i18n.changeLanguage("fr")
-        } else {
-            i18n.changeLanguage("en")
-        }
-    };
-    const formatRole = (roleString) => {
-        if (!roleString) return "";
-        const name = roleString.replace("ROLE_", "").toLowerCase();
+    const role = normalizeRole(user);
+    const isLoggedIn = user?.isLoggedIn ?? false;
+    const homePath = isLoggedIn ? "/home" : "/";
+
+    const toggleLang = () => i18n.changeLanguage(i18n.language === "en" ? "fr" : "en");
+
+    const formatRole = (r) => {
+        if (!r) return "";
+        const name = r.toLowerCase();
         const key = `navbar.${name}`;
         const translated = t(key);
         return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
-    const isActive = (path) =>
-        path === "/"
-            ? location.pathname === "/"
-            : location.pathname.startsWith(path);
-
-    const homePath = user?.isLoggedIn ? "/home" : "/";
-
-    const theme = getNavbarClasses(dark);
-
-    const linkClass = (path) =>
-        `${theme.linkBase} ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
-
     const navItems = [
-        {to: homePath, label: t("navbar.accueil"), show: true},
-        {to: "/about", label: t("navbar.about"), show: true},
-        {to: "/cv", label: "CV", show: role === "STUDENT"},
-        {to: "/post", label: t("navbar.postInternship"), show: role === "EMPLOYER"},
-    ].filter(item => item.show);
+        {to: homePath, label: t("navbar.accueil"), end: true},
+        {to: "/about", label: t("navbar.about")},
+        ...(isLoggedIn ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
+            ...item,
+            label: item.labelKey ? t(item.labelKey) : item.label,
+        })),
+    ];
 
-    const ToggleIcon = () => dark ? (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M12 3v1m0 16v1m8.66-9H21M3 12H2m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-        </svg>
-    ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
-        </svg>
-    );
+    const linkClass = ({isActive}) =>
+        `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
+
+    // TODO: replace the hardcoded count with getPendingCvs().length
+    const cvNotificationCount = 0;
+    const notifications = role === "MANAGER"
+        ? [{
+            id: "cv",
+            count: cvNotificationCount,
+            label: t("navbar.cvNotification", {amount: cvNotificationCount}),
+            to: "/manager/cvs",
+        }]
+        : [];
 
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
@@ -65,17 +67,19 @@ function Navbar({user, dark, toggleDark}) {
                             {t("navbar.appName")}
                         </Link>
                         <nav className="flex items-center gap-1">
-                            {navItems.map(({to, label}) => (
-                                <Link key={to} to={to} className={linkClass(to)}
-                                      aria-current={isActive(to) ? "page" : undefined}>
+                            {navItems.map(({to, label, end}) => (
+                                <NavLink key={to} to={to} end={end} className={linkClass}>
                                     {label}
-                                </Link>
+                                </NavLink>
                             ))}
+                            {notifications.length > 0 && (
+                                <NotificationMenu notifications={notifications} dark={dark}/>
+                            )}
                         </nav>
                     </div>
 
                     <div className="flex items-center gap-3 ml-auto">
-                        {user?.isLoggedIn && (
+                        {isLoggedIn && (
                             <div className={`flex items-center gap-2 text-sm ${theme.greeting}`}>
                                 <span>{t("navbar.hello")}</span>
                                 <span className={`font-semibold ${theme.greetingName}`}>
@@ -89,45 +93,32 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                         )}
 
-                        <button
-                            onClick={toggleLang}
-                            className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                            aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}
-                        >
+                        <button onClick={toggleLang} className={`${theme.toggleBase} ${theme.toggleBtn}`}
+                                aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}>
                             {i18n.language === "en" ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
 
-                        <button
-                            onClick={toggleDark}
-                            className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                            aria-label={dark ? "Passer en mode clair" : "Passer en mode sombre"}
-                        >
-                            <ToggleIcon/>
+                        <button onClick={toggleDark} className={`${theme.toggleBase} ${theme.toggleBtn}`}
+                                aria-label={dark ? "Passer en mode clair" : "Passer en mode sombre"}>
+                            <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
                             {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                         </button>
 
-                        {user?.isLoggedIn ? (
-                            <Link to="/logout" className={linkClass("/logout")}>
-                                {t("navbar.disconnect")}
-                            </Link>
+                        {isLoggedIn ? (
+                            <NavLink to="/logout" className={linkClass}>{t("navbar.disconnect")}</NavLink>
                         ) : (
                             <>
-                                <Link
-                                    to="/login"
-                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}
-                                >
+                                <Link to="/login"
+                                      className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}>
                                     {t("navbar.login")}
                                 </Link>
-                                <Link
-                                    to="/signup"
-                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.signupBtn}`}
-                                >
+                                <Link to="/signup"
+                                      className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.signupBtn}`}>
                                     {t("navbar.signup")}
                                 </Link>
                             </>
                         )}
                     </div>
-
                 </div>
             </div>
         </header>

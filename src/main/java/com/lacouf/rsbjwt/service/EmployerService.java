@@ -1,24 +1,26 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.model.Internship;
-import com.lacouf.rsbjwt.model.InternshipStatus;
-import com.lacouf.rsbjwt.model.UserApp;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.EmployerRepository;
-import com.lacouf.rsbjwt.model.Employer;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.InternshipNotFoundException;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.EmployerSignUpDto;
-import com.lacouf.rsbjwt.service.dto.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,25 +65,44 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
-    public InternshipResponseDto save(InternshipRequestDto internshipDto) throws UserNotFoundException {
-        Employer employer =  employerRepository.findById(internshipDto.employerId())
-                .orElseThrow(UserNotFoundException::new);
+    public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException {
+        validateInternshipDates(internshipDto.startDate(), internshipDto.applicationDeadline());
+
+        Employer employer = employerRepository.findByCredentialsEmail(employerEmail).orElseThrow(UserNotFoundException::new);
+
         Internship internship = new Internship(
                 internshipDto.title(),
                 internshipDto.description(),
                 internshipDto.requiredSkills(),
-                internshipDto.duration(),
+                internshipDto.durationInWeeks(),
                 internshipDto.location(),
                 internshipDto.startDate(),
-                internshipDto.deadline(),
-                internshipDto.compensation(),
+                internshipDto.applicationDeadline(),
+                internshipDto.compensationAmount(),
+                internshipDto.compensationNegotiable(),
                 InternshipStatus.PENDING,
-                false,
                 employer
         );
 
         internshipRepository.save(internship);
+
         return InternshipResponseDto.of(internship);
+    }
+
+    public void deleteInternship(long id, String employerEmail) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
+                .orElseThrow(() -> new InternshipNotFoundException(id));
+
+        internship.markAsDeleted();
+
+        internshipRepository.save(internship);
+    }
+
+    public List<InternshipResponseDto> getInternshipsByEmployerId(long employerId) {
+        List<Internship> internships = internshipRepository.findByPostedBy_IdAndDeletedIsFalse(employerId);
+        return internships.stream()
+                .map(InternshipResponseDto::of)
+                .toList();
     }
 
     private void verifyIfEmployerExists(String email) throws UserAlreadyExistsException {
@@ -92,23 +113,15 @@ public class EmployerService {
         }
     }
 
-    public InternshipResponseDto deleteInternship(Long id) throws InternshipNotFoundException{
-        Internship internship = internshipRepository.findById(id)
-                .orElseThrow(() -> new InternshipNotFoundException("Internship not found with id: " + id));
+    private void validateInternshipDates(LocalDate startDate, LocalDate applicationDeadline) throws InvalidInternshipDateException {
+        LocalDate today = LocalDate.now();
 
-        internship.setIsDeleted(true);
-        internshipRepository.save(internship);
-        return InternshipResponseDto.of(internship);
-    }
+        if (!startDate.isAfter(today)) {
+            throw new InvalidInternshipDateException("start date");
+        }
 
-    public List<InternshipResponseDto> getInternshipsByEmployerId(Long employerId) {
-         List<Internship> internships = internshipRepository.findByPostedBy_IdAndIsDeletedIsFalse(employerId);
-        return internships.stream()
-                .map(InternshipResponseDto::of)
-                .toList();
-    }
-
-    public List<InternshipResponseDto> getAllActiveInternships() {
-        return internshipRepository.findByIsDeletedFalse().stream().map(InternshipResponseDto::of).toList();
+        if (!applicationDeadline.isAfter(today)) {
+            throw new InvalidInternshipDateException("application deadline");
+        }
     }
 }

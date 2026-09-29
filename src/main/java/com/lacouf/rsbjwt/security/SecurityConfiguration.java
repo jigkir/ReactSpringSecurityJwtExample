@@ -37,24 +37,46 @@ public class SecurityConfiguration {
     private final UserAppRepository userRepository;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
+    // PUBLIC PATHS
     private static final String H2_CONSOLE_PATH = "/h2-console/**";
-    private static final String CURRENT_USER_PATH = "/api/users/current";
     private static final String USER_LOGIN_PATH = "/api/login";
+    private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
+    private static final String ROLES_LIST_PATH = "/api/roles";
+    private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
+
+    // SIGN-UP PATHS
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
     private static final String TEACHER_SIGNUP_PATH = "/api/teacher/signup";
     private static final String EMPLOYER_SIGNUP_PATH = "/api/employer/signup";
+
+    // LOGGED-IN USER PATH
+    private static final String CURRENT_USER_PATH = "/api/users/current";
+
+    // CV PATHS
     private static final String MAKE_CV_PUBLIC_PATH = "/api/student/{studentId}/cvs/{cvId}/public";
     private static final String MAKE_CV_PRIVATE_PATH = "/api/student/{studentId}/cvs/{cvId}/private";
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/{studentId}/cvs";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/{studentId}/cvs/**";
     private static final String HIDE_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/hide";
+    private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
+    private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
-    private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
+    private static final String STUDENT_BY_CV_ID_PATH = "/api/student/cvs/{cvId}";
+    private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/pending";
+    private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
+
+    // INTERNSHIP PATHS
+    private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
+    private static final String EMPLOYER_INTERNSHIP_DELETION_PATH = "/api/employer/internships/{internshipId}";
+    private static final String EMPLOYER_INTERNSHIPS_BY_ID_PATH = "/api/employer/{employerId}/internships";
+
+    // MANAGER PATHS
     private static final String MANAGER_PATH = "/api/manager/**";
-    private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
-    private static final String ROLES_LIST_PATH = "/api/roles";
-
-
+    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
+    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
+    private static final String MANAGER_PENDING_CVS_PATH = "/api/manager/cvs/pending";
+    private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
+    private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -62,25 +84,50 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // PUBLIC
+                        .requestMatchers(OPTIONS, "/**").permitAll() // Allow CORS preflight requests
+                        .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
+                        .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
+                        .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
+                        .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
+
+                        // SIGN-UP
                         .requestMatchers(POST, STUDENT_SIGNUP_PATH).permitAll()
                         .requestMatchers(POST, TEACHER_SIGNUP_PATH).permitAll()
                         .requestMatchers(POST, EMPLOYER_SIGNUP_PATH).permitAll()
-                        .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
-                        .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
-                        .requestMatchers(OPTIONS, "/**").permitAll() // Allow CORS preflight requests
-                        .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
-                        .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
 
-                        // Use Role enum names for authorities
-                        .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, MAKE_CV_PUBLIC_PATH).hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, MAKE_CV_PRIVATE_PATH).hasAnyAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, HIDE_CV_PATH).hasAnyAuthority(Role.STUDENT.name())
+                        // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
+
+                        .requestMatchers(GET, STUDENT_BY_CV_ID_PATH).hasAuthority(Role.MANAGER.name())
+
+                        // STUDENT : CV
+                        .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_CV_STATUS_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(POST, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, MAKE_CV_PUBLIC_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, MAKE_CV_PRIVATE_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, HIDE_CV_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, MAIN_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, SECONDARY_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, STUDENT_PENDING_CV_PATH).hasAuthority(Role.STUDENT.name())
+
+                        // EMPLOYER : INTERNSHIP
+                        .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
+                        .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
+                        .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
+
+                        // MANAGER
+                        .requestMatchers(GET, MANAGER_PENDING_CVS_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_APPROVE_CV_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_REJECT_CV_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 )
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // for h2-console

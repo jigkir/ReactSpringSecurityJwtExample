@@ -129,6 +129,15 @@ export function getNavbarClasses(dark) {
         ].join(" "),
     };
 }
+// ─── Notifications ────────────────────────────────────────────────────────────
+ export function getNotificationMenuClasses(dark) {
+    return {
+        panel: `absolute center mt-2 w-72 max-w-[calc(100vw-2rem)] z-50 rounded-xl border shadow-lg overflow-hidden ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        list: `divide-y ${dark ? "divide-slate-700" : "divide-gray-100"}`,
+        item: `flex items-center gap-3 px-4 py-3 text-sm ${TRANSITION_150} ${dark ? "text-slate-200 hover:bg-slate-700/60" : "text-gray-700 hover:bg-gray-50"}`,
+        empty: `px-4 py-6 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
+    }
+ }
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
@@ -232,7 +241,7 @@ export function getInternshipModalClasses(dark) {
     };
 }
 
-// ─── CvButton ─────────────────────────────────────────────────────────────────
+// ─── Button ─────────────────────────────────────────────────────────────────
 
 export const CV_BUTTON_BASE =
     "text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors duration-150 whitespace-nowrap " +
@@ -271,6 +280,11 @@ export function getCvDocumentsClasses(dark) {
         pillPublic: dark ? "bg-amber-500/20 text-amber-200" : "bg-amber-100 text-amber-800",
         pillPrivate: dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700",
         confirmText: `text-sm ${dark ? "text-slate-300" : "text-gray-700"}`,
+        statusPill: (status) => {
+            if (status === "APPROVED") return dark ? "bg-green-500/20 text-green-300" : "bg-green-100 text-green-800";
+            if (status === "REFUSED" || status === "REJECTED") return dark ? "bg-red-500/20 text-red-300" : "bg-red-100 text-red-800";
+            return dark ? "bg-yellow-500/20 text-yellow-200" : "bg-yellow-100 text-yellow-800";
+        },
     };
 }
 

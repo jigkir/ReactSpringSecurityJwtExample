@@ -1,29 +1,20 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.model.CV;
-import com.lacouf.rsbjwt.model.CVSharingScope;
-import com.lacouf.rsbjwt.model.CvVisibility;
-import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.Student;
+import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.security.exception.*;
-import com.lacouf.rsbjwt.service.dto.CVDto;
-import com.lacouf.rsbjwt.service.dto.StudentSignUpDto;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.ByteArrayOutputStream;
@@ -38,6 +29,17 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.answer;
 import static org.mockito.Mockito.*;
+
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class StudentServiceTest {
@@ -98,7 +100,6 @@ public class StudentServiceTest {
 
     @Test
     void shouldSaveStudent() throws UserAlreadyExistsException {
-        // Arrange
         when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
 
         when(studentRepository.save(any(Student.class)))
@@ -107,10 +108,8 @@ public class StudentServiceTest {
                     return student;
                 }));
 
-        // Act
         studentService.save(studentSignUpDto);
 
-        // Assert
         verify(studentRepository).save(studentArgumentCaptor.capture());
 
         Student student = studentArgumentCaptor.getValue();
@@ -125,16 +124,13 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowUserAlreadyExistsExceptionWhenStudentIdAlreadyUsed() {
-        // Arrange
         when(studentRepository.findByStudentId(studentSignUpDto.studentId())).thenReturn(Optional.of(new Student()));
 
-        // Act
         UserAlreadyExistsException exception = assertThrows(
                 UserAlreadyExistsException.class,
                 () -> studentService.save(studentSignUpDto)
         );
 
-        // Assert
         assert "studentId".equals(exception.getField());
         assert "user already exists".equals(exception.getMessage());
 
@@ -143,16 +139,13 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyUsed() {
-        // Arrange
         when(userAppRepository.findByCredentialsEmail(studentSignUpDto.email())).thenReturn(Optional.of(new Student()));
 
-        // Act
         UserAlreadyExistsException exception = assertThrows(
                 UserAlreadyExistsException.class,
                 () -> studentService.save(studentSignUpDto)
         );
 
-        // Assert
         assert "email".equals(exception.getField());
         assert "user already exists".equals(exception.getMessage());
 
@@ -165,9 +158,9 @@ public class StudentServiceTest {
 
     @Test
     void shouldSaveCVSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto(validPdfBytes, null, CVSharingScope.PRIVATE, "cv.pdf", validPdfBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
 
-        studentService.saveCV(cvDto, dummyStudent);
+        studentService.saveCV(upload, dummyStudent);
 
         verify(cvRepository).save(cvArgumentCaptor.capture());
         CV savedCv = cvArgumentCaptor.getValue();
@@ -180,11 +173,11 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsNull() {
-        CVDto cvDto = new CVDto(null, null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CvUploadDto upload = new CvUploadDto(null, "cv.pdf");
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
 
         assert "File content cannot be null or empty.".equals(exception.getMessage());
@@ -192,11 +185,11 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenContentIsEmpty() {
-        CVDto cvDto = new CVDto(new byte[0], null, CVSharingScope.PRIVATE, "cv.pdf", 0, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CvUploadDto upload = new CvUploadDto(new byte[0], "cv.pdf");
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
 
         assert "File content cannot be null or empty.".equals(exception.getMessage());
@@ -204,23 +197,21 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowInvalidFileSizeExceptionWhenFileExceedsMaxSize() {
-        byte[] oversizedContent = new byte[2 * 1024 * 1024 + 1];
-        CVDto cvDto = new CVDto(oversizedContent, null, CVSharingScope.PRIVATE, "large.pdf", oversizedContent.length, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CvUploadDto upload = new CvUploadDto(new byte[2 * 1024 * 1024 + 1], "large.pdf");
 
         assertThrows(
                 InvalidFileSizeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
     }
 
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenMimeTypeIsNotPdf() {
-        byte[] textFileBytes = "Hello World".getBytes();
-        CVDto cvDto = new CVDto(textFileBytes, null, CVSharingScope.PRIVATE, "file.txt", textFileBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
 
         InvalidFileTypeException exception = assertThrows(
                 InvalidFileTypeException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
 
         assert "Invalid file type. Only PDF files are allowed.".equals(exception.getMessage());
@@ -228,12 +219,11 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowCorruptedFileExceptionWhenPdfIsCorrupted() {
-        byte[] corruptedPdfBytes = "%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes();
-        CVDto cvDto = new CVDto(corruptedPdfBytes, null, CVSharingScope.PRIVATE, "corrupted.pdf", corruptedPdfBytes.length, LocalDateTime.now(), CvVisibility.VISIBLE);
+        CvUploadDto upload = new CvUploadDto("%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes(), "corrupted.pdf");
 
         assertThrows(
                 CorruptedFileException.class,
-                () -> studentService.saveCV(cvDto, dummyStudent)
+                () -> studentService.saveCV(upload, dummyStudent)
         );
     }
 
@@ -276,23 +266,19 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldGetCVCountByStudent() {
+    void shouldGetCVCountByStudent() throws UserNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.countByStudent(dummyStudent)).thenReturn(3L);
 
-        long count = studentService.getCVCountByStudent(dummyStudent);
+        long count = studentService.getCVCountByStudentId(dummyStudent.getId());
 
         assert count == 3L;
     }
 
     @Test
-    void shouldReturnZeroCVCountWhenStudentIsNull() {
-        long count = studentService.getCVCountByStudent(null);
-
-        assert count == 0L;
-    }
-
-    @Test
     void shouldGetCVsSuccessfully() throws Exception {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV visibleCv = new CV();
         visibleCv.setId(1L);
         visibleCv.setContent(validPdfBytes);
@@ -301,7 +287,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(visibleCv));
 
-        List<CVDto> cvs = studentService.getCVs(dummyStudent);
+        List<StudentCvResponseDto> cvs = studentService.getCVs(dummyStudent.getId());
 
         assert cvs.size() == 1;
         assert Long.valueOf(1L).equals(cvs.get(0).id());
@@ -309,6 +295,8 @@ public class StudentServiceTest {
 
     @Test
     void shouldSkipHiddenCVsWhenGettingCVs() throws Exception {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV hiddenCv = new CV();
         hiddenCv.setId(1L);
         hiddenCv.setContent(validPdfBytes);
@@ -317,18 +305,15 @@ public class StudentServiceTest {
 
         when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(hiddenCv));
 
-        List<CVDto> cvs = studentService.getCVs(dummyStudent);
+        List<StudentCvResponseDto> cvs = studentService.getCVs(dummyStudent.getId());
 
         assert cvs.isEmpty();
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenGettingCVsForNullStudent() {
-        assertThrows(UserNotFoundException.class, () -> studentService.getCVs(null));
-    }
-
-    @Test
     void shouldThrowCorruptedFileExceptionWhenGettingCVsWithCorruptedFile() throws Exception {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV corruptedCv = new CV();
         corruptedCv.setId(2L);
         corruptedCv.setContent("Corrupted".getBytes());
@@ -336,7 +321,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(corruptedCv));
 
-        assertThrows(CorruptedFileException.class, () -> studentService.getCVs(dummyStudent));
+        assertThrows(CorruptedFileException.class, () -> studentService.getCVs(dummyStudent.getId()));
     }
 
     @Test
@@ -350,6 +335,8 @@ public class StudentServiceTest {
 
     @Test
     void shouldSetCvAsInvisible() throws UserNotFoundException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -357,19 +344,16 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        studentService.setCvAsInvisible(dummyStudent, 10L);
+        studentService.setCvAsInvisible(dummyStudent.getId(), 10L);
 
         assert CvVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenSettingInvisibleForNullStudent() {
-        assertThrows(UserNotFoundException.class, () -> studentService.setCvAsInvisible(null, 10L));
-    }
-
-    @Test
     void shouldThrowUserNotFoundExceptionWhenSettingInvisibleForDifferentStudent() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         Student existingStudent = new Student();
         existingStudent.setStudentId("9999999");
 
@@ -379,11 +363,13 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(UserNotFoundException.class, () -> studentService.setCvAsInvisible(dummyStudent, 10L));
+        assertThrows(UserNotFoundException.class, () -> studentService.setCvAsInvisible(dummyStudent.getId(), 10L));
     }
 
     @Test
     void shouldSetCvAsPublic() throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -391,7 +377,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        studentService.setCvAsPublic(dummyStudent, 10L);
+        studentService.setCvAsPublic(dummyStudent.getId(), 10L);
 
         assert CVSharingScope.PUBLIC.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
@@ -399,6 +385,8 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowCVAlreadyPublicExceptionWhenCvIsAlreadyPublic() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -406,16 +394,13 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(CVAlreadyPublicException.class, () -> studentService.setCvAsPublic(dummyStudent, 10L));
-    }
-
-    @Test
-    void shouldThrowUserNotFoundExceptionWhenSettingPublicForNullStudent() {
-        assertThrows(UserNotFoundException.class, () -> studentService.setCvAsPublic(null, 10L));
+        assertThrows(CVAlreadyPublicException.class, () -> studentService.setCvAsPublic(dummyStudent.getId(), 10L));
     }
 
     @Test
     void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -423,7 +408,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        studentService.setCvAsPrivate(dummyStudent, 10L);
+        studentService.setCvAsPrivate(dummyStudent.getId(), 10L);
 
         assert CVSharingScope.PRIVATE.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
@@ -431,6 +416,8 @@ public class StudentServiceTest {
 
     @Test
     void shouldThrowCVAlredyPrivateExceptionWhenCvIsAlreadyPrivate() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
@@ -438,11 +425,135 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(CVAlredyPrivateException.class, () -> studentService.setCvAsPrivate(dummyStudent, 10L));
+        assertThrows(CVAlredyPrivateException.class, () -> studentService.setCvAsPrivate(dummyStudent.getId(), 10L));
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenSettingPrivateForNullStudent() {
-        assertThrows(UserNotFoundException.class, () -> studentService.setCvAsPrivate(null, 10L));
+    void shouldSetCVAsSecondary() throws UserNotFoundException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        CV cv = new CV();
+        cv.setId(10L);
+        cv.setStudent(dummyStudent);
+        cv.setPriority(CvPriority.MAIN);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
+
+        studentService.setCVAsSecondary(dummyStudent.getId(), 10L);
+
+        assert CvPriority.SECONDARY.equals(cv.getPriority());
+        verify(cvRepository).save(cv);
+    }
+
+    @Test
+    void shouldThrowUserNotFoundExceptionWhenSettingSecondaryForDifferentStudent() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        Student otherStudent = new Student();
+        otherStudent.setId(99L);
+
+        CV cv = new CV();
+        cv.setId(10L);
+        cv.setStudent(otherStudent);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
+
+        assertThrows(UserNotFoundException.class, () -> studentService.setCVAsSecondary(dummyStudent.getId(), 10L));
+    }
+
+    @Test
+    void shouldThrowCvNotFoundExceptionWhenSettingSecondaryForNonExistentCv() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(CvNotFoundException.class, () -> studentService.setCVAsSecondary(dummyStudent.getId(), 999L));
+    }
+
+    @Test
+    void shouldSetCVAsMainWhenNoExistingMainCv() throws UserNotFoundException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        CV cv = new CV();
+        cv.setId(10L);
+        cv.setStudent(dummyStudent);
+        cv.setPriority(CvPriority.SECONDARY);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByStudentAndPriority(dummyStudent, CvPriority.MAIN)).thenReturn(null);
+
+        studentService.setCVAsMain(dummyStudent.getId(), 10L);
+
+        assert CvPriority.MAIN.equals(cv.getPriority());
+        verify(cvRepository).save(cv);
+    }
+
+    @Test
+    void shouldDemoteExistingMainCvAndPromoteNewCvToMain() throws UserNotFoundException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        CV targetCv = new CV();
+        targetCv.setId(10L);
+        targetCv.setStudent(dummyStudent);
+        targetCv.setPriority(CvPriority.SECONDARY);
+
+        CV currentMainCv = new CV();
+        currentMainCv.setId(5L);
+        currentMainCv.setStudent(dummyStudent);
+        currentMainCv.setPriority(CvPriority.MAIN);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(targetCv));
+        when(cvRepository.findByStudentAndPriority(dummyStudent, CvPriority.MAIN)).thenReturn(currentMainCv);
+
+        studentService.setCVAsMain(dummyStudent.getId(), 10L);
+
+        assert CvPriority.SECONDARY.equals(currentMainCv.getPriority());
+        verify(cvRepository).save(currentMainCv);
+    }
+
+    @Test
+    void shouldNotChangePriorityWhenCvIsAlreadyMain() throws UserNotFoundException, CvNotFoundException {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        CV currentMainCv = new CV();
+        currentMainCv.setId(10L);
+        currentMainCv.setStudent(dummyStudent);
+        currentMainCv.setPriority(CvPriority.MAIN);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(currentMainCv));
+        when(cvRepository.findByStudentAndPriority(dummyStudent, CvPriority.MAIN)).thenReturn(currentMainCv);
+
+        studentService.setCVAsMain(dummyStudent.getId(), 10L);
+
+        assert CvPriority.MAIN.equals(currentMainCv.getPriority());
+        verify(cvRepository, times(1)).save(currentMainCv);
+    }
+
+    @Test
+    void shouldThrowUserNotFoundExceptionWhenSettingMainForNullStudent() {
+        assertThrows(UserNotFoundException.class, () -> studentService.setCVAsMain(dummyStudent.getId(), 10L));
+    }
+
+    @Test
+    void shouldThrowUserNotFoundExceptionWhenSettingMainForDifferentStudent() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        Student otherStudent = new Student();
+        otherStudent.setId(99L);
+
+        CV cv = new CV();
+        cv.setId(10L);
+        cv.setStudent(otherStudent);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
+
+        assertThrows(UserNotFoundException.class, () -> studentService.setCVAsMain(dummyStudent.getId(), 10L));
+    }
+
+    @Test
+    void shouldThrowCvNotFoundExceptionWhenSettingMainForNonExistentCv() {
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(CvNotFoundException.class, () -> studentService.setCVAsMain(dummyStudent.getId(), 999L));
     }
 }

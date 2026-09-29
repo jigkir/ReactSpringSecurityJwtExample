@@ -2,11 +2,10 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.repository.*;
-import com.lacouf.rsbjwt.security.exception.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.TeacherService;
-import com.lacouf.rsbjwt.service.dto.TeacherSignUpDto;
-import com.lacouf.rsbjwt.service.dto.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.TeacherSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

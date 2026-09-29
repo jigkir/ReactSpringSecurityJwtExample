@@ -2,10 +2,15 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.*;
-import com.lacouf.rsbjwt.service.dto.*;
 import com.lacouf.rsbjwt.security.JwtTokenProvider;
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.UserLoginDTO;
+import com.lacouf.rsbjwt.service.dto.response.DisciplineDto;
+import com.lacouf.rsbjwt.service.dto.response.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.response.RoleDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

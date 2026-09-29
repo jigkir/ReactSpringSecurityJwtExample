@@ -1,9 +1,13 @@
 package com.lacouf.rsbjwt.presentation;
 
-import com.lacouf.rsbjwt.security.exception.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.UserAppService;
-import com.lacouf.rsbjwt.service.dto.*;
+import com.lacouf.rsbjwt.service.dto.request.UserLoginDTO;
+import com.lacouf.rsbjwt.service.dto.response.DisciplineDto;
+import com.lacouf.rsbjwt.service.dto.response.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.response.RoleDto;
+import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

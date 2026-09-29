@@ -1,8 +1,6 @@
-import React from 'react';
-
 function ErrorPage({error}) {
     return (
-        <p>{error.message}</p>
+        <p>{error?.message ?? "unknown"}</p>
     );
 }
 
