@@ -52,9 +52,4 @@ public class Notification {
         this.targetId = targetId;
         this.user = user;
     }
-
-    public void markAsRead() {
-        this.status = NotificationStatus.READ;
-    }
-
 }
