@@ -122,7 +122,7 @@ public class ManagerService {
         CV cv = findPendingCv(cvId);
 
         cv.setStatus(CvStatus.APPROVED);
-        addCVApprovalNotificationToStudent("CV Approved", "Your CV has been approved.", cvId, cv.getStudent());
+        addCVApprovalNotificationToStudent("Your CV has been approved.", cvId, cv.getStudent());
 
         return saveAndConvert(cv);
     }
@@ -132,7 +132,7 @@ public class ManagerService {
 
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment(comment);
-        addCVRejectionNotificationToStudent("CV Rejected", comment, cvId, cv.getStudent());
+        addCVRejectionNotificationToStudent(comment, cvId, cv.getStudent());
 
         return saveAndConvert(cv);
     }
@@ -178,11 +178,11 @@ public class ManagerService {
         return managers;
     }
 
-    private void addCVRejectionNotificationToStudent(String title, String message, Long cvId, UserApp student) {
-        notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_REJECTED, TargetType.CV, cvId, student));
+    private void addCVRejectionNotificationToStudent(String message, Long cvId, UserApp student) {
+        notificationRepository.save(new Notification("CV Rejected", message, NotificationStatus.UNREAD, NotificationType.CV_REJECTED, TargetType.CV, cvId, student));
     }
 
-    private void addCVApprovalNotificationToStudent(String title, String message, Long cvId, UserApp student) {
-        notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
+    private void addCVApprovalNotificationToStudent(String message, Long cvId, UserApp student) {
+        notificationRepository.save(new Notification("CV Approved", message, NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
     }
 }
