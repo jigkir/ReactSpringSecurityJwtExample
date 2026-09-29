@@ -61,7 +61,6 @@ public class SecurityConfiguration {
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
-    private static final String STUDENT_BY_CV_ID_PATH = "/api/student/cvs/{cvId}";
     private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/pending";
     private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
 
@@ -100,7 +99,6 @@ public class SecurityConfiguration {
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
-                        .requestMatchers(GET, STUDENT_BY_CV_ID_PATH).hasAuthority(Role.MANAGER.name())
 
                         // STUDENT : CV
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())

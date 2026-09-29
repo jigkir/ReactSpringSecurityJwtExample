@@ -122,6 +122,7 @@ public class ManagerService {
         CV cv = findPendingCv(cvId);
 
         cv.setStatus(CvStatus.APPROVED);
+        addCVApprovalNotificationToStudent(cvId, cv.getStudent());
 
         return saveAndConvert(cv);
     }
@@ -131,6 +132,7 @@ public class ManagerService {
 
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment(comment);
+        addCVRejectionNotificationToStudent(comment, cvId, cv.getStudent());
 
         return saveAndConvert(cv);
     }
@@ -174,5 +176,13 @@ public class ManagerService {
             throw new UserNotFoundException();
         }
         return managers;
+    }
+
+    private void addCVRejectionNotificationToStudent(String message, Long cvId, UserApp student) {
+        notificationRepository.save(new Notification("CV Rejected", message, NotificationStatus.UNREAD, NotificationType.CV_REJECTED, TargetType.CV, cvId, student));
+    }
+
+    private void addCVApprovalNotificationToStudent(Long cvId, UserApp student) {
+        notificationRepository.save(new Notification("CV Approved", "Your CV has been approved.", NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
     }
 }
