@@ -17,7 +17,7 @@ function PostInternship({user}) {
     const s = getPostInternshipClasses(dark);
 
     useEffect(() => {
-        fetcher("internship/made", {})
+        fetcher(`${user.id}/internships`, {})
             .then(async (res) => {
                 if (!res.ok) throw new Error(`Error ${res.status}`);
                 const data = await res.json();
@@ -30,7 +30,7 @@ function PostInternship({user}) {
 
     const handleAddInternship = async (newOffer) => {
         try {
-            const response = await fetcher("internship/make", {
+            const response = await fetcher("employer/internship", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(newOffer),
@@ -63,7 +63,7 @@ function PostInternship({user}) {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetcher(`internship/delete?id=${id}`, {method: "PUT"});
+            const response = await fetcher(`employer/internships/${id}`, {method: "PUT"});
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || t("postInternship.deleteError"));
