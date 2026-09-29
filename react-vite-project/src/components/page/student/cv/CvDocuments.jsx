@@ -1,10 +1,16 @@
 /**
  * CvDocuments.jsx — CV list, shared by students and managers.
  *
- * mode="student" (default): list own CVs, share/unshare, delete.
+ * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
  * mode="manager":           list pending public CVs, preview, approve, refuse.
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
+ *
+ * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE), fileName,
+ *               sizeBytes, uploadedAt, visibility (VISIBLE|HIDDEN),
+ *               status (PENDING|APPROVED|REFUSED), priority (MAIN|...)
+ *
+ * Student endpoints: GET /student/{id}/cvs, PUT .../{cvId}/public|private|hide|main
  *
  * Props
  *   studentId   string    required in student mode
@@ -18,7 +24,15 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
 import CvPreview from './CvPreview.jsx';
-import {approveCv, getPendingCvs, getStudentCvs, hideCv, rejectCv, setCvScope} from '../../../api/Api.jsx';
+import {
+    approveCv,
+    getPendingCvs,
+    getStudentCvs,
+    hideCv,
+    rejectCv,
+    setCvScope,
+    setMainCv,
+} from '../../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
 
@@ -28,6 +42,7 @@ const buildStudentApi = (studentId) => ({
     list: () => getStudentCvs(studentId),
     setScope: (cvId, scope) => setCvScope(studentId, cvId, scope),
     hide: (cvId) => hideCv(studentId, cvId),
+    makeMain: (cvId) => setMainCv(studentId, cvId),
 });
 
 const managerApi = {
@@ -100,6 +115,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         runAction(doc.id, () => api.setScope(doc.id, doc.sharingScope === "PUBLIC" ? "private" : "public"));
 
     const hideDoc = (doc) => runAction(doc.id, () => api.hide(doc.id));
+
+    const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
 
     // ── Manager decision ──────────────────────────────────────────────────────
     // The backend returns the updated CVDto. We patch it into the list instead of
@@ -185,10 +202,14 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const confirming = confirmId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
+                    const isMain = doc.priority === "MAIN";
                     const status = doc.status ?? "PENDING";
                     const isPending = status === "PENDING";
                     const [statusKey, statusFallback] = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+                    const mainLabel = isMain
+                        ? t("cvDocuments.mainCv", "CV principal")
+                        : t("cvDocuments.makeMainBtn", "Choisir comme CV principal");
 
                     return (
                         <li key={doc.id} aria-busy={busy}>
@@ -268,6 +289,11 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                             aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
                                                         {t("cvDocuments.hideBtn")}
                                                     </Button>
+                                                    <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)}
+                                                            disabled={busy || isMain}
+                                                            aria-label={`${mainLabel} : ${doc.fileName}`}>
+                                                        {mainLabel}
+                                                    </Button>
                                                 </>
                                             )}
                                         </>
@@ -276,7 +302,9 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                             </div>
 
                             {isPreviewOpen && (
-                                <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
+                                <div className="py-4">
+                                    <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
+                                </div>
                             )}
                         </li>
                     );
