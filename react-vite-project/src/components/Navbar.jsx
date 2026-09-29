@@ -1,6 +1,7 @@
 import {Link, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
+import NotificationMenu from './NotificationMenu.jsx';
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
@@ -54,24 +55,16 @@ function Navbar({user, dark, toggleDark}) {
         </svg>
     );
 
+    const cvNotificationCount = 0;
 
-    const CVNotification = ({ count = 0 }) => role === "MANAGER" && (
-        <button
-            className={`${theme.toggleBase} ${theme.toggleBtn}`}
-        >
-            <span className="relative inline-flex">
-                {t("navbar.cvNotification", {amount: count})}
-                {/*ICON_"WHAT_YOU_WANT"*/}
-                {count > 0 && (
-                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
-                )}
+    const notifications = (role === "MANAGER"
+            ? [{
+                id: "cv",
+                count: cvNotificationCount,
+                label: t("navbar.cvNotification", {amount: cvNotificationCount}),
+            }]
+            : []);
 
-            </span>
-        </button>
-
-    );
-
-    const newCVs = getNavbarClasses(dark);
 
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
@@ -90,7 +83,9 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </Link>
                             ))}
-                            <CVNotification count={0} />
+                            {notifications.length > 0 && (
+                                <NotificationMenu notifications={notifications} dark={dark}/>
+                            )}
                         </nav>
                     </div>
 

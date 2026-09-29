@@ -33,7 +33,9 @@
     "switchEnglish": "EN",
     "postInternship": "Offrir un stage",
     "hello": "Bonjour,",
-    "cvNotification": "{{amount}} nouveaux CVs ont étés publiés"
+    "notifications": "{{amount}} nouvelle(s) notifications",
+    "cvNotification": "{{amount}} nouveaux CVs ont étés publiés",
+    "noNotifications": "Vous n'avez pas de nouvelles notifications"
   },
   "managerPage": {
     "pageInfo": "Page accueil gestionnaire",
