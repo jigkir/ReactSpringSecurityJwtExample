@@ -19,6 +19,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^4.2.0",
+    "i18next-cli": "^1.74.1",
     "tailwindcss": "^4.3.3",
     "vite": "^6.3.3"
   }
