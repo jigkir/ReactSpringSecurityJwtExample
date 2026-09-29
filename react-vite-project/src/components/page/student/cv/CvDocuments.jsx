@@ -4,6 +4,8 @@
  * mode="student" (default): list own CVs, share/unshare, delete.
  * mode="manager":           list pending public CVs, preview, approve, refuse.
  *
+ * Preview is rendered inline under the row (toggle), several can be open at once.
+ *
  * Props
  *   studentId   string    required in student mode
  *   dark        boolean
@@ -18,7 +20,7 @@ import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
 import CvPreview from './CvPreview.jsx';
 import {approveCv, getPendingCvs, getStudentCvs, hideCv, rejectCv, setCvScope} from '../../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
-import {getCvDocumentsClasses, getCvPreviewClasses} from '../../../../styles/appStyles.jsx';
+import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
@@ -54,14 +56,13 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
     const {btn, btnTone} = useButtonClasses(dark);
     const th = getCvDocumentsClasses(dark);
-    const preview = getCvPreviewClasses(dark);
 
     const [docs, setDocs] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
     const [confirmId, setConfirmId] = useState(null); // student: delete / manager: refuse
     const [actionError, setActionError] = useState("");
-    const [previewDoc, setPreviewDoc] = useState(null);
+    const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -124,8 +125,22 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         }
     };
 
-    // ── Preview ───────────────────────────────────────────────────────────────
+    // ── Preview (inline toggle) ───────────────────────────────────────────────
 
+    const togglePreview = (cvId) => {
+        setOpenPreviewIds((prev) =>
+            prev.includes(cvId)
+                ? prev.filter((id) => id !== cvId)
+                : [...prev, cvId]
+        );
+    };
+
+    /**
+     * CvPreview calls getUrl(cvId) when it mounts.
+     * We look up the already-loaded doc and convert its Base64 content to a
+     * blob URL. No extra network request needed — the list endpoint already
+     * returned the full PDF bytes.
+     */
     const getUrl = useCallback(async (cvId) => {
         const doc = docs?.find((d) => d.id === cvId);
         if (!doc?.content) throw new Error(t("cvDocuments.previewError"));
@@ -169,91 +184,100 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const busy = busyId === doc.id;
                     const confirming = confirmId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
+                    const isPreviewOpen = openPreviewIds.includes(doc.id);
                     const status = doc.status ?? "PENDING";
                     const isPending = status === "PENDING";
                     const [statusKey, statusFallback] = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
+                    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
 
                     return (
-                        <li key={doc.id} className={th.row} aria-busy={busy}>
+                        <li key={doc.id} aria-busy={busy}>
+                            <div className={th.row}>
 
-                            {/* Identity */}
-                            <div className="min-w-0 md:flex-1">
-                                <p className={th.name}>{doc.fileName}</p>
-                                <p className={th.meta}>
-                                    {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
-                                </p>
-                            </div>
+                                {/* Identity */}
+                                <div className="min-w-0 md:flex-1">
+                                    <p className={th.name}>{doc.fileName}</p>
+                                    <p className={th.meta}>
+                                        {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
+                                    </p>
+                                </div>
 
-                            {/* Pills: validation status (both modes) + sharing scope (student only) */}
-                            <div className="flex flex-wrap items-center gap-2 md:w-72 md:shrink-0">
-                                <span className={`${th.pillBase} ${th.statusPill(status)}`}>
-                                    {t(statusKey, statusFallback)}
-                                </span>
-                                {!isManager && (
-                                    <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
-                                        {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
+                                {/* Pills: validation status (both modes) + sharing scope (student only) */}
+                                <div className="flex flex-wrap items-center gap-2 md:w-72 md:shrink-0">
+                                    <span className={`${th.pillBase} ${th.statusPill(status)}`}>
+                                        {t(statusKey, statusFallback)}
                                     </span>
-                                )}
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
-                                {confirming ? (
-                                    <>
-                                        <span className={th.confirmText}>
-                                            {isManager
-                                                ? t("cvDocuments.refuseAsk", "Refuser ce CV ? L'étudiant pourra téléverser une version corrigée.")
-                                                : t("cvDocuments.hideAsk")}
+                                    {!isManager && (
+                                        <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
+                                            {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
                                         </span>
-                                        <Button tone="danger" dark={dark} disabled={busy} autoFocus
-                                                onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
-                                            {t("cvDocuments.confirmBtn")}
-                                        </Button>
-                                        <Button tone="neutral" dark={dark} disabled={busy}
-                                                onClick={() => setConfirmId(null)}>
-                                            {t("cvDocuments.cancelBtn")}
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button tone="accent" dark={dark} onClick={() => setPreviewDoc(doc)}
-                                                disabled={busy || !doc.content}
-                                                aria-label={`${t("cvDocuments.viewBtn")} : ${doc.fileName}`}>
-                                            {t("cvDocuments.viewBtn")}
-                                        </Button>
+                                    )}
+                                </div>
 
-                                        {isManager ? (
-                                            isPending && (
+                                {/* Actions */}
+                                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+                                    {confirming ? (
+                                        <>
+                                            <span className={th.confirmText}>
+                                                {isManager
+                                                    ? t("cvDocuments.refuseAsk", "Refuser ce CV ? L'étudiant pourra téléverser une version corrigée.")
+                                                    : t("cvDocuments.hideAsk")}
+                                            </span>
+                                            <Button tone="danger" dark={dark} disabled={busy} autoFocus
+                                                    onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
+                                                {t("cvDocuments.confirmBtn")}
+                                            </Button>
+                                            <Button tone="neutral" dark={dark} disabled={busy}
+                                                    onClick={() => setConfirmId(null)}>
+                                                {t("cvDocuments.cancelBtn")}
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
+                                                    disabled={busy || !doc.content}
+                                                    aria-expanded={isPreviewOpen}
+                                                    aria-label={`${viewLabel} : ${doc.fileName}`}>
+                                                {viewLabel}
+                                            </Button>
+
+                                            {isManager ? (
+                                                isPending && (
+                                                    <>
+                                                        <Button tone="neutral" dark={dark} disabled={busy}
+                                                                onClick={() => decide(doc, "approve")}
+                                                                aria-label={`${t("cvDocuments.approveBtn", "Approuver")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.approveBtn", "Approuver")}
+                                                        </Button>
+                                                        <Button tone="danger" dark={dark} disabled={busy}
+                                                                onClick={() => setConfirmId(doc.id)}
+                                                                aria-label={`${t("cvDocuments.refuseBtn", "Refuser")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.refuseBtn", "Refuser")}
+                                                        </Button>
+                                                    </>
+                                                )
+                                            ) : (
                                                 <>
-                                                    <Button tone="neutral" dark={dark} disabled={busy}
-                                                            onClick={() => decide(doc, "approve")}
-                                                            aria-label={`${t("cvDocuments.approveBtn", "Approuver")} : ${doc.fileName}`}>
-                                                        {t("cvDocuments.approveBtn", "Approuver")}
+                                                    <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
+                                                            disabled={busy}
+                                                            aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
+                                                        {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
                                                     </Button>
-                                                    <Button tone="danger" dark={dark} disabled={busy}
-                                                            onClick={() => setConfirmId(doc.id)}
-                                                            aria-label={`${t("cvDocuments.refuseBtn", "Refuser")} : ${doc.fileName}`}>
-                                                        {t("cvDocuments.refuseBtn", "Refuser")}
+                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
+                                                            disabled={busy}
+                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                                        {t("cvDocuments.hideBtn")}
                                                     </Button>
                                                 </>
-                                            )
-                                        ) : (
-                                            <>
-                                                <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                        disabled={busy}
-                                                        aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
-                                                    {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
-                                                </Button>
-                                                <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
-                                                        disabled={busy}
-                                                        aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
-                                                    {t("cvDocuments.hideBtn")}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </>
-                                )}
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
+
+                            {isPreviewOpen && (
+                                <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
+                            )}
                         </li>
                     );
                 })}
@@ -264,33 +288,24 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
-        <>
-            <section className={th.card} aria-label={t("cvDocuments.title")}>
-                <div className={th.header}>
-                    <h2 className={th.title}>
-                        {isManager ? t("cvDocuments.titleManager", "CVs à valider") : t("cvDocuments.title")}
-                    </h2>
-                    {!isManager && onAddClick && (
-                        <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
-                    )}
-                </div>
-
-                {actionError && (
-                    <div className="px-6 pt-4">
-                        <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
-                    </div>
+        <section className={th.card} aria-label={t("cvDocuments.title")}>
+            <div className={th.header}>
+                <h2 className={th.title}>
+                    {isManager ? t("cvDocuments.titleManager", "CVs à valider") : t("cvDocuments.title")}
+                </h2>
+                {!isManager && onAddClick && (
+                    <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
                 )}
+            </div>
 
-                {body}
-            </section>
-
-            {/* Overlay wrapper: CvPreview only renders the dialog itself */}
-            {previewDoc && (
-                <div className={preview.overlay} role="dialog" aria-modal="true" aria-labelledby="cv-preview-title">
-                    <CvPreview doc={previewDoc} dark={dark} getUrl={getUrl} onClose={() => setPreviewDoc(null)}/>
+            {actionError && (
+                <div className="px-6 pt-4">
+                    <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
                 </div>
             )}
-        </>
+
+            {body}
+        </section>
     );
 };
 

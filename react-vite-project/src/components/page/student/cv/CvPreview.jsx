@@ -14,10 +14,9 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import Button from '../../../../styles/Button.jsx';
 import {getCvPreviewClasses} from '../../../../styles/appStyles.jsx';
 
-const CvPreview = ({doc, dark, getUrl, onClose}) => {
+const CvPreview = ({doc, dark, getUrl}) => {
     const {t} = useTranslation();
     const [url, setUrl] = useState(null);
     const [error, setError] = useState(false);
@@ -61,16 +60,6 @@ const CvPreview = ({doc, dark, getUrl, onClose}) => {
 
     return (
         <div className={cls.dialog}>
-
-            {/* Header */}
-            <div className={cls.header}>
-                <h3 id="cv-preview-title" className={cls.title}>{doc.fileName}</h3>
-                <div className="flex shrink-0 items-center gap-2">
-                    <Button tone="accent" dark={dark} onClick={onClose} autoFocus>
-                        {t("cvPreview.closeBtn")}
-                    </Button>
-                </div>
-            </div>
 
             {/* Body */}
             <div className={cls.body}>

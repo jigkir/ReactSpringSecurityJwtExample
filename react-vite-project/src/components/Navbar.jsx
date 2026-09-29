@@ -55,6 +55,7 @@ function Navbar({user, dark, toggleDark}) {
         </svg>
     );
 
+
     // TODO: replace the hardcoded count with getPendingCvs().length
     const CVNotification = ({count = 0}) => role === "MANAGER" && (
         <Link
@@ -75,8 +76,6 @@ function Navbar({user, dark, toggleDark}) {
         </Link>
     );
 
-    const newCVs = getNavbarClasses(dark);
-
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
             <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,6 +93,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </Link>
                             ))}
+                            <CVNotification count={0} />
                         </nav>
                     </div>
 
@@ -112,8 +112,7 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                         )}
 
-                        <CVNotification count={3}/>
-
+                            <CVNotification count={0} />
                         <button
                             onClick={toggleLang}
                             className={`${theme.toggleBase} ${theme.toggleBtn}`}
