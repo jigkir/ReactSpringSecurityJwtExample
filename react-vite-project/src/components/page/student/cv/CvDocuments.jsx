@@ -43,7 +43,6 @@ function buildApi(studentId) {
         setScope: (cvId, scope) => apiRequest(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"}),
         hide: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/hide`, {method: "PUT"}),
         makeMain: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"}),
-        makeSecondary: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/secondary`, {method: "PUT"}),
     };
 }
 
