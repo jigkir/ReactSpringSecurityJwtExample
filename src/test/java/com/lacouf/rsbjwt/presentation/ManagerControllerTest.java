@@ -60,29 +60,6 @@ public class ManagerControllerTest {
     }
 
     @Test
-    void shouldReturnPublicCvsByStatus() throws Exception {
-        // Arrange
-        when(managerService.getPublicCvsByStatus(CvStatus.PENDING)).thenReturn(List.of(cvWith(CvStatus.PENDING, null)));
-
-        // Act + Assert
-        mockMvc.perform(get("/api/manager/cvs").param("status", "PENDING"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].status").value("PENDING"))
-                .andExpect(jsonPath("$[0].student.firstName").value("Marie"));
-
-        verify(managerService).getPublicCvsByStatus(CvStatus.PENDING);
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenStatusIsInvalid() throws Exception {
-        // Act + Assert
-        mockMvc.perform(get("/api/manager/cvs").param("status", "UNKNOWN"))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(managerService);
-    }
-
-    @Test
     void shouldReturnOkWhenCvIsApproved() throws Exception {
         // Arrange
         when(managerService.approveCv(1L)).thenReturn(cvWith(CvStatus.APPROVED, null));

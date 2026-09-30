@@ -112,12 +112,6 @@ public class ManagerService {
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
 
-    public List<ManagerCvResponseDto> getPublicCvsByStatus(CvStatus status) {
-        List<CV> cvs = cvRepository.findByStatusAndSharingScope(status, CVSharingScope.PUBLIC);
-
-        return cvs.stream().map(ManagerCvResponseDto::of).toList();
-    }
-
     public ManagerCvResponseDto getCv(long cvId) throws CvNotFoundException {
         return ManagerCvResponseDto.of(findPublicCv(cvId));
     }

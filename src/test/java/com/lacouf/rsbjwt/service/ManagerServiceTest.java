@@ -125,19 +125,6 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnPublicCvsByStatus() {
-        // Arrange
-        when(cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
-
-        // Act
-        List<ManagerCvResponseDto> result = managerService.getPublicCvsByStatus(CvStatus.PENDING);
-
-        // Assert
-        assert(Integer.valueOf(1)).equals(result.size());
-        assert(CvStatus.PENDING).equals(result.getFirst().status());
-    }
-
-    @Test
     void shouldReturnPublicCv() throws CvNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
