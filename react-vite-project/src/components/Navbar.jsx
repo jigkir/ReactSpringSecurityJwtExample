@@ -1,4 +1,4 @@
-import {Link, NavLink, useLocation} from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
 import Icon from '../styles/Icon.jsx';
@@ -13,6 +13,41 @@ const NAV_BY_ROLE = {
 };
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
+
+function FindNotifications(role, t){
+    // TODO: replace the hardcoded count with getPendingCvs().length
+    const cvPostedNotificationCount = 1;
+    // TODO: replace the hardcoded count with getUpdatedCvs(currentDate).map(status == approved).length
+    const cvApprovedNotificationCount = 1;
+    // TODO: replace the hardcoded count with getPendingCvs(currentDate).map(status == approved).length
+    const cvRefusedNotificationCount = 1;
+    switch(role){
+        case("MANAGER"):
+            return[{
+                id: "cvPosted",
+                count: cvPostedNotificationCount,
+                label: t("navbar.cvPostedNotification", {amount: cvPostedNotificationCount}),
+                to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+            }]
+        case("STUDENT"):
+            return[
+                {
+                    id: "cvAccepte",
+                    count: cvApprovedNotificationCount,
+                    label: t("navbar.cvApprovedNotification", {amount: cvApprovedNotificationCount}),
+                    to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+                },
+                {
+                    id: "cvRefuse",
+                    count: cvRefusedNotificationCount,
+                    label: t("navbar.cvRefusedNotification", {amount: cvRefusedNotificationCount}),
+                    to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+                }
+            ]
+        default:
+            return [];
+    }
+}
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
@@ -33,6 +68,14 @@ function Navbar({user, dark, toggleDark}) {
         return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
+    const isActive = (path) =>
+        path === "/"
+            ? location.pathname === "/"
+            : location.pathname.startsWith(path);
+
+    const linkClass = (path) =>
+        `${theme.linkBase} ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
+
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), end: true},
         {to: "/about", label: t("navbar.about")},
@@ -42,19 +85,10 @@ function Navbar({user, dark, toggleDark}) {
         })),
     ];
 
-    const linkClass = ({isActive}) =>
-        `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
-    // TODO: replace the hardcoded count with getPendingCvs().length
-    const cvNotificationCount = 0;
-    const notifications = role === "MANAGER"
-        ? [{
-            id: "cv",
-            count: cvNotificationCount,
-            label: t("navbar.cvNotification", {amount: cvNotificationCount}),
-            to: "/manager/cvs",
-        }]
-        : [];
+
+    const notifications = FindNotifications(role, t);
+
 
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
@@ -67,10 +101,11 @@ function Navbar({user, dark, toggleDark}) {
                             {t("navbar.appName")}
                         </Link>
                         <nav className="flex items-center gap-1">
-                            {navItems.map(({to, label, end}) => (
-                                <NavLink key={to} to={to} end={end} className={linkClass}>
+                            {navItems.map(({to, label}) => (
+                                <Link key={to} to={to} className={linkClass(to)}
+                                      aria-current={isActive(to) ? "page" : undefined}>
                                     {label}
-                                </NavLink>
+                                </Link>
                             ))}
                             {notifications.length > 0 && (
                                 <NotificationMenu notifications={notifications} dark={dark}/>
@@ -79,7 +114,7 @@ function Navbar({user, dark, toggleDark}) {
                     </div>
 
                     <div className="flex items-center gap-3 ml-auto">
-                        {isLoggedIn && (
+                        {user?.isLoggedIn && (
                             <div className={`flex items-center gap-2 text-sm ${theme.greeting}`}>
                                 <span>{t("navbar.hello")}</span>
                                 <span className={`font-semibold ${theme.greetingName}`}>
@@ -93,32 +128,45 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                         )}
 
-                        <button onClick={toggleLang} className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                                aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}>
+                        <button
+                            onClick={toggleLang}
+                            className={`${theme.toggleBase} ${theme.toggleBtn}`}
+                            aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}
+                        >
                             {i18n.language === "en" ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
 
-                        <button onClick={toggleDark} className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                                aria-label={dark ? "Passer en mode clair" : "Passer en mode sombre"}>
+                        <button
+                            onClick={toggleDark}
+                            className={`${theme.toggleBase} ${theme.toggleBtn}`}
+                            aria-label={dark ? "Passer en mode clair" : "Passer en mode sombre"}
+                        >
                             <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
                             {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                         </button>
 
-                        {isLoggedIn ? (
-                            <NavLink to="/logout" className={linkClass}>{t("navbar.disconnect")}</NavLink>
+                        {user?.isLoggedIn ? (
+                            <Link to="/logout" className={linkClass("/logout")}>
+                                {t("navbar.disconnect")}
+                            </Link>
                         ) : (
                             <>
-                                <Link to="/login"
-                                      className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}>
+                                <Link
+                                    to="/login"
+                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.authBtn}`}
+                                >
                                     {t("navbar.login")}
                                 </Link>
-                                <Link to="/signup"
-                                      className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.signupBtn}`}>
+                                <Link
+                                    to="/signup"
+                                    className={`text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ${theme.signupBtn}`}
+                                >
                                     {t("navbar.signup")}
                                 </Link>
                             </>
                         )}
                     </div>
+
                 </div>
             </div>
         </header>
