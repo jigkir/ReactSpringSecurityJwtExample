@@ -145,6 +145,35 @@ public class ManagerService {
         return saveAndConvert(cv);
     }
 
+    public List<InternshipResponseDto> getPendingInternships() {
+        return internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)
+                .stream().map(InternshipResponseDto::of).toList();
+    }
+
+    public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        return InternshipResponseDto.of(internship);
+    }
+
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        internship.approve();
+        internshipRepository.save(internship);
+
+        return InternshipResponseDto.of(internship);
+    }
+
+    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        internship.reject();
+        internshipRepository.save(internship);
+
+        return InternshipResponseDto.of(internship);
+    }
+
     private CV findPublicCv(long cvId) throws CvNotFoundException {
         return cvRepository.findByIdAndSharingScope(cvId, CVSharingScope.PUBLIC).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
     }
@@ -192,25 +221,5 @@ public class ManagerService {
 
     private void addCVApprovalNotificationToStudent(Long cvId, UserApp student) {
         notificationRepository.save(new Notification("CV Approved", "Your CV has been approved.", NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
-    }
-
-    public List<InternshipResponseDto> getPendingInternships() {
-        return internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)
-                .stream().map(InternshipResponseDto::of).toList();
-    }
-
-    public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
-
-        return InternshipResponseDto.of(internship);
-    }
-
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
-
-        internship.approve();
-        internshipRepository.save(internship);
-
-        return InternshipResponseDto.of(internship);
     }
 }

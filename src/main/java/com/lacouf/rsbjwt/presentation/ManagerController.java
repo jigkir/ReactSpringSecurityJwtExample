@@ -77,4 +77,9 @@ public class ManagerController {
     public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
         return ResponseEntity.ok(managerService.approveInternship(internshipId));
     }
+
+    @PutMapping("internships/{internshipId}/reject")
+    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+        return ResponseEntity.ok(managerService.rejectInternship(internshipId));
+     }
 }

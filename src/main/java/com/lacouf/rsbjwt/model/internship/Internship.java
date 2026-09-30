@@ -78,6 +78,10 @@ public class Internship {
         this.status = InternshipStatus.APPROVED;
     }
 
+    public void reject() {
+        this.status = InternshipStatus.REJECTED;
+    }
+
     public void setId(long id) {
         this.id = id;
     }
