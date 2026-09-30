@@ -17,11 +17,8 @@ import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
-import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
-import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.*;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
@@ -245,29 +242,28 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<NotificationDto> getInternshipsNotifications(long studentId) throws UserNotFoundException, CvNotFoundException {
+    public List<InternshipResponseDto> getStudentInternships(long studentId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(studentId);
         List<CV> studentCvs = cvRepository.findByStudent(student);
         boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getStatus() == CvStatus.APPROVED);
         Discipline discipline = getDisciplineByStudent(student);
-
         List<Internship> internships = new ArrayList<>();
-
-        if (!hasApprovedCv) {
-            return new ArrayList<>();
+        if (hasApprovedCv) {
+            internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
+            makeInternshipsNotifications(internships, student);
         }
+        return internships.stream().map(InternshipResponseDto::of).toList();
+    }
 
-        internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
-        List<Notification> notifications = getNotificationsForStudent(student);
+    private void makeInternshipsNotifications(List<Internship> internships, Student student) throws UserNotFoundException, CvNotFoundException {
+            List<Notification> notifications = getNotificationsForStudent(student);
 
-        notifications.addAll(createNewInternshipNotifications(internships, student));
+            notifications.addAll(createNewInternshipNotifications(internships, student));
 
-        List<NotificationDto> notificationDtos = new ArrayList<>();
-        notificationDtos = notifications.stream()
-                .map(NotificationDto::of)
-                .toList();
-
-        return notificationDtos;
+            List<NotificationDto> notificationDtos = new ArrayList<>();
+            notificationDtos = notifications.stream()
+                    .map(NotificationDto::of)
+                    .toList();
     }
 
     private Discipline getDisciplineByStudent(Student student){
