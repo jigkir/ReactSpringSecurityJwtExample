@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -20,4 +21,6 @@ public interface CVRepository extends JpaRepository<CV, Long> {
     CV findByStudentAndPriority(Student student, CvPriority priority);
 
     List<CV> findByStatusAndSharingScope(CvStatus cvStatus, CVSharingScope sharingScope);
+
+    Optional<CV> findByIdAndSharingScope(long id, CVSharingScope sharingScope);
 }

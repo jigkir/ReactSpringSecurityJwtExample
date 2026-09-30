@@ -3,10 +3,11 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
-import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import jakarta.validation.Valid;
@@ -36,23 +37,23 @@ public class StudentController {
     }
 
     @PostMapping("/{id}/cvs")
-    public ResponseEntity<String> uploadCV(
-            @RequestParam("file") MultipartFile file,
-            @PathVariable long id) throws CorruptedFileException, InvalidFileTypeException, IOException, NoSuchAlgorithmException, InvalidFileSizeException, UserNotFoundException, CvNotFoundException {
+    public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, @PathVariable long id) throws IOException, UserNotFoundException, InvalidFileTypeException, NoSuchAlgorithmException, CorruptedFileException, InvalidFileSizeException {
+        CvUploadDto upload = new CvUploadDto(file.getBytes(), file.getOriginalFilename());
 
-        studentService.uploadCV(file, id);
+        studentService.uploadCV(upload, id);
+
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}/cvs")
-    public ResponseEntity<List<CVDto>> getStudentCVs(@PathVariable long id)
+    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(@PathVariable long id)
             throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
 
-        List<CVDto> cvDtos = studentService.getCVs(id);
+        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(id);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(cvDtos);
+                .body(studentCvResponseDtos);
     }
 
     @GetMapping("/{id}/cvs/count")
@@ -96,18 +97,6 @@ public class StudentController {
         studentService.setCVAsPending(id, cvId);
         managerService.addNewCVNotificationToManager( "New CV Pending Review", "A new CV has been submitted for review.", cvId);
         return new ResponseEntity<>("CV made pending successfully", HttpStatus.OK);
-    }
-
-    @GetMapping("/cvs/{id}")
-    public ResponseEntity<UserResponseDto> getUserByCVId(@PathVariable long id) throws CvNotFoundException {
-        UserResponseDto userResponseDto = studentService.getUserByCVId(id);
-        return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
-    }
-
-    @GetMapping("/{id}/cvs/{cvId}")
-    public ResponseEntity<CVDto> getCVByStudentIdAndCvId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
-        CVDto cvDto = studentService.getCVByStudentId(id, cvId);
-        return new ResponseEntity<>(cvDto, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/cvs/{cvId}/status")

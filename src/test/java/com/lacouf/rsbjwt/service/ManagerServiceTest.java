@@ -2,14 +2,18 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,8 +56,11 @@ public class ManagerServiceTest {
 
     @BeforeEach
     void setUp() {
+        Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE);
+        student.setId(2L);
         cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
+        student.addCv(cv);
     }
 
     @Test
@@ -101,24 +109,63 @@ public class ManagerServiceTest {
 
     @Test
     void shouldReturnPendingPublicCvs() {
+        // Arrange
         when(cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
 
         // Act
-        List<CVDto> result = managerService.getPendingPublicCvs();
+        List<ManagerCvResponseDto> result = managerService.getPendingPublicCvs();
 
         // Assert
         assert(Integer.valueOf(1)).equals(result.size());
         assert(Long.valueOf(1L)).equals(result.getFirst().id());
         assert("cv.pdf").equals(result.getFirst().fileName());
-        assert(CVSharingScope.PUBLIC).equals(result.getFirst().sharingScope());
+        assert(CvStatus.PENDING).equals(result.getFirst().status());
+        assert("Marie").equals(result.getFirst().student().firstName());
+        assert("Tremblay").equals(result.getFirst().student().lastName());
+        assert("marie@example.com").equals(result.getFirst().student().email());
+        assert("2234567").equals(result.getFirst().student().studentId());
+        assert(Discipline.COMPUTER_SCIENCE).equals(result.getFirst().student().discipline());
+    }
 
-        verify(cvRepository).findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC);
+    @Test
+    void shouldReturnPublicCv() throws CvNotFoundException {
+        // Arrange
+        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+
+        // Act
+        ManagerCvResponseDto result = managerService.getCv(1L);
+
+        // Assert
+        assert(Long.valueOf(1L)).equals(result.id());
+        assert("2234567").equals(result.student().studentId());
+    }
+
+    @Test
+    void shouldThrowCvNotFoundWhenCvIsNotPublicOrDoesNotExist() {
+        // Arrange
+        when(cvRepository.findByIdAndSharingScope(99L, CVSharingScope.PUBLIC)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(CvNotFoundException.class, () -> managerService.getCv(99L));
+    }
+
+    @Test
+    void shouldReturnCvFile() throws CvNotFoundException {
+        // Arrange
+        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+
+        // Act
+        CvFileResponseDto result = managerService.getCvFile(1L);
+
+        // Assert
+        assert("cv.pdf").equals(result.fileName());
+        assert Arrays.equals("pdf".getBytes(), result.content());
     }
 
     @Test
     void shouldApproveCv() throws CvNotFoundException, CvAlreadyReviewedException {
         // Arrange
-        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
 
         // Act
         managerService.approveCv(1L);
@@ -130,15 +177,18 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldRejectCv() throws CvNotFoundException, CvAlreadyReviewedException {
+    void shouldRejectCvWithComment() throws Exception {
         // Arrange
-        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
 
         // Act
-        managerService.rejectCv(1L);
+        ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
 
         // Assert
         assert(CvStatus.REJECTED).equals(cv.getStatus());
+        assert("CV too detailed").equals(cv.getRejectionComment());
+        assert(CvStatus.REJECTED).equals(result.status());
+        assert("CV too detailed").equals(result.rejectionComment());
 
         verify(cvRepository).save(cv);
     }
@@ -146,7 +196,7 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowCvNotFoundWhenApprovingUnknownCv() {
         // Arrange
-        when(cvRepository.findById(99L)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndSharingScope(99L, CVSharingScope.PUBLIC)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(CvNotFoundException.class, () -> managerService.approveCv(99L));
@@ -157,43 +207,19 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowCvNotFoundWhenRejectingUnknownCv() {
         // Arrange
-        when(cvRepository.findById(99L)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndSharingScope(99L, CVSharingScope.PUBLIC)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> managerService.rejectCv(99L));
+        assertThrows(CvNotFoundException.class, () -> managerService.rejectCv(99L, "CV too detailed"));
 
         verify(cvRepository, never()).save(any(CV.class));
-    }
-
-    @Test
-    void shouldReturnApprovedStatusInDtoWhenCvIsApproved() throws Exception {
-        // Arrange
-        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
-
-        // Act
-        CVDto result = managerService.approveCv(1L);
-
-        // Assert
-        assert(CvStatus.APPROVED).equals(result.status());
-    }
-
-    @Test
-    void shouldReturnRejectedStatusInDtoWhenCvIsRejected() throws Exception {
-        // Arrange
-        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
-
-        // Act
-        CVDto result = managerService.rejectCv(1L);
-
-        // Assert
-        assert(CvStatus.REJECTED).equals(result.status());
     }
 
     @Test
     void shouldThrowCvAlreadyReviewedWhenApprovingAlreadyApprovedCv() {
         // Arrange
         cv.setStatus(CvStatus.APPROVED);
-        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
 
         // Act
         CvAlreadyReviewedException exception = assertThrows(CvAlreadyReviewedException.class, () -> managerService.approveCv(1L));
@@ -208,10 +234,10 @@ public class ManagerServiceTest {
     void shouldThrowCvAlreadyReviewedWhenRejectingAlreadyRejectedCv() {
         // Arrange
         cv.setStatus(CvStatus.REJECTED);
-        when(cvRepository.findById(1L)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
 
         // Act + Assert
-        assertThrows(CvAlreadyReviewedException.class, () -> managerService.rejectCv(1L));
+        assertThrows(CvAlreadyReviewedException.class, () -> managerService.rejectCv(1L, "CV too detailed"));
 
         verify(cvRepository, never()).save(any(CV.class));
     }

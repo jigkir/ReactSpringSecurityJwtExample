@@ -1,67 +1,81 @@
 /**
- * CvDocuments.jsx — "Documents déposés" list.
+ * CvDocuments.jsx — CV list, shared by students and managers.
  *
- * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE),
- *               fileName, sizeBytes, uploadedAt, visibility (CvVisibility enum: VISIBLE|HIDDEN)
+ * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
+ * mode="manager":           list pending public CVs, preview, approve, refuse.
  *
- * Endpoints (StudentController):
- *   GET /api/student/{studentId}/cvs                    → List<CVDto> (VISIBLE only)
- *   PUT /api/student/{studentId}/cvs/{cvId}/public      → CVSharingScope.PUBLIC
- *   PUT /api/student/{studentId}/cvs/{cvId}/private     → CVSharingScope.PRIVATE
- *   PUT /api/student/{studentId}/cvs/{cvId}/hide        → CvVisibility.HIDDEN
+ * Preview is rendered inline under the row (toggle), several can be open at once.
+ *
+ * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE), fileName,
+ *               sizeBytes, uploadedAt, visibility (VISIBLE|HIDDEN),
+ *               status (PENDING|APPROVED|REFUSED), priority (MAIN|...)
+ *
+ * Student endpoints: GET /student/{id}/cvs, PUT .../{cvId}/public|private|hide|main
  *
  * Props
- *   studentId   string    required
+ *   studentId   string    required in student mode
  *   dark        boolean
- *   api         object    optional override — { list, setScope, hide }
- *   onAddClick  function  optional — shows "Ajouter un CV" in the header
+ *   mode        "student" | "manager"
+ *   api         object    optional override
+ *   onAddClick  function  optional — shows "Ajouter un CV" (student mode)
  */
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
 import CvPreview from './CvPreview.jsx';
-import fetcher from '../../../../utils/fetcher.js';
+import {
+    approveCv,
+    getPendingCvs,
+    getStudentCvs,
+    hideCv,
+    rejectCv,
+    setCvScope,
+    setMainCv,
+} from '../../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
 
-// ─── API helpers ──────────────────────────────────────────────────────────────
+// ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
-async function apiRequest(path, options) {
-    const res = await fetcher(path, options);
-    if (!res.ok) {
-        const e = new Error(`HTTP ${res.status}`);
-        e.status = res.status;
-        throw e;
-    }
-    return res;
-}
+const buildStudentApi = (studentId) => ({
+    list: () => getStudentCvs(studentId),
+    setScope: (cvId, scope) => setCvScope(studentId, cvId, scope),
+    hide: (cvId) => hideCv(studentId, cvId),
+    makeMain: (cvId) => setMainCv(studentId, cvId),
+});
 
-function buildApi(studentId) {
-    return {
-        list: () => apiRequest(`student/${studentId}/cvs`, {method: "GET"}).then((r) => r.json()),
-        setScope: (cvId, scope) => apiRequest(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"}),
-        hide: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/hide`, {method: "PUT"}),
-        makeMain: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"}),
-        makeSecondary: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/secondary`, {method: "PUT"}),
-    };
-}
+const managerApi = {
+    list: getPendingCvs,
+    approve: approveCv,
+    refuse: rejectCv,
+};
 
-// ─── Component ───────────────────────────────────────────────────────────────
+const STATUS_LABEL = {
+    PENDING: ["cvDocuments.statusPending", "En attente de validation"],
+    APPROVED: ["cvDocuments.statusApproved", "Approuvé"],
+    REFUSED: ["cvDocuments.statusRefused", "Refusé"],
+    REJECTED: ["cvDocuments.statusRefused", "Refusé"],
+};
 
-const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
+const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClick}) => {
     const {t} = useTranslation();
+    const isManager = mode === "manager";
 
-    // Stable api reference — prevents the `load` callback from re-creating
-    // on every render and triggering an infinite GET /cvs loop.
-    const api = apiProp ?? useMemo(() => buildApi(studentId), [studentId]); // eslint-disable-line react-hooks/rules-of-hooks
+    // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
+    const defaultApi = useMemo(
+        () => (isManager ? managerApi : buildStudentApi(studentId)),
+        [isManager, studentId],
+    );
+    const api = apiProp ?? defaultApi;
+
     const {btn, btnTone} = useButtonClasses(dark);
     const th = getCvDocumentsClasses(dark);
 
     const [docs, setDocs] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
-    const [confirmHideId, setConfirmHideId] = useState(null);
+    const [confirmId, setConfirmId] = useState(null); // student: delete / manager: refuse
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
@@ -71,20 +85,18 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
         setLoadFailed(false);
         try {
             const all = await api.list();
-            // Keep only VISIBLE CVs on the client side to match the new enum shape
-            setDocs(sortDocs(all.filter(d => d.visibility === "VISIBLE")));
+            setDocs(sortDocs(isManager ? all : all.filter((d) => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
-    }, [api]);
+    }, [api, isManager]);
 
     useEffect(() => {
-        if (studentId) load();
-    }, [load, studentId]);
+        if (isManager || studentId) load();
+    }, [load, isManager, studentId]);
 
-    // ── Mutations ─────────────────────────────────────────────────────────────
+    // ── Student mutations ─────────────────────────────────────────────────────
 
-    // Run one mutation then reload so the list always mirrors the server.
     const runAction = async (id, fn) => {
         setBusyId(id);
         setActionError("");
@@ -95,7 +107,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
             setActionError(t("cvDocuments.errorAction"));
         } finally {
             setBusyId(null);
-            setConfirmHideId(null);
+            setConfirmId(null);
         }
     };
 
@@ -106,6 +118,32 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
 
     const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
 
+    // ── Manager decision ──────────────────────────────────────────────────────
+    // The backend returns the updated CVDto. We patch it into the list instead of
+    // reloading, so the row stays visible with its new status until the page is
+    // refreshed (the /pending endpoint no longer returns decided CVs).
+
+    const decide = async (doc, action) => {
+        setBusyId(doc.id);
+        setActionError("");
+        try {
+            const updated = await api[action](doc.id);
+            setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
+        } catch (e) {
+            if (e.status === 409) {
+                setActionError(t("cvDocuments.alreadyReviewed", "Ce CV a déjà été traité par un gestionnaire."));
+                await load();
+            } else {
+                setActionError(t("cvDocuments.errorAction"));
+            }
+        } finally {
+            setBusyId(null);
+            setConfirmId(null);
+        }
+    };
+
+    // ── Preview (inline toggle) ───────────────────────────────────────────────
+
     const togglePreview = (cvId) => {
         setOpenPreviewIds((prev) =>
             prev.includes(cvId)
@@ -113,8 +151,6 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                 : [...prev, cvId]
         );
     };
-
-    // ── Preview ───────────────────────────────────────────────────────────────
 
     /**
      * CvPreview calls getUrl(cvId) when it mounts.
@@ -126,7 +162,9 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
         const doc = docs?.find((d) => d.id === cvId);
         if (!doc?.content) throw new Error(t("cvDocuments.previewError"));
         return base64ToBlobUrl(doc.content);
-    }, [docs]);
+    }, [docs, t]);
+
+    // ── Body ──────────────────────────────────────────────────────────────────
 
     let body;
 
@@ -149,16 +187,29 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
             </div>
         );
     } else if (docs.length === 0) {
-        body = <p className={th.muted}>{t("cvDocuments.empty")}</p>;
+        body = (
+            <p className={th.muted}>
+                {isManager
+                    ? t("cvDocuments.emptyManager", "Aucun CV en attente de validation.")
+                    : t("cvDocuments.empty")}
+            </p>
+        );
     } else {
         body = (
             <ul className={th.list}>
                 {docs.map((doc) => {
                     const busy = busyId === doc.id;
-                    const confirming = confirmHideId === doc.id;
+                    const confirming = confirmId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
                     const isMain = doc.priority === "MAIN";
+                    const status = doc.status ?? "PENDING";
+                    const isPending = status === "PENDING";
+                    const [statusKey, statusFallback] = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
+                    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+                    const mainLabel = isMain
+                        ? t("cvDocuments.mainCv", "CV principal")
+                        : t("cvDocuments.makeMainBtn", "Choisir comme CV principal");
 
                     return (
                         <li key={doc.id} aria-busy={busy}>
@@ -172,41 +223,84 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
                                     </p>
                                 </div>
 
-                                {/* Sharing-scope pill */}
-                                <div className="flex items-center md:w-56 md:shrink-0">
-                                <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
-                                    {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
-                                </span>
+                                {/* Pills: validation status (both modes) + sharing scope (student only) */}
+                                <div className="flex flex-wrap items-center gap-2 md:w-72 md:shrink-0">
+                                    <span className={`${th.pillBase} ${th.statusPill(status)}`}>
+                                        {t(statusKey, statusFallback)}
+                                    </span>
+                                    {!isManager && (
+                                        <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
+                                            {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Actions */}
                                 <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
                                     {confirming ? (
                                         <>
-                                            <span className={th.confirmText}>{t("cvDocuments.hideAsk")}</span>
-                                            <Button tone="danger" dark={dark} onClick={() => hideDoc(doc)}
-                                                    disabled={busy}
-                                                    autoFocus>{t("cvDocuments.confirmBtn")}</Button>
-                                            <Button tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
-                                                    disabled={busy}>{t("cvDocuments.cancelBtn")}</Button>
+                                            <span className={th.confirmText}>
+                                                {isManager
+                                                    ? t("cvDocuments.refuseAsk", "Refuser ce CV ? L'étudiant pourra téléverser une version corrigée.")
+                                                    : t("cvDocuments.hideAsk")}
+                                            </span>
+                                            <Button tone="danger" dark={dark} disabled={busy} autoFocus
+                                                    onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
+                                                {t("cvDocuments.confirmBtn")}
+                                            </Button>
+                                            <Button tone="neutral" dark={dark} disabled={busy}
+                                                    onClick={() => setConfirmId(null)}>
+                                                {t("cvDocuments.cancelBtn")}
+                                            </Button>
                                         </>
                                     ) : (
                                         <>
                                             <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
-                                                    disabled={busy || !doc.content}>{isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn")}</Button>
-                                            <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                    disabled={busy}
-                                                    aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</Button>
-                                            <Button tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
-                                                    disabled={busy}
-                                                    aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</Button>
-                                            <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)} disabled={busy || isMain}>
-                                                {isMain ? "CV principal" : "Choisir comme CV principal"}
+                                                    disabled={busy || !doc.content}
+                                                    aria-expanded={isPreviewOpen}
+                                                    aria-label={`${viewLabel} : ${doc.fileName}`}>
+                                                {viewLabel}
                                             </Button>
+
+                                            {isManager ? (
+                                                isPending && (
+                                                    <>
+                                                        <Button tone="neutral" dark={dark} disabled={busy}
+                                                                onClick={() => decide(doc, "approve")}
+                                                                aria-label={`${t("cvDocuments.approveBtn", "Approuver")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.approveBtn", "Approuver")}
+                                                        </Button>
+                                                        <Button tone="danger" dark={dark} disabled={busy}
+                                                                onClick={() => setConfirmId(doc.id)}
+                                                                aria-label={`${t("cvDocuments.refuseBtn", "Refuser")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.refuseBtn", "Refuser")}
+                                                        </Button>
+                                                    </>
+                                                )
+                                            ) : (
+                                                <>
+                                                    <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
+                                                            disabled={busy}
+                                                            aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
+                                                        {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
+                                                    </Button>
+                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
+                                                            disabled={busy}
+                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                                        {t("cvDocuments.hideBtn")}
+                                                    </Button>
+                                                    <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)}
+                                                            disabled={busy || isMain}
+                                                            aria-label={`${mainLabel} : ${doc.fileName}`}>
+                                                        {mainLabel}
+                                                    </Button>
+                                                </>
+                                            )}
                                         </>
                                     )}
                                 </div>
                             </div>
+
                             {isPreviewOpen && (
                                 <div className="py-4">
                                     <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
@@ -222,24 +316,24 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
-        <>
-            <section className={th.card} aria-label={t("cvDocuments.title")}>
-                <div className={th.header}>
-                    <h2 className={th.title}>{t("cvDocuments.title")}</h2>
-                    {onAddClick && (
-                        <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
-                    )}
-                </div>
-
-                {actionError && (
-                    <div className="px-6 pt-4">
-                        <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
-                    </div>
+        <section className={th.card} aria-label={t("cvDocuments.title")}>
+            <div className={th.header}>
+                <h2 className={th.title}>
+                    {isManager ? t("cvDocuments.titleManager", "CVs à valider") : t("cvDocuments.title")}
+                </h2>
+                {!isManager && onAddClick && (
+                    <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
                 )}
+            </div>
 
-                {body}
-            </section>
-        </>
+            {actionError && (
+                <div className="px-6 pt-4">
+                    <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
+                </div>
+            )}
+
+            {body}
+        </section>
     );
 };
 
