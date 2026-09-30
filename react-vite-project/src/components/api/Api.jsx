@@ -158,7 +158,7 @@ export async function getStudentInternships(studentId){
 
 //region Notifications
 export async function getManagerNotifications(managerId) {
-    const response = await fetcher("manager/notifications", {method: "GET", managerId:managerId});
+    const response = await fetcher(`${managerId}/notifications`, {method: "GET"});
     return handleResponse(response);
 }
 //endregion

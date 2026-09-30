@@ -69,8 +69,8 @@ public class SecurityConfiguration {
 
     // MANAGER PATHS
     private static final String MANAGER_PATH = "/api/manager/**";
-    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
-    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
+    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/{managerId}/notifications";
+    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/{managerId}/notifications/{notificationId}/read";
     private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
     private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
 
