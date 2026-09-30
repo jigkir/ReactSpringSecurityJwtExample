@@ -18,14 +18,13 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -246,21 +245,29 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<Internship> getInternships(long studentId) throws UserNotFoundException, CvNotFoundException {
+    public List<NotificationDto> getInternshipsNotifications(long studentId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(studentId);
-        CV cv = validateAndGetStudentCv(student, student.getId());
+        List<CV> studentCvs = cvRepository.findByStudent(student);
+        boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getStatus() == CvStatus.APPROVED);
         Discipline discipline = getDisciplineByStudent(student);
 
         List<Internship> internships = new ArrayList<>();
 
-        if (cv.getStatus() != CvStatus.APPROVED) {
-            return internships;
+        if (!hasApprovedCv) {
+            return new ArrayList<>();
         }
 
         internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
         List<Notification> notifications = getNotificationsForStudent(student);
 
-        return internships;
+        notifications.addAll(createNewInternshipNotifications(internships, student));
+
+        List<NotificationDto> notificationDtos = new ArrayList<>();
+        notificationDtos = notifications.stream()
+                .map(NotificationDto::of)
+                .toList();
+
+        return notificationDtos;
     }
 
     private Discipline getDisciplineByStudent(Student student){
@@ -278,6 +285,22 @@ public class StudentService {
                 .toList();
     }*/
 
+    private List<Notification> createNewInternshipNotifications (List<Internship> internships, Student student) {
+        List<Notification> notifications = getNotificationsForStudent(student);
+        List<Notification> newNotifications = new ArrayList<>();
+
+        for (Internship internship : internships) {
+            Notification existingNotification = filterExistingNotificationsByInterishipId(notifications, internship.getId());
+            if (existingNotification == null) {
+                newNotifications.add(CreateNewIntershipNotificationsForStudent(
+                        internship.getId(),
+                        student
+                ));
+            }
+        }
+        return newNotifications;
+    }
+
     private List<Internship> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
         return internships.stream()
                 .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
@@ -288,15 +311,18 @@ public class StudentService {
         return notificationRepository.findByUserId(student.getId());
     }
 
-   /* private List<Notification> filterExistingNotificationsByInterishipId(List<Notification> notifications, long internshipId) {
+    private Notification filterExistingNotificationsByInterishipId(List<Notification> notifications, long internshipId) {
         return notifications.stream()
-                .filter(notification -> notification.getInternshipId() == internshipId)
-                .toList();
-    }*/
+                .filter(notification -> notification.getTargetType() == TargetType.INTERNSHIP_OFFER)
+                .filter(notification -> notification.getTargetId() == internshipId)
+                .findFirst()
+                .orElse(null);
+    }
 
-    private void CreateNewIntershipNotificationsForStudent(String title, String message, NotificationStatus status, NotificationType type, TargetType targetType, long internshipId, Student student) {
-        Notification notification = new Notification(title, message, status, type, targetType, internshipId, student);
+    private Notification CreateNewIntershipNotificationsForStudent(long internshipId, Student student) {
+        Notification notification = new Notification("New Internship Offer", "A new internship offer has been posted that matches your discipline.", NotificationStatus.UNREAD, NotificationType.NEW_INTERNSHIP_OFFER, TargetType.INTERNSHIP_OFFER, internshipId, student);
         notificationRepository.save(notification);
+        return notification;
     }
 
     private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {

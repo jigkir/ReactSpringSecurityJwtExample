@@ -6,11 +6,8 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
-import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.*;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -109,5 +106,11 @@ public class StudentController {
     public ResponseEntity<String> getCVStatus(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
         String status = studentService.getCVStatus(id, cvId);
         return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/internships")
+    public ResponseEntity<List<NotificationDto>> getInternshipsNotifications(@PathVariable long id) throws UserNotFoundException, CvNotFoundException {
+        List<NotificationDto> internships = studentService.getInternshipsNotifications(id);
+        return new ResponseEntity<>(internships, HttpStatus.OK);
     }
 }
