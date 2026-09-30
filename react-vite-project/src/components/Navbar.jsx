@@ -28,17 +28,6 @@ function Navbar({user, dark, toggleDark}) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [authMenuOpen, setAuthMenuOpen] = useState(false);
 
-    const toggleLang = () => {
-        if (i18n.language === "en") {
-            i18n.changeLanguage("fr");
-        } else {
-            i18n.changeLanguage("en");
-        }
-    };
-
-    const formatRole = (roleString) => {
-        if (!roleString) return "";
-        const name = roleString.replace("ROLE_", "").toLowerCase();
     const toggleLang = () => i18n.changeLanguage(i18n.language === "en" ? "fr" : "en");
 
     const formatRole = (r) => {
@@ -54,9 +43,6 @@ function Navbar({user, dark, toggleDark}) {
             ? location.pathname === "/"
             : location.pathname.startsWith(path);
 
-    const homePath = user?.isLoggedIn ? "/home" : "/";
-    const theme = getNavbarClasses(dark);
-
     const linkClass = (path) =>
         `${theme.linkBase} ${isActive(path) ? theme.linkActive : theme.linkIdle}`;
 
@@ -68,9 +54,6 @@ function Navbar({user, dark, toggleDark}) {
             label: item.labelKey ? t(item.labelKey) : item.label,
         })),
     ];
-
-    const linkClass = ({isActive}) =>
-        `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
     // TODO: replace the hardcoded count with getPendingCvs().length
     const cvNotificationCount = 0;
@@ -89,6 +72,7 @@ function Navbar({user, dark, toggleDark}) {
                 <div className="flex items-center justify-between h-14">
 
                     <div className="flex items-center gap-3">
+                        {/* Desktop brand name (hidden on mobile) */}
                         <h1 className={`hidden md:flex items-center font-bold text-base md:text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
                             {t("navbar.appName")}
                         </h1>
@@ -139,7 +123,7 @@ function Navbar({user, dark, toggleDark}) {
 
                     <div className="flex items-center gap-3 ml-auto">
                         {isLoggedIn && (
-                            <div className={`flex items-center gap-2 text-sm ${theme.greeting}`}>
+                            <div className={`hidden sm:flex items-center gap-2 text-sm ${theme.greeting}`}>
                                 <span>{t("navbar.hello")}</span>
                                 <span className={`font-semibold ${theme.greetingName}`}>
                                     {user.firstName} {user.lastName}
@@ -156,44 +140,6 @@ function Navbar({user, dark, toggleDark}) {
                                 aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}>
                             {i18n.language === "en" ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
-
-                            {authMenuOpen && (
-                                <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
-                                    {user?.isLoggedIn ? (
-                                        <>
-                                            <div className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
-                                                {user.firstName} {user.lastName} ({formatRole(role)})
-                                            </div>
-                                            <Link
-                                                to="/logout"
-                                                onClick={() => setAuthMenuOpen(false)}
-                                                className={`block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10`}
-                                            >
-                                                {t("navbar.disconnect")}
-                                            </Link>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Link
-                                                to="/login"
-                                                onClick={() => setAuthMenuOpen(false)}
-                                                className={`block px-4 py-2 text-sm ${dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100"}`}
-                                            >
-                                                {t("navbar.login")}
-                                            </Link>
-                                            <Link
-                                                to="/signup"
-                                                onClick={() => setAuthMenuOpen(false)}
-                                                className={`block px-4 py-2 text-sm ${dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100"}`}
-                                            >
-                                                {t("navbar.signup")}
-                                            </Link>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
                     </div>
 
                 </div>
