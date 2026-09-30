@@ -1,68 +1,109 @@
 /**
- * CvDocuments.jsx — "Documents déposés" list.
+ * CvDocuments.jsx — CV list, shared by students and managers.
  *
- * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE),
- *               fileName, sizeBytes, uploadedAt, visibility (CvVisibility enum: VISIBLE|HIDDEN)
+ * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
+ * mode="manager":           list pending public CVs, preview, approve, refuse (with comment).
  *
- * Endpoints (StudentController):
- *   GET /api/student/{studentId}/cvs                    → List<CVDto> (VISIBLE only)
- *   PUT /api/student/{studentId}/cvs/{cvId}/public      → CVSharingScope.PUBLIC
- *   PUT /api/student/{studentId}/cvs/{cvId}/private     → CVSharingScope.PRIVATE
- *   PUT /api/student/{studentId}/cvs/{cvId}/hide        → CvVisibility.HIDDEN
+ * Preview is rendered inline under the row (toggle), several can be open at once.
+ *
+ * Row layout (md and up): 3 columns
+ *   [ identity (name + meta) ] [ status pills, stacked ] [ actions ]
+ * Student actions are a 2x2 grid:
+ *   Preview            | Share / Make private
+ *   Set as main CV     | Delete   (Delete is always last)
+ * Below md everything stacks vertically.
+ *
+ * List fields
+ *   student : id, sharingScope, fileName, sizeBytes, uploadedAt, priority,
+ *             visibility, status, rejectionComment
+ *   manager : id, fileName, uploadedAt, status, rejectionComment, student
+ * The PDF itself (Base64 `content`) is fetched on demand:
+ *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
  *
  * Props
- *   studentId   string    required
+ *   studentId   string    required in student mode
  *   dark        boolean
- *   api         object    optional override — { list, setScope, hide }
- *   onAddClick  function  optional — shows "Ajouter un CV" in the header
+ *   mode        "student" | "manager"
+ *   api         object    optional override
+ *   onAddClick  function  optional — shows "Ajouter un CV" (student mode)
  */
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
 import CvPreview from './CvPreview.jsx';
-import fetcher from '../../../../utils/fetcher.js';
+import {
+    approveCv,
+    getManagerCvFile,
+    getPendingCvs,
+    getStudentCvFile,
+    getStudentCvs,
+    hideCv,
+    rejectCv,
+    setCvScope,
+    setMainCv,
+} from '../../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
 
-// ─── API helpers ──────────────────────────────────────────────────────────────
+// ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
-async function apiRequest(path, options) {
-    const res = await fetcher(path, options);
-    if (!res.ok) {
-        const e = new Error(`HTTP ${res.status}`);
-        e.status = res.status;
-        throw e;
-    }
-    return res;
-}
+const buildStudentApi = (studentId) => ({
+    list: () => getStudentCvs(studentId),
+    file: (cvId) => getStudentCvFile(studentId, cvId),
+    setScope: (cvId, scope) => setCvScope(studentId, cvId, scope),
+    hide: (cvId) => hideCv(studentId, cvId),
+    makeMain: (cvId) => setMainCv(studentId, cvId),
+});
 
-function buildApi(studentId) {
-    return {
-        list: () => apiRequest(`student/${studentId}/cvs`, {method: "GET"}).then((r) => r.json()),
-        setScope: (cvId, scope) => apiRequest(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"}),
-        hide: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/hide`, {method: "PUT"}),
-        makeMain: (cvId) => apiRequest(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"}),
-    };
-}
+const managerApi = {
+    list: getPendingCvs,
+    file: getManagerCvFile,
+    approve: approveCv,
+    refuse: rejectCv,
+};
 
-// ─── Component ───────────────────────────────────────────────────────────────
+const STATUS_LABEL = {
+    PENDING: ["cvDocuments.statusPending", "En attente de validation"],
+    APPROVED: ["cvDocuments.statusApproved", "Approuvé"],
+    REFUSED: ["cvDocuments.statusRefused", "Refusé"],
+    REJECTED: ["cvDocuments.statusRefused", "Refusé"],
+};
 
-const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
+const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClick}) => {
     const {t} = useTranslation();
+    const isManager = mode === "manager";
 
-    // Stable api reference — prevents the `load` callback from re-creating
-    // on every render and triggering an infinite GET /cvs loop.
-    const api = apiProp ?? useMemo(() => buildApi(studentId), [studentId]); // eslint-disable-line react-hooks/rules-of-hooks
+    // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
+    const defaultApi = useMemo(
+        () => (isManager ? managerApi : buildStudentApi(studentId)),
+        [isManager, studentId],
+    );
+    const api = apiProp ?? defaultApi;
+
     const {btn, btnTone} = useButtonClasses(dark);
     const th = getCvDocumentsClasses(dark);
 
     const [docs, setDocs] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
-    const [confirmHideId, setConfirmHideId] = useState(null);
+    const [confirmId, setConfirmId] = useState(null); // student: delete / manager: refuse
+    const [refuseComment, setRefuseComment] = useState("");
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
+
+    const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
+
+    // Row = 3 columns on md+: identity (flexible) | pills (auto) | actions (auto).
+    // Defined here (instead of th.row) so the grid and the old flex classes can't conflict.
+    const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 md:grid-cols-[minmax(12rem,1fr)_auto_auto] md:items-center md:gap-6 transition-colors duration-150 ${
+        dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
+    }`;
+
+    // Full-width, centered text inside the 2x2 grid cells.
+    const cellBtn = "w-full justify-center text-center";
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -70,20 +111,18 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
         setLoadFailed(false);
         try {
             const all = await api.list();
-            // Keep only VISIBLE CVs on the client side to match the new enum shape
-            setDocs(sortDocs(all.filter(d => d.visibility === "VISIBLE")));
+            setDocs(sortDocs(isManager ? all : all.filter((d) => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
-    }, [api]);
+    }, [api, isManager]);
 
     useEffect(() => {
-        if (studentId) load();
-    }, [load, studentId]);
+        if (isManager || studentId) load();
+    }, [load, isManager, studentId]);
 
-    // ── Mutations ─────────────────────────────────────────────────────────────
+    // ── Student mutations ─────────────────────────────────────────────────────
 
-    // Run one mutation then reload so the list always mirrors the server.
     const runAction = async (id, fn) => {
         setBusyId(id);
         setActionError("");
@@ -94,7 +133,7 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
             setActionError(t("cvDocuments.errorAction"));
         } finally {
             setBusyId(null);
-            setConfirmHideId(null);
+            setConfirmId(null);
         }
     };
 
@@ -105,6 +144,38 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
 
     const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
 
+    // ── Manager decision ──────────────────────────────────────────────────────
+    // The backend returns the updated DTO. We patch it into the list instead of
+    // reloading, so the row stays visible with its new status until the page is
+    // refreshed (the /pending endpoint no longer returns decided CVs).
+
+    const decide = async (doc, action) => {
+        setBusyId(doc.id);
+        setActionError("");
+        try {
+            const updated = await api[action](doc.id, action === "refuse" ? refuseComment.trim() : undefined);
+            setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
+        } catch (e) {
+            if (e.status === 409) {
+                setActionError(t("cvDocuments.alreadyReviewed", "Ce CV a déjà été traité par un gestionnaire."));
+                await load();
+            } else {
+                setActionError(t("cvDocuments.errorAction"));
+            }
+        } finally {
+            setBusyId(null);
+            setConfirmId(null);
+            setRefuseComment("");
+        }
+    };
+
+    const cancelConfirm = () => {
+        setConfirmId(null);
+        setRefuseComment("");
+    };
+
+    // ── Preview (inline toggle) ───────────────────────────────────────────────
+
     const togglePreview = (cvId) => {
         setOpenPreviewIds((prev) =>
             prev.includes(cvId)
@@ -113,19 +184,18 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
         );
     };
 
-    // ── Preview ───────────────────────────────────────────────────────────────
-
     /**
      * CvPreview calls getUrl(cvId) when it mounts.
-     * We look up the already-loaded doc and convert its Base64 content to a
-     * blob URL. No extra network request needed — the list endpoint already
-     * returned the full PDF bytes.
+     * The list endpoints no longer carry the PDF, so we fetch it on demand
+     * and convert the Base64 content to a blob URL.
      */
     const getUrl = useCallback(async (cvId) => {
-        const doc = docs?.find((d) => d.id === cvId);
-        if (!doc?.content) throw new Error(t("cvDocuments.previewError"));
-        return base64ToBlobUrl(doc.content);
-    }, [docs]);
+        const file = await api.file(cvId);
+        if (!file?.content) throw new Error(t("cvDocuments.previewError"));
+        return base64ToBlobUrl(file.content);
+    }, [api, t]);
+
+    // ── Body ──────────────────────────────────────────────────────────────────
 
     let body;
 
@@ -148,64 +218,145 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
             </div>
         );
     } else if (docs.length === 0) {
-        body = <p className={th.muted}>{t("cvDocuments.empty")}</p>;
+        body = (
+            <p className={th.muted}>
+                {isManager
+                    ? t("cvDocuments.emptyManager", "Aucun CV en attente de validation.")
+                    : t("cvDocuments.empty")}
+            </p>
+        );
     } else {
         body = (
             <ul className={th.list}>
                 {docs.map((doc) => {
                     const busy = busyId === doc.id;
-                    const confirming = confirmHideId === doc.id;
+                    const confirming = confirmId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
                     const isMain = doc.priority === "MAIN";
+                    const status = doc.status ?? "PENDING";
+                    const isPending = status === "PENDING";
+                    const isRejected = status === "REJECTED" || status === "REFUSED";
+                    const [statusKey, statusFallback] = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
+                    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+                    const mainLabel = isMain
+                        ? t("cvDocuments.mainCv", "CV principal")
+                        : t("cvDocuments.makeMainBtn", "Choisir comme CV principal");
+
+                    // Student normal state → 2x2 grid. Manager / confirm state → wrapping flex row.
+                    const actionsClass = (!isManager && !confirming)
+                        ? "grid grid-cols-2 gap-2"
+                        : "flex flex-wrap items-center gap-2 md:justify-end";
 
                     return (
                         <li key={doc.id} aria-busy={busy}>
-                            <div className={th.row}>
+                            <div className={rowClass}>
 
-                                {/* Identity */}
-                                <div className="min-w-0 md:flex-1">
+                                {/* Column 1 — Identity */}
+                                <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
                                     <p className={th.meta}>
-                                        {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
+                                        {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
                                     </p>
+                                    {!isManager && isRejected && doc.rejectionComment && (
+                                        <p className={th.meta}>
+                                            {t("cvDocuments.rejectionComment", "Motif du refus")} : {doc.rejectionComment}
+                                        </p>
+                                    )}
                                 </div>
 
-                                {/* Sharing-scope pill */}
-                                <div className="flex items-center md:w-56 md:shrink-0">
-                                <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
-                                    {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
-                                </span>
+                                {/* Column 2 — Pills: validation status (both modes) + sharing scope (student only) */}
+                                <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
+                                    <span className={`${th.pillBase} ${th.statusPill(status)}`}>
+                                        {t(statusKey, statusFallback)}
+                                    </span>
+                                    {!isManager && (
+                                        <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
+                                            {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
+                                        </span>
+                                    )}
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+                                {/* Column 3 — Actions */}
+                                <div className={actionsClass}>
                                     {confirming ? (
                                         <>
-                                            <span className={th.confirmText}>{t("cvDocuments.hideAsk")}</span>
-                                            <Button tone="danger" dark={dark} onClick={() => hideDoc(doc)}
-                                                    disabled={busy}
-                                                    autoFocus>{t("cvDocuments.confirmBtn")}</Button>
-                                            <Button tone="neutral" dark={dark} onClick={() => setConfirmHideId(null)}
-                                                    disabled={busy}>{t("cvDocuments.cancelBtn")}</Button>
+                                            <span className={th.confirmText}>
+                                                {isManager
+                                                    ? t("cvDocuments.refuseAsk", "Refuser ce CV ? L'étudiant pourra téléverser une version corrigée.")
+                                                    : t("cvDocuments.hideAsk")}
+                                            </span>
+                                            {isManager && (
+                                                <textarea
+                                                    value={refuseComment}
+                                                    onChange={(e) => setRefuseComment(e.target.value)}
+                                                    maxLength={1000}
+                                                    rows={2}
+                                                    placeholder={t("cvDocuments.refuseCommentPlaceholder", "Motif du refus")}
+                                                    aria-label={t("cvDocuments.refuseCommentPlaceholder", "Motif du refus")}
+                                                    className={textareaClass}
+                                                />
+                                            )}
+                                            <Button tone="danger" dark={dark}
+                                                    disabled={busy || (isManager && !refuseComment.trim())} autoFocus
+                                                    onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
+                                                {t("cvDocuments.confirmBtn")}
+                                            </Button>
+                                            <Button tone="neutral" dark={dark} disabled={busy}
+                                                    onClick={cancelConfirm}>
+                                                {t("cvDocuments.cancelBtn")}
+                                            </Button>
                                         </>
                                     ) : (
                                         <>
                                             <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
-                                                    disabled={busy || !doc.content}>{isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn")}</Button>
-                                            <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
                                                     disabled={busy}
-                                                    aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>{isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}</Button>
-                                            <Button tone="danger" dark={dark} onClick={() => setConfirmHideId(doc.id)}
-                                                    disabled={busy}
-                                                    aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>{t("cvDocuments.hideBtn")}</Button>
-                                            <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)} disabled={busy || isMain}>
-                                                {isMain ? "CV principal" : "Choisir comme CV principal"}
+                                                    className={isManager ? "" : cellBtn}
+                                                    aria-expanded={isPreviewOpen}
+                                                    aria-label={`${viewLabel} : ${doc.fileName}`}>
+                                                {viewLabel}
                                             </Button>
+
+                                            {isManager ? (
+                                                isPending && (
+                                                    <>
+                                                        <Button tone="neutral" dark={dark} disabled={busy}
+                                                                onClick={() => decide(doc, "approve")}
+                                                                aria-label={`${t("cvDocuments.approveBtn", "Approuver")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.approveBtn", "Approuver")}
+                                                        </Button>
+                                                        <Button tone="danger" dark={dark} disabled={busy}
+                                                                onClick={() => setConfirmId(doc.id)}
+                                                                aria-label={`${t("cvDocuments.refuseBtn", "Refuser")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.refuseBtn", "Refuser")}
+                                                        </Button>
+                                                    </>
+                                                )
+                                            ) : (
+                                                <>
+                                                    {/* Order matters for the 2x2 grid: Delete must be last (bottom-right). */}
+                                                    <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
+                                                            disabled={busy} className={cellBtn}
+                                                            aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
+                                                        {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
+                                                    </Button>
+                                                    <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)}
+                                                            disabled={busy || isMain} className={cellBtn}
+                                                            aria-label={`${mainLabel} : ${doc.fileName}`}>
+                                                        {mainLabel}
+                                                    </Button>
+                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
+                                                            disabled={busy} className={cellBtn}
+                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                                        {t("cvDocuments.hideBtn")}
+                                                    </Button>
+                                                </>
+                                            )}
                                         </>
                                     )}
                                 </div>
                             </div>
+
                             {isPreviewOpen && (
                                 <div className="py-4">
                                     <CvPreview doc={doc} dark={dark} getUrl={getUrl}/>
@@ -221,24 +372,24 @@ const CvDocuments = ({studentId, dark, api: apiProp, onAddClick}) => {
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
-        <>
-            <section className={th.card} aria-label={t("cvDocuments.title")}>
-                <div className={th.header}>
-                    <h2 className={th.title}>{t("cvDocuments.title")}</h2>
-                    {onAddClick && (
-                        <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
-                    )}
-                </div>
-
-                {actionError && (
-                    <div className="px-6 pt-4">
-                        <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
-                    </div>
+        <section className={th.card} aria-label={t("cvDocuments.title")}>
+            <div className={th.header}>
+                <h2 className={th.title}>
+                    {isManager ? t("cvDocuments.titleManager", "CVs à valider") : t("cvDocuments.title")}
+                </h2>
+                {!isManager && onAddClick && (
+                    <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
                 )}
+            </div>
 
-                {body}
-            </section>
-        </>
+            {actionError && (
+                <div className="px-6 pt-4">
+                    <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
+                </div>
+            )}
+
+            {body}
+        </section>
     );
 };
 

@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Route, Routes, useLocation, useNavigate} from 'react-router-dom';
+import {Navigate, Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 import {useDarkMode} from './styles/DarkMode.jsx';
 import PageLayout from './components/PageLayout.jsx';
 import MainContainer from './components/MainContainer.jsx';
@@ -11,7 +11,15 @@ import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
 import PostInternship from './components/page/internship/PostInternship.jsx';
 import Home from './components/page/Home.jsx';
-import Cv from './components/page/student/Cv.jsx';
+import StudentCv from './components/page/student/Cv.jsx';
+import ManagerCv from './components/page/manager/Cv.jsx';
+import RequireRole from "./components/RequireRole.jsx";
+
+function LandingRoute({user}) {
+    if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
+    if (localStorage.getItem("token") && user?.isLoggedIn === undefined) return <div aria-busy="true"/>;
+    return <MainContainer/>;
+}
 
 function App() {
     const [user, setUser] = useState({});
@@ -66,16 +74,37 @@ function App() {
     return (
         <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
             <Routes>
-                <Route path="/" element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
-                    <Route index element={<MainContainer setError={setError}/>}/>
-                    <Route path="about" element={<About/>}/>
-                    <Route path="login" element={<Login user={user} setError={setError}/>}/>
-                    <Route path="signup" element={<Signup/>}/>
-                    <Route path="logout" element={<Logout setUser={setUser}/>}/>
-                    <Route path="home" element={<Home/>}/>
-                    <Route path="post" element={<PostInternship user={user}/>}/>
-                    <Route path="cv" element={<Cv user={user}/>}/>
-                    <Route path="error" element={<ErrorPage error={error}/>}/>
+                <Route element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
+
+                    {/* Public */}
+                    <Route path="/" element={<LandingRoute user={user}/>}/>
+                    <Route path="/about" element={<About/>}/>
+                    <Route path="/login" element={<Login user={user} setError={setError}/>}/>
+                    <Route path="/signup" element={<Signup/>}/>
+                    <Route path="/logout" element={<Logout setUser={setUser}/>}/>
+                    <Route path="/error" element={<ErrorPage error={error}/>}/>
+
+                    {/* Any logged-in role */}
+                    <Route element={<RequireRole user={user} roles={["STUDENT", "TEACHER", "EMPLOYER", "MANAGER"]}/>}>
+                        <Route path="/home" element={<Home/>}/>
+                    </Route>
+
+                    {/* Student */}
+                    <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
+                        <Route path="/cv" element={<StudentCv user={user}/>}/>
+                    </Route>
+
+                    {/* Manager */}
+                    <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
+                        <Route path="/manager/cvs" element={<ManagerCv/>}/>
+                    </Route>
+
+                    {/* Employer */}
+                    <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
+                        <Route path="/post" element={<PostInternship user={user}/>}/>
+                    </Route>
+
+                    <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Route>
             </Routes>
         </div>

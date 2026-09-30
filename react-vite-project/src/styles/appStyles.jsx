@@ -280,6 +280,11 @@ export function getCvDocumentsClasses(dark) {
         pillPublic: dark ? "bg-amber-500/20 text-amber-200" : "bg-amber-100 text-amber-800",
         pillPrivate: dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700",
         confirmText: `text-sm ${dark ? "text-slate-300" : "text-gray-700"}`,
+        statusPill: (status) => {
+            if (status === "APPROVED") return dark ? "bg-green-500/20 text-green-300" : "bg-green-100 text-green-800";
+            if (status === "REFUSED" || status === "REJECTED") return dark ? "bg-red-500/20 text-red-300" : "bg-red-100 text-red-800";
+            return dark ? "bg-yellow-500/20 text-yellow-200" : "bg-yellow-100 text-yellow-800";
+        },
     };
 }
 

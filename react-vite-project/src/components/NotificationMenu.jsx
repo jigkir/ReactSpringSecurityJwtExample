@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses, getNotificationMenuClasses} from '../styles/appStyles.jsx';
+import Icon from '../styles/Icon.jsx';
 
 export default function NotificationMenu({notifications = [], dark}) {
     const {t} = useTranslation();
@@ -41,8 +42,7 @@ export default function NotificationMenu({notifications = [], dark}) {
                 className={`${theme.toggleBase} ${theme.toggleBtn}`}
             >
                 <span className="relative inline-flex">
-                    {/*ICON_"WHAT_YOU_WANT"*/}
-                    BELL ICON
+                    <Icon name="notifications" size={20}/>
                     {total > 0 && (
                         <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"/>
                     )}

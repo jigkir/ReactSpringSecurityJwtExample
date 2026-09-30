@@ -12,6 +12,8 @@
  *   POST /api/student/{studentId}/cvs       multipart: file
  *   GET  /api/student/{studentId}/cvs/count Long
  *   GET  /api/max-cv-size                   Integer
+ *
+ * Upload error codes: 400 / 415 / 422 → invalid or corrupted file, 413 → too large.
  */
 
 import {useCallback, useEffect, useRef, useState} from 'react';
@@ -121,7 +123,7 @@ const Cv = ({user}) => {
         }
         setSelectedFile(file);
         setUploadState(STATE.FILE_READY);
-    }, [maxBytes]);
+    }, [maxBytes, t]);
 
     const openFilePicker = () => {
         setFileError("");
@@ -185,14 +187,7 @@ const Cv = ({user}) => {
                 return;
             }
 
-            let body = {};
-            try {
-                body = await response.json();
-            } catch { /* non-JSON body */
-            }
-            const code = body?.code ?? body?.error ?? "";
-
-            if (code === "INVALID_FILE" || code === "CORRUPTED_FILE" || response.status === 415) {
+            if ([400, 415, 422].includes(response.status)) {
                 setServerError(t("cv.fileInvalid"));
             } else if (response.status === 413) {
                 setServerError(t("cv.fileTooLarge", {mb: (maxBytes / (1024 * 1024)).toFixed(0)}));

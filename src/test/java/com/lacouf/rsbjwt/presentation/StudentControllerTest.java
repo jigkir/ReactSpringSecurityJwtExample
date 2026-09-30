@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvPriority;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.exception.cv.CVAlreadyPublicException;
@@ -14,8 +15,11 @@ import com.lacouf.rsbjwt.exception.cv.CVAlredyPrivateException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
+import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,10 +28,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.test.web.servlet.MockMvc;
-import com.lacouf.rsbjwt.service.dto.response.CVDto;
+import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,12 +43,9 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
 
 @WebMvcTest(StudentController.class)
 public class StudentControllerTest {
@@ -68,6 +70,10 @@ public class StudentControllerTest {
 
     @MockitoBean
     private StudentService studentService;
+
+    @MockitoBean
+    private ManagerService managerService;
+
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
@@ -177,9 +183,9 @@ public class StudentControllerTest {
 
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
-        CVDto cvDto = new CVDto("PDF Content".getBytes(), 10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE);
+        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING, null);
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        when(studentService.getCVs(dummyStudent.getId())).thenReturn(List.of(cvDto));
+        when(studentService.getCVs(dummyStudent.getId())).thenReturn(List.of(studentCvResponseDto));
 
         mockMvc.perform(get("/api/student/1/cvs"))
                 .andExpect(status().isOk())
@@ -187,7 +193,8 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].fileName").value("my_cv.pdf"))
                 .andExpect(jsonPath("$[0].sharingScope").value("PRIVATE"))
-                .andExpect(jsonPath("$[0].visibility").value(CvVisibility.VISIBLE.name()));
+                .andExpect(jsonPath("$[0].visibility").value(CvVisibility.VISIBLE.name()))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
     }
 
     @Test
@@ -216,9 +223,7 @@ public class StudentControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-
     // Hide, Make Public & Make Private CV Tests
-
 
     @Test
     void shouldHideCVSuccessfully() throws Exception {
@@ -339,5 +344,24 @@ public class StudentControllerTest {
         mockMvc.perform(put("/api/student/1/cvs/999/main"))
                 .andExpect(status().isNotFound());
     }
-}
 
+    @Test
+    void shouldUploadCvSuccessfully() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
+
+        mockMvc.perform(multipart("/api/student/1/cvs").file(file))
+                .andExpect(status().isCreated());
+
+        verify(studentService).uploadCV(any(CvUploadDto.class), eq(1L));
+    }
+
+    @Test
+    void shouldReturnCvFileSuccessfully() throws Exception {
+        when(studentService.getCVByStudentId(1L, 10L)).thenReturn(new CvFileResponseDto(10L, "my_cv.pdf", "pdf".getBytes()));
+
+        mockMvc.perform(get("/api/student/1/cvs/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("my_cv.pdf"))
+                .andExpect(jsonPath("$.content").value("cGRm"));
+    }
+}
