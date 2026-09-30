@@ -23,4 +23,6 @@ public interface CVRepository extends JpaRepository<CV, Long> {
     List<CV> findByStatusAndSharingScope(CvStatus cvStatus, CVSharingScope sharingScope);
 
     Optional<CV> findByIdAndSharingScope(long id, CVSharingScope sharingScope);
+
+    List<CV> findBySharingScope(CVSharingScope sharingScope);
 }

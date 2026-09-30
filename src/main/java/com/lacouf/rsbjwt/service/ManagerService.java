@@ -106,8 +106,16 @@ public class ManagerService {
         );
     }
 
-    public List<ManagerCvResponseDto> getPendingPublicCvs() {
-        return cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC).stream().map(ManagerCvResponseDto::of).toList();
+    public List<ManagerCvResponseDto> getAllPublicCvs() {
+        List<CV> cvs =  cvRepository.findBySharingScope(CVSharingScope.PUBLIC);
+
+        return cvs.stream().map(ManagerCvResponseDto::of).toList();
+    }
+
+    public List<ManagerCvResponseDto> getPublicCvsByStatus(CvStatus status) {
+        List<CV> cvs = cvRepository.findByStatusAndSharingScope(status, CVSharingScope.PUBLIC);
+
+        return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
 
     public ManagerCvResponseDto getCv(long cvId) throws CvNotFoundException {

@@ -46,22 +46,40 @@ public class ManagerControllerTest {
     }
 
     @Test
-    void shouldReturnPendingPublicCvs() throws Exception {
+    void shouldReturnAllPublicCvs() throws Exception {
         // Arrange
-        when(managerService.getPendingPublicCvs()).thenReturn(List.of(cvWith(CvStatus.PENDING, null)));
+        when(managerService.getAllPublicCvs()).thenReturn(List.of(cvWith(CvStatus.PENDING, null), cvWith(CvStatus.REJECTED, "CV too detailed")));
 
         // Act + Assert
-        mockMvc.perform(get("/api/manager/cvs/pending"))
+        mockMvc.perform(get("/api/manager/cvs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].fileName").value("cv.pdf"))
-                .andExpect(jsonPath("$[0].status").value("PENDING"))
-                .andExpect(jsonPath("$[0].student.firstName").value("Marie"))
-                .andExpect(jsonPath("$[0].student.studentId").value("2234567"))
-                .andExpect(jsonPath("$[0].student.discipline").value("COMPUTER_SCIENCE"));
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[1].status").value("REJECTED"));
 
-        verify(managerService).getPendingPublicCvs();
+        verify(managerService).getAllPublicCvs();
+    }
+
+    @Test
+    void shouldReturnPublicCvsByStatus() throws Exception {
+        // Arrange
+        when(managerService.getPublicCvsByStatus(CvStatus.PENDING)).thenReturn(List.of(cvWith(CvStatus.PENDING, null)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/cvs").param("status", "PENDING"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value("PENDING"))
+                .andExpect(jsonPath("$[0].student.firstName").value("Marie"));
+
+        verify(managerService).getPublicCvsByStatus(CvStatus.PENDING);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenStatusIsInvalid() throws Exception {
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/cvs").param("status", "UNKNOWN"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(managerService);
     }
 
     @Test

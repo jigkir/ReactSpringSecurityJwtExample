@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
@@ -36,14 +37,19 @@ public class ManagerController {
         return ResponseEntity.ok(updatedNotification);
     }
 
-    @GetMapping("/cvs/pending")
-    public ResponseEntity<List<ManagerCvResponseDto>> getPendingPublicCvs() {
-        return ResponseEntity.ok(managerService.getPendingPublicCvs());
+    @GetMapping("/cvs")
+    public ResponseEntity<List<ManagerCvResponseDto>> getAllPublicCvs() {
+        return ResponseEntity.ok(managerService.getAllPublicCvs());
     }
 
     @GetMapping("/cvs/{cvId}")
     public ResponseEntity<ManagerCvResponseDto> getCv(@PathVariable long cvId) throws CvNotFoundException {
         return ResponseEntity.ok(managerService.getCv(cvId));
+    }
+
+    @GetMapping(value = "/cvs", params = "status")
+    public ResponseEntity<List<ManagerCvResponseDto>> getPublicCvsByStatus(@RequestParam CvStatus status) {
+        return ResponseEntity.ok(managerService.getPublicCvsByStatus(status));
     }
 
     @GetMapping("/cvs/{cvId}/file")

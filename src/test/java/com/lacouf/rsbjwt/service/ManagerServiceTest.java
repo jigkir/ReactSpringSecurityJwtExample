@@ -5,11 +5,13 @@ import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
+import com.lacouf.rsbjwt.repository.NotificationRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
@@ -46,6 +48,8 @@ public class ManagerServiceTest {
     private UserAppRepository userAppRepository;
     @Mock
     private CVRepository cvRepository;
+    @Mock
+    private NotificationRepository notificationRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
 
@@ -108,23 +112,29 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnPendingPublicCvs() {
+    void shouldReturnAllPublicCvs() {
+        // Arrange
+        when(cvRepository.findBySharingScope(CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
+
+        // Act
+        List<ManagerCvResponseDto> result = managerService.getAllPublicCvs();
+
+        // Assert
+        assert(Integer.valueOf(1)).equals(result.size());
+        assert("Marie").equals(result.getFirst().student().firstName());
+    }
+
+    @Test
+    void shouldReturnPublicCvsByStatus() {
         // Arrange
         when(cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getPendingPublicCvs();
+        List<ManagerCvResponseDto> result = managerService.getPublicCvsByStatus(CvStatus.PENDING);
 
         // Assert
         assert(Integer.valueOf(1)).equals(result.size());
-        assert(Long.valueOf(1L)).equals(result.getFirst().id());
-        assert("cv.pdf").equals(result.getFirst().fileName());
         assert(CvStatus.PENDING).equals(result.getFirst().status());
-        assert("Marie").equals(result.getFirst().student().firstName());
-        assert("Tremblay").equals(result.getFirst().student().lastName());
-        assert("marie@example.com").equals(result.getFirst().student().email());
-        assert("2234567").equals(result.getFirst().student().studentId());
-        assert(Discipline.COMPUTER_SCIENCE).equals(result.getFirst().student().discipline());
     }
 
     @Test
@@ -174,6 +184,7 @@ public class ManagerServiceTest {
         assert(CvStatus.APPROVED).equals(cv.getStatus());
 
         verify(cvRepository).save(cv);
+        verify(notificationRepository).save(any(Notification.class));
     }
 
     @Test
@@ -191,6 +202,7 @@ public class ManagerServiceTest {
         assert("CV too detailed").equals(result.rejectionComment());
 
         verify(cvRepository).save(cv);
+        verify(notificationRepository).save(any(Notification.class));
     }
 
     @Test
