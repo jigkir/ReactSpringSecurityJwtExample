@@ -11,6 +11,7 @@ function FindNotifications(role, t){
     const cvApprovedNotificationCount = 1;
     // TODO: replace the hardcoded count with getPendingCvs(currentDate).map(status == approved).length
     const cvRefusedNotificationCount = 1;
+    const InternshipAvailableCount = 1;
     switch(role){
         case("MANAGER"):
             return[{
@@ -32,6 +33,12 @@ function FindNotifications(role, t){
                     count: cvRefusedNotificationCount,
                     label: t("navbar.cvRefusedNotification", {amount: cvRefusedNotificationCount}),
                     to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+                },
+                {
+                    id: "Internship",
+                    count: InternshipAvailableCount,
+                    label: t("navbar.internshipNotification",{amount: InternshipAvailableCount}),
+                    to: "/manager/cvs"
                 }
             ]
         default:

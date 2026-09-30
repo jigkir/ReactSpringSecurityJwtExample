@@ -45,7 +45,8 @@
     "hello": "Bonjour,",
     "notifications": "{{amount}} nouvelle(s) notification(s)",
     "cvNotification": "{{amount}} nouveaux CVs ont été publiés",
-    "noNotifications": "Vous n'avez pas de nouvelles notifications"
+    "noNotifications": "Vous n'avez pas de nouvelles notifications",
+    "internshipNotification": "{{amount}} Stage disponible"
   },
   "managerPage": {
     "pageInfo": "Page accueil gestionnaire",
