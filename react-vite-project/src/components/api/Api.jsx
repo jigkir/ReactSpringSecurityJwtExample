@@ -149,6 +149,11 @@ export async function deleteInternship(internshipId) {
     const response = await fetcher(`employer/internships/${internshipId}`, {method: "DELETE"});
     return handleEmpty(response);
 }
+
+export async function getStudentInternships(studentId){
+    const response = await fetcher(`student/${studentId}/internships`,{method:"GET"});
+    return handleResponse(response);
+}
 // endregion
 
 //region Notifications
