@@ -76,8 +76,8 @@ public class ManagerServiceTest {
         cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
         student.addCv(cv);
-        Employer employer = mock(Employer.class);
-        when(employer.getId()).thenReturn(3L);
+        Employer employer = new Employer("Jean", "Dupont", Credentials.builder().email("employer@example.com").role(Role.EMPLOYER).build(), "Tech Corp", Discipline.COMPUTER_SCIENCE, "514-123-4567");
+        employer.setId(3L);
 
         internship = new Internship("Développeur logiciel",
                 "Stage en développement logiciel",
