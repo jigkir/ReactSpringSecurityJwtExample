@@ -1,12 +1,15 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.service.ManagerService;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.StudentSummaryDto;
@@ -19,6 +22,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -43,6 +48,23 @@ public class ManagerControllerTest {
 
     private static ManagerCvResponseDto cvWith(CvStatus status, String comment) {
         return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
+    }
+
+    private static InternshipResponseDto internshipWith(InternshipStatus status) {
+        return new InternshipResponseDto(
+                1L,
+                "Développeur logiciel",
+                "Stage en développement logiciel",
+                "Java, Spring Boot",
+                16,
+                "Montréal",
+                LocalDate.of(2027, 1, 10),
+                LocalDate.of(2026, 12, 1),
+                new BigDecimal("25.00"),
+                false,
+                status,
+                3L
+        );
     }
 
     @Test

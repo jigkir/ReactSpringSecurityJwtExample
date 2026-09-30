@@ -17,8 +17,7 @@ public class CV {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Lob
-    @Column()
+    @Column(columnDefinition = "bytea")
     private byte[] content;
 
     @Column
@@ -50,7 +49,7 @@ public class CV {
     @Column(nullable = false)
     private CvStatus status;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String rejectionComment;
 
     public CV() {

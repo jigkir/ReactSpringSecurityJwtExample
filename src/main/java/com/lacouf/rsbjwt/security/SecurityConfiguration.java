@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +37,6 @@ public class SecurityConfiguration {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     // PUBLIC PATHS
-    private static final String H2_CONSOLE_PATH = "/h2-console/**";
     private static final String USER_LOGIN_PATH = "/api/login";
     private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
     private static final String ROLES_LIST_PATH = "/api/roles";
@@ -85,7 +83,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // PUBLIC
                         .requestMatchers(OPTIONS, "/**").permitAll() // Allow CORS preflight requests
-                        .requestMatchers(H2_CONSOLE_PATH).permitAll() // Allow H2 console access
                         .requestMatchers(POST, USER_LOGIN_PATH).permitAll()
                         .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
@@ -127,8 +124,7 @@ public class SecurityConfiguration {
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
 
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
-                )
-                .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // for h2-console
+                ) // for h2-console
                 .sessionManagement((secuManagement) -> {
                     secuManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
