@@ -307,6 +307,15 @@ public class StudentService {
         notificationRepository.save(notification);
     }
 
+    public int getUnreadNotificationCount(long studentId) throws UserNotFoundException {
+        Student student = findById(studentId);
+        List<Notification> notifications = getNotificationsForStudent(student);
+        long unreadCount = notifications.stream()
+                .filter(notification -> notification.getStatus() == NotificationStatus.UNREAD)
+                .count();
+        return (int) unreadCount;
+    }
+
     private List<Internship> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
         return internships.stream()
                 .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
