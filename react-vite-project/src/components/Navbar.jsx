@@ -1,11 +1,12 @@
-import {Link, NavLink} from 'react-router-dom';
+import {Link, NavLink, useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 import {getManagerNotifications} from "./api/Api.jsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {i18nError} from "../utils/i18nError.jsx";
+
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -17,34 +18,33 @@ const NAV_BY_ROLE = {
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
-function FindNotifications(role, t, user){
-    const [notifs, setNotifs] = useState([]);
-    if(role == "MANAGER"){
-        getManagerNotifications(parseInt(user.id)).then(async (notifications)=>{
-            switch (res.status) {
-                case 401:
-                    localStorage.removeItem("token");
-                case 403:
-                    throw i18nError("error.accessRefused");
-                case 404:
-                    throw i18nError("error.notFound");
-                default:
-                    throw i18nError("error.apiStatus", {status: res.status});
-            }
-            const data = await notifications.json();
-            setNotifs({...data});
-            console.log(data);
-        });
-        const cvPostedNotificationCount = notifs.length;
-        return[{
+function FindNotifications(role, t, user) {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        if (role !== "MANAGER" || !user?.id) return;
+        let cancelled = false;
+
+        getManagerNotifications(user.id)
+            .then((data) => {
+                if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+            })
+            .catch((err) => {
+                // Don't redirect the whole app to /error just because the bell failed
+                console.error("Notifications failed:", err.status, err.body);
+            });
+
+        return () => { cancelled = true; };
+    }, [role, user?.id]);
+
+    return count > 0
+        ? [{
             id: "cvPosted",
-            label: t("navbar.cvPostedNotification", {amount: cvPostedNotificationCount}),
-            to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+            count,
+            label: t("navbar.cvPostedNotification", {amount: count}),
+            to: "/manager/cvs",
         }]
-    }
-
-    return [];
-
+        : [];
 }
 
 function Navbar({user, dark, toggleDark}) {
@@ -57,6 +57,10 @@ function Navbar({user, dark, toggleDark}) {
 
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
+
+
+
+    const notifications = FindNotifications(role, t, user);
 
     const formatRole = (r) => {
         if (!r) return "";
@@ -78,7 +82,7 @@ function Navbar({user, dark, toggleDark}) {
     const linkClass = ({isActive}) =>
         `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
-    const notifications = FindNotifications(role, t, user);
+
 
 
     return (
