@@ -38,7 +38,7 @@ function FindNotifications(role, t){
                     id: "Internship",
                     count: InternshipAvailableCount,
                     label: t("navbar.internshipNotification",{amount: InternshipAvailableCount}),
-                    to: "/manager/cvs"
+                    to: "/internship"
                 }
             ]
         default:
@@ -46,15 +46,6 @@ function FindNotifications(role, t){
     }
 }
 
-// Links by role. `end` = only active on the exact path (needed for "/" and "/home").
-const NAV_BY_ROLE = {
-    STUDENT: [{to: "/cv", label: "CV"}],
-    MANAGER: [{to: "/manager/cvs", label: "CV"}],
-    EMPLOYER: [{to: "/post", labelKey: "navbar.postInternship"}],
-    TEACHER: [],
-};
-
-const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
@@ -94,6 +85,7 @@ function Navbar({user, dark, toggleDark}) {
         {to: "/cv", label: "CV", show: role === "STUDENT"},
         {to: "/manager/cvs", label: t("navbar.cvReview", "CVs à valider"), show: role === "MANAGER"},
         {to: "/post", label: t("navbar.postInternship"), show: role === "EMPLOYER"},
+        {to: "/internship", label: "Internship", show: role === "STUDENT"}
     ].filter(item => item.show);
 
     const ToggleIcon = () => <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>;
