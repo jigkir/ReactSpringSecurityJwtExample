@@ -80,17 +80,7 @@ public class ManagerService {
         Manager manager = managerRepository.findById(managerId)
                 .orElseThrow(UserNotFoundException::new);
         return notificationRepository.findByUserId(manager.getId()).stream()
-                .map(notification -> new NotificationDto(
-                        notification.getId(),
-                        notification.getTitle(),
-                        notification.getMessage(),
-                        notification.getStatus(),
-                        notification.getTargetType(),
-                        notification.getType(),
-                        notification.getTargetId(),
-                        notification.getCreatedAt(),
-                        notification.getUser().getId()
-                ))
+                .map(NotificationDto::of)
                 .toList();
     }
 
@@ -99,17 +89,7 @@ public class ManagerService {
                 .orElseThrow(() -> new NotificationNotFoundException("Notification not found with ID: " + notificationId));
         notification.setStatus(NotificationStatus.READ);
         notificationRepository.save(notification);
-        return new NotificationDto(
-                notification.getId(),
-                notification.getTitle(),
-                notification.getMessage(),
-                notification.getStatus(),
-                notification.getTargetType(),
-                notification.getType(),
-                notification.getTargetId(),
-                notification.getCreatedAt(),
-                notification.getUser().getId()
-        );
+        return NotificationDto.of(notification);
     }
 
     public List<ManagerCvResponseDto> getAllPublicCvs() {
