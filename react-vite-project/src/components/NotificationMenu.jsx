@@ -56,17 +56,12 @@ export default function NotificationMenu({notifications = [], dark}) {
                     ) : (
                         <ul className={menuClasses.list}>
                             {active.map((notif) => {
-                                const content = (
-                                    <>
-                                        <span className="min-w-0 flex-1">{notif.label}</span>
-                                    </>
-                                );
                                 return (
                                     <li key={notif.id} role="none">
                                         {notif.to ? (
                                             <Link to={notif.to} role="menuitem" className={menuClasses.item}
                                                   onClick={() => setOpen(false)}>
-                                                {content}
+                                                <span className="min-w-0 flex-1">{notif.label}</span>
                                             </Link>
                                         ) : (
                                             <div role="menuitem" className={menuClasses.item}>{content}</div>
