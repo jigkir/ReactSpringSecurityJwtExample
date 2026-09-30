@@ -18,11 +18,6 @@ export const ACCEPTED_EXT = ".pdf";
 
 // ─── Student-ID resolution ────────────────────────────────────────────────────
 
-/**
- * Resolve the student's matricule/ID from the user object.
- * Priority: studentId → matricule → id (numeric fallback)
- * Returns "" when user is not yet loaded.
- */
 export function resolveStudentId(user) {
     if (!user) return "";
     return (user.studentId || user.matricule || user.id || "").toString();
@@ -30,10 +25,7 @@ export function resolveStudentId(user) {
 
 // ─── File validation ──────────────────────────────────────────────────────────
 
-/**
- * Returns { key, options } for t() when the file is invalid, or null when acceptable.
- * Keeping translation out of this utility preserves its framework-agnostic nature.
- */
+/** Returns { key, options } for t() when the file is invalid, or null when acceptable. */
 export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
     if (!file) return {key: "cvUpload.validation.noFile"};
     if (file.type !== ACCEPTED_MIME && !file.name.toLowerCase().endsWith(ACCEPTED_EXT)) {
@@ -47,13 +39,16 @@ export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
-export function formatBytes(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+/** Localized size: "2.0 MB" in English, "2,0 Mo" in French. Pass the current language. */
+export function formatBytes(bytes, lang = "en") {
+    const unit = bytes < 1024 ? "byte" : bytes < 1024 * 1024 ? "kilobyte" : "megabyte";
+    const value = unit === "byte" ? bytes : unit === "kilobyte" ? bytes / 1024 : bytes / (1024 * 1024);
+    return new Intl.NumberFormat(lang, {
+        style: "unit", unit, unitDisplay: "short", maximumFractionDigits: 1,
+    }).format(value);
 }
 
-/** en-CA renders dates as YYYY-MM-DD */
+/** en-CA renders dates as YYYY-MM-DD (language-neutral on purpose) */
 export const formatDate = (iso) => new Date(iso).toLocaleDateString("en-CA");
 
 /** Sort CVDto array newest-first */
@@ -62,11 +57,7 @@ export const sortDocs = (list) =>
 
 // ─── Blob / PDF helpers ───────────────────────────────────────────────────────
 
-/**
- * Convert a Base64-encoded PDF string (Jackson-serialised Java byte[])
- * into an object-URL usable in an <iframe> or window.open().
- * IMPORTANT: caller must call URL.revokeObjectURL(url) when done.
- */
+/** Caller must call URL.revokeObjectURL(url) when done. */
 export function base64ToBlobUrl(b64) {
     const binary = atob(b64);
     const bytes = new Uint8Array(binary.length);
