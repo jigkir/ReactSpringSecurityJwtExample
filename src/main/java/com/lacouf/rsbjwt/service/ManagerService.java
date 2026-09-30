@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -10,9 +11,12 @@ import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.response.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,13 +40,15 @@ public class ManagerService {
     private final UserAppRepository userAppRepository;
     private final NotificationRepository notificationRepository;
     private final CVRepository cvRepository;
+    private final InternshipRepository internshipRepository;
 
-    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository) {
+    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository) {
         this.managerRepository = managerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.notificationRepository = notificationRepository;
         this.cvRepository = cvRepository;
+        this.internshipRepository = internshipRepository;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -137,6 +143,35 @@ public class ManagerService {
         addCVRejectionNotificationToStudent(comment, cvId, cv.getStudent());
 
         return saveAndConvert(cv);
+    }
+
+    public List<InternshipResponseDto> getPendingInternships() {
+        return internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)
+                .stream().map(InternshipResponseDto::of).toList();
+    }
+
+    public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        return InternshipResponseDto.of(internship);
+    }
+
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        internship.approve();
+        internshipRepository.save(internship);
+
+        return InternshipResponseDto.of(internship);
+    }
+
+    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        internship.reject();
+        internshipRepository.save(internship);
+
+        return InternshipResponseDto.of(internship);
     }
 
     private CV findPublicCv(long cvId) throws CvNotFoundException {

@@ -74,6 +74,14 @@ public class Internship {
         this.deleted = true;
     }
 
+    public void approve() {
+        this.status = InternshipStatus.APPROVED;
+    }
+
+    public void reject() {
+        this.status = InternshipStatus.REJECTED;
+    }
+
     public void setId(long id) {
         this.id = id;
     }
