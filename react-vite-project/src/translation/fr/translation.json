@@ -52,7 +52,10 @@
     "hello": "Bonjour,",
     "notifications": "{{amount}} nouvelle(s) notification(s)",
     "cvNotification": "{{amount}} nouveaux CVs ont été publiés",
-    "noNotifications": "Vous n'avez pas de nouvelles notifications"
+    "noNotifications": "Vous n'avez pas de nouvelles notifications",
+    "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
+    "cvRefusedNotification": "{{amount}} de vos CV ont été refusés",
+    "internshipNotification": "{{amount}} Stage disponible"
   },
   "managerPage": {
     "pageInfo": "Page accueil gestionnaire",
@@ -315,7 +318,9 @@
     "tbdOption": "À discuter",
     "errorRequired": "Veuillez remplir tous les champs.",
     "errorDates": "La date de début et la date limite de candidature doivent être dans le futur.",
-    "closeAria": "Fermer"
+    "closeAria": "Fermer",
+    "duration_one": "{{count}} mois",
+    "duration_other": "{{count}} mois"
   },
   "internshipCard": {
     "requiredSkills": "Compétences requises :",
