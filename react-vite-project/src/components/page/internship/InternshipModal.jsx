@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {getInternshipModalClasses} from '../../../styles/appStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
+import {translateWarning} from '../../../utils/CommonFields.jsx';
 
 const INITIAL_FORM = {
     title: "",
@@ -48,23 +49,23 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
         const location = formData.location.trim();
         const requiredSkills = formData.requiredSkills.split(",").map((skill) => skill.trim()).filter((skill) => skill.length > 0).join(", ");
 
-        if (title.length < 2 || title.length > 50) return setError(t("internshipModal.titleTooShort"));
-        if (requiredSkills.length === 0) return setError(t("internshipModal.errorSkills"));
-        if (description.length < 2 || requiredSkills.length < 2 || location.length < 2) return setError(t("internshipModal.errorTooShort"));
+        if (title.length < 2 || title.length > 50) return setError({key: "internshipModal.titleTooShort"});
+        if (requiredSkills.length === 0) return setError({key: "internshipModal.errorSkills"});
+        if (description.length < 2 || requiredSkills.length < 2 || location.length < 2) return setError({key: "internshipModal.errorTooShort"});
 
         const durationInWeeks = Number(formData.durationInWeeks);
-        if (!Number.isInteger(durationInWeeks) || durationInWeeks < 1) return setError(t("internshipModal.errorDuration"));
+        if (!Number.isInteger(durationInWeeks) || durationInWeeks < 1) return setError({key: "internshipModal.errorDuration"});
 
-        if (formData.startDate < tomorrow || formData.applicationDeadline < tomorrow) return setError(t("internshipModal.errorDate"));
+        if (formData.startDate < tomorrow || formData.applicationDeadline < tomorrow) return setError({key: "internshipModal.errorDate"});
 
         const compensationNegotiable = selection === "to_be_discussed";
-        if (!compensationNegotiable && !/^\d{1,2}(\.\d{1,2})?$/.test(formData.compensationAmount)) return setError(t("internshipModal.errorCompensation"));
+        if (!compensationNegotiable && !/^\d{1,2}(\.\d{1,2})?$/.test(formData.compensationAmount)) return setError({key: "internshipModal.errorCompensation"});
         const compensationAmount = compensationNegotiable ? null : Number(formData.compensationAmount);
 
         const newInternship = {title, description, requiredSkills, durationInWeeks, location, startDate: formData.startDate, applicationDeadline: formData.applicationDeadline, compensationAmount, compensationNegotiable};
 
         const result = await onAddInternship(newInternship);
-        if (!result?.success) return setError(result?.message || t("postInternship.createError"));
+        if (!result?.success) return setError(result?.message || {key: "postInternship.createError"});
 
         setFormData(INITIAL_FORM);
         setSelection("");
@@ -77,7 +78,8 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                 {/* Header */}
                 <div className={s.header}>
                     <h2 className={s.title}>{t("internshipModal.title")}</h2>
-                    <button type="button" onClick={onClose} className={s.closeBtn} aria-label="Close">
+                    <button type="button" onClick={onClose} className={s.closeBtn}
+                            aria-label={t("internshipModal.closeAria")}>
                         <Icon name="close"/>
                     </button>
                 </div>
@@ -85,7 +87,7 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {error && (
                         <div className={s.errorBanner}>
-                            <span>{error}</span>
+                            <span>{translateWarning(t, error)}</span>
                         </div>
                     )}
 

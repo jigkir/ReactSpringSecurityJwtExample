@@ -10,7 +10,14 @@
     "apiStatus": "Erreur API ({{status}})",
     "notFound": "Rien à voir ici (404).",
     "network": "Impossible d'accéder au serveur. Veuillez réessayer.",
-    "unknown": "Erreur inconnue"
+    "unknown": "Erreur inconnue",
+    "badRequest": "Les données envoyées ne sont pas valides (400).",
+    "unauthorized": "Session expirée ou non autorisée (401). Veuillez vous reconnecter.",
+    "forbidden": "Accès refusé (403).",
+    "conflict": "Cette action est en conflit avec l'état actuel des données (409).",
+    "tooLarge": "Le fichier est trop volumineux (413).",
+    "unprocessable": "Le contenu envoyé est illisible ou invalide (422).",
+    "server": "Erreur du serveur ({{status}}). Veuillez réessayer."
   },
   "footer": {
     "copyright": "Droits d'auteur © 2026",
@@ -45,7 +52,10 @@
     "hello": "Bonjour,",
     "notifications": "{{amount}} nouvelle(s) notification(s)",
     "cvNotification": "{{amount}} nouveaux CVs ont été publiés",
-    "noNotifications": "Vous n'avez pas de nouvelles notifications"
+    "noNotifications": "Vous n'avez pas de nouvelles notifications",
+    "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
+    "cvRefusedNotification": "{{amount}} de vos CV ont été refusés",
+    "internshipNotification": "{{amount}} Stage disponible"
   },
   "managerPage": {
     "pageInfo": "Page accueil gestionnaire",
@@ -299,15 +309,18 @@
     "errorSkills": "Veuillez entrer au moins une compétence valide.",
     "errorCompensation": "Veuillez entrer un montant valide entre 0 et 99,99.",
     "errorDuration": "La durée doit être un nombre de semaines valide.",
+    "errorTooShort": "La description, les compétences et le lieu doivent contenir au moins 2 caractères.",
+    "errorDate": "Les dates doivent être dans le futur.",
     "titleTooShort": "Le titre doit contenir entre 2 et 50 caractères.",
-    "duration_one": "{{count}} mois",
-    "duration_other": "{{count}} mois",
-    "selectPlaceholder": "Choisie une option...",
+    "selectPlaceholder": "Choisissez une option...",
     "amountOption": "Montant",
     "amountLabel": "Montant ($/h) :",
     "tbdOption": "À discuter",
     "errorRequired": "Veuillez remplir tous les champs.",
-    "errorDates": "La date de début et la date limite de candidature doivent être dans le futur."
+    "errorDates": "La date de début et la date limite de candidature doivent être dans le futur.",
+    "closeAria": "Fermer",
+    "duration_one": "{{count}} mois",
+    "duration_other": "{{count}} mois"
   },
   "internshipCard": {
     "requiredSkills": "Compétences requises :",

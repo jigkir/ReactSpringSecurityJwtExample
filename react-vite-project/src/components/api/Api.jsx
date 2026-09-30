@@ -1,6 +1,23 @@
 import fetcher from '../../utils/fetcher.js';
 
 // region Shared response handling
+// Maps an HTTP status to a translation KEY (translated at render time, never here).
+const STATUS_I18N_KEYS = {
+    400: "error.badRequest",
+    401: "error.unauthorized",
+    403: "error.forbidden",
+    404: "error.notFound",
+    409: "error.conflict",
+    413: "error.tooLarge",
+    422: "error.unprocessable",
+};
+
+function statusToI18n(status) {
+    if (STATUS_I18N_KEYS[status]) return {key: STATUS_I18N_KEYS[status]};
+    if (status >= 500) return {key: "error.server", options: {status}};
+    return {key: "error.apiStatus", options: {status}};
+}
+
 async function toError(response) {
     let body = {};
     try {
@@ -8,9 +25,11 @@ async function toError(response) {
     } catch {
         // non-JSON body
     }
-    const error = new Error(body.message || `Erreur ${response.status}`);
+    const i18n = statusToI18n(response.status);
+    const error = new Error(i18n.key);
     error.status = response.status;
     error.body = body;
+    error.i18n = i18n;
     return error;
 }
 
@@ -131,3 +150,10 @@ export async function deleteInternship(internshipId) {
     return handleEmpty(response);
 }
 // endregion
+
+//region Notifications
+export async function getManagerNotifications(managerId) {
+    const response = await fetcher("manager/notifications", {method: "GET", managerId:managerId});
+    return handleResponse(response);
+}
+//endregion

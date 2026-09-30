@@ -15,6 +15,7 @@ import StudentCv from './components/page/student/Cv.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
+import StudentInternship from "./components/page/internship/StudentInternship.jsx";
 
 function LandingRoute({user}) {
     if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
@@ -89,6 +90,7 @@ function App() {
                     {/* Student */}
                     <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
                         <Route path="/cv" element={<StudentCv user={user}/>}/>
+                        <Route path="/internship" element={<StudentInternship/>}/>
                     </Route>
 
                     {/* Manager */}

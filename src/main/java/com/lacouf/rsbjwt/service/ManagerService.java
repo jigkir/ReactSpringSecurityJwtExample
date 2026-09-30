@@ -89,7 +89,7 @@ public class ManagerService {
                         notification.getType(),
                         notification.getTargetId(),
                         notification.getCreatedAt(),
-                        notification.getUser()
+                        notification.getUser().getId()
                 ))
                 .toList();
     }
@@ -108,7 +108,7 @@ public class ManagerService {
                 notification.getType(),
                 notification.getTargetId(),
                 notification.getCreatedAt(),
-                notification.getUser()
+                notification.getUser().getId()
         );
     }
 

@@ -16,6 +16,20 @@ public record NotificationDto(
         NotificationType notificationType,
         Long targetId,
         LocalDateTime createdAt,
-        UserApp user
+        long userId
 ) {
+
+    public static NotificationDto of(com.lacouf.rsbjwt.model.notification.Notification notification) {
+        return new NotificationDto(
+                notification.getId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getStatus(),
+                notification.getTargetType(),
+                notification.getType(),
+                notification.getTargetId(),
+                notification.getCreatedAt(),
+                notification.getUser().getId()
+        );
+    }
 }
