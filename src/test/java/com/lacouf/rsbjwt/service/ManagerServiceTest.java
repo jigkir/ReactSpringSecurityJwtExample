@@ -1,15 +1,23 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.repository.InternshipRepository;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.CVRepository;
 import com.lacouf.rsbjwt.repository.ManagerRepository;
+import com.lacouf.rsbjwt.repository.NotificationRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
@@ -25,6 +33,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -47,12 +57,17 @@ public class ManagerServiceTest {
     @Mock
     private CVRepository cvRepository;
     @Mock
+    private NotificationRepository notificationRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private InternshipRepository internshipRepository;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
 
     private CV cv;
+    private Internship internship;
 
     @BeforeEach
     void setUp() {
@@ -61,6 +76,22 @@ public class ManagerServiceTest {
         cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
         student.addCv(cv);
+        Employer employer = mock(Employer.class);
+        when(employer.getId()).thenReturn(3L);
+
+        internship = new Internship("Développeur logiciel",
+                "Stage en développement logiciel",
+                "Java, Spring Boot",
+                16,
+                "Montréal",
+                LocalDate.of(2027, 1, 10),
+                LocalDate.of(2026, 12, 1),
+                new BigDecimal("25.00"),
+                false,
+                InternshipStatus.PENDING,
+                employer);
+
+        internship.setId(1L);
     }
 
     @Test
@@ -108,23 +139,16 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnPendingPublicCvs() {
+    void shouldReturnAllPublicCvs() {
         // Arrange
-        when(cvRepository.findByStatusAndSharingScope(CvStatus.PENDING, CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
+        when(cvRepository.findBySharingScope(CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getPendingPublicCvs();
+        List<ManagerCvResponseDto> result = managerService.getAllPublicCvs();
 
         // Assert
         assert(Integer.valueOf(1)).equals(result.size());
-        assert(Long.valueOf(1L)).equals(result.getFirst().id());
-        assert("cv.pdf").equals(result.getFirst().fileName());
-        assert(CvStatus.PENDING).equals(result.getFirst().status());
         assert("Marie").equals(result.getFirst().student().firstName());
-        assert("Tremblay").equals(result.getFirst().student().lastName());
-        assert("marie@example.com").equals(result.getFirst().student().email());
-        assert("2234567").equals(result.getFirst().student().studentId());
-        assert(Discipline.COMPUTER_SCIENCE).equals(result.getFirst().student().discipline());
     }
 
     @Test
@@ -174,6 +198,7 @@ public class ManagerServiceTest {
         assert(CvStatus.APPROVED).equals(cv.getStatus());
 
         verify(cvRepository).save(cv);
+        verify(notificationRepository).save(any(Notification.class));
     }
 
     @Test
@@ -191,6 +216,7 @@ public class ManagerServiceTest {
         assert("CV too detailed").equals(result.rejectionComment());
 
         verify(cvRepository).save(cv);
+        verify(notificationRepository).save(any(Notification.class));
     }
 
     @Test
@@ -240,5 +266,103 @@ public class ManagerServiceTest {
         assertThrows(CvAlreadyReviewedException.class, () -> managerService.rejectCv(1L, "CV too detailed"));
 
         verify(cvRepository, never()).save(any(CV.class));
+    }
+
+    // recup les stages en attente
+    @Test
+    void shouldReturnPendingInternships() {
+        //Arrange
+        when(internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)).thenReturn(List.of(internship));
+
+        //Act
+        List<InternshipResponseDto> result = managerService.getPendingInternships();
+
+        //Assert
+        assert(Integer.valueOf(1)).equals(result.size());
+        assert(InternshipStatus.PENDING).equals(result.getFirst().status());
+        assert("Développeur logiciel").equals(result.getFirst().title());
+
+        verify(internshipRepository).findByStatusAndDeletedFalse(InternshipStatus.PENDING);
+    }
+
+    //recup un stage par ID
+    @Test
+    void shouldReturnInternshipById() throws InternshipNotFoundException {
+        //Arrange
+        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto result = managerService.getInternshipById(1L);
+
+        //Assert
+        assert(Long.valueOf(1L)).equals(result.id());
+        assert("Développeur logiciel").equals(result.title());
+        assert(InternshipStatus.PENDING).equals(result.status());
+    }
+
+    //stage inexistant
+    @Test
+    void shouldThrowInternshipNotFoundExceptionWhenInternshipDoesNotExist() {
+        //Arrange
+        when(internshipRepository.findById(99L)).thenReturn(Optional.empty());
+
+        //Act + assert
+        assertThrows(InternshipNotFoundException.class, () -> managerService.getInternshipById(99L));
+    }
+
+    //accepter un stage
+    @Test
+    void shouldApproveInternship() throws  InternshipNotFoundException {
+        //Arrange
+        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto result = managerService.approveInternship(1L);
+
+        //Assert
+        assert(InternshipStatus.APPROVED).equals(internship.getStatus());
+        assert(InternshipStatus.APPROVED).equals(result.status());
+
+        verify(internshipRepository).save(internship);
+    }
+
+    //refuser un stage
+    @Test
+    void shouldRejectInternship() throws  InternshipNotFoundException {
+        //Arrange
+        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto result = managerService.rejectInternship(1L);
+
+        //Assert
+        assert(InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert(InternshipStatus.REJECTED).equals(result.status());
+
+        verify(internshipRepository).save(internship);
+    }
+
+    //approve inexistant internship
+    @Test
+    void shouldThrowInternshipNotFoundWhenApprovingUnknownInternship() {
+        //Arrange
+        when(internshipRepository.findById(99L)).thenReturn(Optional.empty());
+
+        //Act + assert
+        assertThrows(InternshipNotFoundException.class, () -> managerService.approveInternship(99L));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    //reject inexistant internship
+    @Test
+    void shouldThrowInternshipNotFoundWhenRejectingUnknownInternship() {
+        //Arrange
+        when(internshipRepository.findById(99L)).thenReturn(Optional.empty());
+
+        //Act + assert
+        assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
     }
 }

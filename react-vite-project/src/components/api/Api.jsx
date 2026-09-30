@@ -20,7 +20,7 @@ async function handleResponse(response) {
     return response.json();
 }
 
-// For endpoints that return no body (PUT scope/hide)
+// For endpoints that return no body (PUT scope/hide/main)
 async function handleEmpty(response) {
     if (!response.ok) throw await toError(response);
 }
@@ -61,6 +61,12 @@ export async function getStudentCvs(studentId) {
     return handleResponse(response);
 }
 
+// Returns {id, fileName, content (Base64)}
+export async function getStudentCvFile(studentId, cvId) {
+    const response = await fetcher(`student/${studentId}/cvs/${cvId}`, {method: "GET"});
+    return handleResponse(response);
+}
+
 // scope: "public" | "private"
 export async function setCvScope(studentId, cvId, scope) {
     const response = await fetcher(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"});
@@ -85,15 +91,43 @@ export async function getPendingCvs() {
     return handleResponse(response);
 }
 
-// Returns the updated CVDto (with the new status)
+// Returns {id, fileName, content (Base64)}
+export async function getManagerCvFile(cvId) {
+    const response = await fetcher(`manager/cvs/${cvId}/file`, {method: "GET"});
+    return handleResponse(response);
+}
+
+// Returns the updated ManagerCvResponseDto (with the new status)
 export async function approveCv(cvId) {
     const response = await fetcher(`manager/cvs/${cvId}/approve`, {method: "PUT"});
     return handleResponse(response);
 }
 
-export async function rejectCv(cvId) {
-    const response = await fetcher(`manager/cvs/${cvId}/reject`, {method: "PUT"});
+// The backend requires a non-empty comment (CvRejectionDto)
+export async function rejectCv(cvId, comment) {
+    const response = await fetcher(`manager/cvs/${cvId}/reject`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({comment}),
+    });
     return handleResponse(response);
 }
 
+// endregion
+
+// region Internship
+export async function getEmployerInternships(employerId) {
+    const response = await fetcher(`employer/${employerId}/internships`, {});
+    return handleResponse(response);
+}
+
+export async function createInternship(internship) {
+    const response = await fetcher("employer/internship", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(internship)});
+    return handleResponse(response);
+}
+
+export async function deleteInternship(internshipId) {
+    const response = await fetcher(`employer/internships/${internshipId}`, {method: "DELETE"});
+    return handleEmpty(response);
+}
 // endregion

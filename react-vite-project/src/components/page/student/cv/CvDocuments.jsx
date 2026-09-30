@@ -2,15 +2,23 @@
  * CvDocuments.jsx — CV list, shared by students and managers.
  *
  * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
- * mode="manager":           list pending public CVs, preview, approve, refuse.
+ * mode="manager":           list pending public CVs, preview, approve, refuse (with comment).
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
  *
- * CVDto fields: id, content (Base64), sharingScope (PUBLIC|PRIVATE), fileName,
- *               sizeBytes, uploadedAt, visibility (VISIBLE|HIDDEN),
- *               status (PENDING|APPROVED|REFUSED), priority (MAIN|...)
+ * Row layout (md and up): 3 columns
+ *   [ identity (name + meta) ] [ status pills, stacked ] [ actions ]
+ * Student actions are a 2x2 grid:
+ *   Preview            | Share / Make private
+ *   Set as main CV     | Delete   (Delete is always last)
+ * Below md everything stacks vertically.
  *
- * Student endpoints: GET /student/{id}/cvs, PUT .../{cvId}/public|private|hide|main
+ * List fields
+ *   student : id, sharingScope, fileName, sizeBytes, uploadedAt, priority,
+ *             visibility, status, rejectionComment
+ *   manager : id, fileName, uploadedAt, status, rejectionComment, student
+ * The PDF itself (Base64 `content`) is fetched on demand:
+ *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
  *
  * Props
  *   studentId   string    required in student mode
@@ -26,7 +34,9 @@ import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
 import CvPreview from './CvPreview.jsx';
 import {
     approveCv,
+    getManagerCvFile,
     getPendingCvs,
+    getStudentCvFile,
     getStudentCvs,
     hideCv,
     rejectCv,
@@ -40,6 +50,7 @@ import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
 
 const buildStudentApi = (studentId) => ({
     list: () => getStudentCvs(studentId),
+    file: (cvId) => getStudentCvFile(studentId, cvId),
     setScope: (cvId, scope) => setCvScope(studentId, cvId, scope),
     hide: (cvId) => hideCv(studentId, cvId),
     makeMain: (cvId) => setMainCv(studentId, cvId),
@@ -47,6 +58,7 @@ const buildStudentApi = (studentId) => ({
 
 const managerApi = {
     list: getPendingCvs,
+    file: getManagerCvFile,
     approve: approveCv,
     refuse: rejectCv,
 };
@@ -76,8 +88,22 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
     const [confirmId, setConfirmId] = useState(null); // student: delete / manager: refuse
+    const [refuseComment, setRefuseComment] = useState("");
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
+
+    const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
+
+    // Row = 3 columns on md+: identity (flexible) | pills (auto) | actions (auto).
+    // Defined here (instead of th.row) so the grid and the old flex classes can't conflict.
+    const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 md:grid-cols-[minmax(12rem,1fr)_auto_auto] md:items-center md:gap-6 transition-colors duration-150 ${
+        dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
+    }`;
+
+    // Full-width, centered text inside the 2x2 grid cells.
+    const cellBtn = "w-full justify-center text-center";
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -119,7 +145,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
 
     // ── Manager decision ──────────────────────────────────────────────────────
-    // The backend returns the updated CVDto. We patch it into the list instead of
+    // The backend returns the updated DTO. We patch it into the list instead of
     // reloading, so the row stays visible with its new status until the page is
     // refreshed (the /pending endpoint no longer returns decided CVs).
 
@@ -127,7 +153,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         setBusyId(doc.id);
         setActionError("");
         try {
-            const updated = await api[action](doc.id);
+            const updated = await api[action](doc.id, action === "refuse" ? refuseComment.trim() : undefined);
             setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
         } catch (e) {
             if (e.status === 409) {
@@ -139,7 +165,13 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         } finally {
             setBusyId(null);
             setConfirmId(null);
+            setRefuseComment("");
         }
+    };
+
+    const cancelConfirm = () => {
+        setConfirmId(null);
+        setRefuseComment("");
     };
 
     // ── Preview (inline toggle) ───────────────────────────────────────────────
@@ -154,15 +186,14 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
     /**
      * CvPreview calls getUrl(cvId) when it mounts.
-     * We look up the already-loaded doc and convert its Base64 content to a
-     * blob URL. No extra network request needed — the list endpoint already
-     * returned the full PDF bytes.
+     * The list endpoints no longer carry the PDF, so we fetch it on demand
+     * and convert the Base64 content to a blob URL.
      */
     const getUrl = useCallback(async (cvId) => {
-        const doc = docs?.find((d) => d.id === cvId);
-        if (!doc?.content) throw new Error(t("cvDocuments.previewError"));
-        return base64ToBlobUrl(doc.content);
-    }, [docs, t]);
+        const file = await api.file(cvId);
+        if (!file?.content) throw new Error(t("cvDocuments.previewError"));
+        return base64ToBlobUrl(file.content);
+    }, [api, t]);
 
     // ── Body ──────────────────────────────────────────────────────────────────
 
@@ -205,26 +236,37 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const isMain = doc.priority === "MAIN";
                     const status = doc.status ?? "PENDING";
                     const isPending = status === "PENDING";
+                    const isRejected = status === "REJECTED" || status === "REFUSED";
                     const [statusKey, statusFallback] = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
                     const mainLabel = isMain
                         ? t("cvDocuments.mainCv", "CV principal")
                         : t("cvDocuments.makeMainBtn", "Choisir comme CV principal");
 
+                    // Student normal state → 2x2 grid. Manager / confirm state → wrapping flex row.
+                    const actionsClass = (!isManager && !confirming)
+                        ? "grid grid-cols-2 gap-2"
+                        : "flex flex-wrap items-center gap-2 md:justify-end";
+
                     return (
                         <li key={doc.id} aria-busy={busy}>
-                            <div className={th.row}>
+                            <div className={rowClass}>
 
-                                {/* Identity */}
-                                <div className="min-w-0 md:flex-1">
+                                {/* Column 1 — Identity */}
+                                <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
                                     <p className={th.meta}>
-                                        {t("cvDocuments.docType")} · {formatBytes(doc.sizeBytes)} · {t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
+                                        {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
                                     </p>
+                                    {!isManager && isRejected && doc.rejectionComment && (
+                                        <p className={th.meta}>
+                                            {t("cvDocuments.rejectionComment", "Motif du refus")} : {doc.rejectionComment}
+                                        </p>
+                                    )}
                                 </div>
 
-                                {/* Pills: validation status (both modes) + sharing scope (student only) */}
-                                <div className="flex flex-wrap items-center gap-2 md:w-72 md:shrink-0">
+                                {/* Column 2 — Pills: validation status (both modes) + sharing scope (student only) */}
+                                <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
                                     <span className={`${th.pillBase} ${th.statusPill(status)}`}>
                                         {t(statusKey, statusFallback)}
                                     </span>
@@ -235,8 +277,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                     )}
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+                                {/* Column 3 — Actions */}
+                                <div className={actionsClass}>
                                     {confirming ? (
                                         <>
                                             <span className={th.confirmText}>
@@ -244,19 +286,32 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                     ? t("cvDocuments.refuseAsk", "Refuser ce CV ? L'étudiant pourra téléverser une version corrigée.")
                                                     : t("cvDocuments.hideAsk")}
                                             </span>
-                                            <Button tone="danger" dark={dark} disabled={busy} autoFocus
+                                            {isManager && (
+                                                <textarea
+                                                    value={refuseComment}
+                                                    onChange={(e) => setRefuseComment(e.target.value)}
+                                                    maxLength={1000}
+                                                    rows={2}
+                                                    placeholder={t("cvDocuments.refuseCommentPlaceholder", "Motif du refus")}
+                                                    aria-label={t("cvDocuments.refuseCommentPlaceholder", "Motif du refus")}
+                                                    className={textareaClass}
+                                                />
+                                            )}
+                                            <Button tone="danger" dark={dark}
+                                                    disabled={busy || (isManager && !refuseComment.trim())} autoFocus
                                                     onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
                                                 {t("cvDocuments.confirmBtn")}
                                             </Button>
                                             <Button tone="neutral" dark={dark} disabled={busy}
-                                                    onClick={() => setConfirmId(null)}>
+                                                    onClick={cancelConfirm}>
                                                 {t("cvDocuments.cancelBtn")}
                                             </Button>
                                         </>
                                     ) : (
                                         <>
                                             <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
-                                                    disabled={busy || !doc.content}
+                                                    disabled={busy}
+                                                    className={isManager ? "" : cellBtn}
                                                     aria-expanded={isPreviewOpen}
                                                     aria-label={`${viewLabel} : ${doc.fileName}`}>
                                                 {viewLabel}
@@ -279,20 +334,21 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                 )
                                             ) : (
                                                 <>
+                                                    {/* Order matters for the 2x2 grid: Delete must be last (bottom-right). */}
                                                     <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                            disabled={busy}
+                                                            disabled={busy} className={cellBtn}
                                                             aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
                                                         {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
                                                     </Button>
-                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
-                                                            disabled={busy}
-                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
-                                                        {t("cvDocuments.hideBtn")}
-                                                    </Button>
                                                     <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)}
-                                                            disabled={busy || isMain}
+                                                            disabled={busy || isMain} className={cellBtn}
                                                             aria-label={`${mainLabel} : ${doc.fileName}`}>
                                                         {mainLabel}
+                                                    </Button>
+                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
+                                                            disabled={busy} className={cellBtn}
+                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                                        {t("cvDocuments.hideBtn")}
                                                     </Button>
                                                 </>
                                             )}

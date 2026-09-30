@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
@@ -99,9 +100,20 @@ public class StudentController {
         return new ResponseEntity<>("CV made pending successfully", HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/cvs/{cvId}")
+    public ResponseEntity<CvFileResponseDto> getCVByStudentIdAndCvId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+        return ResponseEntity.ok(studentService.getCVByStudentId(id, cvId));
+    }
+
     @GetMapping("/{id}/cvs/{cvId}/status")
     public ResponseEntity<String> getCVStatus(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
         String status = studentService.getCVStatus(id, cvId);
         return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/interships")
+    public ResponseEntity<List<InternshipResponseDto>> getInternships(@PathVariable long id) throws UserNotFoundException, CvNotFoundException {
+        List<InternshipResponseDto> internships = studentService.getInternships(id);
+        return new ResponseEntity<>(internships, HttpStatus.OK);
     }
 }

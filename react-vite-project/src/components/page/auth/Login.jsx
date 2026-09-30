@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {useNavigate, useOutletContext} from 'react-router-dom';
+import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
 import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
@@ -42,17 +42,17 @@ const Login = ({user, setError}) => {
         const updatedWarnings = {...warnings};
 
         if (!email) {
-            updatedWarnings.email = {key:"login.emailRequired"};
+            updatedWarnings.email = {key: "login.emailRequired"};
             isValid = false;
         } else if (!validateEmail()) {
-            updatedWarnings.email = {key:"login.emailInvalid"};
+            updatedWarnings.email = {key: "login.emailInvalid"};
             isValid = false;
         } else {
             updatedWarnings.email = "";
         }
 
         if (!password) {
-            updatedWarnings.password = {key:"login.passwordRequired"};
+            updatedWarnings.password = {key: "login.passwordRequired"};
             isValid = false;
         } else {
             updatedWarnings.password = "";
@@ -113,9 +113,7 @@ const Login = ({user, setError}) => {
         }
     };
 
-    if (user?.isLoggedIn) {
-        navigate("/home");
-    }
+    if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
 
     return (
         <div className={pageClass}>

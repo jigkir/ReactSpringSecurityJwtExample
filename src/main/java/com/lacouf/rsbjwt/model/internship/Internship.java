@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
 
 @Entity
 @NoArgsConstructor
@@ -20,16 +19,14 @@ public class Internship {
     @Column(nullable = false)
     private String title;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String requiredSkills;
 
     @Column(nullable = false)
-    private Period durationInWeeks;
+    private int durationInWeeks;
 
     @Column(nullable = false)
     private String location;
@@ -40,7 +37,6 @@ public class Internship {
     @Column(nullable = false)
     private LocalDate applicationDeadline;
 
-    @Column(nullable = false)
     private BigDecimal compensationAmount;
 
     private boolean compensationNegotiable;
@@ -57,7 +53,7 @@ public class Internship {
     @JoinColumn(name = "employer_id")
     private Employer postedBy;
 
-    public Internship(String title, String description, String requiredSkills, Period durationInWeeks, String location, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, InternshipStatus status, Employer employer){
+    public Internship(String title, String description, String requiredSkills, int durationInWeeks, String location, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, InternshipStatus status, Employer employer){
         this.title = title;
         this.description = description;
         this.requiredSkills = requiredSkills;
@@ -74,6 +70,14 @@ public class Internship {
 
     public void markAsDeleted() {
         this.deleted = true;
+    }
+
+    public void approve() {
+        this.status = InternshipStatus.APPROVED;
+    }
+
+    public void reject() {
+        this.status = InternshipStatus.REJECTED;
     }
 
     public void setId(long id) {

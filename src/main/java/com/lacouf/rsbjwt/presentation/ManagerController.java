@@ -4,11 +4,13 @@ import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +38,9 @@ public class ManagerController {
         return ResponseEntity.ok(updatedNotification);
     }
 
-    @GetMapping("/cvs/pending")
-    public ResponseEntity<List<ManagerCvResponseDto>> getPendingPublicCvs() {
-        return ResponseEntity.ok(managerService.getPendingPublicCvs());
+    @GetMapping("/cvs")
+    public ResponseEntity<List<ManagerCvResponseDto>> getAllPublicCvs() {
+        return ResponseEntity.ok(managerService.getAllPublicCvs());
     }
 
     @GetMapping("/cvs/{cvId}")
@@ -60,4 +62,24 @@ public class ManagerController {
     public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws CvNotFoundException, CvAlreadyReviewedException {
         return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
+
+    @GetMapping("/internships/pending")
+    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships() {
+        return ResponseEntity.ok(managerService.getPendingInternships());
+    }
+
+    @GetMapping("/internships/{internshipId}")
+    public ResponseEntity<InternshipResponseDto> getInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+        return ResponseEntity.ok(managerService.getInternshipById(internshipId));
+    }
+
+    @PutMapping("/internships/{internshipId}/approve")
+    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+        return ResponseEntity.ok(managerService.approveInternship(internshipId));
+    }
+
+    @PutMapping("internships/{internshipId}/reject")
+    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+        return ResponseEntity.ok(managerService.rejectInternship(internshipId));
+     }
 }
