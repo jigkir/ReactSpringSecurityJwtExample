@@ -3,6 +3,9 @@ import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
+import {getManagerNotifications} from "./api/Api.jsx";
+import {useState} from "react";
+import {i18nError} from "../utils/i18nError.jsx";
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -13,6 +16,36 @@ const NAV_BY_ROLE = {
 };
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
+
+function FindNotifications(role, t, user){
+    const [notifs, setNotifs] = useState([]);
+    if(role == "MANAGER"){
+        getManagerNotifications(parseInt(user.id)).then(async (notifications)=>{
+            switch (res.status) {
+                case 401:
+                    localStorage.removeItem("token");
+                case 403:
+                    throw i18nError("error.accessRefused");
+                case 404:
+                    throw i18nError("error.notFound");
+                default:
+                    throw i18nError("error.apiStatus", {status: res.status});
+            }
+            const data = await notifications.json();
+            setNotifs({...data});
+            console.log(data);
+        });
+        const cvPostedNotificationCount = notifs.length;
+        return[{
+            id: "cvPosted",
+            label: t("navbar.cvPostedNotification", {amount: cvPostedNotificationCount}),
+            to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+        }]
+    }
+
+    return [];
+
+}
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
@@ -45,16 +78,8 @@ function Navbar({user, dark, toggleDark}) {
     const linkClass = ({isActive}) =>
         `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
-    // TODO: replace the hardcoded count with getPendingCvs().length
-    const cvNotificationCount = 0;
-    const notifications = role === "MANAGER"
-        ? [{
-            id: "cv",
-            count: cvNotificationCount,
-            label: t("navbar.cvNotification", {amount: cvNotificationCount}),
-            to: "/manager/cvs",
-        }]
-        : [];
+    const notifications = FindNotifications(role, t, user);
+
 
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
