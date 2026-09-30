@@ -114,3 +114,20 @@ export async function rejectCv(cvId, comment) {
 }
 
 // endregion
+
+// region Internship
+export async function getEmployerInternships(employerId) {
+    const response = await fetcher(`employer/${employerId}/internships`, {});
+    return handleResponse(response);
+}
+
+export async function createInternship(internship) {
+    const response = await fetcher("employer/internship", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(internship)});
+    return handleResponse(response);
+}
+
+export async function deleteInternship(internshipId) {
+    const response = await fetcher(`employer/internships/${internshipId}`, {method: "DELETE"});
+    return handleEmpty(response);
+}
+// endregion
