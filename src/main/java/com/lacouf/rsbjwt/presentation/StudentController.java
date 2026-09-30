@@ -99,6 +99,11 @@ public class StudentController {
         return new ResponseEntity<>("CV made pending successfully", HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/cvs/{cvId}")
+    public ResponseEntity<CvFileResponseDto> getCVByStudentIdAndCvId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+        return ResponseEntity.ok(studentService.getCVByStudentId(id, cvId));
+    }
+
     @GetMapping("/{id}/cvs/{cvId}/status")
     public ResponseEntity<String> getCVStatus(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
         String status = studentService.getCVStatus(id, cvId);

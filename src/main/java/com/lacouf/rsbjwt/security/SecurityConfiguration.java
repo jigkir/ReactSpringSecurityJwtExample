@@ -73,7 +73,6 @@ public class SecurityConfiguration {
     private static final String MANAGER_PATH = "/api/manager/**";
     private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
     private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
-    private static final String MANAGER_PENDING_CVS_PATH = "/api/manager/cvs/pending";
     private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
     private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
 
@@ -119,7 +118,6 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
                         // MANAGER
-                        .requestMatchers(GET, MANAGER_PENDING_CVS_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_APPROVE_CV_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_REJECT_CV_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())

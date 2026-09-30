@@ -38,9 +38,9 @@ public class ManagerController {
         return ResponseEntity.ok(updatedNotification);
     }
 
-    @GetMapping("/cvs/pending")
-    public ResponseEntity<List<ManagerCvResponseDto>> getPendingPublicCvs() {
-        return ResponseEntity.ok(managerService.getPendingPublicCvs());
+    @GetMapping("/cvs")
+    public ResponseEntity<List<ManagerCvResponseDto>> getAllPublicCvs() {
+        return ResponseEntity.ok(managerService.getAllPublicCvs());
     }
 
     @GetMapping("/cvs/{cvId}")
