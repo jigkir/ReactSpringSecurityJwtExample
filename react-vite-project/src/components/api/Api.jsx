@@ -150,3 +150,10 @@ export async function deleteInternship(internshipId) {
     return handleEmpty(response);
 }
 // endregion
+
+//region Notifications
+export async function getManagerNotifications(managerId) {
+    const response = await fetcher("manager/notifications", {method: "GET", managerId:managerId});
+    return handleResponse(response);
+}
+//endregion
