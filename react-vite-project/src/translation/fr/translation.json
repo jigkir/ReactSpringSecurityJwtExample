@@ -52,9 +52,7 @@
     "hello": "Bonjour,",
     "notifications": "{{amount}} nouvelle(s) notification(s)",
     "cvNotification": "{{amount}} nouveaux CVs ont été publiés",
-    "noNotifications": "Vous n'avez pas de nouvelles notifications",
-    "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
-    "cvRefusedNotification": "{{amount}} de vos CV ont été refusés"
+    "noNotifications": "Vous n'avez pas de nouvelles notifications"
   },
   "managerPage": {
     "pageInfo": "Page accueil gestionnaire",
