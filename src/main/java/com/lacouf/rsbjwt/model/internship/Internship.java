@@ -19,12 +19,10 @@ public class Internship {
     @Column(nullable = false)
     private String title;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String requiredSkills;
 
     @Column(nullable = false)
@@ -72,6 +70,14 @@ public class Internship {
 
     public void markAsDeleted() {
         this.deleted = true;
+    }
+
+    public void approve() {
+        this.status = InternshipStatus.APPROVED;
+    }
+
+    public void reject() {
+        this.status = InternshipStatus.REJECTED;
     }
 
     public void setId(long id) {
