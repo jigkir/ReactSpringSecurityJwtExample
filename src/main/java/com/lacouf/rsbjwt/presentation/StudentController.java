@@ -109,8 +109,8 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/internships")
-    public ResponseEntity<List<NotificationDto>> getInternshipsNotifications(@PathVariable long id) throws UserNotFoundException, CvNotFoundException {
-        List<NotificationDto> internships = studentService.getInternshipsNotifications(id);
-        return new ResponseEntity<>(internships, HttpStatus.OK);
+    public ResponseEntity<List<InternshipResponseDto>> getStudentInternships(@PathVariable long id) throws UserNotFoundException, CvNotFoundException {
+        List<InternshipResponseDto> internships = studentService.getStudentInternships(id);
+        return ResponseEntity.ok(internships);
     }
 }
