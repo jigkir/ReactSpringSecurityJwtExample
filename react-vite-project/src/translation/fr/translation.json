@@ -50,9 +50,13 @@
     "postInternship": "Offrir un stage",
     "cvReview": "CVs à valider",
     "hello": "Bonjour,",
-    "notifications": "{{amount}} nouvelle(s) notification(s)",
+    "notifications": "{{amount}} nouvelle(s) notifications",
+    "cvPostedNotification": "{{amount}} nouveaux CVs ont étés publiés",
+    "cvApprovedNotification": "{{amount}} de vos CVs ont étés acceptés",
+    "cvRefusedNotification": "{{amount}} de vos CVs ont étés refusés",
+    "noNotifications": "Vous n'avez pas de nouvelles notifications",
     "cvNotification": "{{amount}} nouveaux CVs ont été publiés",
-    "noNotifications": "Vous n'avez pas de nouvelles notifications"
+    "internshipNotification": "{{amount}} Stage disponible"
   },
   "managerPage": {
     "pageInfo": "Page accueil gestionnaire",
