@@ -50,12 +50,11 @@
     "postInternship": "Offrir un stage",
     "cvReview": "CVs à valider",
     "hello": "Bonjour,",
-    "notifications": "{{amount}} nouvelle(s) notifications",
-    "cvPostedNotification": "{{amount}} nouveaux CVs ont étés publiés",
-    "cvApprovedNotification": "{{amount}} de vos CVs ont étés acceptés",
-    "cvRefusedNotification": "{{amount}} de vos CVs ont étés refusés",
-    "noNotifications": "Vous n'avez pas de nouvelles notifications",
+    "notifications": "{{amount}} nouvelle(s) notification(s)",
     "cvNotification": "{{amount}} nouveaux CVs ont été publiés",
+    "noNotifications": "Vous n'avez pas de nouvelles notifications",
+    "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
+    "cvRefusedNotification": "{{amount}} de vos CV ont été refusés",
     "internshipNotification": "{{amount}} Stage disponible"
   },
   "managerPage": {
@@ -313,15 +312,15 @@
     "errorTooShort": "La description, les compétences et le lieu doivent contenir au moins 2 caractères.",
     "errorDate": "Les dates doivent être dans le futur.",
     "titleTooShort": "Le titre doit contenir entre 2 et 50 caractères.",
-    "duration_one": "{{count}} mois",
-    "duration_other": "{{count}} mois",
-    "selectPlaceholder": "Choisie une option...",
+    "selectPlaceholder": "Choisissez une option...",
     "amountOption": "Montant",
     "amountLabel": "Montant ($/h) :",
     "tbdOption": "À discuter",
     "errorRequired": "Veuillez remplir tous les champs.",
     "errorDates": "La date de début et la date limite de candidature doivent être dans le futur.",
-    "closeAria": "Fermer"
+    "closeAria": "Fermer",
+    "duration_one": "{{count}} mois",
+    "duration_other": "{{count}} mois"
   },
   "internshipCard": {
     "requiredSkills": "Compétences requises :",
