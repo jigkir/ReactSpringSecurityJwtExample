@@ -44,6 +44,9 @@
     "cvReview": "CVs to review",
     "hello": "Hello,",
     "notifications": "{{amount}} new notification(s)",
+    "cvPostedNotification": "{{amount}} new CVs have been posted",
+    "cvApprovedNotification": "{{amount}} of your CVs have been approved",
+    "cvRefusedNotification": "{{amount}} of your CVs have been refused",
     "cvNotification": "{{amount}} new CVs have been posted",
     "noNotifications": "You have no new notifications",
     "internshipNotification": "{{amount}} Internship available"
@@ -303,6 +306,8 @@
     "errorTooShort": "The description, skills, and location must contain at least 2 characters.",
     "errorDate": "Dates must be in the future.",
     "titleTooShort": "Title must be between 2 and 50 characters.",
+    "duration_one": "{{count}} month",
+    "duration_other": "{{count}} months",
     "selectPlaceholder": "Choose an option...",
     "amountOption": "Amount",
     "amountLabel": "Amount ($/h) :",
