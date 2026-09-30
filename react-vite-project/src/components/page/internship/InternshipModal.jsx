@@ -3,39 +3,34 @@ import {useTranslation} from 'react-i18next';
 import {getInternshipModalClasses} from '../../../styles/appStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 
+const INITIAL_FORM = {
+    title: "",
+    description: "",
+    requiredSkills: "",
+    durationInWeeks: "",
+    location: "",
+    startDate: "",
+    applicationDeadline: "",
+    compensationAmount: ""
+};
+
 export default function InternshipModal({isOpen, onClose, onAddInternship, user, dark}) {
     const {t} = useTranslation();
     const s = getInternshipModalClasses(dark);
 
-    const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        requiredSkills: "",
-        duration: "",
-        location: "",
-        startDate: "",
-        deadline: "",
-        compensation: "",
-    });
+    const [formData, setFormData] = useState(INITIAL_FORM);
 
     const [error, setError] = useState("");
 
     const [selection, setSelection] = useState("");
 
-    const today = new Date().toISOString().split("T")[0];
+    const tomorrow = new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
     if (!isOpen) return null;
 
     const handleSelectionChange = (e) => {
-        const value = e.target.value;
-        setSelection(value);
-
-        if (value === 'to_be_discussed') {
-            setFormData(prev => ({ ...prev, compensation: 'To be discussed' }));
-        }else{
-            setFormData(prev => ({ ...prev, compensation: '' }));
-        }
-        console.log(formData)
+        setSelection(e.target.value);
+        setFormData((prev) => ({...prev, compensationAmount: ""}));
     };
 
     const handleChange = (e) => {
@@ -48,47 +43,31 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
         e.preventDefault();
         setError("");
 
-        if (formData.title.trim().length < 2 || formData.title.trim().length > 50) {
-            setError(t("internshipModal.titleTooShort"));
-            return;
-        }
+        const title = formData.title.trim();
+        const description = formData.description.trim();
+        const location = formData.location.trim();
+        const requiredSkills = formData.requiredSkills.split(",").map((skill) => skill.trim()).filter((skill) => skill.length > 0).join(", ");
 
-        const skillsArray = formData.requiredSkills
-            .split(",")
-            .map((skill) => skill.trim())
-            .filter((skill) => skill.length > 0);
+        if (title.length < 2 || title.length > 50) return setError(t("internshipModal.titleTooShort"));
+        if (requiredSkills.length === 0) return setError(t("internshipModal.errorSkills"));
+        if (description.length < 2 || requiredSkills.length < 2 || location.length < 2) return setError(t("internshipModal.errorTooShort"));
 
-        if (skillsArray.length === 0) {
-            setError(t("internshipModal.errorSkills"));
-            return;
-        }
+        const durationInWeeks = Number(formData.durationInWeeks);
+        if (!Number.isInteger(durationInWeeks) || durationInWeeks < 1) return setError(t("internshipModal.errorDuration"));
 
-        const compensationRegex = /^(?:(?:\$\d+|\d+\$)\/h|non rémunéré|unpaid)$/i;
-        if (!compensationRegex.test(formData.compensation.trim())) {
-            setError(t("internshipModal.errorCompensation"));
-            return;
-        }
+        if (formData.startDate < tomorrow || formData.applicationDeadline < tomorrow) return setError(t("internshipModal.errorDate"));
 
-        const durationNumber = parseInt(formData.duration, 10);
-        if (isNaN(durationNumber) || durationNumber <= 0) {
-            setError(t("internshipModal.errorDuration"));
-            return;
-        }
+        const compensationNegotiable = selection === "to_be_discussed";
+        if (!compensationNegotiable && !/^\d{1,2}(\.\d{1,2})?$/.test(formData.compensationAmount)) return setError(t("internshipModal.errorCompensation"));
+        const compensationAmount = compensationNegotiable ? null : Number(formData.compensationAmount);
 
-        const newInternship = {
-            ...formData,
-            duration: t("internshipModal.duration", {count: durationNumber}),
-            status: "PENDING",
-            submittedAt: new Date().toISOString(),
-            isDeleted: false,
-            employerId: user.id,
-        };
+        const newInternship = {title, description, requiredSkills, durationInWeeks, location, startDate: formData.startDate, applicationDeadline: formData.applicationDeadline, compensationAmount, compensationNegotiable};
 
         const result = await onAddInternship(newInternship);
-        if (!result?.success) {
-            setError(result?.message || t("postInternship.createError"));
-            return;
-        }
+        if (!result?.success) return setError(result?.message || t("postInternship.createError"));
+
+        setFormData(INITIAL_FORM);
+        setSelection("");
         onClose();
     };
 
@@ -144,7 +123,7 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                         <div>
                             <label className={s.label}>{t("internshipModal.durationLabel")}</label>
                             <input
-                                type="number" name="duration" min="1" value={formData.duration}
+                                type="number" name="durationInWeeks" min="1" value={formData.duration}
                                 onChange={handleChange} placeholder={t("internshipModal.durationPlaceholder")}
                                 className={s.input} required
                             />
@@ -165,29 +144,19 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                             <label className={s.label}>{t("internshipModal.startDateLabel")}</label>
                             <input
                                 type="date" name="startDate" value={formData.startDate}
-                                min={today} onChange={handleChange}
+                                min={tomorrow} onChange={handleChange}
                                 className={s.input} required
                             />
                         </div>
                         <div>
                             <label className={s.label}>{t("internshipModal.deadlineLabel")}</label>
                             <input
-                                type="date" name="deadline" min={today}
-                                value={formData.deadline} onChange={handleChange}
+                                type="date" name="applicationDeadline" min={tomorrow}
+                                value={formData.applicationDeadline} onChange={handleChange}
                                 className={s.input} required
                             />
                         </div>
                     </div>
-
-                    {/* Compensation */}
-                    {/*<div>*/}
-                    {/*    <label className={s.label}>{t("internshipModal.compensationLabel")}</label>*/}
-                    {/*    <input*/}
-                    {/*        type="text" name="compensation" value={formData.compensation}*/}
-                    {/*        onChange={handleChange} placeholder={t("internshipModal.compensationPlaceholder")}*/}
-                    {/*        className={s.input} required*/}
-                    {/*    />*/}
-                    {/*</div>*/}
 
                     <div>
                         <label className={s.label}>{t("internshipModal.compensationLabel")}</label>
@@ -209,8 +178,8 @@ export default function InternshipModal({isOpen, onClose, onAddInternship, user,
                             <label className={s.label}>{t("internshipModal.amountLabel")}</label>
                             <input
                                 type="number"
-                                name="compensation"
-                                value={formData.compensation}
+                                name="compensationAmount"
+                                value={formData.compensationAmount}
                                 onChange={handleChange}
                                 className={s.input}
                                 placeholder={t("internshipModal.compensationPlaceholder")}
