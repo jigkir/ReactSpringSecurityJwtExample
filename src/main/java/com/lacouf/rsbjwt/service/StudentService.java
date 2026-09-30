@@ -255,15 +255,10 @@ public class StudentService {
         return internships.stream().map(InternshipResponseDto::of).toList();
     }
 
-    private void makeInternshipsNotifications(List<Internship> internships, Student student) throws UserNotFoundException, CvNotFoundException {
+    private void makeInternshipsNotifications(List<Internship> internships, Student student) {
             List<Notification> notifications = getNotificationsForStudent(student);
 
             notifications.addAll(createNewInternshipNotifications(internships, student));
-
-            List<NotificationDto> notificationDtos = new ArrayList<>();
-            notificationDtos = notifications.stream()
-                    .map(NotificationDto::of)
-                    .toList();
     }
 
     private Discipline getDisciplineByStudent(Student student){
