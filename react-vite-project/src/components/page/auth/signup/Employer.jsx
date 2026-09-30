@@ -30,32 +30,33 @@ const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [
 
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
+// All validators return "" or {key, options?} — translated at render time.
 const validateCompanyName = (value) => {
     const tr = value.trim();
-    if (!tr) return {key:"employer.requiredCompanyName"};
-    if (tr.length < 2) return {key:"employer.atLeastXCharacters", options:{amount: 2}};
-    if (tr.length > 100) return {key:"employer.atMostXCharacters", options:{amount: 100}};
+    if (!tr) return {key: "employer.requiredCompanyName"};
+    if (tr.length < 2) return {key: "employer.atLeastXCharacters", options: {amount: 2}};
+    if (tr.length > 100) return {key: "employer.atMostXCharacters", options: {amount: 100}};
     return "";
 };
 
 const validatePhoneNumber = (value) => {
-    if (!value) return {key:"employer.requiredPhoneNumber"};
-    if (value.length !== 10) return {key:"employer.phoneNumberXDigits", options:{amount: 10}};
+    if (!value) return {key: "employer.requiredPhoneNumber"};
+    if (value.length !== 10) return {key: "employer.phoneNumberXDigits", options: {amount: 10}};
     return "";
 };
 
-const validateSectorActivity = (value, t) => value ? "" : t("employer.selectSectorOfActivity");
+const validateSectorActivity = (value) => value ? "" : {key: "employer.selectSectorOfActivity"};
 
-const validateEmployerField = (field, value, formValues = {}, t) => {
+const validateEmployerField = (field, value, formValues = {}) => {
     switch (field) {
         case "companyName":
-            return validateCompanyName(value, t);
+            return validateCompanyName(value);
         case "phoneNumber":
-            return validatePhoneNumber(value, t);
+            return validatePhoneNumber(value);
         case "sectorActivity":
-            return validateSectorActivity(value, t);
+            return validateSectorActivity(value);
         default:
-            return validateField(field, value, formValues, t);
+            return validateField(field, value, formValues);
     }
 };
 
@@ -85,7 +86,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                     label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setSectorsFetchError(t("employer.couldNotLoadActivity")))//TODO this doesn't change language dynamically
+            .catch(() => setSectorsFetchError({key: "employer.couldNotLoadActivity"}))
             .finally(() => setSectorsLoading(false));
     }, []);
 
@@ -102,7 +103,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         const newWarnings = {};
         let valid = true;
         for (const key of Object.keys(DEFAULT_FORM)) {
-            const msg = validateEmployerField(key, form[key], form, t);
+            const msg = validateEmployerField(key, form[key], form);
             newWarnings[key] = msg;
             if (msg) valid = false;
         }
@@ -152,29 +153,31 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                     }
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === "email") {
-                        setWarnings(w => ({...w, email: t("employer.emailInUse")}));
+                        setWarnings(w => ({...w, email: {key: "employer.emailInUse"}}));
                     } else {
-                        setServerError(t("employer.emailAlreadyExists"));
+                        setServerError({key: "employer.emailAlreadyExists"});
                     }
                     break;
                 }
                 case 400:
-                    setServerError(t("employer.invalidData"));
+                    setServerError({key: "employer.invalidData"});
                     break;
                 default:
-                    setServerError(t("employer.genericServerError", {errorCode: response.status}));
+                    setServerError({key: "employer.genericServerError", options: {errorCode: response.status}});
             }
         } catch {
-            setServerError(t("employer.unableToReachServerError"));
+            setServerError({key: "employer.unableToReachServerError"});
         } finally {
             setSubmitting(false);
         }
     };
 
+    const serverErrorText = translateWarning(t, serverError);
+
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {serverError && (
-                <div className={serverErrorClass}>{serverError}</div>
+            {serverErrorText && (
+                <div className={serverErrorClass}>{serverErrorText}</div>
             )}
 
             <Field
@@ -199,10 +202,11 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <DisciplineField
-                value={form.sectorActivity} onChange={handleChange} warning={translateWarning(t, warnings.sectorActivity)}
+                value={form.sectorActivity} onChange={handleChange}
+                warning={translateWarning(t, warnings.sectorActivity)}
                 label={t("employer.sectorOfActivityLabel")} name="sectorActivity"
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
-                options={sectors} loading={sectorsLoading} fetchError={sectorsFetchError}
+                options={sectors} loading={sectorsLoading} fetchError={translateWarning(t, sectorsFetchError)}
             />
 
             <EmailField
@@ -232,7 +236,8 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <ConfirmPasswordField
-                value={form.confirmPassword} onChange={handleChange} warning={translateWarning(t, warnings.confirmPassword)}
+                value={form.confirmPassword} onChange={handleChange}
+                warning={translateWarning(t, warnings.confirmPassword)}
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass} eyeClass={eyeClass}
                 show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}
             />

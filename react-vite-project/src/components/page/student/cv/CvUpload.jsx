@@ -8,13 +8,15 @@
  *   ERROR       → file preview card + retry / cancel
  *   SUCCESS     → success confirmation
  *
- * Stateless — all state lives in Cv.jsx. Receives everything as props.
+ * `fileError` / `serverError` are {key, options?} objects (or null) and are
+ * translated HERE at render time, so they follow the language switch live.
  */
 
 import {getAuthClasses, getCvUploadClasses} from '../../../../styles/appStyles.jsx';
 import {formatBytes} from './cvUtils.js';
 import {useTranslation} from 'react-i18next';
 import Icon from '../../../../styles/Icon.jsx';
+import {translateWarning} from '../../../../utils/CommonFields.jsx';
 
 const PdfIcon = ({className = ""}) => <Icon name="picture_as_pdf" size={40} className={className}/>;
 const UploadIcon = ({className = ""}) => <Icon name="upload_file" size={40} className={className}/>;
@@ -31,7 +33,7 @@ const CvUpload = ({
                       onCancelReplacing, onGoToDashboard, onGoToList,
                       maxFileSizeMb = 2, acceptedExt = ".pdf",
                   }) => {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const {cardClass, titleClass, submitClass, serverErrorClass} = getAuthClasses(dark);
     const u = getCvUploadClasses(dark, isDragging);
 
@@ -68,22 +70,24 @@ const CvUpload = ({
                 <h1 className={titleClass}>{isReplacing ? t("cvUpload.replaceBtn") : t("cvUpload.uploadBtn")}</h1>
 
                 {hasError && serverError && (
-                    <div className={serverErrorClass} role="alert" aria-live="assertive">{serverError}</div>
+                    <div className={serverErrorClass} role="alert"
+                         aria-live="assertive">{translateWarning(t, serverError)}</div>
                 )}
 
-                <div className={u.fileCard} aria-label="Selected file">
+                <div className={u.fileCard} aria-label={t("cvUpload.selectedFileAria")}>
                     <PdfIcon className={`h-10 w-10 shrink-0 ${u.iconColor}`}/>
                     <div className="min-w-0 flex-1">
                         <p className={u.fileName}>{selectedFile?.name}</p>
-                        <p className={u.fileMeta}>PDF · {formatBytes(selectedFile?.size ?? 0)}</p>
+                        <p className={u.fileMeta}>PDF
+                            · {formatBytes(selectedFile?.size ?? 0, i18n.resolvedLanguage ?? i18n.language)}</p>
                     </div>
                     {!isUploading && (
                         <div className="flex flex-col gap-1 shrink-0">
                             <button onClick={onOpenFilePicker} className={u.ghostBtn}
-                                    aria-label="Replace selected file">{t("cvUpload.replaceFile")}
+                                    aria-label={t("cvUpload.replaceFileAria")}>{t("cvUpload.replaceFile")}
                             </button>
                             <button onClick={onClearFile} className={u.dangerBtn}
-                                    aria-label="Supprimer le fichier sélectionné">
+                                    aria-label={t("cvUpload.deleteFileAria")}>
                                 <span className="flex items-center gap-1.5"><TrashIcon/>{t("cvUpload.deleteBtn")}</span>
                             </button>
                         </div>
@@ -127,14 +131,15 @@ const CvUpload = ({
             <p className={u.subtitle}>{t("cvUpload.pageSubtitle")}</p>
 
             {fileError && (
-                <div className={`mb-4 ${serverErrorClass}`} role="alert" aria-live="assertive">{fileError}</div>
+                <div className={`mb-4 ${serverErrorClass}`} role="alert"
+                     aria-live="assertive">{translateWarning(t, fileError)}</div>
             )}
 
             <div
                 className={u.dropzone}
                 onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
                 onClick={onOpenFilePicker}
-                role="button" tabIndex={0} aria-label="File drop zone. Click or drag a PDF."
+                role="button" tabIndex={0} aria-label={t("cvUpload.dropzoneAria")}
                 onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();

@@ -55,12 +55,12 @@ const withSanitizer = (sanitize, onChange) => (e) => {
     onChange({target: {name, value: sanitize(value)}});
 };
 
-export const validateDiscipline = (value) => value ? "" : {key:"commonFields.disciplineSelect"};
+export const validateDiscipline = (value) => value ? "" : {key: "commonFields.disciplineSelect"};
 
 export const validateId = (value, length = 7) => {
     const trimmed = value.trim();
-    if (!trimmed) return {key:"commonFields.requiredId"};
-    if (trimmed.length !== length) return {key:"commonFields.requiredIdLength", options:{length}};
+    if (!trimmed) return {key: "commonFields.requiredId"};
+    if (trimmed.length !== length) return {key: "commonFields.requiredIdLength", options: {length}};
     return "";
 };
 
@@ -69,17 +69,17 @@ export function validateField(field, value, formValues = {}) {
         case "firstName":
         case "lastName": {
             const tr = value.trim();
-            if (!tr) return {key:"commonFields.requiredField"}
-            if (tr.length < 2) return {key:"commonFields.atLeastXCharacters", options: {amount: 2}};
-            if (tr.length > 50) return {key:"commonFields.atMostXCharacters", options: {amount: 50}};
-            if (!NAME_REGEX.test(tr)) return {key:"commonFields.nameRequirements"};
+            if (!tr) return {key: "commonFields.requiredField"};
+            if (tr.length < 2) return {key: "commonFields.atLeastXCharacters", options: {amount: 2}};
+            if (tr.length > 50) return {key: "commonFields.atMostXCharacters", options: {amount: 50}};
+            if (!NAME_REGEX.test(tr)) return {key: "commonFields.nameRequirements"};
             return "";
         }
         case "email": {
             const tr = value.trim();
-            if (!tr) return {key:"commonFields.requiredEmail"};
-            if (tr.length > 100) return {key:"commonFields.atMostXCharacters", options:{amount: 100}};
-            if (!EMAIL_REGEX.test(tr)) return {key:"commonFields.invalidEmailFormat"};
+            if (!tr) return {key: "commonFields.requiredEmail"};
+            if (tr.length > 100) return {key: "commonFields.atMostXCharacters", options: {amount: 100}};
+            if (!EMAIL_REGEX.test(tr)) return {key: "commonFields.invalidEmailFormat"};
             return "";
         }
         case "password": {
@@ -98,8 +98,8 @@ export function validateField(field, value, formValues = {}) {
             return "";
         }
         case "confirmPassword":
-            if (!value) return {key:"commonFields.missingConfirmPassword"};
-            if (value !== formValues.password) return {key:"commonFields.noMatchingPasswords"};
+            if (!value) return {key: "commonFields.missingConfirmPassword"};
+            if (value !== formValues.password) return {key: "commonFields.noMatchingPasswords"};
             return "";
         case "discipline":
             return validateDiscipline(value);
@@ -124,7 +124,6 @@ export const EyeIcon = ({open}) => <Icon name={open ? "visibility_off" : "visibi
 
 export const MatriculeField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass,
-    role = "Student",
     name = "studentId",
     limit = 7,
 }) => {
@@ -207,7 +206,7 @@ export const DisciplineField = ({
 
     return (
         <Field id="discipline" label={effectiveLabel} warning={warning} labelClass={labelClass}
-               errorClass={errorClass} name={name}>
+               errorClass={errorClass}>
             <select
                 id="discipline" name={name}
                 value={value} onChange={onChange}
@@ -289,8 +288,10 @@ export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClas
 
 export function translateWarning(t, warning) {
     if (!warning) return "";
+    if (typeof warning === "string") return warning;
+    if (!warning.key) return "";
     if (warning.key === "commonFields.missingComposite") {
-        return `Missing: ${warning.missingKeys.map(k => t(k)).join(", ")}.`;
+        return t(warning.key, {items: warning.missing.map((k) => t(k)).join(", ")});
     }
     return t(warning.key, warning.options);
 }

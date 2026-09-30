@@ -15,7 +15,6 @@ import {
     validateField,
 } from '../../../../utils/CommonFields.jsx';
 
-
 const ID_FIELD = "teacherId";
 
 const DEFAULT_FORM = {
@@ -56,9 +55,9 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                     label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setDisciplinesFetchError(t("commonFields.fetchError")))
+            .catch(() => setDisciplinesFetchError({key: "commonFields.fetchError"}))
             .finally(() => setDisciplinesLoading(false));
-    }, [t]);
+    }, []);
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -81,7 +80,7 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setServerError({key:""});
+        setServerError("");
         if (!validateAll()) return;
 
         setSubmitting(true);
@@ -116,44 +115,47 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                     }
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({...w, [ID_FIELD]: t("teacher.existingId")}));
+                        setWarnings(w => ({...w, [ID_FIELD]: {key: "teacher.existingId"}}));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({...w, email: t("teacher.emailInUse")}));
+                        setWarnings(w => ({...w, email: {key: "teacher.emailInUse"}}));
                     } else {
-                        setServerError(t("teacher.eitherIdOrEmailInUse"));
+                        setServerError({key: "teacher.eitherIdOrEmailInUse"});
                     }
                     break;
                 }
                 case 400:
-                    setServerError(t("teacher.invalidData"));
+                    setServerError({key: "teacher.invalidData"});
                     break;
                 default:
-                    setServerError(t("teacher.genericServerError", {errorCode: response.status}));
+                    setServerError({key: "teacher.genericServerError", options: {errorCode: response.status}});
             }
         } catch {
-            setServerError(t("teacher.unableToReachServerError"));
+            setServerError({key: "teacher.unableToReachServerError"});
         } finally {
             setSubmitting(false);
         }
     };
 
     const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
+    const serverErrorText = translateWarning(t, serverError);
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {translateWarning(t, serverError) && <div className={serverErrorClass}>{translateWarning(t, serverError)}</div>}
+            {serverErrorText && <div className={serverErrorClass}>{serverErrorText}</div>}
 
             <FirstNameField  {...sharedProps} value={form.firstName} warning={translateWarning(t, warnings.firstName)}/>
             <LastNameField   {...sharedProps} value={form.lastName} warning={translateWarning(t, warnings.lastName)}/>
-            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={translateWarning(t,warnings[ID_FIELD])}
-                             name={ID_FIELD} role="Teacher" limit="5"/>
+            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={translateWarning(t, warnings[ID_FIELD])}
+                             name={ID_FIELD} limit={5}/>
             <DisciplineField {...sharedProps} value={form.discipline} warning={translateWarning(t, warnings.discipline)}
-                             options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}/>
+                             options={disciplines} loading={disciplinesLoading}
+                             fetchError={translateWarning(t, disciplinesFetchError)}/>
             <EmailField      {...sharedProps} value={form.email} warning={translateWarning(t, warnings.email)}/>
             <PasswordField   {...sharedProps} value={form.password} warning={translateWarning(t, warnings.password)}
                              eyeClass={eyeClass} show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
                              hint={t("teacher.passwordRequirements")} passwordHintClass={passwordHintClass}/>
-            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={translateWarning(t, warnings.confirmPassword)}
+            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword}
+                                  warning={translateWarning(t, warnings.confirmPassword)}
                                   eyeClass={eyeClass} show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}/>
 
             <SubmitButton
