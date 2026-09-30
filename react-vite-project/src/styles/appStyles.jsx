@@ -102,8 +102,8 @@ export function getNavbarClasses(dark) {
             ? "bg-slate-800/95 backdrop-blur border-b border-slate-700 shadow-md shadow-black/20"
             : "bg-indigo-600 border-b border-indigo-700 shadow-md",
         brand: dark
-            ? "text-white hover:text-indigo-300"
-            : "text-white hover:text-indigo-100",
+            ? "text-white"
+            : "text-white",
         linkActive: dark ? "bg-slate-700 text-white" : "bg-white/15 text-white",
         linkIdle: dark
             ? "text-slate-300 hover:text-white hover:bg-slate-700/60"

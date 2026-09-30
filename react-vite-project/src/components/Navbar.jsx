@@ -67,13 +67,12 @@ function Navbar({user, dark, toggleDark}) {
             <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-14">
 
-                    {/* ── LEFT SIDE: Brand + Desktop Nav / Mobile Dropdown ── */}
                     <div className="flex items-center gap-3">
-                        <Link to={homePath} className={`flex items-center font-bold text-base md:text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
+                        {/* Desktop brand name (hidden on mobile) */}
+                        <h1 className={`hidden md:flex items-center font-bold text-base md:text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
                             {t("navbar.appName")}
-                        </Link>
+                        </h1>
 
-                        {/* DESKTOP NAV: Hidden on mobile, shown on md+ screens */}
                         <nav className="hidden md:flex items-center gap-1">
                             {navItems.map(({to, label}) => (
                                 <Link key={to} to={to} className={linkClass(to)} aria-current={isActive(to) ? "page" : undefined}>
@@ -83,20 +82,19 @@ function Navbar({user, dark, toggleDark}) {
                             {notifications.length > 0 && <NotificationMenu notifications={notifications} dark={dark}/>}
                         </nav>
 
-                        {/* MOBILE NAV DROPDOWN BUTTON: Shown only on mobile */}
+                        {/* Mobile dropdown button styled as the app name */}
                         <div className="relative md:hidden">
                             <button
                                 onClick={() => { setMenuOpen(!menuOpen); setAuthMenuOpen(false); }}
-                                className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.toggleBtn}`}
+                                className={`p-1 -ml-1 rounded-lg font-bold text-base tracking-tight flex items-center gap-1.5 ${theme.brand}`}
                                 aria-label="Toggle pages menu"
                             >
-                                <span>Menu</span>
+                                <span>{t("navbar.appName")}</span>
                                 <svg className={`h-4 w-4 transition-transform ${menuOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
-                            {/* Pages Dropdown Content */}
                             {menuOpen && (
                                 <div className={`absolute left-0 mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
                                     {navItems.map(({to, label}) => (
@@ -119,9 +117,7 @@ function Navbar({user, dark, toggleDark}) {
                         </div>
                     </div>
 
-                    {/* ── RIGHT SIDE: Toggles + Desktop Auth / Mobile Auth Dropdown ── */}
                     <div className="flex items-center gap-2">
-                        {/* Language & Theme toggles (kept accessible) */}
                         <button onClick={toggleLang} className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}>
                             {i18n.language === "en" ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
@@ -129,7 +125,6 @@ function Navbar({user, dark, toggleDark}) {
                             <ToggleIcon/>
                         </button>
 
-                        {/* DESKTOP AUTH BUTTONS: Hidden on mobile, shown on md+ */}
                         <div className="hidden md:flex items-center gap-2 ml-2">
                             {user?.isLoggedIn && (
                                 <div className={`flex items-center gap-2 text-sm ${theme.greeting}`}>
@@ -148,7 +143,6 @@ function Navbar({user, dark, toggleDark}) {
                             )}
                         </div>
 
-                        {/* MOBILE AUTH/CONNEXION DROPDOWN BUTTON: Shown only on mobile */}
                         <div className="relative md:hidden ml-1">
                             <button
                                 onClick={() => { setAuthMenuOpen(!authMenuOpen); setMenuOpen(false); }}
@@ -161,7 +155,6 @@ function Navbar({user, dark, toggleDark}) {
                                 </svg>
                             </button>
 
-                            {/* Auth Dropdown Content */}
                             {authMenuOpen && (
                                 <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
                                     {user?.isLoggedIn ? (
