@@ -26,9 +26,9 @@ public class ManagerController {
         this.managerService = managerService;
     }
 
-    @GetMapping("/notifications")
-    public ResponseEntity<List<NotificationDto>> getManagerNotifications(@RequestParam long managerId) throws UserNotFoundException {
-        List<NotificationDto> notifications = managerService.getNotificationsForManager(managerId);
+    @GetMapping("/{id}/notifications")
+    public ResponseEntity<List<NotificationDto>> getManagerNotifications(@PathVariable long id) throws UserNotFoundException {
+        List<NotificationDto> notifications = managerService.getNotificationsForManager(id);
         return ResponseEntity.ok(notifications);
     }
 
