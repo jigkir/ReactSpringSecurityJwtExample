@@ -34,7 +34,9 @@
     "postInternship": "Post Internship",
     "hello": "Hello,",
     "notifications": "{{amount}} new notification(s)",
-    "cvNotification": "{{amount}} new CVs have been posted",
+    "cvPostedNotification": "{{amount}} new CVs have been posted",
+    "cvApprovedNotification": "{{amount}} of your CVs have been approved",
+    "cvRefusedNotification": "{{amount}} of your CVs have been refused",
     "noNotifications": "You have no new notifications"
   },
   "managerPage": {

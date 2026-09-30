@@ -34,7 +34,9 @@
     "postInternship": "Offrir un stage",
     "hello": "Bonjour,",
     "notifications": "{{amount}} nouvelle(s) notifications",
-    "cvNotification": "{{amount}} nouveaux CVs ont étés publiés",
+    "cvPostedNotification": "{{amount}} nouveaux CVs ont étés publiés",
+    "cvApprovedNotification": "{{amount}} de vos CVs ont étés acceptés",
+    "cvRefusedNotification": "{{amount}} de vos CVs ont étés refusés",
     "noNotifications": "Vous n'avez pas de nouvelles notifications"
   },
   "managerPage": {
