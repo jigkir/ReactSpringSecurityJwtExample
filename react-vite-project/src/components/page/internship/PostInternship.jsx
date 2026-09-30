@@ -5,6 +5,7 @@ import InternshipModal from './InternshipModal.jsx';
 import InternshipCard from './InternshipCard.jsx';
 import fetcher from '../../../utils/fetcher.js';
 import {getPostInternshipClasses} from '../../../styles/appStyles.jsx';
+import {getEmployerInternships, createInternship, deleteInternship} from '../../api/Api.jsx';
 
 function PostInternship({user}) {
     const {dark} = useOutletContext();
@@ -17,64 +18,30 @@ function PostInternship({user}) {
     const s = getPostInternshipClasses(dark);
 
     useEffect(() => {
-        fetcher(`${user.id}/internships`, {})
-            .then(async (res) => {
-                if (!res.ok) throw new Error(`Error ${res.status}`);
-                const data = await res.json();
-                const list = Array.isArray(data) ? data : (data.internships ?? []);
-                setInternships(list);
-            })
+        if (!user?.id) return;
+        getEmployerInternships(user.id)
+            .then(setInternships)
             .catch(() => setError(t("postInternship.loadError")))
             .finally(() => setLoading(false));
-    }, [t]);
+    }, [user?.id, t]);
 
-    const handleAddInternship = async (newOffer) => {
+    const handleAddInternship = async (newInternship) => {
         try {
-            const response = await fetcher("employer/internship", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(newOffer),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const fieldErrors = Object.entries(errorData)
-                    .filter(([field, message]) =>
-                        Object.hasOwn(newOffer, field) && typeof message === "string"
-                    )
-                    .map(([field, message]) => `${field}: ${message}`)
-                    .join("\n");
-
-                throw new Error(
-                    errorData.message || fieldErrors || t("postInternship.createError")
-                );
-            }
-
-            const savedInternship = await response.json();
-
-            // Prepend the newly created internship (InternshipResponseDto) to the list
+            const savedInternship = await createInternship(newInternship);
             setInternships((prev) => [savedInternship, ...prev]);
             return {success: true};
         } catch (err) {
-            console.error(err);
-            return {success: false, message: err.message || t("postInternship.createGenericError")};
+            const fieldErrors = Object.entries(err.body ?? {}).filter(([field]) => field !== "message").map(([field, message]) => `${field}: ${message}`).join("\n");
+            return {success: false, message: err.body?.message || fieldErrors || t("postInternship.createGenericError")};
         }
     };
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetcher(`employer/internships/${id}`, {method: "PUT"});
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || t("postInternship.deleteError"));
-            }
-            const updatedInternship = await response.json();
-            setInternships((prev) =>
-                prev.map((i) => (i.id === id ? {...updatedInternship, isDeleted: true} : i))
-            );
+            await deleteInternship(id);
+            setInternships((prev) => prev.filter((i) => i.id !== id));
         } catch (err) {
-            console.error(err);
-            alert(err.message || t("postInternship.deleteGenericError"));
+            alert(err.body?.message || t("postInternship.deleteGenericError"));
         }
     };
 
@@ -100,19 +67,15 @@ function PostInternship({user}) {
                 <div className={s.scrollArea}>
                     {loading && <p className={s.loadingText}>{t("postInternship.loading")}</p>}
                     {error && <p className={s.errorText}>{error}</p>}
-                    {!loading && !error && internships.filter((i) => !i.isDeleted).length === 0 && (
+                    {!loading && !error && internships.length === 0 && (
                         <p className={s.emptyText}>{t("postInternship.empty")}</p>
                     )}
-                    {!loading && !error && internships.map((internship) =>
-                            !internship.isDeleted && (
-                                <InternshipCard
-                                    key={internship.id}
-                                    internship={internship}
-                                    OnDelete={handleDelete}
-                                    dark={dark}
-                                />
-                            )
-                    )}
+                    {!loading && !error && internships.map((internship) => (
+                        <InternshipCard key={internship.id}
+                                        internship={internship}
+                                        OnDelete={handleDelete}
+                                        dark={dark}/>
+                    ))}
                 </div>
             </div>
 

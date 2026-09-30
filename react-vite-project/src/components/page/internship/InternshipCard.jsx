@@ -50,13 +50,13 @@ export default function InternshipCard({internship, OnDelete, dark}) {
                 {/* Duration */}
                 <span className={s.detailBadge}>
                     <Icon name="timer" size={20}/>
-                    {internship.duration}
+                    {t("internshipCard.duration", {count: internship.durationInWeeks})}
                 </span>
 
                 {/* Compensation */}
                 <span className={s.detailBadge}>
                     <Icon name="payments" size={20}/>
-                    {internship.compensation}
+                    {internship.compensationNegotiable ? t("internshipCard.negotiable") : t("internshipCard.compensation", {amount: internship.compensationAmount})}
                 </span>
 
                 {/* Start date */}
@@ -68,7 +68,7 @@ export default function InternshipCard({internship, OnDelete, dark}) {
                 {/* Deadline */}
                 <span className={s.detailBadge}>
                     <Icon name="event" size={20}/>
-                    {internship.deadline}
+                    {internship.applicationDeadline}
                 </span>
 
                 {/* Delete */}
