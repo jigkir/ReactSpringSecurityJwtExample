@@ -10,7 +10,14 @@
     "apiStatus": "API error ({{status}})",
     "notFound": "Nothing here (404).",
     "network": "Unable to reach the server. Please try again.",
-    "unknown": "Unknown error"
+    "unknown": "Unknown error",
+    "badRequest": "The submitted data is invalid (400).",
+    "unauthorized": "Session expired or unauthorized (401). Please log in again.",
+    "forbidden": "Access denied (403).",
+    "conflict": "This action conflicts with the current state of the data (409).",
+    "tooLarge": "The file is too large (413).",
+    "unprocessable": "The submitted content is unreadable or invalid (422).",
+    "server": "Server error ({{status}}). Please try again."
   },
   "footer": {
     "copyright": "Copyright © 2026",
@@ -307,7 +314,8 @@
     "amountLabel": "Amount ($/h) :",
     "tbdOption": "To be discussed",
     "errorRequired": "Please fill in all fields.",
-    "errorDates": "The start date and the application deadline must be in the future."
+    "errorDates": "The start date and the application deadline must be in the future.",
+    "closeAria": "Close"
   },
   "internshipCard": {
     "requiredSkills": "Required Skills:",

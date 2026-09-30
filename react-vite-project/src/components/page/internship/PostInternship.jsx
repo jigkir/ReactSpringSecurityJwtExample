@@ -3,9 +3,9 @@ import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipModal from './InternshipModal.jsx';
 import InternshipCard from './InternshipCard.jsx';
-import fetcher from '../../../utils/fetcher.js';
+import {translateWarning} from '../../../utils/CommonFields.jsx';
 import {getPostInternshipClasses} from '../../../styles/appStyles.jsx';
-import {getEmployerInternships, createInternship, deleteInternship} from '../../api/Api.jsx';
+import {createInternship, deleteInternship, getEmployerInternships} from '../../api/Api.jsx';
 
 function PostInternship({user}) {
     const {dark} = useOutletContext();
@@ -13,6 +13,7 @@ function PostInternship({user}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState("");
+    const [actionError, setActionError] = useState("");
     const [loading, setLoading] = useState(true);
 
     const s = getPostInternshipClasses(dark);
@@ -21,9 +22,9 @@ function PostInternship({user}) {
         if (!user?.id) return;
         getEmployerInternships(user.id)
             .then(setInternships)
-            .catch(() => setError(t("postInternship.loadError")))
+            .catch(() => setError({key: "postInternship.loadError"}))
             .finally(() => setLoading(false));
-    }, [user?.id, t]);
+    }, [user?.id]);
 
     const handleAddInternship = async (newInternship) => {
         try {
@@ -31,17 +32,17 @@ function PostInternship({user}) {
             setInternships((prev) => [savedInternship, ...prev]);
             return {success: true};
         } catch (err) {
-            const fieldErrors = Object.entries(err.body ?? {}).filter(([field]) => field !== "message").map(([field, message]) => `${field}: ${message}`).join("\n");
-            return {success: false, message: err.body?.message || fieldErrors || t("postInternship.createGenericError")};
+            return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
         }
     };
 
     const handleDelete = async (id) => {
+        setActionError("");
         try {
             await deleteInternship(id);
             setInternships((prev) => prev.filter((i) => i.id !== id));
-        } catch (err) {
-            alert(err.body?.message || t("postInternship.deleteGenericError"));
+        } catch {
+            setActionError({key: "postInternship.deleteGenericError"});
         }
     };
 
@@ -66,7 +67,8 @@ function PostInternship({user}) {
                 {/* 2. Scrollable container for the cards */}
                 <div className={s.scrollArea}>
                     {loading && <p className={s.loadingText}>{t("postInternship.loading")}</p>}
-                    {error && <p className={s.errorText}>{error}</p>}
+                    {error && <p className={s.errorText}>{translateWarning(t, error)}</p>}
+                    {actionError && <p className={s.errorText} role="alert">{translateWarning(t, actionError)}</p>}
                     {!loading && !error && internships.length === 0 && (
                         <p className={s.emptyText}>{t("postInternship.empty")}</p>
                     )}
