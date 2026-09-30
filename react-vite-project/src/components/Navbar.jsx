@@ -4,6 +4,41 @@ import {getNavbarClasses} from '../styles/appStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
+function FindNotifications(role, t){
+    // TODO: replace the hardcoded count with getPendingCvs().length
+    const cvPostedNotificationCount = 1;
+    // TODO: replace the hardcoded count with getUpdatedCvs(currentDate).map(status == approved).length
+    const cvApprovedNotificationCount = 1;
+    // TODO: replace the hardcoded count with getPendingCvs(currentDate).map(status == approved).length
+    const cvRefusedNotificationCount = 1;
+    switch(role){
+        case("MANAGER"):
+            return[{
+                id: "cvPosted",
+                count: cvPostedNotificationCount,
+                label: t("navbar.cvPostedNotification", {amount: cvPostedNotificationCount}),
+                to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+            }]
+        case("STUDENT"):
+            return[
+                {
+                    id: "cvAccepte",
+                    count: cvApprovedNotificationCount,
+                    label: t("navbar.cvApprovedNotification", {amount: cvApprovedNotificationCount}),
+                    to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+                },
+                {
+                    id: "cvRefuse",
+                    count: cvRefusedNotificationCount,
+                    label: t("navbar.cvRefusedNotification", {amount: cvRefusedNotificationCount}),
+                    to: "/manager/cvs", // remove if NotificationMenu doesn't support links
+                }
+            ]
+        default:
+            return [];
+    }
+}
+
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
@@ -46,17 +81,9 @@ function Navbar({user, dark, toggleDark}) {
 
     const ToggleIcon = () => <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>;
 
-    // TODO: replace the hardcoded count with getPendingCvs().length
-    const cvNotificationCount = 0;
 
-    const notifications = (role === "MANAGER"
-            ? [{
-                id: "cv",
-                count: cvNotificationCount,
-                label: t("navbar.cvNotification", {amount: cvNotificationCount}),
-                to: "/manager/cvs", // remove if NotificationMenu doesn't support links
-            }]
-            : []);
+
+    const notifications = FindNotifications(role, t);
 
 
     return (
