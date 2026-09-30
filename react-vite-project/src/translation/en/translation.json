@@ -54,7 +54,6 @@
     "cvNotification": "{{amount}} new CVs have been posted",
     "cvApprovedNotification": "{{amount}} of your CVs have been approved",
     "cvRefusedNotification": "{{amount}} of your CVs have been refused",
-    "cvNotification": "{{amount}} new CVs have been posted",
     "noNotifications": "You have no new notifications",
     "internshipNotification": "{{amount}} Internship available"
   },

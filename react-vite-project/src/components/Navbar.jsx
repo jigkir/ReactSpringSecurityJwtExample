@@ -5,7 +5,6 @@ import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 import {getManagerNotifications} from "./api/Api.jsx";
 import {useEffect, useState} from "react";
-import {i18nError} from "../utils/i18nError.jsx";
 
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
@@ -31,9 +30,9 @@ function FindNotifications(role, t, user) {
             })
             .catch((err) => {
                 // Don't redirect the whole app to /error just because the bell failed
+                setCount(0);
                 console.error("Notifications failed:", err.status, err.body);
             });
-
         return () => { cancelled = true; };
     }, [role, user?.id]);
 
@@ -41,7 +40,7 @@ function FindNotifications(role, t, user) {
         ? [{
             id: "cvPosted",
             count,
-            label: t("navbar.cvPostedNotification", {amount: count}),
+            label: t("navbar.cvNotification", {amount: count}),
             to: "/manager/cvs",
         }]
         : [];
@@ -101,9 +100,9 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            {notifications.length > 0 && (
+                            {
                                 <NotificationMenu notifications={notifications} dark={dark}/>
-                            )}
+                            }
                         </nav>
                     </div>
 
