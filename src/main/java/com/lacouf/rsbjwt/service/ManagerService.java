@@ -77,8 +77,10 @@ public class ManagerService {
     }
 
     public List<NotificationDto> getNotificationsForManager(long managerId) throws UserNotFoundException {
+        System.out.println("part1");
         Manager manager = managerRepository.findById(managerId)
                 .orElseThrow(UserNotFoundException::new);
+        System.out.println("part2");
         return notificationRepository.findByUserId(manager.getId()).stream()
                 .map(notification -> new NotificationDto(
                         notification.getId(),
