@@ -1,18 +1,23 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.CVRepository;
+import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.StudentRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
@@ -34,17 +39,20 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final CVRepository cvRepository;
+    private final InternshipRepository internshipRepository;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
     private final Tika tika = new Tika();
 
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository) {
+
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
+        this.internshipRepository = internshipRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -241,6 +249,38 @@ public class StudentService {
         Student student = findById(studentId);
         CV cv = validateAndGetStudentCv(student, cvId);
         return cv.getStatus().name();
+    }
+
+    public List<InternshipResponseDto> getInternships(long studentId) throws UserNotFoundException, CvNotFoundException {
+        Student student = findById(studentId);
+        CV cv = validateAndGetStudentCv(student, student.getId());
+        Discipline discipline = getDisciplineByStudent(student);
+
+        List<InternshipResponseDto> internships = new ArrayList<>();
+
+        if (cv.getStatus() != CvStatus.APPROVED) {
+            return internships;
+        }
+
+        internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
+
+        return internships;
+    }
+
+    private Discipline getDisciplineByStudent(Student student){
+        return student.getDiscipline();
+    }
+
+    private Discipline getEmployerDisciplineByInternship(Internship internship){
+        Employer employer = internship.getPostedBy();
+        return employer.getDiscipline();
+    }
+
+    private List<InternshipResponseDto> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
+        return internships.stream()
+                .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
+                .map(InternshipResponseDto::of)
+                .toList();
     }
 
     private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
