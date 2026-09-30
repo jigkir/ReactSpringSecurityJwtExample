@@ -1,4 +1,4 @@
-import {Link, NavLink, useLocation} from 'react-router-dom';
+import {Link, NavLink} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
 import Icon from '../styles/Icon.jsx';
@@ -16,14 +16,14 @@ const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", 
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
-    const location = useLocation();
     const theme = getNavbarClasses(dark);
 
     const role = normalizeRole(user);
     const isLoggedIn = user?.isLoggedIn ?? false;
     const homePath = isLoggedIn ? "/home" : "/";
 
-    const toggleLang = () => i18n.changeLanguage(i18n.language === "en" ? "fr" : "en");
+    const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
+    const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
 
     const formatRole = (r) => {
         if (!r) return "";
@@ -94,12 +94,12 @@ function Navbar({user, dark, toggleDark}) {
                         )}
 
                         <button onClick={toggleLang} className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                                aria-label={i18n.language === "en" ? "Passer en français" : "Switch to english"}>
-                            {i18n.language === "en" ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                                aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
+                            {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
 
                         <button onClick={toggleDark} className={`${theme.toggleBase} ${theme.toggleBtn}`}
-                                aria-label={dark ? "Passer en mode clair" : "Passer en mode sombre"}>
+                                aria-label={dark ? t("navbar.switchToLight") : t("navbar.switchToDark")}>
                             <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
                             {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                         </button>

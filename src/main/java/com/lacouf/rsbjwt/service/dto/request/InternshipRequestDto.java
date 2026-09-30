@@ -4,8 +4,6 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
-
 public record InternshipRequestDto(
         @NotBlank
         @Size(min = 2, max = 50)
@@ -20,7 +18,8 @@ public record InternshipRequestDto(
         String requiredSkills,
 
         @NotNull
-        Period durationInWeeks,
+        @Min(1)
+        Integer durationInWeeks,
 
         @NotBlank
         @Size(min = 2)
@@ -34,7 +33,7 @@ public record InternshipRequestDto(
         @Future
         LocalDate applicationDeadline,
 
-        @NotNull
+        @PositiveOrZero
         @Digits(integer=2, fraction=2)
         BigDecimal compensationAmount,
 

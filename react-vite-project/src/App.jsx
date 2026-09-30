@@ -14,6 +14,7 @@ import Home from './components/page/Home.jsx';
 import StudentCv from './components/page/student/Cv.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import RequireRole from "./components/RequireRole.jsx";
+import {i18nError} from "./utils/i18nError.jsx";
 
 function LandingRoute({user}) {
     if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
@@ -26,9 +27,6 @@ function App() {
     const [error, setError] = useState(null);
     const {dark, toggleDark} = useDarkMode();
     const navigate = useNavigate();
-    // Tracks the current route so the auth-check effect below can re-run
-    // on every navigation (e.g. right after login redirects), instead of
-    // only once when App first mounts.
     const location = useLocation();
 
     useEffect(() => {
@@ -45,15 +43,15 @@ function App() {
                 if (!res.ok) {
                     switch (res.status) {
                         case 401:
-                            localStorage.clear();
+                            localStorage.removeItem("token");
                             if (!cancelled) setUser({});
                             return;
                         case 403:
-                            throw new Error("Forbidden");
+                            throw i18nError("error.accessRefused");
                         case 404:
-                            throw new Error("Nothing here 404");
+                            throw i18nError("error.notFound");
                         default:
-                            throw new Error(`Erreur API (${res.status})`);
+                            throw i18nError("error.apiStatus", {status: res.status});
                     }
                 }
                 const data = await res.json();
@@ -61,14 +59,13 @@ function App() {
             })
             .catch((err) => {
                 if (cancelled) return;
-                setError(err);
+                setError(err.i18n ? err : i18nError("error.network"));
                 navigate("/error");
             });
 
         return () => {
             cancelled = true;
         };
-        // Re-run on every navigation so state updates right after login/logout, not just once on mount.
     }, [location.pathname]);
 
     return (

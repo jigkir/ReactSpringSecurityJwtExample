@@ -4,6 +4,7 @@ import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
 import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
+import {i18nError} from "../../../utils/i18nError.jsx";
 
 const Login = ({user, setError}) => {
     const navigate = useNavigate();
@@ -72,7 +73,7 @@ const Login = ({user, setError}) => {
             try {
                 userData = await getCurrentUser();
             } catch {
-                throw new Error(t("login.userFetchFailed"));
+                throw i18nError("login.userFetchFailed");
             }
 
             if (userData.role === "STUDENT") {
@@ -87,16 +88,21 @@ const Login = ({user, setError}) => {
                 navigate("/home");
             }
         } catch (err) {
+            if (err.i18n) {
+                setError(err);
+                navigate("/error");
+                return;
+            }
             switch (err.status) {
                 case 401:
-                    setServerError(t("login.invalidCredentials"));
+                    setServerError({key: "login.invalidCredentials"});
                     return;
                 case 404:
-                    setError(new Error(t("login.noServer")));
+                    setError(i18nError("login.noServer"));
                     navigate("/error");
                     return;
                 default:
-                    setError(new Error(t("login.genericError")));
+                    setError(i18nError("login.genericError"));
                     navigate("/error");
                     return;
             }

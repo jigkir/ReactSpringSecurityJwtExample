@@ -13,7 +13,8 @@
  *   GET  /api/student/{studentId}/cvs/count Long
  *   GET  /api/max-cv-size                   Integer
  *
- * Upload error codes: 400 / 415 / 422 → invalid or corrupted file, 413 → too large.
+ * Error state (fileError / serverError) holds {key, options?}, NEVER translated text,
+ * so messages re-translate live when the language is switched.
  */
 
 import {useCallback, useEffect, useRef, useState} from 'react';
@@ -70,8 +71,8 @@ const Cv = ({user}) => {
 
     const [uploadState, setUploadState] = useState(STATE.LOADING_CV);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [fileError, setFileError] = useState("");
-    const [serverError, setServerError] = useState("");
+    const [fileError, setFileError] = useState(null);
+    const [serverError, setServerError] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isReplacing, setIsReplacing] = useState(false);
     const [maxBytes, setMaxBytes] = useState(FALLBACK_MAX_BYTES);
@@ -88,9 +89,7 @@ const Cv = ({user}) => {
 
         if (!studentId) {
             console.warn(
-                "[Cv] Could not find studentId in user object. " +
-                "Check that UserResponseDto serializes the field as " +
-                "studentId, matricule, or id. Received keys:",
+                "[Cv] Could not find studentId in user object. Received keys:",
                 Object.keys(user ?? {}),
             );
             setUploadState(STATE.IDLE);
@@ -113,27 +112,27 @@ const Cv = ({user}) => {
 
     const handleFileChosen = useCallback((file) => {
         if (!file) return;
-        setFileError("");
-        setServerError("");
+        setFileError(null);
+        setServerError(null);
         const error = validateFile(file, maxBytes);
         if (error) {
-            setFileError(t(error.key, error.options));
+            setFileError(error);
             setSelectedFile(null);
             return;
         }
         setSelectedFile(file);
         setUploadState(STATE.FILE_READY);
-    }, [maxBytes, t]);
+    }, [maxBytes]);
 
     const openFilePicker = () => {
-        setFileError("");
+        setFileError(null);
         fileInputRef.current?.click();
     };
 
     const clearFile = () => {
         setSelectedFile(null);
-        setFileError("");
-        setServerError("");
+        setFileError(null);
+        setServerError(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         setUploadState(isReplacing ? STATE.EXISTING : STATE.IDLE);
         if (isReplacing) setIsReplacing(false);
@@ -142,8 +141,8 @@ const Cv = ({user}) => {
     const startReplacing = () => {
         setIsReplacing(true);
         setSelectedFile(null);
-        setFileError("");
-        setServerError("");
+        setFileError(null);
+        setServerError(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         setUploadState(STATE.IDLE);
     };
@@ -172,13 +171,13 @@ const Cv = ({user}) => {
         if (!selectedFile || uploadState === STATE.UPLOADING) return;
 
         if (!studentId) {
-            setServerError(t("cv.studentIdMissing"));
+            setServerError({key: "cv.studentIdMissing"});
             setUploadState(STATE.ERROR);
             return;
         }
 
         setUploadState(STATE.UPLOADING);
-        setServerError("");
+        setServerError(null);
 
         try {
             const response = await uploadResume(selectedFile, studentId);
@@ -188,21 +187,21 @@ const Cv = ({user}) => {
             }
 
             if ([400, 415, 422].includes(response.status)) {
-                setServerError(t("cv.fileInvalid"));
+                setServerError({key: "cv.fileInvalid"});
             } else if (response.status === 413) {
-                setServerError(t("cv.fileTooLarge", {mb: (maxBytes / (1024 * 1024)).toFixed(0)}));
+                setServerError({key: "cv.fileTooLarge", options: {mb: (maxBytes / (1024 * 1024)).toFixed(0)}});
             } else {
-                setServerError(t("cv.uploadFailed"));
+                setServerError({key: "cv.uploadFailed"});
             }
             setUploadState(STATE.ERROR);
         } catch {
-            setServerError(t("cv.uploadFailed"));
+            setServerError({key: "cv.uploadFailed"});
             setUploadState(STATE.ERROR);
         }
     };
 
     const handleRetry = () => {
-        setServerError("");
+        setServerError(null);
         setUploadState(STATE.FILE_READY);
     };
     const goToDashboard = () => navigate("/home");
@@ -218,7 +217,7 @@ const Cv = ({user}) => {
     if (uploadState === STATE.LOADING_CV) {
         const skel = dark ? "bg-slate-700" : "bg-gray-200";
         return (
-            <div className={pageClass} aria-busy="true" aria-label="Loading…">
+            <div className={pageClass} aria-busy="true" aria-label={t("commonFields.loading")}>
                 <div
                     className="w-full max-w-lg p-8 rounded-2xl shadow-lg border animate-pulse bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700">
                     <div className={`h-8 rounded-lg mb-4 ${skel}`}/>

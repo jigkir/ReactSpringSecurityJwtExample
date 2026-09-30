@@ -28,7 +28,6 @@ const DEFAULT_FORM = {
     confirmPassword: "",
 };
 
-
 // Mirror DEFAULT_FORM shape with empty strings — one warning slot per field
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
@@ -42,8 +41,8 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [serverError, setServerError] = useState("");   // API-level error message
-    const [submitting, setSubmitting] = useState(false);  // prevents double-submit
+    const [serverError, setServerError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const [disciplines, setDisciplines] = useState([]);
     const [disciplinesLoading, setDisciplinesLoading] = useState(true);
@@ -55,14 +54,13 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
             .then(async (res) => {
                 if (!res.ok) throw new Error(`Error ${res.status}`);
                 const data = await res.json();
-                // Backend may return a plain array or { disciplines: [...] }
                 const list = Array.isArray(data) ? data : (data.disciplines ?? []);
                 setDisciplines(list.map(d => ({
                     value: typeof d === "string" ? d : d.value,
                     label: typeof d === "string" ? d : (d.label ?? d.value),
                 })));
             })
-            .catch(() => setDisciplinesFetchError("Could not load disciplines."))
+            .catch(() => setDisciplinesFetchError({key: "commonFields.fetchError"}))
             .finally(() => setDisciplinesLoading(false));
     }, []);
 
@@ -125,22 +123,22 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                     }
                     const {field: conflictField = ""} = body ?? {};
                     if (conflictField === ID_FIELD) {
-                        setWarnings(w => ({...w, [ID_FIELD]: {key:"student.existingId"}}));
+                        setWarnings(w => ({...w, [ID_FIELD]: {key: "student.existingId"}}));
                     } else if (conflictField === "email") {
-                        setWarnings(w => ({...w, email: {key:"student.emailInUse"}}));
+                        setWarnings(w => ({...w, email: {key: "student.emailInUse"}}));
                     } else {
-                        setServerError(t("student.eitherEmailOrIdInUse"));
+                        setServerError({key: "student.eitherEmailOrIdInUse"});
                     }
                     break;
                 }
                 case 400:
-                    setServerError(t("student.invalidData"));
+                    setServerError({key: "student.invalidData"});
                     break;
                 default:
-                    setServerError(t("student.genericServerError", {errorCode: response.status}));
+                    setServerError({key: "student.genericServerError", options: {errorCode: response.status}});
             }
         } catch {
-            setServerError(t("student.unableToReachServerError"));
+            setServerError({key: "student.unableToReachServerError"});
         } finally {
             setSubmitting(false);
         }
@@ -148,23 +146,26 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
     // Props shared by every field component — spread with {...sharedProps} to avoid repetition
     const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
+    const serverErrorText = translateWarning(t, serverError);
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {serverError && <div className={serverErrorClass}>{serverError}</div>}
+            {serverErrorText && <div className={serverErrorClass}>{serverErrorText}</div>}
 
             <FirstNameField  {...sharedProps} value={form.firstName} warning={translateWarning(t, warnings.firstName)}/>
             <LastNameField   {...sharedProps} value={form.lastName} warning={translateWarning(t, warnings.lastName)}/>
-            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={translateWarning(t, warnings[ID_FIELD])} name={ID_FIELD}
-                             role="Student"/>
+            <MatriculeField  {...sharedProps} value={form[ID_FIELD]} warning={translateWarning(t, warnings[ID_FIELD])}
+                             name={ID_FIELD}/>
             <DisciplineField {...sharedProps} value={form.discipline} warning={translateWarning(t, warnings.discipline)}
-                             options={disciplines} loading={disciplinesLoading} fetchError={disciplinesFetchError}/>
+                             options={disciplines} loading={disciplinesLoading}
+                             fetchError={translateWarning(t, disciplinesFetchError)}/>
             <EmailField      {...sharedProps} value={form.email} warning={translateWarning(t, warnings.email)}/>
             <PasswordField   {...sharedProps} value={form.password} warning={translateWarning(t, warnings.password)}
                              eyeClass={eyeClass} show={showPassword} onToggleShow={() => setShowPassword(p => !p)}
                              hint={t("student.passwordRequirements")}
                              passwordHintClass={passwordHintClass}/>
-            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword} warning={translateWarning(t, warnings.confirmPassword)}
+            <ConfirmPasswordField {...sharedProps} value={form.confirmPassword}
+                                  warning={translateWarning(t, warnings.confirmPassword)}
                                   eyeClass={eyeClass} show={showConfirm} onToggleShow={() => setShowConfirm(p => !p)}/>
 
             <SubmitButton

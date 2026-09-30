@@ -61,7 +61,6 @@ public class SecurityConfiguration {
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
-    private static final String STUDENT_BY_CV_ID_PATH = "/api/student/cvs/{cvId}";
     private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/pending";
     private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
 
@@ -74,7 +73,6 @@ public class SecurityConfiguration {
     private static final String MANAGER_PATH = "/api/manager/**";
     private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
     private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
-    private static final String MANAGER_PENDING_CVS_PATH = "/api/manager/cvs/pending";
     private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
     private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
 
@@ -100,7 +98,6 @@ public class SecurityConfiguration {
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
-                        .requestMatchers(GET, STUDENT_BY_CV_ID_PATH).hasAuthority(Role.MANAGER.name())
 
                         // STUDENT : CV
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
@@ -121,7 +118,6 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
                         // MANAGER
-                        .requestMatchers(GET, MANAGER_PENDING_CVS_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_APPROVE_CV_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_REJECT_CV_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())

@@ -18,14 +18,18 @@
  *             visibility, status, rejectionComment
  *   manager : id, fileName, uploadedAt, status, rejectionComment, student
  * The PDF itself (Base64 `content`) is fetched on demand:
- *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
+ *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/fil
+ *
+ * `actionError` stores a translation KEY (not text) and is translated at render,
+ * so it follows the language switch live. `getUrl` does not depend on `t`,
+ * so an open PDF preview is not reloaded when the language changes.
  *
  * Props
  *   studentId   string    required in student mode
  *   dark        boolean
  *   mode        "student" | "manager"
  *   api         object    optional override
- *   onAddClick  function  optional — shows "Ajouter un CV" (student mode)
+ *   onAddClick  function  optional — shows the "add CV" button (student mode)
  */
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
@@ -63,15 +67,16 @@ const managerApi = {
     refuse: rejectCv,
 };
 
-const STATUS_LABEL = {
-    PENDING: ["cvDocuments.statusPending", "En attente de validation"],
-    APPROVED: ["cvDocuments.statusApproved", "Approuvé"],
-    REFUSED: ["cvDocuments.statusRefused", "Refusé"],
-    REJECTED: ["cvDocuments.statusRefused", "Refusé"],
+const STATUS_KEY = {
+    PENDING: "cvDocuments.statusPending",
+    APPROVED: "cvDocuments.statusApproved",
+    REFUSED: "cvDocuments.statusRefused",
+    REJECTED: "cvDocuments.statusRefused",
 };
 
 const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClick}) => {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language;
     const isManager = mode === "manager";
 
     // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
@@ -130,7 +135,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
             await fn();
             await load();
         } catch {
-            setActionError(t("cvDocuments.errorAction"));
+            setActionError("cvDocuments.errorAction");
         } finally {
             setBusyId(null);
             setConfirmId(null);
@@ -157,10 +162,10 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
             setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
         } catch (e) {
             if (e.status === 409) {
-                setActionError(t("cvDocuments.alreadyReviewed", "Ce CV a déjà été traité par un gestionnaire."));
+                setActionError("cvDocuments.alreadyReviewed");
                 await load();
             } else {
-                setActionError(t("cvDocuments.errorAction"));
+                setActionError("cvDocuments.errorAction");
             }
         } finally {
             setBusyId(null);
@@ -191,9 +196,9 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
      */
     const getUrl = useCallback(async (cvId) => {
         const file = await api.file(cvId);
-        if (!file?.content) throw new Error(t("cvDocuments.previewError"));
+        if (!file?.content) throw new Error("missing content");
         return base64ToBlobUrl(file.content);
-    }, [api, t]);
+    }, [api]);
 
     // ── Body ──────────────────────────────────────────────────────────────────
 
@@ -220,9 +225,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     } else if (docs.length === 0) {
         body = (
             <p className={th.muted}>
-                {isManager
-                    ? t("cvDocuments.emptyManager", "Aucun CV en attente de validation.")
-                    : t("cvDocuments.empty")}
+                {isManager ? t("cvDocuments.emptyManager") : t("cvDocuments.empty")}
             </p>
         );
     } else {
@@ -237,11 +240,9 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const status = doc.status ?? "PENDING";
                     const isPending = status === "PENDING";
                     const isRejected = status === "REJECTED" || status === "REFUSED";
-                    const [statusKey, statusFallback] = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
+                    const statusKey = STATUS_KEY[status] ?? STATUS_KEY.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
-                    const mainLabel = isMain
-                        ? t("cvDocuments.mainCv", "CV principal")
-                        : t("cvDocuments.makeMainBtn", "Choisir comme CV principal");
+                    const mainLabel = isMain ? t("cvDocuments.mainCv") : t("cvDocuments.makeMainBtn");
 
                     // Student normal state → 2x2 grid. Manager / confirm state → wrapping flex row.
                     const actionsClass = (!isManager && !confirming)
@@ -256,19 +257,19 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                 <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
                                     <p className={th.meta}>
-                                        {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
+                                        {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes, lang)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
                                     </p>
                                     {!isManager && isRejected && doc.rejectionComment && (
                                         <p className={th.meta}>
-                                            {t("cvDocuments.rejectionComment", "Motif du refus")} : {doc.rejectionComment}
+                                            {t("cvDocuments.rejectionComment")} : {doc.rejectionComment}
                                         </p>
                                     )}
                                 </div>
 
-                                {/* Column 2 — Pills: validation status (both modes) + sharing scope (student only) */}
+                                {/* Column 2 — Pills */}
                                 <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
                                     <span className={`${th.pillBase} ${th.statusPill(status)}`}>
-                                        {t(statusKey, statusFallback)}
+                                        {t(statusKey)}
                                     </span>
                                     {!isManager && (
                                         <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
@@ -282,9 +283,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                     {confirming ? (
                                         <>
                                             <span className={th.confirmText}>
-                                                {isManager
-                                                    ? t("cvDocuments.refuseAsk", "Refuser ce CV ? L'étudiant pourra téléverser une version corrigée.")
-                                                    : t("cvDocuments.hideAsk")}
+                                                {isManager ? t("cvDocuments.refuseAsk") : t("cvDocuments.hideAsk")}
                                             </span>
                                             {isManager && (
                                                 <textarea
@@ -292,8 +291,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                     onChange={(e) => setRefuseComment(e.target.value)}
                                                     maxLength={1000}
                                                     rows={2}
-                                                    placeholder={t("cvDocuments.refuseCommentPlaceholder", "Motif du refus")}
-                                                    aria-label={t("cvDocuments.refuseCommentPlaceholder", "Motif du refus")}
+                                                    placeholder={t("cvDocuments.refuseCommentPlaceholder")}
+                                                    aria-label={t("cvDocuments.refuseCommentPlaceholder")}
                                                     className={textareaClass}
                                                 />
                                             )}
@@ -322,13 +321,13 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                     <>
                                                         <Button tone="neutral" dark={dark} disabled={busy}
                                                                 onClick={() => decide(doc, "approve")}
-                                                                aria-label={`${t("cvDocuments.approveBtn", "Approuver")} : ${doc.fileName}`}>
-                                                            {t("cvDocuments.approveBtn", "Approuver")}
+                                                                aria-label={`${t("cvDocuments.approveBtn")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.approveBtn")}
                                                         </Button>
                                                         <Button tone="danger" dark={dark} disabled={busy}
                                                                 onClick={() => setConfirmId(doc.id)}
-                                                                aria-label={`${t("cvDocuments.refuseBtn", "Refuser")} : ${doc.fileName}`}>
-                                                            {t("cvDocuments.refuseBtn", "Refuser")}
+                                                                aria-label={`${t("cvDocuments.refuseBtn")} : ${doc.fileName}`}>
+                                                            {t("cvDocuments.refuseBtn")}
                                                         </Button>
                                                     </>
                                                 )
@@ -375,7 +374,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         <section className={th.card} aria-label={t("cvDocuments.title")}>
             <div className={th.header}>
                 <h2 className={th.title}>
-                    {isManager ? t("cvDocuments.titleManager", "CVs à valider") : t("cvDocuments.title")}
+                    {isManager ? t("cvDocuments.titleManager") : t("cvDocuments.title")}
                 </h2>
                 {!isManager && onAddClick && (
                     <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
@@ -384,7 +383,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
             {actionError && (
                 <div className="px-6 pt-4">
-                    <div className={th.error} role="alert" aria-live="assertive">{actionError}</div>
+                    <div className={th.error} role="alert" aria-live="assertive">{t(actionError)}</div>
                 </div>
             )}
 

@@ -27,7 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,11 +65,11 @@ public class EmployerControllerTest {
     private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
 
     private static Map<String, Object> validInternship() {
-        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", "P16W", "location", "Montreal", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
+        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
     }
 
     private static InternshipResponseDto internshipResponse() {
-        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", Period.ofWeeks(16), "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, 1L);
+        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, 1L);
     }
 
     @Test
@@ -220,7 +219,7 @@ public class EmployerControllerTest {
         when(employerService.saveInternship(any(InternshipRequestDto.class), eq(EMPLOYER_EMAIL))).thenThrow(new UserNotFoundException());
 
         // Act + Assert
-        mockMvc.perform(post("/api/employer/internships").principal(authentication)
+        mockMvc.perform(post("/api/employer/internship").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validInternship())))
                 .andExpect(status().isNotFound());
@@ -260,8 +259,8 @@ public class EmployerControllerTest {
                 Arguments.of("requiredSkills", "   "),
                 Arguments.of("requiredSkills", "a"),
 
-                Arguments.of("durationInWeeks", null),
-                Arguments.of("durationInWeeks", "4 months"),
+                Arguments.of("durationInWeeks", 0),
+                Arguments.of("durationInWeeks", -3),
 
                 Arguments.of("location", null),
                 Arguments.of("location", ""),
@@ -276,7 +275,7 @@ public class EmployerControllerTest {
                 Arguments.of("applicationDeadline", "2020-01-01"),
                 Arguments.of("applicationDeadline", "not-a-date"),
 
-                Arguments.of("compensationAmount", null),
+                Arguments.of("compensationAmount", -5),
                 Arguments.of("compensationAmount", 123.45),
                 Arguments.of("compensationAmount", 12.345),
                 Arguments.of("compensationAmount", "abc")

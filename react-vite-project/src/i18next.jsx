@@ -13,13 +13,21 @@ i18n
     .use(initReactI18next)
     // init i18next
     // for all options read: https://www.i18next.com/overview/configuration-options
+i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
     .init({
-        debug: true,
-        lng: "fr",
-        fallbackLng: "fr",
-        resources: {
-            fr: {translation: fr}, en: {translation: en}
-        }
+        resources: {fr: {translation: fr}, en: {translation: en}},
+        fallbackLng: 'fr',
+        supportedLngs: ['fr', 'en'],
+        detection: {order: ['localStorage']},
+        interpolation: {escapeValue: false},
     });
+
+const syncHtmlLang = (lng) => {
+    document.documentElement.lang = (lng || 'fr').split('-')[0];
+};
+syncHtmlLang(i18n.language);
+i18n.on('languageChanged', syncHtmlLang);
 
 export default i18n;
