@@ -6,13 +6,14 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.notification.Notification;
+import com.lacouf.rsbjwt.model.notification.NotificationStatus;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.repository.CVRepository;
-import com.lacouf.rsbjwt.repository.InternshipRepository;
-import com.lacouf.rsbjwt.repository.StudentRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
@@ -24,6 +25,7 @@ import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,7 @@ public class StudentService {
     private final UserAppRepository userAppRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
+    private final NotificationRepository notificationRepository;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
@@ -47,12 +50,13 @@ public class StudentService {
 
 
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository) {
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.internshipRepository = internshipRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -242,18 +246,19 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<InternshipResponseDto> getInternships(long studentId) throws UserNotFoundException, CvNotFoundException {
+    public List<Internship> getInternships(long studentId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(studentId);
         CV cv = validateAndGetStudentCv(student, student.getId());
         Discipline discipline = getDisciplineByStudent(student);
 
-        List<InternshipResponseDto> internships = new ArrayList<>();
+        List<Internship> internships = new ArrayList<>();
 
         if (cv.getStatus() != CvStatus.APPROVED) {
             return internships;
         }
 
         internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
+        List<Notification> notifications = getNotificationsForStudent(student);
 
         return internships;
     }
@@ -267,11 +272,31 @@ public class StudentService {
         return employer.getDiscipline();
     }
 
-    private List<InternshipResponseDto> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
+    /*private List<Internship> filterIntershipsByStatus(List<Internship> internships, InternshipStatus status) {
+        return internships.stream()
+                .filter(internship -> internship.getStatus() == status)
+                .toList();
+    }*/
+
+    private List<Internship> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
         return internships.stream()
                 .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
-                .map(InternshipResponseDto::of)
                 .toList();
+    }
+
+    private List<Notification> getNotificationsForStudent(Student student) {
+        return notificationRepository.findByUserId(student.getId());
+    }
+
+   /* private List<Notification> filterExistingNotificationsByInterishipId(List<Notification> notifications, long internshipId) {
+        return notifications.stream()
+                .filter(notification -> notification.getInternshipId() == internshipId)
+                .toList();
+    }*/
+
+    private void CreateNewIntershipNotificationsForStudent(String title, String message, NotificationStatus status, NotificationType type, TargetType targetType, long internshipId, Student student) {
+        Notification notification = new Notification(title, message, status, type, targetType, internshipId, student);
+        notificationRepository.save(notification);
     }
 
     private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
