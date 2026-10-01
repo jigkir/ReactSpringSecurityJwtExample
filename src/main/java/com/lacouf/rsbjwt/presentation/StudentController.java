@@ -69,6 +69,7 @@ public class StudentController {
     @PutMapping("/{id}/cvs/{cvId}/public")
     public ResponseEntity<String> makeCVPublic(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         studentService.setCvAsPublic(id, cvId);
+        managerService.addNewCVNotificationToManager( "New CV Pending Review", "A new CV has been submitted for review.", cvId);
         return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
     }
 
