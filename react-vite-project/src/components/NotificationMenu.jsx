@@ -44,7 +44,7 @@ export default function NotificationMenu({notifications = [], dark}) {
                 <span className="relative inline-flex">
                     <Icon name="notifications" size={20}/>
                     {total > 0 && (
-                        <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"/>
+                        <span className={`${menuClasses.redDot}`}> {total} </span>
                     )}
                 </span>
             </button>

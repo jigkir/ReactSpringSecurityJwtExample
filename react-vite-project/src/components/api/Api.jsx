@@ -226,7 +226,7 @@ export async function getStudentInternships(studentId) {
 
 //region Notifications
 export async function getManagerNotifications(managerId) {
-    const response = await fetcher(`manager/${managerId}/notifications`, {method: "GET"});
+    const response = await fetcher(`manager/notifications`, {method: "GET"});
     return handleResponse(response);
 }
 
