@@ -225,14 +225,6 @@ public class StudentService {
         return CvFileResponseDto.of(cv);
     }
 
-    public void setCVAsPending(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
-        Student student = findById(id);
-        CV cv = validateAndGetStudentCv(student, cvId);
-        cv.setStatus(CvStatus.PENDING);
-        cv.setRejectionComment(null);
-        cvRepository.save(cv);
-    }
-
     public String getCVStatus(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(studentId);
         CV cv = validateAndGetStudentCv(student, cvId);

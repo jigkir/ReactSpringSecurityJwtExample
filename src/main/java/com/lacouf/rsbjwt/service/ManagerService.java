@@ -186,20 +186,6 @@ public class ManagerService {
         return cvRepository.findByIdAndSharingScopeAndVisibility(cvId, CVSharingScope.PUBLIC, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
     }
 
-    private CV findPendingCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = findPublicCv(cvId);
-
-        verifyCvIsPending(cv);
-
-        return cv;
-    }
-
-    private void verifyCvIsPending(CV cv) throws CvAlreadyReviewedException {
-        if (cv.getStatus() != CvStatus.PENDING) {
-            throw new CvAlreadyReviewedException(cv.getId());
-        }
-    }
-
     private ManagerCvResponseDto saveAndConvert(CV cv) {
         cvRepository.save(cv);
 
@@ -212,15 +198,6 @@ public class ManagerService {
         if (managerFoundByEmail.isPresent()) {
             throw new UserAlreadyExistsException("email");
         }
-    }
-
-    private List<Manager> getAllManagers() throws UserNotFoundException {
-        List<Manager> managers = managerRepository.findAll();
-
-        if (managers.isEmpty()) {
-            throw new UserNotFoundException();
-        }
-        return managers;
     }
 
     private void addCVRejectionNotificationToStudent(String message, Long cvId, UserApp student) {
