@@ -60,10 +60,9 @@ public class SecurityConfiguration {
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
-    private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/pending";
     private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
 
-
+    // STUDENT NOTIFICATIONS PATHS
     private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/{studentId}/notifications";
     private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/{notificationId}/read";
     private static final String STUDENT_NOTIFICATION_COUNT_PATH = "/api/student/{studentId}/notifications/count";
@@ -75,7 +74,7 @@ public class SecurityConfiguration {
 
     // MANAGER PATHS
     private static final String MANAGER_PATH = "/api/manager/**";
-    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/{managerId}/notifications";
+    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
     private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
     private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
     private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
@@ -118,7 +117,6 @@ public class SecurityConfiguration {
                         .requestMatchers(PUT, HIDE_CV_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAIN_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, SECONDARY_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, STUDENT_PENDING_CV_PATH).hasAuthority(Role.STUDENT.name())
 
                         // EMPLOYER : INTERNSHIP
                         .requestMatchers(GET, GET_STUDENT_INTERNSHIPS_PATH).hasAuthority(Role.STUDENT.name())
