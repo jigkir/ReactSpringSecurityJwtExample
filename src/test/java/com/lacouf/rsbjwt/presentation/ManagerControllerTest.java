@@ -211,13 +211,13 @@ public class ManagerControllerTest {
         verify(managerService).getInternshipById(1L);
     }
 
-    //PUT approved
+    //approve internship
     @Test
     void shouldReturnOkWhenInternshipIsApprovved() throws Exception {
-        //Arrange
+        // Arrange
         when(managerService.approveInternship(1L)).thenReturn(internshipWith(InternshipStatus.APPROVED));
 
-        //Act + assert
+        // Act + assert
         mockMvc.perform(put("/api/manager/internships/1/approve"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("APPROVED"));
@@ -225,4 +225,36 @@ public class ManagerControllerTest {
         verify(managerService).approveInternship(1L);
     }
 
+    //reject internship
+    @Test
+    void shouldReturnOkWhenInternshipIsRejected() throws Exception {
+        // Arrange
+        when(managerService.rejectInternship(1L)).thenReturn(internshipWith(InternshipStatus.REJECTED));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/reject")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"));
+
+        verify(managerService).rejectInternship(1L);
+    }
+
+    //404 approve internship inexistant
+    @Test
+    void shouldReturnNotFoundWhenApprovingUnknownInternship() throws Exception {
+        // Arrange
+        when(managerService.approveInternship(99L)).thenThrow(new InternshipNotFoundException(99L));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/99/approve")).andExpect(status().isNotFound());
+    }
+
+    //404 reject internship inexistant
+    @Test
+    void shouldReturnNotFoundWhenRejectingUnknownInternship() throws Exception {
+        // Arrange
+        when(managerService.rejectInternship(99L)).thenThrow(new InternshipNotFoundException(99L));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/99/reject")).andExpect(status().isNotFound());
+    }
 }
