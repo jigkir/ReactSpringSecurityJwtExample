@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
-import {getAuthClasses} from '../../../styles/appStyles.jsx';
+import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
 import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';

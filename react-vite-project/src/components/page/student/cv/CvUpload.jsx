@@ -12,7 +12,7 @@
  * translated HERE at render time, so they follow the language switch live.
  */
 
-import {getAuthClasses, getCvUploadClasses} from '../../../../styles/appStyles.jsx';
+import {getAuthClasses, getCvUploadClasses} from '../../../../styles/AppStyles.jsx';
 import {formatBytes} from './cvUtils.js';
 import {useTranslation} from 'react-i18next';
 import Icon from '../../../../styles/Icon.jsx';

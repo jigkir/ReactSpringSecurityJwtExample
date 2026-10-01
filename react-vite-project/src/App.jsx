@@ -6,7 +6,7 @@ import MainContainer from './components/MainContainer.jsx';
 import About from './components/About.jsx';
 import Login from './components/page/auth/Login.jsx';
 import Signup from './components/page/auth/Signup.jsx';
-import fetcher from './utils/fetcher.js';
+import {getCurrentUser} from './components/api/Api.jsx';
 import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
 import PostInternship from './components/page/internship/PostInternship.jsx';
@@ -39,28 +39,21 @@ function App() {
 
         let cancelled = false;
 
-        fetcher("users/current", {})
-            .then(async (res) => {
-                if (!res.ok) {
-                    switch (res.status) {
-                        case 401:
-                            localStorage.removeItem("token");
-                            if (!cancelled) setUser({});
-                            return;
-                        case 403:
-                            throw i18nError("error.accessRefused");
-                        case 404:
-                            throw i18nError("error.notFound");
-                        default:
-                            throw i18nError("error.apiStatus", {status: res.status});
-                    }
-                }
-                const data = await res.json();
+        getCurrentUser()
+            .then((data) => {
                 if (!cancelled) setUser({...data, isLoggedIn: true});
             })
             .catch((err) => {
                 if (cancelled) return;
-                setError(err.i18n ? err : i18nError("error.network"));
+                if (err.status === 401) {
+                    localStorage.removeItem("token");
+                    setUser({});
+                    return;
+                }
+                if (err.status === 403) setError(i18nError("error.accessRefused"));
+                else if (err.status === 404) setError(i18nError("error.notFound"));
+                else if (err.status) setError(i18nError("error.apiStatus", {status: err.status}));
+                else setError(i18nError("error.network"));
                 navigate("/error");
             });
 

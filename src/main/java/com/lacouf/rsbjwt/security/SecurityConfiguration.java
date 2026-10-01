@@ -56,11 +56,16 @@ public class SecurityConfiguration {
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/{studentId}/cvs";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/{studentId}/cvs/**";
     private static final String HIDE_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/hide";
+    private static final String GET_STUDENT_INTERNSHIPS_PATH = "/api/student/{studentId}/internships";
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
-    private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/pending";
     private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
+
+    // STUDENT NOTIFICATIONS PATHS
+    private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/{studentId}/notifications";
+    private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/{notificationId}/read";
+    private static final String STUDENT_NOTIFICATION_COUNT_PATH = "/api/student/{studentId}/notifications/count";
 
     // INTERNSHIP PATHS
     private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
@@ -69,8 +74,8 @@ public class SecurityConfiguration {
 
     // MANAGER PATHS
     private static final String MANAGER_PATH = "/api/manager/**";
-    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/{managerId}/notifications";
-    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/{managerId}/notifications/{notificationId}/read";
+    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
+    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
     private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
     private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
 
@@ -95,6 +100,11 @@ public class SecurityConfiguration {
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
+                        // STUDENT : NOTIFICATIONS
+                        .requestMatchers(GET, STUDENT_NOTIFICATIONS_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, STUDENT_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_NOTIFICATION_COUNT_PATH).hasAuthority(Role.STUDENT.name())
+
 
                         // STUDENT : CV
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
@@ -107,9 +117,9 @@ public class SecurityConfiguration {
                         .requestMatchers(PUT, HIDE_CV_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, MAIN_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, SECONDARY_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, STUDENT_PENDING_CV_PATH).hasAuthority(Role.STUDENT.name())
 
                         // EMPLOYER : INTERNSHIP
+                        .requestMatchers(GET, GET_STUDENT_INTERNSHIPS_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())

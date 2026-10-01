@@ -34,7 +34,7 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
 
-    private Long targetId; // genre CV ID ou wtv
+    private Long targetId;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import InternshipModal from './InternshipModal.jsx';
 import InternshipCard from './InternshipCard.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
-import {getPostInternshipClasses} from '../../../styles/appStyles.jsx';
+import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {createInternship, deleteInternship, getEmployerInternships} from '../../api/Api.jsx';
 
 function PostInternship({user}) {

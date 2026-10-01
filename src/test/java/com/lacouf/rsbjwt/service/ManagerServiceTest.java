@@ -1,27 +1,28 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
-import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.repository.InternshipRepository;
-import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.model.cv.*;
-import com.lacouf.rsbjwt.model.notification.Notification;
-import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.notification.Notification;
+import com.lacouf.rsbjwt.model.notification.NotificationStatus;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.repository.CVRepository;
-import com.lacouf.rsbjwt.repository.ManagerRepository;
-import com.lacouf.rsbjwt.repository.NotificationRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,9 +33,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
-import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -76,8 +77,8 @@ public class ManagerServiceTest {
         cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
         student.addCv(cv);
-        Employer employer = mock(Employer.class);
-        when(employer.getId()).thenReturn(3L);
+        Employer employer = new Employer("Jean", "Dupont", Credentials.builder().email("employer@example.com").role(Role.EMPLOYER).build(), "Tech Corp", Discipline.COMPUTER_SCIENCE, "514-123-4567");
+        employer.setId(3L);
 
         internship = new Internship("Développeur logiciel",
                 "Stage en développement logiciel",
@@ -141,7 +142,7 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnAllPublicCvs() {
         // Arrange
-        when(cvRepository.findBySharingScope(CVSharingScope.PUBLIC)).thenReturn(List.of(cv));
+        when(cvRepository.findBySharingScopeAndVisibility(CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(List.of(cv));
 
         // Act
         List<ManagerCvResponseDto> result = managerService.getAllPublicCvs();
@@ -154,7 +155,7 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnPublicCv() throws CvNotFoundException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.getCv(1L);
@@ -167,7 +168,7 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowCvNotFoundWhenCvIsNotPublicOrDoesNotExist() {
         // Arrange
-        when(cvRepository.findByIdAndSharingScope(99L, CVSharingScope.PUBLIC)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(99L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(CvNotFoundException.class, () -> managerService.getCv(99L));
@@ -176,7 +177,7 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnCvFile() throws CvNotFoundException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         CvFileResponseDto result = managerService.getCvFile(1L);
@@ -189,22 +190,72 @@ public class ManagerServiceTest {
     @Test
     void shouldApproveCv() throws CvNotFoundException, CvAlreadyReviewedException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
-        managerService.approveCv(1L);
+        ManagerCvResponseDto result = managerService.approveCv(1L);
 
         // Assert
         assert(CvStatus.APPROVED).equals(cv.getStatus());
+        assert (CvStatus.APPROVED).equals(result.status());
+        assert result.rejectionComment() == null;
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
+        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+    }
+
+    @Test
+    void shouldClearRejectionCommentWhenApprovingPreviouslyRejectedCv() throws CvNotFoundException, CvAlreadyReviewedException {
+        // Arrange
+        cv.setStatus(CvStatus.REJECTED);
+        cv.setRejectionComment("CV too detailed");
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+
+        // Act
+        ManagerCvResponseDto result = managerService.approveCv(1L);
+
+        // Assert
+        assert (CvStatus.APPROVED).equals(cv.getStatus());
+        assert cv.getRejectionComment() == null;
+        assert (CvStatus.APPROVED).equals(result.status());
+        assert result.rejectionComment() == null;
+
+        verify(cvRepository).save(cv);
+    }
+
+    @Test
+    void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws CvNotFoundException, CvAlreadyReviewedException {
+        // Arrange
+        cv.setStatus(CvStatus.APPROVED);
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+
+        // Act
+        ManagerCvResponseDto result = managerService.approveCv(1L);
+
+        // Assert
+        assert (CvStatus.APPROVED).equals(result.status());
+        assert (CvStatus.APPROVED).equals(cv.getStatus());
+
+        verify(cvRepository, never()).save(any(CV.class));
+        verifyNoInteractions(notificationRepository);
+    }
+
+    @Test
+    void shouldThrowCvNotFoundWhenApprovingUnknownCv() {
+        // Arrange
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(99L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(CvNotFoundException.class, () -> managerService.approveCv(99L));
+
+        verify(cvRepository, never()).save(any(CV.class));
     }
 
     @Test
     void shouldRejectCvWithComment() throws Exception {
         // Arrange
-        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
@@ -217,23 +268,13 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-    }
-
-    @Test
-    void shouldThrowCvNotFoundWhenApprovingUnknownCv() {
-        // Arrange
-        when(cvRepository.findByIdAndSharingScope(99L, CVSharingScope.PUBLIC)).thenReturn(Optional.empty());
-
-        // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> managerService.approveCv(99L));
-
-        verify(cvRepository, never()).save(any(CV.class));
+        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test
     void shouldThrowCvNotFoundWhenRejectingUnknownCv() {
         // Arrange
-        when(cvRepository.findByIdAndSharingScope(99L, CVSharingScope.PUBLIC)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(99L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(CvNotFoundException.class, () -> managerService.rejectCv(99L, "CV too detailed"));
@@ -242,30 +283,38 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldThrowCvAlreadyReviewedWhenApprovingAlreadyApprovedCv() {
+    void shouldAllowRejectingPreviouslyApprovedCv() throws Exception {
         // Arrange
         cv.setStatus(CvStatus.APPROVED);
-        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
-        CvAlreadyReviewedException exception = assertThrows(CvAlreadyReviewedException.class, () -> managerService.approveCv(1L));
+        ManagerCvResponseDto result = managerService.rejectCv(1L, "Changed my mind");
 
         // Assert
-        assert("The CV with ID 1 has already been reviewed.").equals(exception.getMessage());
+        assert (CvStatus.REJECTED).equals(cv.getStatus());
+        assert ("Changed my mind").equals(cv.getRejectionComment());
+        assert (CvStatus.REJECTED).equals(result.status());
 
-        verify(cvRepository, never()).save(any(CV.class));
+        verify(cvRepository).save(cv);
     }
 
     @Test
-    void shouldThrowCvAlreadyReviewedWhenRejectingAlreadyRejectedCv() {
+    void shouldAllowRejectingAlreadyRejectedCvWithNewComment() throws Exception {
         // Arrange
         cv.setStatus(CvStatus.REJECTED);
-        when(cvRepository.findByIdAndSharingScope(1L, CVSharingScope.PUBLIC)).thenReturn(Optional.of(cv));
+        cv.setRejectionComment("Old comment");
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
-        // Act + Assert
-        assertThrows(CvAlreadyReviewedException.class, () -> managerService.rejectCv(1L, "CV too detailed"));
+        // Act
+        ManagerCvResponseDto result = managerService.rejectCv(1L, "New comment");
 
-        verify(cvRepository, never()).save(any(CV.class));
+        // Assert
+        assert (CvStatus.REJECTED).equals(cv.getStatus());
+        assert ("New comment").equals(cv.getRejectionComment());
+        assert ("New comment").equals(result.rejectionComment());
+
+        verify(cvRepository).save(cv);
     }
 
     // recup les stages en attente
@@ -364,5 +413,41 @@ public class ManagerServiceTest {
         assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldReturnOnlyUnreadNotificationsOfConnectedManager() throws Exception {
+        // Arrange
+        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, 1L, new Manager());
+        notification.setId(5L);
+
+        when(notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc("manager@example.com", NotificationStatus.UNREAD)).thenReturn(List.of(notification));
+
+        // Act
+        List<NotificationDto> result = managerService.getNotificationsForManager("manager@example.com");
+
+        // Assert
+        assert(Integer.valueOf(1)).equals(result.size());
+        assert(Long.valueOf(5L)).equals(result.getFirst().id());
+        assert(NotificationStatus.UNREAD).equals(result.getFirst().status());
+        assert(NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(result.getFirst().notificationType());
+    }
+
+    @Test
+    void shouldMarkNotificationAsRead() throws NotificationNotFoundException {
+        // Arrange
+        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, 1L, new Manager());
+        notification.setId(5L);
+
+        when(notificationRepository.findByIdAndUser_Credentials_Email(5L, "manager@example.com")).thenReturn(Optional.of(notification));
+
+        // Act
+        NotificationDto result = managerService.markNotificationAsRead(5L, "manager@example.com");
+
+        // Assert
+        assert(NotificationStatus.READ).equals(notification.getStatus());
+        assert(NotificationStatus.READ).equals(result.status());
+
+        verify(notificationRepository).save(notification);
     }
 }

@@ -2,7 +2,8 @@
  * CvDocuments.jsx — CV list, shared by students and managers.
  *
  * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
- * mode="manager":           list pending public CVs, preview, approve, refuse (with comment).
+ * mode="manager":           list all public CVs, filter/sort (status, discipline, search, date, student),
+ *                           preview, approve, refuse (with comment).
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
  *
@@ -16,9 +17,10 @@
  * List fields
  *   student : id, sharingScope, fileName, sizeBytes, uploadedAt, priority,
  *             visibility, status, rejectionComment
- *   manager : id, fileName, uploadedAt, status, rejectionComment, student
+ *   manager : id, fileName, uploadedAt, status, rejectionComment,
+ *             student {id, firstName, lastName, email, studentId, discipline}
  * The PDF itself (Base64 `content`) is fetched on demand:
- *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/fil
+ *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
  *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live. `getUrl` does not depend on `t`,
@@ -32,14 +34,15 @@
  *   onAddClick  function  optional — shows the "add CV" button (student mode)
  */
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
+import Icon from '../../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
 import {
     approveCv,
     getManagerCvFile,
-    getPendingCvs,
+    getPublicCvs,
     getStudentCvFile,
     getStudentCvs,
     hideCv,
@@ -48,7 +51,7 @@ import {
     setMainCv,
 } from '../../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
-import {getCvDocumentsClasses} from '../../../../styles/appStyles.jsx';
+import {getCvDocumentsClasses} from '../../../../styles/AppStyles.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
@@ -61,7 +64,7 @@ const buildStudentApi = (studentId) => ({
 });
 
 const managerApi = {
-    list: getPendingCvs,
+    list: getPublicCvs,
     file: getManagerCvFile,
     approve: approveCv,
     refuse: rejectCv,
@@ -72,6 +75,18 @@ const STATUS_KEY = {
     APPROVED: "cvDocuments.statusApproved",
     REFUSED: "cvDocuments.statusRefused",
     REJECTED: "cvDocuments.statusRefused",
+};
+
+// Textarea that grows/shrinks with its content (no inner scrollbar, no manual resize).
+const AutoResizeTextarea = ({value, className = "", ...props}) => {
+    const ref = useRef(null);
+    useLayoutEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        el.style.height = "auto";
+        el.style.height = `${el.scrollHeight}px`;
+    }, [value]);
+    return <textarea ref={ref} value={value} className={`${className} resize-none overflow-hidden`} {...props}/>;
 };
 
 const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClick}) => {
@@ -97,7 +112,17 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
+    // Manager-only filters / sort
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [disciplineFilter, setDisciplineFilter] = useState("ALL");
+    const [search, setSearch] = useState("");
+    const [sortBy, setSortBy] = useState("DATE_DESC");
+
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
+
+    const selectClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
@@ -116,7 +141,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         setLoadFailed(false);
         try {
             const all = await api.list();
-            setDocs(sortDocs(isManager ? all : all.filter((d) => d.visibility === "VISIBLE")));
+            // Manager: sorting/filtering is done in `visibleDocs`.
+            setDocs(isManager ? all : sortDocs(all.filter((d) => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
@@ -125,6 +151,51 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     useEffect(() => {
         if (isManager || studentId) load();
     }, [load, isManager, studentId]);
+
+    // ── Manager filter / sort ─────────────────────────────────────────────────
+
+    const disciplines = useMemo(
+        () => [...new Set((docs ?? []).map((d) => d.student?.discipline).filter(Boolean))].sort(),
+        [docs],
+    );
+
+    const visibleDocs = useMemo(() => {
+        if (!docs) return null;
+        if (!isManager) return docs;
+
+        const q = search.trim().toLowerCase();
+
+        const filtered = docs.filter((d) => {
+            if (statusFilter !== "ALL" && d.status !== statusFilter) return false;
+            if (disciplineFilter !== "ALL" && d.student?.discipline !== disciplineFilter) return false;
+            if (q) {
+                const s = d.student ?? {};
+                const haystack = [s.firstName, s.lastName, s.email, s.studentId, d.fileName]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+                if (!haystack.includes(q)) return false;
+            }
+            return true;
+        });
+
+        const byName = (a, b) =>
+            (a.student?.lastName ?? "").localeCompare(b.student?.lastName ?? "") ||
+            (a.student?.firstName ?? "").localeCompare(b.student?.firstName ?? "");
+
+        return filtered.sort((a, b) => {
+            switch (sortBy) {
+                case "DATE_ASC":
+                    return new Date(a.uploadedAt) - new Date(b.uploadedAt);
+                case "NAME_ASC":
+                    return byName(a, b);
+                case "NAME_DESC":
+                    return byName(b, a);
+                default:
+                    return new Date(b.uploadedAt) - new Date(a.uploadedAt);
+            }
+        });
+    }, [docs, isManager, statusFilter, disciplineFilter, search, sortBy]);
 
     // ── Student mutations ─────────────────────────────────────────────────────
 
@@ -151,14 +222,14 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
     // ── Manager decision ──────────────────────────────────────────────────────
     // The backend returns the updated DTO. We patch it into the list instead of
-    // reloading, so the row stays visible with its new status until the page is
-    // refreshed (the /pending endpoint no longer returns decided CVs).
+    // reloading, so the row stays visible with its new status (and is re-filtered
+    // by the status filter automatically).
 
     const decide = async (doc, action) => {
         setBusyId(doc.id);
         setActionError("");
         try {
-            const updated = await api[action](doc.id, action === "refuse" ? refuseComment.trim() : undefined);
+            const updated = await api[action](doc.id, action === "refuse" ? refuseComment : undefined);
             setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
         } catch (e) {
             if (e.status === 409) {
@@ -172,6 +243,12 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
             setConfirmId(null);
             setRefuseComment("");
         }
+    };
+
+    // Opens the reject form. When editing an existing rejection, the old comment is pre-filled.
+    const startRefuse = (doc) => {
+        setConfirmId(doc.id);
+        setRefuseComment(doc.rejectionComment ?? "");
     };
 
     const cancelConfirm = () => {
@@ -200,6 +277,56 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         return base64ToBlobUrl(file.content);
     }, [api]);
 
+    // ── Manager toolbar ───────────────────────────────────────────────────────
+
+    const toolbar = isManager && docs !== null && !loadFailed && (
+        <div
+            className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+            {/* Search: native (blue) clear button hidden, replaced by a red Google "close" icon */}
+            <div className="relative w-full md:w-64">
+                <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search name, email, student ID…"
+                    aria-label="Search"
+                    className={`${selectClass} w-full pr-8 [&::-webkit-search-cancel-button]:appearance-none`}
+                />
+                {search && (
+                    <button
+                        type="button"
+                        onClick={() => setSearch("")}
+                        aria-label="Clear search"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex text-red-500 hover:text-red-600"
+                    >
+                        <Icon name="close" size={18}/>
+                    </button>
+                )}
+            </div>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+                    className={selectClass} aria-label="Status">
+                <option value="ALL">All statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+            </select>
+            <select value={disciplineFilter} onChange={(e) => setDisciplineFilter(e.target.value)}
+                    className={selectClass} aria-label="Discipline">
+                <option value="ALL">All disciplines</option>
+                {disciplines.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                ))}
+            </select>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+                    className={selectClass} aria-label="Sort">
+                <option value="DATE_DESC">Newest first</option>
+                <option value="DATE_ASC">Oldest first</option>
+                <option value="NAME_ASC">Student A → Z</option>
+                <option value="NAME_DESC">Student Z → A</option>
+            </select>
+        </div>
+    );
+
     // ── Body ──────────────────────────────────────────────────────────────────
 
     let body;
@@ -211,7 +338,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                 <button onClick={load} className={`${btn} ${btnTone.neutral} mt-3`}>{t("cvDocuments.retryBtn")}</button>
             </div>
         );
-    } else if (docs === null) {
+    } else if (visibleDocs === null) {
         body = (
             <div className="px-6 py-4 flex flex-col gap-6 animate-pulse" aria-busy="true">
                 {[0, 1, 2].map((i) => (
@@ -222,7 +349,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                 ))}
             </div>
         );
-    } else if (docs.length === 0) {
+    } else if (visibleDocs.length === 0) {
         body = (
             <p className={th.muted}>
                 {isManager ? t("cvDocuments.emptyManager") : t("cvDocuments.empty")}
@@ -231,7 +358,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     } else {
         body = (
             <ul className={th.list}>
-                {docs.map((doc) => {
+                {visibleDocs.map((doc) => {
                     const busy = busyId === doc.id;
                     const confirming = confirmId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
@@ -239,6 +366,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const isMain = doc.priority === "MAIN";
                     const status = doc.status ?? "PENDING";
                     const isPending = status === "PENDING";
+                    const isApproved = status === "APPROVED";
                     const isRejected = status === "REJECTED" || status === "REFUSED";
                     const statusKey = STATUS_KEY[status] ?? STATUS_KEY.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
@@ -256,13 +384,22 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                 {/* Column 1 — Identity */}
                                 <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
+                                    {isManager && doc.student && (
+                                        <p className={`${th.meta} font-medium`}>
+                                            {doc.student.firstName} {doc.student.lastName}
+                                            {" · "}{doc.student.studentId}
+                                            {" · "}{doc.student.email}
+                                            {" · "}{doc.student.discipline}
+                                        </p>
+                                    )}
                                     <p className={th.meta}>
                                         {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes, lang)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
                                     </p>
-                                    {!isManager && isRejected && doc.rejectionComment && (
-                                        <p className={th.meta}>
-                                            {t("cvDocuments.rejectionComment")} : {doc.rejectionComment}
-                                        </p>
+                                    {isRejected && doc.rejectionComment && (
+                                        <div className={th.rejectionBox} role="note">
+                                            <p className={th.rejectionLabel}>{t("cvDocuments.rejectionComment")} :</p>
+                                            <p className={`${th.rejectionText} whitespace-pre-wrap`}>{doc.rejectionComment}</p>
+                                        </div>
                                     )}
                                 </div>
 
@@ -280,13 +417,26 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
                                 {/* Column 3 — Actions */}
                                 <div className={actionsClass}>
+                                    {/* Preview stays available in every state (also while rejecting / deleting) */}
+                                    <Button tone={isPreviewOpen ? "danger" : "accent"} dark={dark}
+                                            icon={isPreviewOpen ? "close" : "visibility"}
+                                            onClick={() => togglePreview(doc.id)}
+                                            disabled={busy}
+                                            className={isManager ? "" : cellBtn}
+                                            aria-expanded={isPreviewOpen}
+                                            aria-label={`${viewLabel} : ${doc.fileName}`}>
+                                        {viewLabel}
+                                    </Button>
+
                                     {confirming ? (
                                         <>
                                             <span className={th.confirmText}>
-                                                {isManager ? t("cvDocuments.refuseAsk") : t("cvDocuments.hideAsk")}
+                                                {isManager
+                                                    ? t(isRejected ? "cvDocuments.editRefuseAsk" : "cvDocuments.refuseAsk")
+                                                    : t("cvDocuments.hideAsk")}
                                             </span>
                                             {isManager && (
-                                                <textarea
+                                                <AutoResizeTextarea
                                                     value={refuseComment}
                                                     onChange={(e) => setRefuseComment(e.target.value)}
                                                     maxLength={1000}
@@ -296,61 +446,61 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                     className={textareaClass}
                                                 />
                                             )}
-                                            <Button tone="danger" dark={dark}
+                                            <Button tone="danger" dark={dark} icon="check"
                                                     disabled={busy || (isManager && !refuseComment.trim())} autoFocus
                                                     onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
                                                 {t("cvDocuments.confirmBtn")}
                                             </Button>
-                                            <Button tone="neutral" dark={dark} disabled={busy}
+                                            <Button tone="neutral" dark={dark} icon="close" disabled={busy}
                                                     onClick={cancelConfirm}>
                                                 {t("cvDocuments.cancelBtn")}
                                             </Button>
                                         </>
+                                    ) : isManager ? (
+                                        <>
+                                            {/* Decision can be changed at any time */}
+                                            {!isApproved && (
+                                                <Button tone="success" dark={dark} icon="check" disabled={busy}
+                                                        onClick={() => decide(doc, "approve")}
+                                                        aria-label={`${t("cvDocuments.approveBtn")} : ${doc.fileName}`}>
+                                                    {t("cvDocuments.approveBtn")}
+                                                </Button>
+                                            )}
+                                            {isRejected ? (
+                                                <Button tone="neutral" dark={dark} icon="edit" disabled={busy}
+                                                        onClick={() => startRefuse(doc)}
+                                                        aria-label={`${t("cvDocuments.editCommentBtn")} : ${doc.fileName}`}>
+                                                    {t("cvDocuments.editCommentBtn")}
+                                                </Button>
+                                            ) : (
+                                                <Button tone="danger" dark={dark} icon="close" disabled={busy}
+                                                        onClick={() => startRefuse(doc)}
+                                                        aria-label={`${t("cvDocuments.refuseBtn")} : ${doc.fileName}`}>
+                                                    {t("cvDocuments.refuseBtn")}
+                                                </Button>
+                                            )}
+                                        </>
                                     ) : (
                                         <>
-                                            <Button tone="accent" dark={dark} onClick={() => togglePreview(doc.id)}
-                                                    disabled={busy}
-                                                    className={isManager ? "" : cellBtn}
-                                                    aria-expanded={isPreviewOpen}
-                                                    aria-label={`${viewLabel} : ${doc.fileName}`}>
-                                                {viewLabel}
+                                            {/* Order matters for the 2x2 grid: Delete must be last (bottom-right). */}
+                                            <Button tone="neutral" dark={dark}
+                                                    icon={isPublic ? "lock" : "share_reviews"}
+                                                    onClick={() => toggleScope(doc)}
+                                                    disabled={busy} className={cellBtn}
+                                                    aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
+                                                {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
                                             </Button>
-
-                                            {isManager ? (
-                                                isPending && (
-                                                    <>
-                                                        <Button tone="neutral" dark={dark} disabled={busy}
-                                                                onClick={() => decide(doc, "approve")}
-                                                                aria-label={`${t("cvDocuments.approveBtn")} : ${doc.fileName}`}>
-                                                            {t("cvDocuments.approveBtn")}
-                                                        </Button>
-                                                        <Button tone="danger" dark={dark} disabled={busy}
-                                                                onClick={() => setConfirmId(doc.id)}
-                                                                aria-label={`${t("cvDocuments.refuseBtn")} : ${doc.fileName}`}>
-                                                            {t("cvDocuments.refuseBtn")}
-                                                        </Button>
-                                                    </>
-                                                )
-                                            ) : (
-                                                <>
-                                                    {/* Order matters for the 2x2 grid: Delete must be last (bottom-right). */}
-                                                    <Button tone="neutral" dark={dark} onClick={() => toggleScope(doc)}
-                                                            disabled={busy} className={cellBtn}
-                                                            aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
-                                                        {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
-                                                    </Button>
-                                                    <Button tone="neutral" dark={dark} onClick={() => makeMain(doc)}
-                                                            disabled={busy || isMain} className={cellBtn}
-                                                            aria-label={`${mainLabel} : ${doc.fileName}`}>
-                                                        {mainLabel}
-                                                    </Button>
-                                                    <Button tone="danger" dark={dark} onClick={() => setConfirmId(doc.id)}
-                                                            disabled={busy} className={cellBtn}
-                                                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
-                                                        {t("cvDocuments.hideBtn")}
-                                                    </Button>
-                                                </>
-                                            )}
+                                            <Button tone="neutral" dark={dark} icon="star" onClick={() => makeMain(doc)}
+                                                    disabled={busy || isMain} className={cellBtn}
+                                                    aria-label={`${mainLabel} : ${doc.fileName}`}>
+                                                {mainLabel}
+                                            </Button>
+                                            <Button tone="danger" dark={dark} icon="delete"
+                                                    onClick={() => setConfirmId(doc.id)}
+                                                    disabled={busy} className={cellBtn}
+                                                    aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                                {t("cvDocuments.hideBtn")}
+                                            </Button>
                                         </>
                                     )}
                                 </div>
@@ -386,6 +536,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     <div className={th.error} role="alert" aria-live="assertive">{t(actionError)}</div>
                 </div>
             )}
+
+            {toolbar}
 
             {body}
         </section>
