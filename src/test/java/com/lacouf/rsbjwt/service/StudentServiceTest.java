@@ -5,10 +5,11 @@ import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.notification.Notification;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.repository.CVRepository;
-import com.lacouf.rsbjwt.repository.StudentRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
@@ -54,7 +55,14 @@ public class StudentServiceTest {
     @Mock
     private CVRepository cvRepository;
     @Mock
+    private NotificationRepository notificationRepository;
+    @Mock
+    private ManagerRepository managerRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Captor
+    private ArgumentCaptor<Notification> notificationArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
@@ -268,7 +276,7 @@ public class StudentServiceTest {
     @Test
     void shouldGetCVCountByStudent() throws UserNotFoundException {
         when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.countByStudent(dummyStudent)).thenReturn(3L);
+        when(cvRepository.countByStudentAndVisibility(dummyStudent, CvVisibility.VISIBLE)).thenReturn(3L);
 
         long count = studentService.getCVCountByStudentId(dummyStudent.getId());
 
@@ -348,6 +356,7 @@ public class StudentServiceTest {
 
         assert CvVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
+        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
     }
 
     @Test
@@ -412,6 +421,7 @@ public class StudentServiceTest {
 
         assert CVSharingScope.PRIVATE.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
+        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
     }
 
     @Test
@@ -555,5 +565,56 @@ public class StudentServiceTest {
         when(cvRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(CvNotFoundException.class, () -> studentService.setCVAsMain(dummyStudent.getId(), 999L));
+    }
+
+    @Test
+    void shouldNotifyEveryManagerWhenPendingCvBecomesPublic() throws Exception {
+        // Arrange
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        CV cv = new CV(validPdfBytes, CvVisibility.VISIBLE, CVSharingScope.PRIVATE, CvPriority.MAIN, "cv.pdf", LocalDateTime.now());
+        cv.setId(10L);
+        cv.setStudent(dummyStudent);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
+
+        Manager firstManager = new Manager();
+        Manager secondManager = new Manager();
+
+        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
+
+        // Act
+        studentService.setCvAsPublic(dummyStudent.getId(), 10L);
+
+        // Assert
+        verify(notificationRepository, times(2)).save(notificationArgumentCaptor.capture());
+
+        List<Notification> notifications = notificationArgumentCaptor.getAllValues();
+
+        assert(NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.getFirst().getType());
+        assert(Long.valueOf(10L)).equals(notifications.getFirst().getTargetId());
+        assert(firstManager).equals(notifications.get(0).getUser());
+        assert(secondManager).equals(notifications.get(1).getUser());
+    }
+
+    @Test
+    void shouldNotNotifyManagersWhenReviewedCvBecomesPublic() throws Exception {
+        // Arrange
+        when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
+
+        CV cv = new CV(validPdfBytes, CvVisibility.VISIBLE, CVSharingScope.PRIVATE, CvPriority.MAIN, "cv.pdf", LocalDateTime.now());
+        cv.setId(10L);
+        cv.setStudent(dummyStudent);
+        cv.setStatus(CvStatus.APPROVED);
+
+        when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
+
+        // Act
+        studentService.setCvAsPublic(dummyStudent.getId(), 10L);
+
+        // Assert
+        assert(CVSharingScope.PUBLIC).equals(cv.getSharingScope());
+
+        verifyNoInteractions(managerRepository, notificationRepository);
     }
 }

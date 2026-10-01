@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -11,6 +12,9 @@ import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.notification.Notification;
+import com.lacouf.rsbjwt.model.notification.NotificationStatus;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -18,6 +22,7 @@ import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -197,6 +202,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
+        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test
@@ -232,6 +238,7 @@ public class ManagerServiceTest {
         assert (CvStatus.APPROVED).equals(cv.getStatus());
 
         verify(cvRepository, never()).save(any(CV.class));
+        verifyNoInteractions(notificationRepository);
     }
 
     @Test
@@ -261,6 +268,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
+        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test
@@ -405,5 +413,41 @@ public class ManagerServiceTest {
         assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldReturnOnlyUnreadNotificationsOfConnectedManager() throws Exception {
+        // Arrange
+        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, 1L, new Manager());
+        notification.setId(5L);
+
+        when(notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc("manager@example.com", NotificationStatus.UNREAD)).thenReturn(List.of(notification));
+
+        // Act
+        List<NotificationDto> result = managerService.getNotificationsForManager("manager@example.com");
+
+        // Assert
+        assert(Integer.valueOf(1)).equals(result.size());
+        assert(Long.valueOf(5L)).equals(result.getFirst().id());
+        assert(NotificationStatus.UNREAD).equals(result.getFirst().status());
+        assert(NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(result.getFirst().notificationType());
+    }
+
+    @Test
+    void shouldMarkNotificationAsRead() throws NotificationNotFoundException {
+        // Arrange
+        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, 1L, new Manager());
+        notification.setId(5L);
+
+        when(notificationRepository.findByIdAndUser_Credentials_Email(5L, "manager@example.com")).thenReturn(Optional.of(notification));
+
+        // Act
+        NotificationDto result = managerService.markNotificationAsRead(5L, "manager@example.com");
+
+        // Assert
+        assert(NotificationStatus.READ).equals(notification.getStatus());
+        assert(NotificationStatus.READ).equals(result.status());
+
+        verify(notificationRepository).save(notification);
     }
 }
