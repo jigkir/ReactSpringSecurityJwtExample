@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
@@ -156,8 +157,8 @@ public class ManagerService {
         return InternshipResponseDto.of(internship);
     }
 
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = findPendingInternship(internshipId);
 
         internship.approve();
         internshipRepository.save(internship);
@@ -165,8 +166,8 @@ public class ManagerService {
         return InternshipResponseDto.of(internship);
     }
 
-    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = findPendingInternship(internshipId);
 
         internship.reject();
         internshipRepository.save(internship);
@@ -221,5 +222,19 @@ public class ManagerService {
 
     private void addCVApprovalNotificationToStudent(Long cvId, UserApp student) {
         notificationRepository.save(new Notification("CV Approved", "Your CV has been approved.", NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
+    }
+
+    private Internship findPendingInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        verifyInternshipIsPending(internship);
+
+        return internship;
+    }
+
+    private void verifyInternshipIsPending(Internship internship) throws InternshipAlreadyReviewedException {
+        if (internship.getStatus() != InternshipStatus.PENDING) {
+            throw new InternshipAlreadyReviewedException(internship.getId());
+        }
     }
 }
