@@ -218,7 +218,31 @@ export async function deleteInternship(internshipId) {
 }
 
 export async function getStudentInternships(studentId) {
-    const response = await fetcher(`student/${studentId}/internships`, {method: "GET"});
+    //const response = await fetcher(`student/${studentId}/internships`, {method: "GET"});
+    //return handleResponse(response);
+    return [{
+        test:1
+    },{
+        test:1
+    },{
+        test:1
+    },]
+}
+
+export async function getStudentNotifications(studentId) {
+    const response = await fetcher(`student/${studentId}/notifications`, { method: "GET" });
+    return handleResponse(response);
+}
+
+export async function markNotificationAsRead(studentId, notificationId) {
+    const response = await fetcher(`student/${studentId}/notifications/${notificationId}/read`, {
+        method: "PUT"
+    });
+    return handleEmpty(response);
+}
+
+export async function getUnreadNotificationCount(studentId) {
+    const response = await fetcher(`student/${studentId}/notifications/unread/count`, { method: "GET" });
     return handleResponse(response);
 }
 

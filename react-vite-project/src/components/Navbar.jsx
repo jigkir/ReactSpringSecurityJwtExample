@@ -5,7 +5,7 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {getManagerNotifications, getStudentInternships} from './api/Api.jsx';
+import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markNotificationAsRead} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -36,9 +36,9 @@ function useNotifications(role, t, user) {
                     console.error("Manager notifications failed:", err?.status, err?.body);
                 });
         } else if (role === "STUDENT") {
-            getStudentInternships(user.id)
-                .then((data) => {
-                    if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+            getUnreadNotificationCount(user.id)
+                .then((unreadCount) => {
+                    if (!cancelled) setCount(typeof unreadCount === 'number' ? unreadCount : 0);
                 })
                 .catch((error) => {
                     console.error("Student notification error:", error);
@@ -49,7 +49,6 @@ function useNotifications(role, t, user) {
             cancelled = true;
         };
     }, [role, user?.id]);
-
 
     // If there are no notifications, return an empty array immediately
     if (count === 0) return [];
@@ -159,6 +158,15 @@ function Navbar({user, dark, toggleDark}) {
 
     const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
+    const handleNotificationRead = async (notificationId) => {
+        try {
+            await markNotificationAsRead(user.id, notificationId);
+            // Optionally, you can trigger a re-fetch or state update here if needed
+        } catch (err) {
+            console.error("Failed to mark notification as read:", err);
+        }
+    };
+
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
             <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
@@ -179,7 +187,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            <NotificationMenu notifications={notifications} dark={dark}/>
+                            <NotificationMenu notifications={notifications} dark={dark} studentId={user?.id} onNotificationRead={handleNotificationRead}/>
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}
@@ -217,7 +225,7 @@ function Navbar({user, dark, toggleDark}) {
                     <div className="flex items-center gap-2 md:gap-3 ml-auto">
                         {/* Mobile bell (always visible, in the top bar) */}
                         <div className="md:hidden">
-                            <NotificationMenu notifications={notifications} dark={dark}/>
+                            <NotificationMenu notifications={notifications} dark={dark} studentId={user?.id} onNotificationRead={handleNotificationRead}/>
                         </div>
 
                         <button onClick={toggleLang}
