@@ -24,6 +24,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -39,18 +40,23 @@ public class StudentService {
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
     private final NotificationRepository notificationRepository;
+    private final ManagerRepository managerRepository;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
     private final Tika tika = new Tika();
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository) {
+    private static final String CV_SUBMITTED_TITLE = "New CV Pending Review";
+    private static final String CV_SUBMITTED_MESSAGE = "A new CV has been submitted for review.";
+
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository, ManagerRepository managerRepository) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.internshipRepository = internshipRepository;
         this.notificationRepository = notificationRepository;
+        this.managerRepository = managerRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -167,6 +173,8 @@ public class StudentService {
         CV cv = validateAndGetStudentCv(student, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
+
+        closeCvSubmittedNotifications(cvId);
     }
 
     public CV findCvById(long cvId) throws CvNotFoundException {
@@ -177,14 +185,19 @@ public class StudentService {
         return cv;
     }
 
+    @Transactional
     public void setCvAsPublic(long id, long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
         Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
+
         if (cv.getSharingScope() == CVSharingScope.PUBLIC) {
             throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
         }
+
         cv.setSharingScope(CVSharingScope.PUBLIC);
         cvRepository.save(cv);
+
+        if (cv.getStatus() == CvStatus.PENDING) notifyManagersOfSubmittedCv(cv);
     }
 
     public void setCVAsSecondary(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
@@ -194,6 +207,7 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
+    @Transactional
     public void setCVAsMain(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
@@ -206,6 +220,7 @@ public class StudentService {
         cvRepository.save(cv);
     }
 
+    @Transactional
     public void setCvAsPrivate(long id, long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
         Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
@@ -214,6 +229,8 @@ public class StudentService {
         }
         cv.setSharingScope(CVSharingScope.PRIVATE);
         cvRepository.save(cv);
+
+        closeCvSubmittedNotifications(cvId);
     }
 
     public CvFileResponseDto getCVByStudentId(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
@@ -371,5 +388,15 @@ public class StudentService {
         if (content.length > MAX_FILE_SIZE) {
             throw new InvalidFileSizeException("File size exceeds the maximum allowed size of " + MAX_FILE_SIZE + " bytes.");
         }
+    }
+
+    private void notifyManagersOfSubmittedCv(CV cv) {
+        managerRepository.findAll().stream()
+                .filter(manager -> !notificationRepository.existsByTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
+                .forEach(manager -> notificationRepository.save(new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cv.getId(), manager)));
+    }
+
+    private void closeCvSubmittedNotifications(long cvId) {
+        notificationRepository.markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
     }
 }

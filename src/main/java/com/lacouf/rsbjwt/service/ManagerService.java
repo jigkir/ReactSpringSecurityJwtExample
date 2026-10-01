@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -24,6 +24,7 @@ import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.service.dto.response.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,10 @@ public class ManagerService {
     private final NotificationRepository notificationRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
+
+    private static final String CV_APPROVED_TITLE = "CV Approved";
+    private static final String CV_APPROVED_MESSAGE = "Your CV has been approved.";
+    private static final String CV_REJECTED_TITLE = "CV Rejected";
 
     public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository) {
         this.managerRepository = managerRepository;
@@ -64,53 +69,15 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    public void addNewCVNotificationToManager(String title, String message, Long cvId) throws UserNotFoundException, CvNotFoundException {
-        CV cv = cvRepository.findById(cvId)
-                .orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
-
-        if (cv.getStatus() != CvStatus.PENDING) {
-            return;
-        }
-
-        List<Manager> managers = managerRepository.findAll();
-        if (managers.isEmpty()) {
-            throw new UserNotFoundException();
-        }
-
-        for (Manager manager : managers) {
-            boolean notificationExists = notificationRepository.existsByTypeAndTargetIdAndUser(
-                    NotificationType.CV_SUBMITTED_FOR_REVIEW,
-                    cvId,
-                    manager
-            );
-
-            if (!notificationExists) {
-                notificationRepository.save(new Notification(
-                        title,
-                        message,
-                        NotificationStatus.UNREAD,
-                        NotificationType.CV_SUBMITTED_FOR_REVIEW,
-                        TargetType.CV,
-                        cvId,
-                        manager
-                ));
-            }
-        }
-    }
-
-    public List<NotificationDto> getNotificationsForManager(long managerId) throws UserNotFoundException {
-        System.out.println("part1");
-        Manager manager = managerRepository.findById(managerId)
-                .orElseThrow(UserNotFoundException::new);
-        System.out.println("part2");
-        return notificationRepository.findByUserId(manager.getId()).stream()
+    public List<NotificationDto> getNotificationsForManager(String email) throws UserNotFoundException {
+        return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD)
+                .stream()
                 .map(NotificationDto::of)
                 .toList();
     }
 
-    public NotificationDto markNotificationAsRead(long notificationId) throws NotificationNotFoundException {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NotificationNotFoundException("Notification not found with ID: " + notificationId));
+    public NotificationDto markNotificationAsRead(long notificationId, String email) throws NotificationNotFoundException {
+        Notification notification = notificationRepository.findByIdAndUser_Credentials_Email(notificationId, email).orElseThrow(() -> new NotificationNotFoundException(notificationId));
         notification.setStatus(NotificationStatus.READ);
         notificationRepository.save(notification);
         return NotificationDto.of(notification);
@@ -130,6 +97,7 @@ public class ManagerService {
         return CvFileResponseDto.of(findPublicCv(cvId));
     }
 
+    @Transactional
     public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
         CV cv = findPublicCv(cvId); // decision can be changed later
 
@@ -140,15 +108,20 @@ public class ManagerService {
         cv.setRejectionComment(null);
         addCVApprovalNotificationToStudent(cvId, cv.getStudent());
 
+        closeCvSubmittedNotifications(cvId);
+
         return saveAndConvert(cv);
     }
 
+    @Transactional
     public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = findPublicCv(cvId); // decision can be changed later
+        CV cv = findPublicCv(cvId);
 
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment(comment);
         addCVRejectionNotificationToStudent(comment, cvId, cv.getStudent());
+
+        closeCvSubmittedNotifications(cvId);
 
         return saveAndConvert(cv);
     }
@@ -201,10 +174,14 @@ public class ManagerService {
     }
 
     private void addCVRejectionNotificationToStudent(String message, Long cvId, UserApp student) {
-        notificationRepository.save(new Notification("CV Rejected", message, NotificationStatus.UNREAD, NotificationType.CV_REJECTED, TargetType.CV, cvId, student));
+        notificationRepository.save(new Notification(CV_REJECTED_TITLE, message, NotificationStatus.UNREAD, NotificationType.CV_REJECTED, TargetType.CV, cvId, student));
     }
 
     private void addCVApprovalNotificationToStudent(Long cvId, UserApp student) {
-        notificationRepository.save(new Notification("CV Approved", "Your CV has been approved.", NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
+        notificationRepository.save(new Notification(CV_APPROVED_TITLE, CV_APPROVED_MESSAGE, NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
+    }
+
+    private void closeCvSubmittedNotifications(long cvId) {
+        notificationRepository.markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
     }
 }
