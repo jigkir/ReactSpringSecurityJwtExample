@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
@@ -206,5 +207,84 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/notifications/5/read").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("READ"));
+    }
+
+    //get pending offers
+    @Test
+    void shouldReturnPendingInternships() throws Exception {
+        // Arrange
+        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("PENDING"))
+                .andExpect(jsonPath("$[0].title").value("Développeur logiciel"));
+
+        verify(managerService).getPendingInternships();
+    }
+
+    //get offer by id
+    @Test
+    void shouldReturnInternshipById() throws Exception {
+        // Arrange
+        when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.title").value("Développeur logiciel"));
+
+        verify(managerService).getInternshipById(1L);
+    }
+
+    //approve internship
+    @Test
+    void shouldReturnOkWhenInternshipIsApprovved() throws Exception {
+        // Arrange
+        when(managerService.approveInternship(1L)).thenReturn(internshipWith(InternshipStatus.APPROVED));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/approve"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        verify(managerService).approveInternship(1L);
+    }
+
+    //reject internship
+    @Test
+    void shouldReturnOkWhenInternshipIsRejected() throws Exception {
+        // Arrange
+        when(managerService.rejectInternship(1L)).thenReturn(internshipWith(InternshipStatus.REJECTED));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/reject")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"));
+
+        verify(managerService).rejectInternship(1L);
+    }
+
+    //404 approve internship inexistant
+    @Test
+    void shouldReturnNotFoundWhenApprovingUnknownInternship() throws Exception {
+        // Arrange
+        when(managerService.approveInternship(99L)).thenThrow(new InternshipNotFoundException(99L));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/99/approve")).andExpect(status().isNotFound());
+    }
+
+    //404 reject internship inexistant
+    @Test
+    void shouldReturnNotFoundWhenRejectingUnknownInternship() throws Exception {
+        // Arrange
+        when(managerService.rejectInternship(99L)).thenThrow(new InternshipNotFoundException(99L));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/99/reject")).andExpect(status().isNotFound());
     }
 }

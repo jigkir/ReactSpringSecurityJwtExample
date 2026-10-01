@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -68,6 +69,13 @@ public class ManagerService {
 
         return UserResponseDto.of(manager);
     }
+      // TODO : FIX cause we no longueur use getAllManagers
+//    public void addNewCVNotificationToManager(String title, String message, Long cvId) throws UserNotFoundException {
+//        List <Manager> managers = getAllManagers();
+//        Manager manager = managers.stream().findFirst()
+//                .orElseThrow(UserNotFoundException::new);
+//        notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cvId, manager));
+//    }
 
     public List<NotificationDto> getNotificationsForManager(String email) throws UserNotFoundException {
         return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD)
@@ -132,13 +140,13 @@ public class ManagerService {
     }
 
     public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+        Internship internship = internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
 
         return InternshipResponseDto.of(internship);
     }
 
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = findPendingInternship(internshipId);
 
         internship.approve();
         internshipRepository.save(internship);
@@ -146,8 +154,8 @@ public class ManagerService {
         return InternshipResponseDto.of(internship);
     }
 
-    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = findPendingInternship(internshipId);
 
         internship.reject();
         internshipRepository.save(internship);
@@ -183,5 +191,19 @@ public class ManagerService {
 
     private void closeCvSubmittedNotifications(long cvId) {
         notificationRepository.markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
+    }
+
+    private Internship findPendingInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        verifyInternshipIsPending(internship);
+
+        return internship;
+    }
+
+    private void verifyInternshipIsPending(Internship internship) throws InternshipAlreadyReviewedException {
+        if (internship.getStatus() != InternshipStatus.PENDING) {
+            throw new InternshipAlreadyReviewedException(internship.getId());
+        }
     }
 }
