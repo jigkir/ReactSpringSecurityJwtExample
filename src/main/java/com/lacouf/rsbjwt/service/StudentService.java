@@ -95,14 +95,7 @@ public class StudentService {
 
         CV cv = new CV(upload.content(), CvVisibility.VISIBLE, CVSharingScope.PRIVATE, CvPriority.SECONDARY, upload.fileName(), LocalDateTime.now());
 
-        // IMPORTANT: do NOT call student.addCv(cv) here.
-        // spring.jpa.open-in-view=false => the Student is detached once findById returns, so touching
-        // its lazy `cvs` collection throws LazyInitializationException (-> HTTP 500).
-        // CV owns the relationship (Student.cvs is mappedBy = "student"), so setting the owning side is enough.
         cv.setStudent(student);
-
-        // OLD
-        // student.addCv(cv); // This is now handled by the CV entity
 
         cv.setFileHash(calculateFileHash(cv.getContent()));
 
