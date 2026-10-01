@@ -27,6 +27,7 @@ function FindNotifications(role, t, user) {
 
         getManagerNotifications(user.id)
             .then((data) => {
+                console.log("Manager notifications:", data);
                 if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
             })
             .catch((err) => {
