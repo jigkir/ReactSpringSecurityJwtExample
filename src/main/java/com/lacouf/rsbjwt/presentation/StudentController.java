@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.response.*;
 import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
 import jakarta.validation.Valid;
@@ -93,7 +94,7 @@ public class StudentController {
     @PutMapping("/{id}/cvs/{cvId}/pending")
     public ResponseEntity<String> makeCVPending(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
         studentService.setCVAsPending(id, cvId);
-        managerService.addNewCVNotificationToManager( "New CV Pending Review", "A new CV has been submitted for review.", cvId);
+        managerService.addNewCVNotificationToManager("New CV Pending Review", "A new CV has been submitted for review.", cvId);
         return new ResponseEntity<>("CV made pending successfully", HttpStatus.OK);
     }
 
@@ -109,8 +110,26 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getStudentInternships(@PathVariable long id) throws UserNotFoundException, CvNotFoundException {
+    public ResponseEntity<List<InternshipResponseDto>> getStudentInternships(@PathVariable long id) throws UserNotFoundException {
         List<InternshipResponseDto> internships = studentService.getStudentInternships(id);
         return ResponseEntity.ok(internships);
+    }
+
+    @GetMapping("/{id}/notifications")
+    public ResponseEntity<List<NotificationDto>> getStudentNotifications(@PathVariable long id) throws UserNotFoundException {
+        List<NotificationDto> notifications = studentService.getStudentNotifications(id);
+        return ResponseEntity.ok(notifications);
+    }
+
+    @PutMapping("/{id}/notifications/{notificationId}/read")
+    public ResponseEntity<String> markNotificationAsRead(@PathVariable long id, @PathVariable long notificationId) throws UserNotFoundException {
+        studentService.markNotificationAsRead(id, notificationId);
+        return new ResponseEntity<>("Notification marked as read successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/notifications/unread/count")
+    public ResponseEntity<Long> getUnreadNotificationCount(@PathVariable long id) throws UserNotFoundException {
+        long unreadCount = studentService.getUnreadNotificationCount(id);
+        return new ResponseEntity<>(unreadCount, HttpStatus.OK);
     }
 }

@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {getNavbarClasses} from '../styles/appStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
-import {getManagerNotifications} from "./api/Api.jsx";
+import {getManagerNotifications, getStudentInternships} from "./api/Api.jsx";
 import {useEffect, useState} from "react";
 import {i18nError} from "../utils/i18nError.jsx";
 
@@ -22,29 +22,55 @@ function FindNotifications(role, t, user) {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
-        if (role !== "MANAGER" || !user?.id) return;
+        if (!user?.id) return;
         let cancelled = false;
 
-        getManagerNotifications(user.id)
-            .then((data) => {
-                if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
-            })
-            .catch((err) => {
-                // Don't redirect the whole app to /error just because the bell failed
-                console.error("Notifications failed:", err.status, err.body);
-            });
+        if (role === "MANAGER") {
+            getManagerNotifications(user.id)
+                .then((data) => {
+                    if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+                })
+                .catch((err) => {
+                    console.error("Manager notifications failed:", err?.status, err?.body);
+                });
+        }
+        else if (role === "STUDENT") {
+            getStudentInternships(user.id)
+                .then((data) => {
+                    if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+                })
+                .catch((error) => {
+                    console.error("Student notification error:", error);
+                });
+        }
 
         return () => { cancelled = true; };
     }, [role, user?.id]);
 
-    return count > 0
-        ? [{
+
+    // If there are no notifications, return an empty array immediately
+    if (count === 0) return [];
+
+    // Return the correct notification based on the role
+    if (role === "MANAGER") {
+        return [{
             id: "cvPosted",
             count,
             label: t("navbar.cvPostedNotification", {amount: count}),
             to: "/manager/cvs",
-        }]
-        : [];
+        }];
+    }
+
+    if (role === "STUDENT") {
+        return [{
+            id: "internship",
+            count,
+            label: t("navbar.internshipNotification", {amount: count}),
+            to: "/internship",
+        }];
+    }
+
+    return [];
 }
 
 function Navbar({user, dark, toggleDark}) {
@@ -101,7 +127,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            {notifications.length > 0 && (
+                            { (
                                 <NotificationMenu notifications={notifications} dark={dark}/>
                             )}
                         </nav>
