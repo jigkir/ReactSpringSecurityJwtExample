@@ -2,7 +2,8 @@
  * CvDocuments.jsx — CV list, shared by students and managers.
  *
  * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
- * mode="manager":           list pending public CVs, preview, approve, refuse (with comment).
+ * mode="manager":           list all public CVs, filter/sort (status, discipline, search, date, student),
+ *                           preview, approve, refuse (with comment).
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
  *
@@ -16,9 +17,10 @@
  * List fields
  *   student : id, sharingScope, fileName, sizeBytes, uploadedAt, priority,
  *             visibility, status, rejectionComment
- *   manager : id, fileName, uploadedAt, status, rejectionComment, student
+ *   manager : id, fileName, uploadedAt, status, rejectionComment,
+ *             student {id, firstName, lastName, email, studentId, discipline}
  * The PDF itself (Base64 `content`) is fetched on demand:
- *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/fil
+ *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
  *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live. `getUrl` does not depend on `t`,
@@ -39,7 +41,7 @@ import CvPreview from './CvPreview.jsx';
 import {
     approveCv,
     getManagerCvFile,
-    getPendingCvs,
+    getPublicCvs,
     getStudentCvFile,
     getStudentCvs,
     hideCv,
@@ -61,7 +63,7 @@ const buildStudentApi = (studentId) => ({
 });
 
 const managerApi = {
-    list: getPendingCvs,
+    list: getPublicCvs,
     file: getManagerCvFile,
     approve: approveCv,
     refuse: rejectCv,
@@ -97,7 +99,17 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
+    // Manager-only filters / sort
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [disciplineFilter, setDisciplineFilter] = useState("ALL");
+    const [search, setSearch] = useState("");
+    const [sortBy, setSortBy] = useState("DATE_DESC");
+
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
+
+    const selectClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
@@ -116,7 +128,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         setLoadFailed(false);
         try {
             const all = await api.list();
-            setDocs(sortDocs(isManager ? all : all.filter((d) => d.visibility === "VISIBLE")));
+            // Manager: sorting/filtering is done in `visibleDocs`.
+            setDocs(isManager ? all : sortDocs(all.filter((d) => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
@@ -125,6 +138,51 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     useEffect(() => {
         if (isManager || studentId) load();
     }, [load, isManager, studentId]);
+
+    // ── Manager filter / sort ─────────────────────────────────────────────────
+
+    const disciplines = useMemo(
+        () => [...new Set((docs ?? []).map((d) => d.student?.discipline).filter(Boolean))].sort(),
+        [docs],
+    );
+
+    const visibleDocs = useMemo(() => {
+        if (!docs) return null;
+        if (!isManager) return docs;
+
+        const q = search.trim().toLowerCase();
+
+        const filtered = docs.filter((d) => {
+            if (statusFilter !== "ALL" && d.status !== statusFilter) return false;
+            if (disciplineFilter !== "ALL" && d.student?.discipline !== disciplineFilter) return false;
+            if (q) {
+                const s = d.student ?? {};
+                const haystack = [s.firstName, s.lastName, s.email, s.studentId, d.fileName]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+                if (!haystack.includes(q)) return false;
+            }
+            return true;
+        });
+
+        const byName = (a, b) =>
+            (a.student?.lastName ?? "").localeCompare(b.student?.lastName ?? "") ||
+            (a.student?.firstName ?? "").localeCompare(b.student?.firstName ?? "");
+
+        return filtered.sort((a, b) => {
+            switch (sortBy) {
+                case "DATE_ASC":
+                    return new Date(a.uploadedAt) - new Date(b.uploadedAt);
+                case "NAME_ASC":
+                    return byName(a, b);
+                case "NAME_DESC":
+                    return byName(b, a);
+                default:
+                    return new Date(b.uploadedAt) - new Date(a.uploadedAt);
+            }
+        });
+    }, [docs, isManager, statusFilter, disciplineFilter, search, sortBy]);
 
     // ── Student mutations ─────────────────────────────────────────────────────
 
@@ -151,8 +209,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
     // ── Manager decision ──────────────────────────────────────────────────────
     // The backend returns the updated DTO. We patch it into the list instead of
-    // reloading, so the row stays visible with its new status until the page is
-    // refreshed (the /pending endpoint no longer returns decided CVs).
+    // reloading, so the row stays visible with its new status (and is re-filtered
+    // by the status filter automatically).
 
     const decide = async (doc, action) => {
         setBusyId(doc.id);
@@ -200,6 +258,43 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         return base64ToBlobUrl(file.content);
     }, [api]);
 
+    // ── Manager toolbar ───────────────────────────────────────────────────────
+
+    const toolbar = isManager && docs !== null && !loadFailed && (
+        <div
+            className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+            <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search name, email, student ID…"
+                aria-label="Search"
+                className={`${selectClass} w-full md:w-64`}
+            />
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+                    className={selectClass} aria-label="Status">
+                <option value="ALL">All statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+            </select>
+            <select value={disciplineFilter} onChange={(e) => setDisciplineFilter(e.target.value)}
+                    className={selectClass} aria-label="Discipline">
+                <option value="ALL">All disciplines</option>
+                {disciplines.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                ))}
+            </select>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+                    className={selectClass} aria-label="Sort">
+                <option value="DATE_DESC">Newest first</option>
+                <option value="DATE_ASC">Oldest first</option>
+                <option value="NAME_ASC">Student A → Z</option>
+                <option value="NAME_DESC">Student Z → A</option>
+            </select>
+        </div>
+    );
+
     // ── Body ──────────────────────────────────────────────────────────────────
 
     let body;
@@ -211,7 +306,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                 <button onClick={load} className={`${btn} ${btnTone.neutral} mt-3`}>{t("cvDocuments.retryBtn")}</button>
             </div>
         );
-    } else if (docs === null) {
+    } else if (visibleDocs === null) {
         body = (
             <div className="px-6 py-4 flex flex-col gap-6 animate-pulse" aria-busy="true">
                 {[0, 1, 2].map((i) => (
@@ -222,7 +317,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                 ))}
             </div>
         );
-    } else if (docs.length === 0) {
+    } else if (visibleDocs.length === 0) {
         body = (
             <p className={th.muted}>
                 {isManager ? t("cvDocuments.emptyManager") : t("cvDocuments.empty")}
@@ -231,7 +326,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     } else {
         body = (
             <ul className={th.list}>
-                {docs.map((doc) => {
+                {visibleDocs.map((doc) => {
                     const busy = busyId === doc.id;
                     const confirming = confirmId === doc.id;
                     const isPublic = doc.sharingScope === "PUBLIC";
@@ -256,10 +351,18 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                 {/* Column 1 — Identity */}
                                 <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
+                                    {isManager && doc.student && (
+                                        <p className={`${th.meta} font-medium`}>
+                                            {doc.student.firstName} {doc.student.lastName}
+                                            {" · "}{doc.student.studentId}
+                                            {" · "}{doc.student.email}
+                                            {" · "}{doc.student.discipline}
+                                        </p>
+                                    )}
                                     <p className={th.meta}>
                                         {t("cvDocuments.docType")} · {!isManager && `${formatBytes(doc.sizeBytes, lang)} · `}{t("cvDocuments.uploadedOn")} {formatDate(doc.uploadedAt)}
                                     </p>
-                                    {!isManager && isRejected && doc.rejectionComment && (
+                                    {isRejected && doc.rejectionComment && (
                                         <p className={th.meta}>
                                             {t("cvDocuments.rejectionComment")} : {doc.rejectionComment}
                                         </p>
@@ -386,6 +489,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     <div className={th.error} role="alert" aria-live="assertive">{t(actionError)}</div>
                 </div>
             )}
+
+            {toolbar}
 
             {body}
         </section>

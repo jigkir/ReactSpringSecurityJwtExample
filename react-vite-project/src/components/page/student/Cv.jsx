@@ -8,10 +8,7 @@
  *   SUCCESS                   → <CvUpload />
  *   EXISTING (not replacing)  → <CvDocuments />
  *
- * Backend endpoints (StudentController.java):
- *   POST /api/student/{studentId}/cvs       multipart: file
- *   GET  /api/student/{studentId}/cvs/count Long
- *   GET  /api/max-cv-size                   Integer
+ * All HTTP calls live in Api.jsx (getMaxCvSize, getCvCount, uploadCv).
  *
  * Error state (fileError / serverError) holds {key, options?}, NEVER translated text,
  * so messages re-translate live when the language is switched.
@@ -23,15 +20,14 @@ import {useTranslation} from 'react-i18next';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import CvUpload from './cv/CvUpload.jsx';
 import CvDocuments from './cv/CvDocuments.jsx';
-import fetcher from '../../../utils/fetcher.js';
+import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';
 import {ACCEPTED_EXT, FALLBACK_MAX_BYTES, resolveStudentId, STATE, validateFile,} from './cv/cvUtils.js';
 
-// ─── API helpers ──────────────────────────────────────────────────────────────
+// ─── API helpers (thin wrappers with fallbacks; HTTP itself is in Api.jsx) ────
 
 async function fetchMaxBytes() {
     try {
-        const res = await fetcher("max-cv-size", {method: "GET"});
-        return res.ok ? res.json() : FALLBACK_MAX_BYTES;
+        return await getMaxCvSize();
     } catch {
         return FALLBACK_MAX_BYTES;
     }
@@ -39,21 +35,10 @@ async function fetchMaxBytes() {
 
 async function hasResume(studentId) {
     try {
-        const res = await fetcher(`student/${studentId}/cvs/count`, {method: "GET"});
-        return res.ok && (await res.json()) > 0;
+        return (await getCvCount(studentId)) > 0;
     } catch {
         return false;
     }
-}
-
-async function uploadResume(file, studentId) {
-    const form = new FormData();
-    form.append("file", file);
-    return fetcher(`student/${studentId}/cvs`, {
-        method: "POST",
-        headers: {Accept: "application/json"},
-        body: form,
-    });
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -78,11 +63,6 @@ const Cv = ({user}) => {
     const [maxBytes, setMaxBytes] = useState(FALLBACK_MAX_BYTES);
 
     // ── Auth + CV-count check ─────────────────────────────────────────────────
-    //
-    // Stay in LOADING_CV until BOTH isLoggedIn is true AND studentId is
-    // non-empty. If the studentId is missing despite being logged in, fall to
-    // IDLE so the student can still interact — they'll get a server error on
-    // submit, which is the correct signal to fix the DTO field name.
 
     useEffect(() => {
         if (!isLoggedIn) return;
@@ -180,22 +160,17 @@ const Cv = ({user}) => {
         setServerError(null);
 
         try {
-            const response = await uploadResume(selectedFile, studentId);
-            if (response.ok) {
-                setUploadState(STATE.SUCCESS);
-                return;
-            }
-
-            if ([400, 415, 422].includes(response.status)) {
+            await uploadCv(studentId, selectedFile);
+            setUploadState(STATE.SUCCESS);
+        } catch (err) {
+            console.error("Upload failed:", err.status, err.body);   // ← add this
+            if ([400, 415, 422].includes(err.status)) {
                 setServerError({key: "cv.fileInvalid"});
-            } else if (response.status === 413) {
+            } else if (err.status === 413) {
                 setServerError({key: "cv.fileTooLarge", options: {mb: (maxBytes / (1024 * 1024)).toFixed(0)}});
             } else {
                 setServerError({key: "cv.uploadFailed"});
             }
-            setUploadState(STATE.ERROR);
-        } catch {
-            setServerError({key: "cv.uploadFailed"});
             setUploadState(STATE.ERROR);
         }
     };

@@ -75,6 +75,25 @@ export async function getCvCount(studentId) {
     return handleResponse(response);
 }
 
+// Returns the max CV size in bytes (public endpoint)
+export async function getMaxCvSize() {
+    const response = await fetcher("max-cv-size", {method: "GET"});
+    return handleResponse(response);
+}
+
+// Uploads a PDF (multipart). Do NOT set Content-Type: the browser adds the multipart boundary.
+// Throws an Error with .status on failure.
+export async function uploadCv(studentId, file) {
+    const form = new FormData();
+    form.append("file", file);
+    const response = await fetcher(`student/${studentId}/cvs`, {
+        method: "POST",
+        headers: {Accept: "application/json"},
+        body: form,
+    });
+    return handleEmpty(response);
+}
+
 export async function getStudentCvs(studentId) {
     const response = await fetcher(`student/${studentId}/cvs`, {method: "GET"});
     return handleResponse(response);
@@ -105,8 +124,9 @@ export async function setMainCv(studentId, cvId) {
 //endregion
 
 // region Manager CVs
-export async function getPendingCvs() {
-    const response = await fetcher("manager/cvs/pending", {method: "GET"});
+// Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
+export async function getPublicCvs() {
+    const response = await fetcher("manager/cvs", {method: "GET"});
     return handleResponse(response);
 }
 
@@ -153,7 +173,7 @@ export async function deleteInternship(internshipId) {
 
 //region Notifications
 export async function getManagerNotifications(managerId) {
-    const response = await fetcher("manager/notifications", {method: "GET", managerId:managerId});
+    const response = await fetcher(`manager/notifications?managerId=${managerId}`, {method: "GET"});
     return handleResponse(response);
 }
 //endregion
