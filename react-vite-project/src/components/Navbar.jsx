@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
+
 import {getManagerNotifications, getStudentInternships} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
