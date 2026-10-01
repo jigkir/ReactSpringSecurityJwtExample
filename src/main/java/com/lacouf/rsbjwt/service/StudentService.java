@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -258,7 +259,8 @@ public class StudentService {
         }
 
         Discipline discipline = getDisciplineByStudent(student);
-        List<Internship> internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
+        List<Internship> internships = filterInternshipsByDisciplineAndStatus(internshipRepository.findAll(), discipline);
+
 
         return internships.stream().map(InternshipResponseDto::of).toList();
     }
@@ -273,7 +275,7 @@ public class StudentService {
         }
 
         Discipline discipline = getDisciplineByStudent(student);
-        List<Internship> internships = filterInternshipsByDiscipline(internshipRepository.findAll(), discipline);
+        List<Internship> internships = filterInternshipsByDisciplineAndStatus(internshipRepository.findAll(), discipline);
         createNewInternshipNotifications(internships, student);
     }
 
@@ -325,9 +327,10 @@ public class StudentService {
         }
     }
 
-    private List<Internship> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
+    private List<Internship> filterInternshipsByDisciplineAndStatus(List<Internship> internships, Discipline discipline) {
         return internships.stream()
                 .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
+                .filter(internship -> internship.getStatus() == InternshipStatus.APPROVED)
                 .toList();
     }
 
