@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import fetcher from '../../../../utils/fetcher.js';
 import {useTranslation} from 'react-i18next';
+import {getDisciplines, signupEmployer} from '../../../api/Api.jsx';
 import {
     ConfirmPasswordField,
     DisciplineField,
@@ -76,16 +76,8 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
     const [sectorsFetchError, setSectorsFetchError] = useState("");
 
     useEffect(() => {
-        fetcher("disciplines", {})
-            .then(async (res) => {
-                if (!res.ok) throw new Error(`Error ${res.status}`);
-                const data = await res.json();
-                const list = Array.isArray(data) ? data : (data.disciplines ?? []);
-                setSectors(list.map(d => ({
-                    value: typeof d === "string" ? d : d.value,
-                    label: typeof d === "string" ? d : (d.label ?? d.value),
-                })));
-            })
+        getDisciplines()
+            .then(setSectors)
             .catch(() => setSectorsFetchError({key: "employer.couldNotLoadActivity"}))
             .finally(() => setSectorsLoading(false));
     }, []);
@@ -122,36 +114,20 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
         if (!validateAll()) return;
         setSubmitting(true);
         try {
-            const response = await fetcher("employer/signup", {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json;charset=UTF-8",
-                },
-                body: JSON.stringify({
-                    firstName: form.firstName.trim(),
-                    lastName: form.lastName.trim(),
-                    email: form.email.trim().toLowerCase(),
-                    password: form.password,
-                    companyName: form.companyName.trim(),
-                    discipline: form.sectorActivity,
-                    phoneNumber: form.phoneNumber,
-                }),
+            await signupEmployer({
+                firstName: form.firstName.trim(),
+                lastName: form.lastName.trim(),
+                email: form.email.trim().toLowerCase(),
+                password: form.password,
+                companyName: form.companyName.trim(),
+                discipline: form.sectorActivity,
+                phoneNumber: form.phoneNumber,
             });
-
-            if (response.ok) {
-                navigate("/login");
-                return;
-            }
-
-            switch (response.status) {
+            navigate("/login");
+        } catch (err) {
+            switch (err.status) {
                 case 409: {
-                    let body = {};
-                    try {
-                        body = await response.json();
-                    } catch {
-                    }
-                    const {field: conflictField = ""} = body ?? {};
+                    const {field: conflictField = ""} = err.body ?? {};
                     if (conflictField === "email") {
                         setWarnings(w => ({...w, email: {key: "employer.emailInUse"}}));
                     } else {
@@ -162,11 +138,12 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 case 400:
                     setServerError({key: "employer.invalidData"});
                     break;
+                case undefined: // the request itself failed (no HTTP status)
+                    setServerError({key: "employer.unableToReachServerError"});
+                    break;
                 default:
-                    setServerError({key: "employer.genericServerError", options: {errorCode: response.status}});
+                    setServerError({key: "employer.genericServerError", options: {errorCode: err.status}});
             }
-        } catch {
-            setServerError({key: "employer.unableToReachServerError"});
         } finally {
             setSubmitting(false);
         }

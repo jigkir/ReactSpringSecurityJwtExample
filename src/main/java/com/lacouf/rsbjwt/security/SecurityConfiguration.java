@@ -56,11 +56,17 @@ public class SecurityConfiguration {
     private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/{studentId}/cvs";
     private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/{studentId}/cvs/**";
     private static final String HIDE_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/hide";
+    private static final String GET_STUDENT_INTERNSHIPS_PATH = "/api/student/{studentId}/internships";
     private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
     private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
     private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
     private static final String STUDENT_PENDING_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/pending";
     private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
+
+
+    private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/{studentId}/notifications";
+    private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/{notificationId}/read";
+    private static final String STUDENT_NOTIFICATION_COUNT_PATH = "/api/student/{studentId}/notifications/count";
 
     // INTERNSHIP PATHS
     private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
@@ -95,6 +101,11 @@ public class SecurityConfiguration {
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
+                        // STUDENT : NOTIFICATIONS
+                        .requestMatchers(GET, STUDENT_NOTIFICATIONS_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(PUT, STUDENT_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_NOTIFICATION_COUNT_PATH).hasAuthority(Role.STUDENT.name())
+
 
                         // STUDENT : CV
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
@@ -110,6 +121,7 @@ public class SecurityConfiguration {
                         .requestMatchers(PUT, STUDENT_PENDING_CV_PATH).hasAuthority(Role.STUDENT.name())
 
                         // EMPLOYER : INTERNSHIP
+                        .requestMatchers(GET, GET_STUDENT_INTERNSHIPS_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())

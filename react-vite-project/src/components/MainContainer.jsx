@@ -1,6 +1,6 @@
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getMainContainerClasses} from '../styles/appStyles.jsx';
+import {getMainContainerClasses} from '../styles/AppStyles.jsx';
 
 function MainContainer() {
     const {t} = useTranslation();

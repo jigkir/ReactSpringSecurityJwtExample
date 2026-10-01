@@ -39,9 +39,22 @@ async function handleResponse(response) {
     return response.json();
 }
 
-// For endpoints that return no body (PUT scope/hide/main)
+// For endpoints that return no body (PUT scope/hide/main, signups)
 async function handleEmpty(response) {
     if (!response.ok) throw await toError(response);
+}
+
+// POST a JSON payload to an endpoint that returns no useful body
+async function postJson(path, payload) {
+    const response = await fetcher(path, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json;charset=UTF-8",
+        },
+        body: JSON.stringify(payload),
+    });
+    return handleEmpty(response);
 }
 
 // endregion
@@ -66,6 +79,36 @@ export async function getCurrentUser() {
     const response = await fetcher("users/current", {});
     return handleResponse(response);
 }
+
+// endregion
+
+// region Reference data (public)
+// Returns [{value, label}], accepting ["A","B"] or {disciplines: [...]} from the backend
+export async function getDisciplines() {
+    const response = await fetcher("disciplines", {});
+    const data = await handleResponse(response);
+    const list = Array.isArray(data) ? data : (data.disciplines ?? []);
+    return list.map((d) => ({
+        value: typeof d === "string" ? d : d.value,
+        label: typeof d === "string" ? d : (d.label ?? d.value),
+    }));
+}
+
+// Returns string[], accepting ["STUDENT",...] or {roles: [...]} from the backend
+export async function getRoles() {
+    const response = await fetcher("roles", {});
+    const data = await handleResponse(response);
+    const list = Array.isArray(data) ? data : (data.roles ?? []);
+    return list.map((r) => String(typeof r === "string" ? r : (r.value ?? r)));
+}
+
+// endregion
+
+// region Signup
+// All reject with an Error carrying .status and .body (e.g. body.field on 409)
+export const signupStudent = (payload) => postJson("student/signup", payload);
+export const signupTeacher = (payload) => postJson("teacher/signup", payload);
+export const signupEmployer = (payload) => postJson("employer/signup", payload);
 
 // endregion
 
@@ -161,7 +204,11 @@ export async function getEmployerInternships(employerId) {
 }
 
 export async function createInternship(internship) {
-    const response = await fetcher("employer/internship", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(internship)});
+    const response = await fetcher("employer/internship", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(internship),
+    });
     return handleResponse(response);
 }
 
@@ -169,6 +216,12 @@ export async function deleteInternship(internshipId) {
     const response = await fetcher(`employer/internships/${internshipId}`, {method: "DELETE"});
     return handleEmpty(response);
 }
+
+export async function getStudentInternships(studentId) {
+    const response = await fetcher(`student/${studentId}/internships`, {method: "GET"});
+    return handleResponse(response);
+}
+
 // endregion
 
 //region Notifications
@@ -176,4 +229,5 @@ export async function getManagerNotifications(managerId) {
     const response = await fetcher(`manager/${managerId}/notifications`, {method: "GET"});
     return handleResponse(response);
 }
+
 //endregion

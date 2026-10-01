@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import fetcher from '../../../../utils/fetcher.js';
 import {useTranslation} from 'react-i18next';
+import {getDisciplines, signupTeacher} from '../../../api/Api.jsx';
 import {
     ConfirmPasswordField,
     DisciplineField,
@@ -45,16 +45,8 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const [disciplinesFetchError, setDisciplinesFetchError] = useState("");
 
     useEffect(() => {
-        fetcher("disciplines", {})
-            .then(async (res) => {
-                if (!res.ok) throw new Error(`Error ${res.status}`);
-                const data = await res.json();
-                const list = Array.isArray(data) ? data : (data.disciplines ?? []);
-                setDisciplines(list.map(d => ({
-                    value: typeof d === "string" ? d : d.value,
-                    label: typeof d === "string" ? d : (d.label ?? d.value),
-                })));
-            })
+        getDisciplines()
+            .then(setDisciplines)
             .catch(() => setDisciplinesFetchError({key: "commonFields.fetchError"}))
             .finally(() => setDisciplinesLoading(false));
     }, []);
@@ -85,35 +77,19 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
         setSubmitting(true);
         try {
-            const response = await fetcher("teacher/signup", {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json;charset=UTF-8",
-                },
-                body: JSON.stringify({
-                    firstName: form.firstName.trim(),
-                    lastName: form.lastName.trim(),
-                    [ID_FIELD]: form[ID_FIELD],
-                    discipline: form.discipline,
-                    email: form.email.trim().toLowerCase(),
-                    password: form.password,
-                }),
+            await signupTeacher({
+                firstName: form.firstName.trim(),
+                lastName: form.lastName.trim(),
+                [ID_FIELD]: form[ID_FIELD],
+                discipline: form.discipline,
+                email: form.email.trim().toLowerCase(),
+                password: form.password,
             });
-
-            if (response.ok) {
-                navigate("/login");
-                return;
-            }
-
-            switch (response.status) {
+            navigate("/login");
+        } catch (err) {
+            switch (err.status) {
                 case 409: {
-                    let body = {};
-                    try {
-                        body = await response.json();
-                    } catch {
-                    }
-                    const {field: conflictField = ""} = body ?? {};
+                    const {field: conflictField = ""} = err.body ?? {};
                     if (conflictField === ID_FIELD) {
                         setWarnings(w => ({...w, [ID_FIELD]: {key: "teacher.existingId"}}));
                     } else if (conflictField === "email") {
@@ -126,11 +102,12 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 case 400:
                     setServerError({key: "teacher.invalidData"});
                     break;
+                case undefined: // the request itself failed (no HTTP status)
+                    setServerError({key: "teacher.unableToReachServerError"});
+                    break;
                 default:
-                    setServerError({key: "teacher.genericServerError", options: {errorCode: response.status}});
+                    setServerError({key: "teacher.genericServerError", options: {errorCode: err.status}});
             }
-        } catch {
-            setServerError({key: "teacher.unableToReachServerError"});
         } finally {
             setSubmitting(false);
         }

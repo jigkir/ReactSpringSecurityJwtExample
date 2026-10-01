@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {getInternshipModalClasses} from '../../../styles/appStyles.jsx';
+import {getInternshipModalClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
 
