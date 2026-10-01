@@ -152,7 +152,7 @@ public class ManagerService {
     }
 
     public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+        Internship internship = internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
 
         return InternshipResponseDto.of(internship);
     }
@@ -225,7 +225,7 @@ public class ManagerService {
     }
 
     private Internship findPendingInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+        Internship internship = internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
 
         verifyInternshipIsPending(internship);
 
