@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getNavbarClasses, getNotificationMenuClasses} from '../styles/appStyles.jsx';
+import {getNavbarClasses, getNotificationMenuClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 
 export default function NotificationMenu({notifications = [], dark}) {

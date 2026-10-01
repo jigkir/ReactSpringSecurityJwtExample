@@ -1,7 +1,7 @@
 import {Link, NavLink, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useEffect, useRef, useState} from 'react';
-import {getNavbarClasses} from '../styles/appStyles.jsx';
+import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 import {getManagerNotifications, getStudentInternships} from './api/Api.jsx';

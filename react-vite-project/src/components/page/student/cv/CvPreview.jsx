@@ -14,7 +14,7 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {getCvPreviewClasses} from '../../../../styles/appStyles.jsx';
+import {getCvPreviewClasses} from '../../../../styles/AppStyles.jsx';
 
 const CvPreview = ({doc, dark, getUrl}) => {
     const {t} = useTranslation();

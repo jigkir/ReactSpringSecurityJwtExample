@@ -17,7 +17,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getAuthClasses} from '../../../styles/appStyles.jsx';
+import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import CvUpload from './cv/CvUpload.jsx';
 import CvDocuments from './cv/CvDocuments.jsx';
 import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';

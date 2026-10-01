@@ -1,36 +1,31 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.auth.Credentials;
+import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
-import com.lacouf.rsbjwt.model.user.Manager;
-import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
-import com.lacouf.rsbjwt.repository.CVRepository;
-import com.lacouf.rsbjwt.repository.ManagerRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
-import com.lacouf.rsbjwt.repository.InternshipRepository;
-import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.response.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.repository.*;
+import com.lacouf.rsbjwt.service.dto.response.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-import com.lacouf.rsbjwt.repository.NotificationRepository;
-
-
 import java.util.Optional;
 
 @Service
@@ -95,7 +90,7 @@ public class ManagerService {
     }
 
     public List<ManagerCvResponseDto> getAllPublicCvs() {
-        List<CV> cvs =  cvRepository.findBySharingScope(CVSharingScope.PUBLIC);
+        List<CV> cvs = cvRepository.findBySharingScopeAndVisibility(CVSharingScope.PUBLIC, CvVisibility.VISIBLE);
 
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
@@ -109,16 +104,20 @@ public class ManagerService {
     }
 
     public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = findPendingCv(cvId);
+        CV cv = findPublicCv(cvId); // decision can be changed later
 
+        if (cv.getStatus() == CvStatus.APPROVED) {
+            return ManagerCvResponseDto.of(cv); // already approved: nothing to do, no duplicate notification
+        }
         cv.setStatus(CvStatus.APPROVED);
+        cv.setRejectionComment(null);
         addCVApprovalNotificationToStudent(cvId, cv.getStudent());
 
         return saveAndConvert(cv);
     }
 
     public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = findPendingCv(cvId);
+        CV cv = findPublicCv(cvId); // decision can be changed later
 
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment(comment);
@@ -157,7 +156,7 @@ public class ManagerService {
     }
 
     private CV findPublicCv(long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndSharingScope(cvId, CVSharingScope.PUBLIC).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+        return cvRepository.findByIdAndSharingScopeAndVisibility(cvId, CVSharingScope.PUBLIC, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
     }
 
     private CV findPendingCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {

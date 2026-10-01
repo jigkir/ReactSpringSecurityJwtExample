@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
-import {getAuthClasses} from '../../../styles/appStyles.jsx';
+import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import {RoleField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {getRoles} from '../../api/Api.jsx';
 import Student from './signup/Student.jsx';

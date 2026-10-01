@@ -143,7 +143,7 @@ public class StudentService {
         if (student == null) {
             return 0;
         }
-        return cvRepository.countByStudent(student);
+        return cvRepository.countByStudentAndVisibility(student, CvVisibility.VISIBLE);
     }
 
     public List<StudentCvResponseDto> getCVs(long id) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
@@ -249,7 +249,7 @@ public class StudentService {
     public List<InternshipResponseDto> getStudentInternships(long studentId) throws UserNotFoundException {
         Student student = findById(studentId);
         List<CV> studentCvs = cvRepository.findByStudent(student);
-        boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getStatus() == CvStatus.APPROVED);
+        boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
 
         if (!hasApprovedCv) {
             return Collections.emptyList();
@@ -264,7 +264,7 @@ public class StudentService {
     public void generateInternshipNotificationsForStudent(long studentId) throws UserNotFoundException {
         Student student = findById(studentId);
         List<CV> studentCvs = cvRepository.findByStudent(student);
-        boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getStatus() == CvStatus.APPROVED);
+        boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
 
         if (!hasApprovedCv) {
             return;

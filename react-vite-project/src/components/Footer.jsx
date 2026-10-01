@@ -1,6 +1,6 @@
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getFooterClasses} from '../styles/appStyles.jsx';
+import {getFooterClasses} from '../styles/AppStyles.jsx';
 
 function Footer() {
     const {t} = useTranslation();

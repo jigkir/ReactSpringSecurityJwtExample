@@ -1,6 +1,6 @@
 import {Link, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getAboutClasses} from '../styles/appStyles.jsx';
+import {getAboutClasses} from '../styles/AppStyles.jsx';
 
 function About() {
     const {t} = useTranslation();
