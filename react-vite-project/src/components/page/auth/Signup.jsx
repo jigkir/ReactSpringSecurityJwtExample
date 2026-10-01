@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/appStyles.jsx';
 import {RoleField, translateWarning} from '../../../utils/CommonFields.jsx';
-import fetcher from '../../../utils/fetcher.js';
+import {getRoles} from '../../api/Api.jsx';
 import Student from './signup/Student.jsx';
 import Employer from './signup/Employer.jsx';
 import Teacher from './signup/Teacher.jsx';
@@ -34,19 +34,15 @@ const Signup = () => {
     const {t} = useTranslation();
 
     useEffect(() => {
-        fetcher('roles', {})
-            .then(async (res) => {
-                if (!res.ok) throw new Error(`Error ${res.status}`);
-                const data = await res.json();
-                // backend returns { roles: ['STUDENT', 'EMPLOYER', ...] } or a plain array
-                const list = Array.isArray(data) ? data : (data.roles ?? []);
+        getRoles()
+            .then((list) => {
                 const mapped = list
-                    .map((r) => (typeof r === 'string' ? r : r.value ?? r).toLowerCase())
+                    .map((r) => r.toLowerCase())
                     .filter((r) => SIGNUP_ROLES.includes(r));
                 setRoles(mapped);
                 if (mapped.length > 0) setRole(mapped[0]);
             })
-            .catch(() => setRolesFetchError({key:"signup.couldNotLoadRoles"}))
+            .catch(() => setRolesFetchError({key: "signup.couldNotLoadRoles"}))
             .finally(() => setRolesLoading(false));
     }, []);
 
