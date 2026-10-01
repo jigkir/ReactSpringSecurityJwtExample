@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
@@ -75,12 +76,12 @@ public class ManagerController {
     }
 
     @PutMapping("/internships/{internshipId}/approve")
-    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         return ResponseEntity.ok(managerService.approveInternship(internshipId));
     }
 
-    @PutMapping("internships/{internshipId}/reject")
-    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+    @PutMapping("/internships/{internshipId}/reject")
+    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         return ResponseEntity.ok(managerService.rejectInternship(internshipId));
-     }
+    }
 }
