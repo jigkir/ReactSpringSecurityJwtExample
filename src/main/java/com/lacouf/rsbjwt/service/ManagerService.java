@@ -70,12 +70,36 @@ public class ManagerService {
     }
 
     public void addNewCVNotificationToManager(String title, String message, Long cvId) throws UserNotFoundException, CvNotFoundException {
-        CV cv = cvRepository.findById(cvId).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
-        if (cv.getStatus() == CvStatus.PENDING) {
-            List<Manager> managers = getAllManagers();
-            Manager manager = managers.stream().findFirst()
-                    .orElseThrow(UserNotFoundException::new);
-            notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cvId, manager));
+        CV cv = cvRepository.findById(cvId)
+                .orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+
+        if (cv.getStatus() != CvStatus.PENDING) {
+            return;
+        }
+
+        List<Manager> managers = managerRepository.findAll();
+        if (managers.isEmpty()) {
+            throw new UserNotFoundException();
+        }
+
+        for (Manager manager : managers) {
+            boolean notificationExists = notificationRepository.existsByTypeAndTargetIdAndUser(
+                    NotificationType.CV_SUBMITTED_FOR_REVIEW,
+                    cvId,
+                    manager
+            );
+
+            if (!notificationExists) {
+                notificationRepository.save(new Notification(
+                        title,
+                        message,
+                        NotificationStatus.UNREAD,
+                        NotificationType.CV_SUBMITTED_FOR_REVIEW,
+                        TargetType.CV,
+                        cvId,
+                        manager
+                ));
+            }
         }
     }
 
