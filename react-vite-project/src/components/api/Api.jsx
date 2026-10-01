@@ -173,7 +173,7 @@ export async function deleteInternship(internshipId) {
 
 //region Notifications
 export async function getManagerNotifications(managerId) {
-    const response = await fetcher(`${managerId}/notifications`, {method: "GET"});
+    const response = await fetcher(`manager/${managerId}/notifications`, {method: "GET"});
     return handleResponse(response);
 }
 //endregion
