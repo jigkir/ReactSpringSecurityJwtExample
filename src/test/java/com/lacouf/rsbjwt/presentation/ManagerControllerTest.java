@@ -178,4 +178,51 @@ public class ManagerControllerTest {
 
         verifyNoInteractions(managerService);
     }
+
+    //get pending offers
+    @Test
+    void shouldReturnPendingInternships() throws Exception {
+        // Arrange
+        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("PENDING"))
+                .andExpect(jsonPath("$[0].title").value("Développeur logiciel"));
+
+        verify(managerService).getPendingInternships();
+    }
+
+    //get offer by id
+    @Test
+    void shouldReturnInternshipById() throws Exception {
+        // Arrange
+        when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.title").value("Développeur logiciel"));
+
+        verify(managerService).getInternshipById(1L);
+    }
+
+    //PUT approved
+    @Test
+    void shouldReturnOkWhenInternshipIsApprovved() throws Exception {
+        //Arrange
+        when(managerService.approveInternship(1L)).thenReturn(internshipWith(InternshipStatus.APPROVED));
+
+        //Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/approve"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        verify(managerService).approveInternship(1L);
+    }
+
 }
