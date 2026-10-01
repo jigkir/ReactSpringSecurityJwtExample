@@ -260,29 +260,6 @@ public class StudentService {
         createNewInternshipNotifications(internships, student);
     }
 
-    private Discipline getDisciplineByStudent(Student student) {
-        return student.getDiscipline();
-    }
-
-    private Discipline getEmployerDisciplineByInternship(Internship internship) {
-        Employer employer = internship.getPostedBy();
-        return employer.getDiscipline();
-    }
-
-    private void createNewInternshipNotifications(List<Internship> internships, Student student) {
-        List<Notification> existingNotifications = getNotificationsForStudent(student);
-
-        for (Internship internship : internships) {
-            Notification existingNotification = filterExistingNotificationsByInterishipId(existingNotifications, internship.getId());
-            if (existingNotification == null) {
-                createNewInternshipNotificationForStudent(
-                        internship.getId(),
-                        student
-                );
-            }
-        }
-    }
-
     public List<NotificationDto> getStudentNotifications(long studentId) throws UserNotFoundException {
         Student student = findById(studentId);
         generateInternshipNotificationsForStudent(studentId);
@@ -306,6 +283,29 @@ public class StudentService {
                 .filter(notification -> notification.getStatus() == NotificationStatus.UNREAD)
                 .count();
         return (int) unreadCount;
+    }
+
+    private Discipline getDisciplineByStudent(Student student) {
+        return student.getDiscipline();
+    }
+
+    private Discipline getEmployerDisciplineByInternship(Internship internship) {
+        Employer employer = internship.getPostedBy();
+        return employer.getDiscipline();
+    }
+
+    private void createNewInternshipNotifications(List<Internship> internships, Student student) {
+        List<Notification> existingNotifications = getNotificationsForStudent(student);
+
+        for (Internship internship : internships) {
+            Notification existingNotification = filterExistingNotificationsByInterishipId(existingNotifications, internship.getId());
+            if (existingNotification == null) {
+                createNewInternshipNotificationForStudent(
+                        internship.getId(),
+                        student
+                );
+            }
+        }
     }
 
     private List<Internship> filterInternshipsByDiscipline(List<Internship> internships, Discipline discipline) {
