@@ -1,19 +1,19 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
-import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.repository.EmployerRepository;
-import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.repository.InternshipRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.auth.Credentials;
+import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.repository.EmployerRepository;
+import com.lacouf.rsbjwt.repository.InternshipRepository;
+import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
@@ -68,7 +68,8 @@ public class EmployerService {
     }
 
     public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
-        validateInternshipDates(internshipDto.startDate(), internshipDto.applicationDeadline());
+        requireFuture(internshipDto.startDate(), "start date");
+        requireFuture(internshipDto.applicationDeadline(), "application deadline");
 
         validateCompensation(internshipDto.compensationAmount(), internshipDto.compensationNegotiable());
 
@@ -80,12 +81,47 @@ public class EmployerService {
                 internshipDto.requiredSkills(),
                 internshipDto.durationInWeeks(),
                 internshipDto.location(),
+                internshipDto.workMode(),
                 internshipDto.startDate(),
                 internshipDto.applicationDeadline(),
                 internshipDto.compensationAmount(),
                 internshipDto.compensationNegotiable(),
                 InternshipStatus.PENDING,
                 employer
+        );
+
+        internshipRepository.save(internship);
+
+        return InternshipResponseDto.of(internship);
+    }
+
+    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
+        // Ownership check: only the employer who posted the offer can edit it
+        Internship internship = internshipRepository
+                .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
+                .orElseThrow(() -> new InternshipNotFoundException(id));
+
+        // Only re-validate dates that changed (an unchanged, now-past date is accepted)
+        if (!dto.startDate().equals(internship.getStartDate())) {
+            requireFuture(dto.startDate(), "start date");
+        }
+        if (!dto.applicationDeadline().equals(internship.getApplicationDeadline())) {
+            requireFuture(dto.applicationDeadline(), "application deadline");
+        }
+
+        validateCompensation(dto.compensationAmount(), dto.compensationNegotiable());
+
+        internship.update(
+                dto.title(),
+                dto.description(),
+                dto.requiredSkills(),
+                dto.durationInWeeks(),
+                dto.location(),
+                dto.workMode(),
+                dto.startDate(),
+                dto.applicationDeadline(),
+                dto.compensationAmount(),
+                dto.compensationNegotiable()
         );
 
         internshipRepository.save(internship);
@@ -117,15 +153,9 @@ public class EmployerService {
         }
     }
 
-    private void validateInternshipDates(LocalDate startDate, LocalDate applicationDeadline) throws InvalidInternshipDateException {
-        LocalDate today = LocalDate.now();
-
-        if (!startDate.isAfter(today)) {
-            throw new InvalidInternshipDateException("start date");
-        }
-
-        if (!applicationDeadline.isAfter(today)) {
-            throw new InvalidInternshipDateException("application deadline");
+    private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {
+        if (!date.isAfter(LocalDate.now())) {
+            throw new InvalidInternshipDateException(label);
         }
     }
 

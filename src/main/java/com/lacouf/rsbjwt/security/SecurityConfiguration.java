@@ -122,6 +122,7 @@ public class SecurityConfiguration {
                         // EMPLOYER : INTERNSHIP
                         .requestMatchers(GET, GET_STUDENT_INTERNSHIPS_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
+                        .requestMatchers(PUT, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
