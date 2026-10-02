@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getNavbarClasses, getNotificationMenuClasses} from '../styles/appStyles.jsx';
+import {getNavbarClasses, getNotificationMenuClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 
 export default function NotificationMenu({notifications = [], dark}) {
@@ -44,7 +44,7 @@ export default function NotificationMenu({notifications = [], dark}) {
                 <span className="relative inline-flex">
                     <Icon name="notifications" size={20}/>
                     {total > 0 && (
-                        <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"/>
+                        <span className={`${menuClasses.redDot}`}> {total} </span>
                     )}
                 </span>
             </button>

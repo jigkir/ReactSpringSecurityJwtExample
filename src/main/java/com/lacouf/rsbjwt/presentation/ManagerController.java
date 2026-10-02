@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.NotificationNotFoundException;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
@@ -15,6 +15,7 @@ import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,14 +30,14 @@ public class ManagerController {
     }
 
     @GetMapping("/notifications")
-    public ResponseEntity<List<NotificationDto>> getManagerNotifications(@RequestParam long managerId) throws UserNotFoundException {
-        List<NotificationDto> notifications = managerService.getNotificationsForManager(managerId);
+    public ResponseEntity<List<NotificationDto>> getManagerNotifications(Authentication authentication) throws UserNotFoundException {
+        List<NotificationDto> notifications = managerService.getNotificationsForManager(authentication.getName());
         return ResponseEntity.ok(notifications);
     }
 
     @PutMapping("/notifications/{notificationId}/read")
-    public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId) throws NotificationNotFoundException {
-        NotificationDto updatedNotification = managerService.markNotificationAsRead(notificationId);
+    public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId, Authentication authentication) throws NotificationNotFoundException {
+        NotificationDto updatedNotification = managerService.markNotificationAsRead(notificationId, authentication.getName());
         return ResponseEntity.ok(updatedNotification);
     }
 

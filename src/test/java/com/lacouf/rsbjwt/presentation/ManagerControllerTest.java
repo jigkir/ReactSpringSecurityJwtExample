@@ -8,16 +8,18 @@ import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.notification.NotificationStatus;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.service.ManagerService;
-import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -45,6 +47,8 @@ public class ManagerControllerTest {
 
     private static final String REJECTION_BODY = "{\"comment\": \"CV too detailed\"}";
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
+
+    private final Authentication authentication = new UsernamePasswordAuthenticationToken("manager@example.com", null);
 
     private static ManagerCvResponseDto cvWith(CvStatus status, String comment) {
         return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
@@ -177,6 +181,32 @@ public class ManagerControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(managerService);
+    }
+
+    @Test
+    void shouldReturnNotificationsOfConnectedManager() throws Exception {
+        // Arrange
+        when(managerService.getNotificationsForManager("manager@example.com")).thenReturn(List.of(new NotificationDto(5L, "New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, TargetType.CV, NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, LocalDateTime.now())));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/notifications").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(5))
+                .andExpect(jsonPath("$[0].notificationType").value("CV_SUBMITTED_FOR_REVIEW"))
+                .andExpect(jsonPath("$[0].targetId").value(1));
+
+        verify(managerService).getNotificationsForManager("manager@example.com");
+    }
+
+    @Test
+    void shouldMarkManagerNotificationAsRead() throws Exception {
+        // Arrange
+        when(managerService.markNotificationAsRead(5L, "manager@example.com")).thenReturn(new NotificationDto(5L, "New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.READ, TargetType.CV, NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, LocalDateTime.now()));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/notifications/5/read").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("READ"));
     }
 
     //get pending offers

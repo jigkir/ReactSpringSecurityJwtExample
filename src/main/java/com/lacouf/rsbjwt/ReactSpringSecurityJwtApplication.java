@@ -15,7 +15,7 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
 
     private static final String MANAGER_EMAIL = "manager@email.com";
 
-    public ReactSpringSecurityJwtApplication(ManagerService managerService, UserAppRepository userAppRepository, DataSourceProperties dataSourceProperties) {
+    public ReactSpringSecurityJwtApplication(ManagerService managerService, UserAppRepository userAppRepository) {
         this.managerService = managerService;
         this.userAppRepository = userAppRepository;
     }

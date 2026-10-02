@@ -136,6 +136,7 @@ export function getNavbarClasses(dark) {
         list: `divide-y ${dark ? "divide-slate-700" : "divide-gray-100"}`,
         item: `flex items-center gap-3 px-4 py-3 text-sm ${TRANSITION_150} ${dark ? "text-slate-200 hover:bg-slate-700/60" : "text-gray-700 hover:bg-gray-50"}`,
         empty: `px-4 py-6 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
+        redDot: `absolute -top-2 -right-2 h-4 w-4 rounded-full bg-red-500 text-xs text-white`,
     }
  }
 
@@ -244,7 +245,7 @@ export function getInternshipModalClasses(dark) {
 // ─── Button ─────────────────────────────────────────────────────────────────
 
 export const CV_BUTTON_BASE =
-    "text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors duration-150 whitespace-nowrap " +
+    "inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors duration-150 whitespace-nowrap " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
     "disabled:opacity-40 disabled:cursor-not-allowed";
 
@@ -253,11 +254,13 @@ export const CV_BUTTON_TONES = {
         neutral: "border-slate-600 text-slate-200 hover:bg-slate-700",
         accent: "border-indigo-500/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20",
         danger: "border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20",
+        success: "border-green-500/40 bg-green-500/10 text-green-300 hover:bg-green-500/20",
     },
     light: {
         neutral: "border-gray-300 text-gray-700 hover:bg-gray-100",
         accent: "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
         danger: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100",
+        success: "border-green-200 bg-green-50 text-green-700 hover:bg-green-100",
     },
 };
 
@@ -275,6 +278,10 @@ export function getCvDocumentsClasses(dark) {
         meta: `mt-1 text-sm ${dark ? "text-slate-400" : "text-gray-600"}`,
         muted: `px-6 py-8 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
         skel: dark ? "bg-slate-700" : "bg-gray-200",
+        rejectionBox: `mt-2 rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`,
+        rejectionLabel: `text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`,
+        rejectionText: `mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`,
+
         error: `px-4 py-3 rounded-lg text-sm border ${dark ? "bg-red-900/30 border-red-700 text-red-300" : "bg-red-50 border-red-300 text-red-700"}`,
         pillBase: "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap",
         pillPublic: dark ? "bg-amber-500/20 text-amber-200" : "bg-amber-100 text-amber-800",

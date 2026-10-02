@@ -1,7 +1,7 @@
 package com.lacouf.rsbjwt.exception;
 
 import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;

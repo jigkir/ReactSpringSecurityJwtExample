@@ -1,5 +1,5 @@
 import {useOutletContext} from 'react-router-dom';
-import {getHomeClasses} from '../../styles/appStyles.jsx';
+import {getHomeClasses} from '../../styles/AppStyles.jsx';
 import {useTranslation} from 'react-i18next';
 
 const Home = () => {
