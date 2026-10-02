@@ -27,4 +27,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.type = :type AND n.targetId = :targetId AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
     void markAllAsReadByTypeAndTargetId(@Param("type") NotificationType type, @Param("targetId") long targetId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user.id = :id AND n.type = :type AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
+    void markAllAsReadByUserIdAndType(@Param("id") Long id, @Param("type") NotificationType type);
 }

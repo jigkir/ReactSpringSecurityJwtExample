@@ -1,7 +1,6 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.StudentService;
@@ -113,15 +112,9 @@ public class StudentController {
     }
 
     @PutMapping("/{id}/notifications/internship/read")
-    public ResponseEntity<String> markInternshipNotificationsAsRead(@PathVariable long id) throws UserNotFoundException {
+    public ResponseEntity<String> markInternshipsNotificationsAsRead(@PathVariable long id) throws UserNotFoundException {
         studentService.markInternshipsNotificationAsRead(id);
         return new ResponseEntity<>("Notifications marked as read successfully", HttpStatus.OK);
-    }
-
-    @PutMapping("/{id}/notifications/notification/{notificationId}/read")
-    public ResponseEntity<String> markNotificationAsRead(@PathVariable long id, @PathVariable long notificationId) throws UserNotFoundException, NotificationNotFoundException {
-        studentService.markNotificationAsRead(id, notificationId);
-        return new ResponseEntity<>("Notification marked as read successfully", HttpStatus.OK);
     }
 
     @GetMapping("/{id}/notifications/unread/count")
