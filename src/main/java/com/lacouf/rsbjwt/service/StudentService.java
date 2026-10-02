@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -294,6 +295,21 @@ public class StudentService {
                 notification.setStatus(NotificationStatus.READ);
                 notificationRepository.save(notification);
             }
+        }
+    }
+
+    public void markNotificationAsRead(long studentId, long notificationId) throws UserNotFoundException, NotificationNotFoundException {
+        Student student = findById(studentId);
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationNotFoundException(notificationId));
+
+        if (!notification.getUser().getId().equals(student.getId())) {
+            throw new NotificationNotFoundException(notificationId);
+        }
+
+        if (notification.getStatus() == NotificationStatus.UNREAD) {
+            notification.setStatus(NotificationStatus.READ);
+            notificationRepository.save(notification);
         }
     }
 
