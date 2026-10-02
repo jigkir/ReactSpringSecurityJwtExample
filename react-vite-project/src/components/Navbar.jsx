@@ -5,7 +5,7 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {getManagerNotifications, getStudentInternships} from './api/Api.jsx';
+import {getManagerNotifications, getStudentInternships, getStudentNotifications} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -18,11 +18,15 @@ const NAV_BY_ROLE = {
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
 function useNotifications(role, t, user) {
-    const [count, setCount] = useState(0);
+    const [cvCount, setCvCount] = useState(0);
+    const [cvApprovedCount, setCvApprovedCount] = useState(0);
+    const [cvRejectedCount, setCvRejectedCount] = useState(0);
+    const [internshipCount, setInternshipCount] = useState(0);
 
     useEffect(() => {
         if (!user?.id) {
-            setCount(0);
+            setCvCount(0);
+            setInternshipCount(0);
             return;
         }
         let cancelled = false;
@@ -30,7 +34,7 @@ function useNotifications(role, t, user) {
         if (role === "MANAGER") {
             getManagerNotifications(user.id)
                 .then((data) => {
-                    if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+                    if (!cancelled) setCvCount(Array.isArray(data) ? data.length : 0);
                 })
                 .catch((err) => {
                     console.error("Manager notifications failed:", err?.status, err?.body);
@@ -38,8 +42,15 @@ function useNotifications(role, t, user) {
         } else if (role === "STUDENT") {
             getStudentInternships(user.id)
                 .then((data) => {
-                    if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+                    if (!cancelled) setInternshipCount(Array.isArray(data) ? data.length : 0);
                 })
+                .catch((error) => {
+                    console.error("Student notification error:", error);
+                });
+            getStudentNotifications(user.id).then((data) => {
+                if (!cancelled) setCvApprovedCount(Array.isArray(data) ? data.filter(notif => notif.notificationType === "CV_APPROVED").length : 0);
+                if (!cancelled) setCvRejectedCount(Array.isArray(data) ? data.filter(notif => notif.notificationType === "CV_REJECTED").length : 0);
+            })
                 .catch((error) => {
                     console.error("Student notification error:", error);
                 });
@@ -52,14 +63,14 @@ function useNotifications(role, t, user) {
 
 
     // If there are no notifications, return an empty array immediately
-    if (count === 0) return [];
+    if (cvCount === 0 && internshipCount === 0 && cvApprovedCount === 0 && cvRejectedCount === 0) return [];
 
     // Return the correct notification based on the role
     if (role === "MANAGER") {
         return [{
             id: "cvPosted",
-            count,
-            label: t("navbar.cvNotification", {amount: count}),
+            count: cvCount,
+            label: t("navbar.cvNotification", {amount: cvCount}),
             to: "/manager/cvs",
         }];
     }
@@ -67,10 +78,22 @@ function useNotifications(role, t, user) {
     if (role === "STUDENT") {
         return [{
             id: "internship",
-            count,
-            label: t("navbar.internshipNotification", {amount: count}),
+            count: internshipCount,
+            label: t("navbar.internshipNotification", {amount: internshipCount}),
             to: "/internship",
-        }];
+        },
+        {
+            id: "cvsApproved",
+            count: cvApprovedCount,
+            label: t("navbar.cvApprovedNotification", {amount: cvApprovedCount}),
+            to: "/cv",
+        },
+            {
+                id: "cvsRejected",
+                count: cvRejectedCount,
+                label: t("navbar.cvRejectedNotification", {amount: cvRejectedCount}),
+                to: "/cv",
+            }];
     }
 
     return [];

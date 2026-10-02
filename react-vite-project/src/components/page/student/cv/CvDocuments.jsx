@@ -45,7 +45,7 @@ import {
     getPublicCvs,
     getStudentCvFile,
     getStudentCvs,
-    hideCv,
+    hideCv, markStudentCvNotificationsAsRead,
     rejectCv,
     setCvScope,
     setMainCv,
@@ -93,6 +93,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const {t, i18n} = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isManager = mode === "manager";
+    const isStudent = mode === "student";
 
     // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
     const defaultApi = useMemo(
@@ -117,6 +118,10 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const [disciplineFilter, setDisciplineFilter] = useState("ALL");
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState("DATE_DESC");
+
+    if(isStudent){
+        markStudentCvNotificationsAsRead(studentId);
+    }
 
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"

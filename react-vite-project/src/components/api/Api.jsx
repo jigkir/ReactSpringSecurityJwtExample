@@ -230,4 +230,13 @@ export async function getManagerNotifications(managerId) {
     return handleResponse(response);
 }
 
+export async function getStudentNotifications(studentId) {
+    const response = await fetcher(`student/${studentId}/notifications`, {method: "GET"});
+    return handleResponse(response);
+}
+
+export async function markStudentCvNotificationsAsRead(studentId) {
+    const response = await fetcher(`/${studentId}/notifications/{notificationId}/read`, {method: "PUT"});
+    return handleResponse(response);
+}
 //endregion

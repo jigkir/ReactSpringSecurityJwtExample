@@ -56,7 +56,7 @@
     "noNotifications": "Vous n'avez pas de nouvelles notifications",
     "cvNotification": "{{amount}} nouveau(x) CV publié(s)",
     "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
-    "cvRefusedNotification": "{{amount}} de vos CV ont été refusés",
+    "cvRejectedNotification": "{{amount}} de vos CV ont été refusés",
     "internshipNotification": "{{amount}} stage(s) disponible(s)"
   },
   "managerPage": {
