@@ -117,9 +117,9 @@ public class StudentController {
         return new ResponseEntity<>("Notifications marked as read successfully", HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/notifications/unread/count")
-    public ResponseEntity<Long> getUnreadNotificationCount(@PathVariable long id) throws UserNotFoundException {
-        long unreadCount = studentService.getUnreadNotificationCount(id);
+    @GetMapping("/{id}/notifications/internship/unread/count")
+    public ResponseEntity<Long> getUnreadInternshipNotificationsCount(@PathVariable long id) throws UserNotFoundException {
+        long unreadCount = studentService.getUnreadNotificationCountForInternships(id);
         return new ResponseEntity<>(unreadCount, HttpStatus.OK);
     }
 }

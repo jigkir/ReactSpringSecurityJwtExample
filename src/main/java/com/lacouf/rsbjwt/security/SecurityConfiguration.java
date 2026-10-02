@@ -65,7 +65,7 @@ public class SecurityConfiguration {
     // STUDENT NOTIFICATIONS PATHS
     private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/{studentId}/notifications";
     private static final String STUDENT_INTERNSHIP_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/internship/read";
-    private static final String STUDENT_NOTIFICATION_UNREAD_COUNT_PATH = "/api/student/{studentId}/notifications/unread/count";
+    private static final String STUDENT_INTERNSHIP_NOTIFICATION_UNREAD_COUNT_PATH = "/api/student/{studentId}/notifications/internship/unread/count";
     private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/{notificationId}/read";
 
     // INTERNSHIP PATHS
@@ -104,7 +104,7 @@ public class SecurityConfiguration {
                         // STUDENT : NOTIFICATIONS
                         .requestMatchers(GET, STUDENT_NOTIFICATIONS_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, STUDENT_INTERNSHIP_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_NOTIFICATION_UNREAD_COUNT_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(GET, STUDENT_INTERNSHIP_NOTIFICATION_UNREAD_COUNT_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(PUT, STUDENT_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
 
 

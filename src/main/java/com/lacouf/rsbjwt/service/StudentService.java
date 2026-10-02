@@ -278,13 +278,10 @@ public class StudentService {
     }
 
 
-    public int getUnreadNotificationCount(long studentId) throws UserNotFoundException {
+    public int getUnreadNotificationCountForInternships(long studentId) throws UserNotFoundException {
         Student student = findById(studentId);
-        List<Notification> notifications = getNotificationsForStudent(student);
-        long unreadCount = notifications.stream()
-                .filter(notification -> notification.getStatus() == NotificationStatus.UNREAD)
-                .count();
-        return (int) unreadCount;
+        List<Notification> notifications = notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(student.getCredentials().getEmail(), NotificationStatus.UNREAD);
+        return (int) notifications.stream().filter(notification -> notification.getType() == NotificationType.NEW_INTERNSHIP_OFFER).count();
     }
 
     public void createNewInternshipNotificationsForStudents(Internship internship) {
