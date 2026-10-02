@@ -7,7 +7,7 @@
  */
 
 import {useOutletContext} from 'react-router-dom';
-import CvDocuments from '../student/cv/CvDocuments.jsx';
+import CvDocuments from '../cv/CvDocuments.jsx';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 
 const Cv = () => {

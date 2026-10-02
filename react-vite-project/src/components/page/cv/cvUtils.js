@@ -16,6 +16,9 @@ export const FALLBACK_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 export const ACCEPTED_MIME = "application/pdf";
 export const ACCEPTED_EXT = ".pdf";
 
+/** Bytes → whole megabytes, as a NUMBER (never a string). */
+export const bytesToMb = (bytes) => Math.round(bytes / (1024 * 1024));
+
 // ─── Student-ID resolution ────────────────────────────────────────────────────
 
 export function resolveStudentId(user) {
@@ -32,7 +35,7 @@ export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
         return {key: "cvUpload.validation.invalidFormat"};
     }
     if (file.size > maxBytes) {
-        return {key: "cvUpload.validation.tooLarge", options: {mb: (maxBytes / (1024 * 1024)).toFixed(0)}};
+        return {key: "cvUpload.validation.tooLarge", options: {mb: bytesToMb(maxBytes)}};
     }
     return null;
 }
@@ -43,9 +46,9 @@ export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
 export function formatBytes(bytes, lang = "en") {
     const unit = bytes < 1024 ? "byte" : bytes < 1024 * 1024 ? "kilobyte" : "megabyte";
     const value = unit === "byte" ? bytes : unit === "kilobyte" ? bytes / 1024 : bytes / (1024 * 1024);
-    return new Intl.NumberFormat(lang, {
-        style: "unit", unit, unitDisplay: "short", maximumFractionDigits: 1,
-    }).format(value);
+    const options = {style: "unit", unit, unitDisplay: "short", maximumFractionDigits: 1};
+
+    return new Intl.NumberFormat(lang, options).format(value);
 }
 
 /** en-CA renders dates as YYYY-MM-DD (language-neutral on purpose) */

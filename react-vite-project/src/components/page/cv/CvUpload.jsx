@@ -12,11 +12,11 @@
  * translated HERE at render time, so they follow the language switch live.
  */
 
-import {getAuthClasses, getCvUploadClasses} from '../../../../styles/AppStyles.jsx';
+import {getAuthClasses, getCvUploadClasses} from '../../../styles/AppStyles.jsx';
 import {formatBytes} from './cvUtils.js';
 import {useTranslation} from 'react-i18next';
-import Icon from '../../../../styles/Icon.jsx';
-import {translateWarning} from '../../../../utils/CommonFields.jsx';
+import Icon from '../../../styles/Icon.jsx';
+import {translateWarning} from '../../../utils/CommonFields.jsx';
 
 const PdfIcon = ({className = ""}) => <Icon name="picture_as_pdf" size={40} className={className}/>;
 const UploadIcon = ({className = ""}) => <Icon name="upload_file" size={40} className={className}/>;
