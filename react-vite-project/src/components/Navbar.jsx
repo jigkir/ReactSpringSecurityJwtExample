@@ -72,6 +72,8 @@ function useNotifications(role, t, user) {
             count,
             label: t("navbar.internshipNotification", {amount: count}),
             to: "/internship",
+            func: () => { markNotificationAsRead(user.id)
+                 }
         }];
     }
 
@@ -190,7 +192,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            <NotificationMenu notifications={notifications} dark={dark} studentId={user?.id} onNotificationRead={handleNotificationRead}/>
+                            <NotificationMenu notifications={notifications} dark={dark} />
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}

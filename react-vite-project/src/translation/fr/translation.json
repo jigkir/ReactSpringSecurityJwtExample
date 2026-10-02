@@ -57,8 +57,7 @@
     "cvNotification": "{{amount}} nouveau(x) CV publié(s)",
     "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
     "cvRefusedNotification": "{{amount}} de vos CV ont été refusés",
-    "internshipNotification": "{{amount}} stage(s) disponible(s)",
-    "dismissButton": "Ignorer"
+    "internshipNotification": "{{amount}} stage(s) disponible(s)"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",
