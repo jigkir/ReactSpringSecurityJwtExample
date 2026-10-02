@@ -286,13 +286,15 @@ public class StudentService {
         return notifications.stream().map(NotificationDto::of).toList();
     }
 
-    public void markNotificationAsRead(long studentId, long notificationId) throws UserNotFoundException {
+    public void markInternshipsNotificationAsRead(long studentId) throws UserNotFoundException {
         Student student = findById(studentId);
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(UserNotFoundException::new);
-
-        notification.setStatus(NotificationStatus.READ);
-        notificationRepository.save(notification);
+        List<Notification> notifications = getNotificationsForStudent(student);
+        for (Notification notification : notifications) {
+            if (notification.getTargetType() == TargetType.INTERNSHIP_OFFER && notification.getStatus() == NotificationStatus.UNREAD) {
+                notification.setStatus(NotificationStatus.READ);
+                notificationRepository.save(notification);
+            }
+        }
     }
 
     public int getUnreadNotificationCount(long studentId) throws UserNotFoundException {

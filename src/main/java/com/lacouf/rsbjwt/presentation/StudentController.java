@@ -111,10 +111,10 @@ public class StudentController {
         return ResponseEntity.ok(notifications);
     }
 
-    @PutMapping("/{id}/notifications/{notificationId}/read")
-    public ResponseEntity<String> markNotificationAsRead(@PathVariable long id, @PathVariable long notificationId) throws UserNotFoundException {
-        studentService.markNotificationAsRead(id, notificationId);
-        return new ResponseEntity<>("Notification marked as read successfully", HttpStatus.OK);
+    @PutMapping("/{id}/notifications/internship/read")
+    public ResponseEntity<String> markInternshipNotificationsAsRead(@PathVariable long id) throws UserNotFoundException {
+        studentService.markInternshipsNotificationAsRead(id);
+        return new ResponseEntity<>("Notifications marked as read successfully", HttpStatus.OK);
     }
 
     @GetMapping("/{id}/notifications/unread/count")
