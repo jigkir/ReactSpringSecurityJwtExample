@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.CvRejectionDto;
+import com.lacouf.rsbjwt.service.dto.request.InternshipRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
@@ -64,6 +65,11 @@ public class ManagerController {
         return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
 
+    @GetMapping("/internships")
+    public ResponseEntity<List<InternshipResponseDto>> getAllInternships() {
+        return ResponseEntity.ok(managerService.getAllInternships());
+    }
+
     @GetMapping("/internships/pending")
     public ResponseEntity<List<InternshipResponseDto>> getPendingInternships() {
         return ResponseEntity.ok(managerService.getPendingInternships());
@@ -80,7 +86,7 @@ public class ManagerController {
     }
 
     @PutMapping("/internships/{internshipId}/reject")
-    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
-        return ResponseEntity.ok(managerService.rejectInternship(internshipId));
+    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRejectionDto rejection) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        return ResponseEntity.ok(managerService.rejectInternship(internshipId, rejection.comment()));
     }
 }

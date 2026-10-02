@@ -48,6 +48,9 @@ public class Internship {
     @Column(nullable = false)
     private InternshipStatus status;
 
+    @Column(columnDefinition = "TEXT")
+    private String rejectionComment;
+
     @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "employer_id")
@@ -74,10 +77,12 @@ public class Internship {
 
     public void approve() {
         this.status = InternshipStatus.APPROVED;
+        this.rejectionComment = null;
     }
 
-    public void reject() {
+    public void reject(String comment) {
         this.status = InternshipStatus.REJECTED;
+        this.rejectionComment = comment;
     }
 
     public void setId(long id) {

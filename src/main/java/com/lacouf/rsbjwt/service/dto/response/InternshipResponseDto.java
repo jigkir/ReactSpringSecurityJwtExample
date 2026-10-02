@@ -18,7 +18,8 @@ public record InternshipResponseDto(
         BigDecimal compensationAmount,
         boolean compensationNegotiable,
         InternshipStatus status,
-        long employerId
+        long employerId,
+        String rejectionComment
 ) {
     public static InternshipResponseDto of(Internship internship){
         return new InternshipResponseDto(
@@ -33,7 +34,8 @@ public record InternshipResponseDto(
                 internship.getCompensationAmount(),
                 internship.isCompensationNegotiable(),
                 internship.getStatus(),
-                internship.getPostedBy().getId()
+                internship.getPostedBy().getId(),
+                internship.getRejectionComment()
         );
     }
 }
