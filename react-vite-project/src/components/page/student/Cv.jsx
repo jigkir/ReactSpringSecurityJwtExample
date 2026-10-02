@@ -22,7 +22,7 @@ import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import CvUpload from '../cv/CvUpload.jsx';
 import CvDocuments from '../cv/CvDocuments.jsx';
 import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';
-import {ACCEPTED_EXT, FALLBACK_MAX_BYTES, resolveStudentId, STATE, validateFile,} from '../cv/cvUtils.js';
+import {ACCEPTED_EXT, bytesToMb, FALLBACK_MAX_BYTES, resolveStudentId, STATE, validateFile,} from '../cv/cvUtils.js';
 
 // ─── API helpers (thin wrappers with fallbacks; HTTP itself is in Api.jsx) ────
 
@@ -62,6 +62,9 @@ const Cv = ({user}) => {
     const [isDragging, setIsDragging] = useState(false);
     const [isReplacing, setIsReplacing] = useState(false);
     const [maxBytes, setMaxBytes] = useState(FALLBACK_MAX_BYTES);
+
+    // Numeric MB limit (number, not string) for display and translation params
+    const maxMb = bytesToMb(maxBytes);
 
     // ── Auth + CV-count check ─────────────────────────────────────────────────
 
@@ -168,7 +171,7 @@ const Cv = ({user}) => {
             if ([400, 415, 422].includes(err.status)) {
                 setServerError({key: "cv.fileInvalid"});
             } else if (err.status === 413) {
-                setServerError({key: "cv.fileTooLarge", options: {mb: (maxBytes / (1024 * 1024)).toFixed(0)}});
+                setServerError({key: "cv.fileTooLarge", options: {mb: maxMb}});
             } else {
                 setServerError({key: "cv.uploadFailed"});
             }
@@ -263,7 +266,7 @@ const Cv = ({user}) => {
                 onCancelReplacing={cancelReplacing}
                 onGoToDashboard={goToDashboard}
                 onGoToList={goToList}
-                maxFileSizeMb={(maxBytes / (1024 * 1024)).toFixed(0)}
+                maxFileSizeMb={maxMb}
                 acceptedExt={ACCEPTED_EXT}
             />
         </div>

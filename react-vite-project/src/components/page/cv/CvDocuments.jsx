@@ -157,7 +157,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     }, [api, isManager]);
 
     useEffect(() => {
-        if (isManager || studentId) load();
+        if (isManager || studentId) void load();
     }, [load, isManager, studentId]);
 
     // ── Manager filter / sort ─────────────────────────────────────────────────
@@ -343,7 +343,9 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         body = (
             <div className={th.muted} role="alert">
                 <p>{t("cvDocuments.loadError")}</p>
-                <button onClick={load} className={`${btn} ${btnTone.neutral} mt-3`}>{t("cvDocuments.retryBtn")}</button>
+                <button onClick={() => void load()} className={`${btn} ${btnTone.neutral} mt-3`}>
+                    {t("cvDocuments.retryBtn")}
+                </button>
             </div>
         );
     } else if (visibleDocs === null) {
