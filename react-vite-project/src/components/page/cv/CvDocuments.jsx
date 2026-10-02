@@ -77,6 +77,14 @@ const STATUS_KEY = {
     REJECTED: "cvDocuments.statusRefused",
 };
 
+// Material Symbols name shown inside each status pill
+const STATUS_ICON = {
+    PENDING: "schedule",
+    APPROVED: "check_circle",
+    REFUSED: "close",
+    REJECTED: "close",
+};
+
 // Textarea that grows/shrinks with its content (no inner scrollbar, no manual resize).
 const AutoResizeTextarea = ({value, className = "", ...props}) => {
     const ref = useRef(null);
@@ -365,10 +373,10 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
                     const isMain = doc.priority === "MAIN";
                     const status = doc.status ?? "PENDING";
-                    const isPending = status === "PENDING";
                     const isApproved = status === "APPROVED";
                     const isRejected = status === "REJECTED" || status === "REFUSED";
                     const statusKey = STATUS_KEY[status] ?? STATUS_KEY.PENDING;
+                    const statusIcon = STATUS_ICON[status] ?? STATUS_ICON.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
                     const mainLabel = isMain ? t("cvDocuments.mainCv") : t("cvDocuments.makeMainBtn");
 
@@ -405,11 +413,14 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
                                 {/* Column 2 — Pills */}
                                 <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
-                                    <span className={`${th.pillBase} ${th.statusPill(status)}`}>
+                                    <span className={`${th.pillBase} ${th.statusPill(status)} gap-1`}>
+                                        <Icon name={statusIcon} size={14}/>
                                         {t(statusKey)}
                                     </span>
                                     {!isManager && (
-                                        <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
+                                        <span
+                                            className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate} gap-1`}>
+                                            <Icon name={isPublic ? "share_reviews" : "lock"} size={14}/>
                                             {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
                                         </span>
                                     )}
@@ -446,7 +457,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                     className={textareaClass}
                                                 />
                                             )}
-                                            <Button tone="danger" dark={dark} icon="check"
+                                            <Button tone="danger" dark={dark} icon="check_circle"
                                                     disabled={busy || (isManager && !refuseComment.trim())} autoFocus
                                                     onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
                                                 {t("cvDocuments.confirmBtn")}
@@ -460,7 +471,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                         <>
                                             {/* Decision can be changed at any time */}
                                             {!isApproved && (
-                                                <Button tone="success" dark={dark} icon="check" disabled={busy}
+                                                <Button tone="success" dark={dark} icon="check_circle" disabled={busy}
                                                         onClick={() => decide(doc, "approve")}
                                                         aria-label={`${t("cvDocuments.approveBtn")} : ${doc.fileName}`}>
                                                     {t("cvDocuments.approveBtn")}

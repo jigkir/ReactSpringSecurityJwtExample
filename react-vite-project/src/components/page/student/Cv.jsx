@@ -1,5 +1,6 @@
 /**
  * Cv.jsx — Parent / state machine for the student CV flow.
+ * Location: src/components/page/student/Cv.jsx
  *
  * Owns all shared state and decides which child to render:
  *   LOADING_CV                → skeleton
@@ -163,7 +164,7 @@ const Cv = ({user}) => {
             await uploadCv(studentId, selectedFile);
             setUploadState(STATE.SUCCESS);
         } catch (err) {
-            console.error("Upload failed:", err.status, err.body);   // ← add this
+            console.error("Upload failed:", err.status, err.body);
             if ([400, 415, 422].includes(err.status)) {
                 setServerError({key: "cv.fileInvalid"});
             } else if (err.status === 413) {

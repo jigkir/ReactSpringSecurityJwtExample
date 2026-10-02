@@ -30,13 +30,13 @@ const CvPreview = ({doc, dark, getUrl}) => {
     // Fetch blob URL; revoke previous one if the doc changes mid-session.
     useEffect(() => {
         let alive = true;
-        const t = ++token.current;
+        const tk = ++token.current;
         setUrl(null);
         setError(false);
 
         getUrl(doc.id)
             .then((u) => {
-                if (!alive || t !== token.current) {
+                if (!alive || tk !== token.current) {
                     URL.revokeObjectURL(u);
                     return;
                 }
@@ -46,7 +46,7 @@ const CvPreview = ({doc, dark, getUrl}) => {
                 setUrl(u);
             })
             .catch(() => {
-                if (alive && t === token.current) setError(true);
+                if (alive && tk === token.current) setError(true);
             });
 
         return () => {
