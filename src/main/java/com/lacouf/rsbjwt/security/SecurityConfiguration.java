@@ -78,6 +78,8 @@ public class SecurityConfiguration {
     private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
     private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
     private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
+    private static final String MANAGER_APPROVE_INTERNSHIP_PATH = "/api/manager/internships/{internshipId}/approve";
+    private static final String MANAGER_REJECT_INTERNSHIP_PATH = "/api/manager/internships/{internshipId}/reject";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -105,7 +107,6 @@ public class SecurityConfiguration {
                         .requestMatchers(PUT, STUDENT_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_NOTIFICATION_UNREAD_COUNT_PATH).hasAuthority(Role.STUDENT.name())
 
-
                         // STUDENT : CV
                         .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAuthority(Role.STUDENT.name())
@@ -121,12 +122,15 @@ public class SecurityConfiguration {
                         // EMPLOYER : INTERNSHIP
                         .requestMatchers(GET, GET_STUDENT_INTERNSHIPS_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
+                        .requestMatchers(PUT, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
 
                         // MANAGER
                         .requestMatchers(PUT, MANAGER_APPROVE_CV_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_REJECT_CV_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_APPROVE_INTERNSHIP_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(PUT, MANAGER_REJECT_INTERNSHIP_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
@@ -194,7 +198,7 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception{
+    ) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

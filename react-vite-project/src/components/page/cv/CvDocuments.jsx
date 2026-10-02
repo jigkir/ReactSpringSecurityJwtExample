@@ -36,8 +36,8 @@
 
 import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
-import Icon from '../../../../styles/Icon.jsx';
+import Button, {useButtonClasses} from '../../../styles/Button.jsx';
+import Icon from '../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
 import {
     approveCv,
@@ -49,9 +49,9 @@ import {
     rejectCv,
     setCvScope,
     setMainCv,
-} from '../../../api/Api.jsx';
+} from '../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
-import {getCvDocumentsClasses} from '../../../../styles/AppStyles.jsx';
+import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
@@ -75,6 +75,14 @@ const STATUS_KEY = {
     APPROVED: "cvDocuments.statusApproved",
     REFUSED: "cvDocuments.statusRefused",
     REJECTED: "cvDocuments.statusRefused",
+};
+
+// Material Symbols name shown inside each status pill
+const STATUS_ICON = {
+    PENDING: "schedule",
+    APPROVED: "check_circle",
+    REFUSED: "close",
+    REJECTED: "close",
 };
 
 // Textarea that grows/shrinks with its content (no inner scrollbar, no manual resize).
@@ -149,7 +157,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     }, [api, isManager]);
 
     useEffect(() => {
-        if (isManager || studentId) load();
+        if (isManager || studentId) void load();
     }, [load, isManager, studentId]);
 
     // ── Manager filter / sort ─────────────────────────────────────────────────
@@ -335,7 +343,9 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         body = (
             <div className={th.muted} role="alert">
                 <p>{t("cvDocuments.loadError")}</p>
-                <button onClick={load} className={`${btn} ${btnTone.neutral} mt-3`}>{t("cvDocuments.retryBtn")}</button>
+                <button onClick={() => void load()} className={`${btn} ${btnTone.neutral} mt-3`}>
+                    {t("cvDocuments.retryBtn")}
+                </button>
             </div>
         );
     } else if (visibleDocs === null) {
@@ -365,10 +375,10 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
                     const isMain = doc.priority === "MAIN";
                     const status = doc.status ?? "PENDING";
-                    const isPending = status === "PENDING";
                     const isApproved = status === "APPROVED";
                     const isRejected = status === "REJECTED" || status === "REFUSED";
                     const statusKey = STATUS_KEY[status] ?? STATUS_KEY.PENDING;
+                    const statusIcon = STATUS_ICON[status] ?? STATUS_ICON.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
                     const mainLabel = isMain ? t("cvDocuments.mainCv") : t("cvDocuments.makeMainBtn");
 
@@ -405,11 +415,14 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
 
                                 {/* Column 2 — Pills */}
                                 <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
-                                    <span className={`${th.pillBase} ${th.statusPill(status)}`}>
+                                    <span className={`${th.pillBase} ${th.statusPill(status)} gap-1`}>
+                                        <Icon name={statusIcon} size={14}/>
                                         {t(statusKey)}
                                     </span>
                                     {!isManager && (
-                                        <span className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate}`}>
+                                        <span
+                                            className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate} gap-1`}>
+                                            <Icon name={isPublic ? "share_reviews" : "lock"} size={14}/>
                                             {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
                                         </span>
                                     )}
@@ -446,7 +459,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                     className={textareaClass}
                                                 />
                                             )}
-                                            <Button tone="danger" dark={dark} icon="check"
+                                            <Button tone="danger" dark={dark} icon="check_circle"
                                                     disabled={busy || (isManager && !refuseComment.trim())} autoFocus
                                                     onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
                                                 {t("cvDocuments.confirmBtn")}
@@ -460,7 +473,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                         <>
                                             {/* Decision can be changed at any time */}
                                             {!isApproved && (
-                                                <Button tone="success" dark={dark} icon="check" disabled={busy}
+                                                <Button tone="success" dark={dark} icon="check_circle" disabled={busy}
                                                         onClick={() => decide(doc, "approve")}
                                                         aria-label={`${t("cvDocuments.approveBtn")} : ${doc.fileName}`}>
                                                     {t("cvDocuments.approveBtn")}
