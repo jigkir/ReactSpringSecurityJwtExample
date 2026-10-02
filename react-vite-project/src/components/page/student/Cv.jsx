@@ -18,10 +18,10 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
-import CvUpload from './cv/CvUpload.jsx';
-import CvDocuments from './cv/CvDocuments.jsx';
+import CvUpload from '../cv/CvUpload.jsx';
+import CvDocuments from '../cv/CvDocuments.jsx';
 import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';
-import {ACCEPTED_EXT, FALLBACK_MAX_BYTES, resolveStudentId, STATE, validateFile,} from './cv/cvUtils.js';
+import {ACCEPTED_EXT, FALLBACK_MAX_BYTES, resolveStudentId, STATE, validateFile,} from '../cv/cvUtils.js';
 
 // ─── API helpers (thin wrappers with fallbacks; HTTP itself is in Api.jsx) ────
 

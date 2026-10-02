@@ -36,8 +36,8 @@
 
 import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import Button, {useButtonClasses} from '../../../../styles/Button.jsx';
-import Icon from '../../../../styles/Icon.jsx';
+import Button, {useButtonClasses} from '../../../styles/Button.jsx';
+import Icon from '../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
 import {
     approveCv,
@@ -49,9 +49,9 @@ import {
     rejectCv,
     setCvScope,
     setMainCv,
-} from '../../../api/Api.jsx';
+} from '../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
-import {getCvDocumentsClasses} from '../../../../styles/AppStyles.jsx';
+import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
