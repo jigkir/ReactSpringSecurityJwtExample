@@ -284,8 +284,7 @@ public class StudentService {
         return notifications.stream().map(NotificationDto::of).toList();
     }
 
-    public void markNotificationAsRead(long studentId, long notificationId) throws UserNotFoundException {
-        Student student = findById(studentId);
+    public void markNotificationAsRead(long notificationId) throws UserNotFoundException {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(UserNotFoundException::new);
 
@@ -392,7 +391,7 @@ public class StudentService {
 
     private void notifyManagersOfSubmittedCv(CV cv) {
         managerRepository.findAll().stream()
-                .filter(manager -> !notificationRepository.existsByTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
+                .filter(manager -> !notificationRepository.existsByNotificationTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
                 .forEach(manager -> notificationRepository.save(new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cv.getId(), manager)));
     }
 

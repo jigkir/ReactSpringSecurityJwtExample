@@ -5,7 +5,12 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {getManagerNotifications, getStudentInternships, getStudentNotifications} from './api/Api.jsx';
+import {
+    getManagerNotifications,
+    getStudentInternships,
+    getStudentNotifications,
+    markStudentCvNotificationsAsRead
+} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -27,12 +32,14 @@ function useNotifications(role, t, user) {
         if (!user?.id) {
             setCvCount(0);
             setInternshipCount(0);
+            setCvApprovedCount(0);
+            setCvRejectedCount(0);
             return;
         }
         let cancelled = false;
 
         if (role === "MANAGER") {
-            getManagerNotifications(user.id)
+            getManagerNotifications()
                 .then((data) => {
                     if (!cancelled) setCvCount(Array.isArray(data) ? data.length : 0);
                 })
@@ -61,7 +68,6 @@ function useNotifications(role, t, user) {
         };
     }, [role, user?.id]);
 
-
     // If there are no notifications, return an empty array immediately
     if (cvCount === 0 && internshipCount === 0 && cvApprovedCount === 0 && cvRejectedCount === 0) return [];
 
@@ -76,6 +82,11 @@ function useNotifications(role, t, user) {
     }
 
     if (role === "STUDENT") {
+        if(window.location.pathname === "/cv"){
+            markStudentCvNotificationsAsRead(studentId).catch((error) => {
+                console.error("Student notification error:", error);
+            });
+        }
         return [{
             id: "internship",
             count: internshipCount,

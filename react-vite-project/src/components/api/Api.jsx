@@ -225,7 +225,7 @@ export async function getStudentInternships(studentId) {
 // endregion
 
 //region Notifications
-export async function getManagerNotifications(managerId) {
+export async function getManagerNotifications() {
     const response = await fetcher(`manager/notifications`, {method: "GET"});
     return handleResponse(response);
 }
@@ -235,8 +235,8 @@ export async function getStudentNotifications(studentId) {
     return handleResponse(response);
 }
 
-export async function markStudentCvNotificationsAsRead(studentId) {
-    const response = await fetcher(`/${studentId}/notifications/{notificationId}/read`, {method: "PUT"});
+export async function markStudentCvNotificationsAsRead(studentId, notificationId) {
+    const response = await fetcher(`/${studentId}/notifications/${notificationId}/read`, {method: "PUT"});
     return handleResponse(response);
 }
 //endregion

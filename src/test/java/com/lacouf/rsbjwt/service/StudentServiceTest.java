@@ -591,7 +591,7 @@ public class StudentServiceTest {
 
         List<Notification> notifications = notificationArgumentCaptor.getAllValues();
 
-        assert(NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.getFirst().getType());
+        assert(NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.getFirst().getNotificationType());
         assert(Long.valueOf(10L)).equals(notifications.getFirst().getTargetId());
         assert(firstManager).equals(notifications.get(0).getUser());
         assert(secondManager).equals(notifications.get(1).getUser());
