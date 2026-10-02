@@ -15,7 +15,10 @@ import {
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
     STUDENT: [{to: "/cv", label: "CV"}],
-    MANAGER: [{to: "/manager/cvs", label: "CV"}],
+    MANAGER: [
+        {to: "/manager/cvs", label: "CV"},
+        {to: "/manager/internships", label: "Internships"},
+    ],
     EMPLOYER: [{to: "/post", labelKey: "navbar.postInternship"}],
     TEACHER: [],
 };

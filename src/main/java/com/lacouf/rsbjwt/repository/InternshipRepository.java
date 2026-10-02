@@ -14,4 +14,5 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     Optional<Internship> findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(long id, String employerEmail);
     List<Internship> findByStatusAndDeletedFalse(InternshipStatus status);
     Optional<Internship> findByIdAndDeletedFalse(long id);
+    List<Internship> findByDeletedFalse();
 }

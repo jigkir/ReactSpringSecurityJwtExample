@@ -13,6 +13,7 @@ import PostInternship from './components/page/internship/PostInternship.jsx';
 import Home from './components/page/Home.jsx';
 import StudentCv from './components/page/student/Cv.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
+import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternship from "./components/page/internship/StudentInternship.jsx";
@@ -89,6 +90,7 @@ function App() {
                     {/* Manager */}
                     <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
                         <Route path="/manager/cvs" element={<ManagerCv/>}/>
+                        <Route path="/manager/internships" element={<ManagerInternships/>}/>
                     </Route>
 
                     {/* Employer */}
