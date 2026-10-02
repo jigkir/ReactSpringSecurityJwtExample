@@ -1,10 +1,10 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -137,33 +137,42 @@ public class ManagerService {
     }
 
     public List<InternshipResponseDto> getPendingInternships() {
-        return internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)
-                .stream().map(InternshipResponseDto::of).toList();
+        return internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
+    }
+
+    public List<InternshipResponseDto> getAllInternships() {
+        return internshipRepository.findByDeletedFalse().stream().map(InternshipResponseDto::of).toList();
     }
 
     public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {
-        Internship internship = internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+        return InternshipResponseDto.of(findInternship(internshipId));
+    }
+
+    @Transactional
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = findInternship(internshipId);
+
+        if (internship.getStatus() != InternshipStatus.APPROVED) {
+            internship.approve();
+            internshipRepository.save(internship);
+        }
 
         return InternshipResponseDto.of(internship);
     }
 
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
-        Internship internship = findPendingInternship(internshipId);
+    @Transactional
+    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+        Internship internship = findInternship(internshipId);
 
-        internship.approve();
+        internship.reject(comment);
         internshipRepository.save(internship);
         studentService.createNewInternshipNotificationsForStudents(internship);
 
         return InternshipResponseDto.of(internship);
     }
 
-    public InternshipResponseDto rejectInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
-        Internship internship = findPendingInternship(internshipId);
-
-        internship.reject();
-        internshipRepository.save(internship);
-
-        return InternshipResponseDto.of(internship);
+    private Internship findInternship(long internshipId) throws InternshipNotFoundException {
+        return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }
 
     private CV findPublicCv(long cvId) throws CvNotFoundException {
@@ -194,19 +203,5 @@ public class ManagerService {
 
     private void closeCvSubmittedNotifications(long cvId) {
         notificationRepository.markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
-    }
-
-    private Internship findPendingInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
-        Internship internship = internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
-
-        verifyInternshipIsPending(internship);
-
-        return internship;
-    }
-
-    private void verifyInternshipIsPending(Internship internship) throws InternshipAlreadyReviewedException {
-        if (internship.getStatus() != InternshipStatus.PENDING) {
-            throw new InternshipAlreadyReviewedException(internship.getId());
-        }
     }
 }

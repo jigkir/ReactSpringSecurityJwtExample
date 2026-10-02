@@ -57,8 +57,7 @@
     "cvNotification": "{{amount}} new CV(s) posted",
     "cvApprovedNotification": "{{amount}} of your CVs have been approved",
     "cvRefusedNotification": "{{amount}} of your CVs have been rejected",
-    "internshipNotification": "{{amount}} internship(s) available",
-    "dismissButton": "Dismiss"
+    "internshipNotification": "{{amount}} internship(s) available"
   },
   "managerPage": {
     "pageInfo": "Manager home page",

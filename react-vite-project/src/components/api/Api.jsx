@@ -212,21 +212,19 @@ export async function createInternship(internship) {
     return handleResponse(response);
 }
 
+// Edit an existing offer. Returns the updated InternshipResponseDto.
+export async function updateInternship(internshipId, internship) {
+    const response = await fetcher(`employer/internships/${internshipId}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(internship),
+    });
+    return handleResponse(response);
+}
+
 export async function deleteInternship(internshipId) {
     const response = await fetcher(`employer/internships/${internshipId}`, {method: "DELETE"});
     return handleEmpty(response);
-}
-
-export async function getStudentInternships(studentId) {
-    //const response = await fetcher(`student/${studentId}/internships`, {method: "GET"});
-    //return handleResponse(response);
-    return [{
-        test:1
-    },{
-        test:1
-    },{
-        test:1
-    },]
 }
 
 export async function getStudentNotifications(studentId) {
@@ -234,8 +232,8 @@ export async function getStudentNotifications(studentId) {
     return handleResponse(response);
 }
 
-export async function markNotificationAsRead(studentId, notificationId) {
-    const response = await fetcher(`student/${studentId}/notifications/${notificationId}/read`, {
+export async function markNotificationAsRead(studentId) {
+    const response = await fetcher(`student/${studentId}/notifications/internship/read`, {
         method: "PUT"
     });
     return handleEmpty(response);
@@ -243,6 +241,43 @@ export async function markNotificationAsRead(studentId, notificationId) {
 
 export async function getUnreadNotificationCount(studentId) {
     const response = await fetcher(`student/${studentId}/notifications/unread/count`, { method: "GET" });
+    return handleResponse(response);
+}
+
+// endregion
+
+// region Manager internships
+// Returns InternshipResponseDto[] (status PENDING only)
+export async function getPendingInternships() {
+    const response = await fetcher("manager/internships/pending", {method: "GET"});
+    return handleResponse(response);
+}
+
+// Returns InternshipResponseDto[] (ALL statuses: pending, approved, rejected)
+export async function getManagerInternships() {
+    const response = await fetcher("manager/internships", {method: "GET"});
+    return handleResponse(response);
+}
+
+// Returns a single InternshipResponseDto
+export async function getManagerInternship(internshipId) {
+    const response = await fetcher(`manager/internships/${internshipId}`, {method: "GET"});
+    return handleResponse(response);
+}
+
+// Returns the updated InternshipResponseDto.
+export async function approveInternship(internshipId) {
+    const response = await fetcher(`manager/internships/${internshipId}/approve`, {method: "PUT"});
+    return handleResponse(response);
+}
+
+// A non-empty comment is required. Returns the updated InternshipResponseDto.
+export async function rejectInternship(internshipId, comment) {
+    const response = await fetcher(`manager/internships/${internshipId}/reject`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({comment}),
+    });
     return handleResponse(response);
 }
 

@@ -10,7 +10,10 @@ import {getManagerNotifications, getStudentNotifications, getUnreadNotificationC
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
     STUDENT: [{to: "/cv", label: "CV"}],
-    MANAGER: [{to: "/manager/cvs", label: "CV"}],
+    MANAGER: [
+        {to: "/manager/cvs", label: "CV"},
+        {to: "/manager/internships", label: "Internships"},
+    ],
     EMPLOYER: [{to: "/post", labelKey: "navbar.postInternship"}],
     TEACHER: [],
 };
@@ -69,6 +72,8 @@ function useNotifications(role, t, user) {
             count,
             label: t("navbar.internshipNotification", {amount: count}),
             to: "/internship",
+            func: () => { markNotificationAsRead(user.id)
+                 }
         }];
     }
 
@@ -187,7 +192,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            <NotificationMenu notifications={notifications} dark={dark} studentId={user?.id} onNotificationRead={handleNotificationRead}/>
+                            <NotificationMenu notifications={notifications} dark={dark} />
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}

@@ -8,7 +8,21 @@ const STATUS_KEY_MAP = {
     REJECTED: "internshipCard.status.rejected",
 };
 
-export default function InternshipCard({internship, OnDelete, dark}) {
+// Material Symbols name shown inside each status badge
+const STATUS_ICON = {
+    PENDING: "schedule",
+    APPROVED: "check_circle",
+    REJECTED: "close",
+};
+
+// Split "React, Node.js , Python" into ["React", "Node.js", "Python"]
+const parseSkills = (raw) =>
+    (raw ?? "")
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+
+export default function InternshipCard({internship, OnDelete, OnEdit, footer, dark, hideStatus = false}) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
 
@@ -16,28 +30,65 @@ export default function InternshipCard({internship, OnDelete, dark}) {
         ? t(STATUS_KEY_MAP[internship.status])
         : internship.status;
 
+    const skills = parseSkills(internship.requiredSkills);
+    const isRejected = internship.status === "REJECTED";
+
+    // Unpaid = not negotiable and amount is exactly 0
+    const isUnpaid = !internship.compensationNegotiable
+        && internship.compensationAmount != null
+        && Number(internship.compensationAmount) === 0;
+
+    const compensationText = internship.compensationNegotiable
+        ? t("internshipCard.compensationTbd")
+        : isUnpaid
+            ? "Unpaid"
+            : t("internshipCard.compensationAmount", {amount: internship.compensationAmount});
+
+    const editBtn = `p-1.5 rounded transition-colors ${dark
+        ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
+        : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
+
     return (
         <div className={s.card}>
             {/* Top row */}
             <div className={s.topRow}>
                 <div className="min-w-0 flex-1">
                     <h3 className={s.title}>{internship.title}</h3>
-                    <p className={s.description}>{internship.description}</p>
+                    {/* pre-wrap keeps the line breaks typed in the description */}
+                    <p className={s.description} style={{whiteSpace: "pre-wrap"}}>{internship.description}</p>
                 </div>
-                <span className={s.statusBadge(internship.status)}>
-                    <Icon
-                        name={internship.status === "PENDING" ? "schedule" : internship.status === "APPROVED" ? "check" : "close"}
-                        size={16}
-                    />
-                    {statusLabel}
-                </span>
+                {!hideStatus && (
+                    <span className={s.statusBadge(internship.status)}>
+                        <Icon name={STATUS_ICON[internship.status] ?? "close"} size={16}/>
+                        {statusLabel}
+                    </span>
+                )}
             </div>
 
-            {/* Required Skills */}
-            <div className={s.skillsRow}>
-                <span className="font-semibold">{t("internshipCard.requiredSkills")} </span>
-                <span className={s.skillBadge}>{internship.requiredSkills}</span>
-            </div>
+            {/* Rejection reason (visible to employer and manager) */}
+            {isRejected && internship.rejectionComment && (
+                <div
+                    className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
+                    role="note">
+                    <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
+                        Reason for rejection
+                    </p>
+                    <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
+                       style={{whiteSpace: "pre-wrap"}}>
+                        {internship.rejectionComment}
+                    </p>
+                </div>
+            )}
+
+            {/* Required skills: one chip per skill */}
+            {skills.length > 0 && (
+                <div className={`${s.skillsRow} flex flex-wrap items-center gap-1.5`}>
+                    <span className="font-semibold mr-1">{t("internshipCard.requiredSkills")}</span>
+                    {skills.map((skill) => (
+                        <span key={skill} className={s.skillBadge}>{skill}</span>
+                    ))}
+                </div>
+            )}
 
             {/* Detail badges */}
             <div className={s.detailsRow}>
@@ -53,33 +104,56 @@ export default function InternshipCard({internship, OnDelete, dark}) {
                     {t("internshipCard.durationWeeks", {count: internship.durationInWeeks})}
                 </span>
 
-                {/* Compensation */}
+                {/* Compensation: amount / unpaid / to be discussed */}
                 <span className={s.detailBadge}>
                     <Icon name="payments" size={20}/>
-                    {internship.compensationNegotiable ? t("internshipCard.compensationTbd") : t("internshipCard.compensationAmount", {amount: internship.compensationAmount})}
+                    {compensationText}
                 </span>
 
-                {/* Start date */}
-                <span className={s.detailBadge}>
-                    <Icon name="calendar_month" size={20}/>
-                    {internship.startDate}
+                {/* Start date: "play" icon = the internship begins */}
+                <span className={s.detailBadge} title="Internship start date">
+                    <Icon name="play_circle" size={20}/>
+                    <span className="font-medium">Starts</span> {internship.startDate}
                 </span>
 
-                {/* Deadline */}
-                <span className={s.detailBadge}>
-                    <Icon name="event" size={20}/>
-                    {internship.applicationDeadline}
+                {/* Deadline: "hourglass" icon = time left to apply */}
+                <span className={s.detailBadge} title="Application deadline">
+                    <Icon name="hourglass_bottom" size={20}/>
+                    <span className="font-medium">Apply by</span> {internship.applicationDeadline}
                 </span>
 
-                {/* Delete */}
-                <button
-                    className={s.deleteBtn}
-                    aria-label={t("internshipCard.deleteAria")}
-                    onClick={() => OnDelete(internship.id)}
-                >
-                    <Icon name="delete" size={24}/>
-                </button>
+                {/* Edit / Delete (employer only) */}
+                {(OnEdit || OnDelete) && (
+                    <div className="ml-auto flex items-center gap-1">
+                        {OnEdit && (
+                            <button
+                                className={editBtn}
+                                aria-label="Edit internship"
+                                onClick={() => OnEdit(internship)}
+                            >
+                                <Icon name="edit" size={24}/>
+                            </button>
+                        )}
+                        {OnDelete && (
+                            <button
+                                className={s.deleteBtn}
+                                aria-label={t("internshipCard.deleteAria")}
+                                onClick={() => OnDelete(internship.id)}
+                            >
+                                <Icon name="delete" size={24}/>
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
+
+            {/* Footer actions (manager) */}
+            {footer && (
+                <div
+                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
+                    {footer}
+                </div>
+            )}
         </div>
     );
 }

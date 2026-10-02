@@ -5,7 +5,7 @@ import {getNavbarClasses, getNotificationMenuClasses} from '../styles/AppStyles.
 import Icon from '../styles/Icon.jsx';
 import {markNotificationAsRead} from "./api/Api.jsx";
 
-export default function NotificationMenu({notifications = [], dark, onNotificationRead, studentId}) {
+export default function NotificationMenu({notifications = [], dark}) {
     const {t} = useTranslation();
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef(null);
@@ -31,21 +31,6 @@ export default function NotificationMenu({notifications = [], dark, onNotificati
             document.removeEventListener("keydown", onKey);
         };
     }, [open]);
-
-    const handleMarkAsRead = async (notificationId, e) => {
-        e.stopPropagation(); // Prevents triggering link clicks or closing menu
-        try {
-            //await markNotificationAsRead(studentId, notificationId);
-            console.log("Read")
-
-            // Optional: Notify parent component to update state/re-fetch
-            if (onNotificationRead) {
-                onNotificationRead(notificationId);
-            }
-        } catch (err) {
-            console.error("Failed to mark notification as read:", err);
-        }
-    };
 
     return (
         <div ref={wrapperRef} className="relative">
@@ -79,16 +64,13 @@ export default function NotificationMenu({notifications = [], dark, onNotificati
                                                 <Link
                                                     to={notif.to}
                                                     className="min-w-0 flex-1 truncate"
-                                                    onClick={() => setOpen(false)}
+                                                    onClick={() => {
+                                                        setOpen(false);
+                                                        notif.func?.();
+                                                    }}
                                                 >
                                                     <span>{notif.label}</span>
                                                 </Link>
-                                                <button
-                                                    className="bg-red-500 rounded px-3 py-1 text-white text-sm ml-2"
-                                                    onClick={(e) => handleMarkAsRead(notifications.id, e)}
-                                                >
-                                                    {t("navbar.dismissButton")}
-                                                </button>
                                             </div>
                                         ) : (
                                             <div role="menuitem" className={menuClasses.item}>{content}</div>
