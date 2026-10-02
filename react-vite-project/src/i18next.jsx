@@ -28,4 +28,4 @@ const syncHtmlLang = (lng) => {
 syncHtmlLang(i18n.language);
 i18n.on('languageChanged', syncHtmlLang);
 
-export default i18next;
+export default i18n;
