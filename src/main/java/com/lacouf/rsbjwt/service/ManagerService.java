@@ -167,7 +167,6 @@ public class ManagerService {
 
         internship.reject(comment);
         internshipRepository.save(internship);
-        studentService.createNewInternshipNotificationsForStudents(internship);
 
         return InternshipResponseDto.of(internship);
     }
