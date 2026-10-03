@@ -17,7 +17,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByUserId(Long userId);
 
-    boolean existsByTypeAndTargetIdAndUser(NotificationType type, Long targetId, UserApp user);
+    boolean existsByNotificationTypeAndTargetIdAndUser(NotificationType notificationType, Long targetId, UserApp user);
 
     List<Notification> findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(String email, NotificationStatus status);
 
@@ -25,11 +25,11 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     @Transactional
     @Modifying
-    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.type = :type AND n.targetId = :targetId AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
-    void markAllAsReadByTypeAndTargetId(@Param("type") NotificationType type, @Param("targetId") long targetId);
+    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.notificationType = :notificationType AND n.targetId = :targetId AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
+    void markAllAsReadByNotificationTypeAndTargetId(@Param("notificationType") NotificationType notificationType, @Param("targetId") long targetId);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user.id = :id AND n.type = :type AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
-    void markAllAsReadByUserIdAndType(@Param("id") Long id, @Param("type") NotificationType type);
+    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user.id = :id AND n.notificationType = :notificationType AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
+    void markAllAsReadByUserIdAndNotificationType(@Param("id") Long id, @Param("notificationType") NotificationType notificationType);
 }

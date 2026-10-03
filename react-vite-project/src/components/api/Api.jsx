@@ -227,11 +227,6 @@ export async function deleteInternship(internshipId) {
     return handleEmpty(response);
 }
 
-export async function getStudentNotifications(studentId) {
-    const response = await fetcher(`student/${studentId}/notifications`, { method: "GET" });
-    return handleResponse(response);
-}
-
 export async function markNotificationAsRead(studentId) {
     const response = await fetcher(`student/${studentId}/notifications/internship/read`, {
         method: "PUT"
@@ -284,9 +279,18 @@ export async function rejectInternship(internshipId, comment) {
 // endregion
 
 //region Notifications
-export async function getManagerNotifications(managerId) {
+export async function getManagerNotifications() {
     const response = await fetcher(`manager/notifications`, {method: "GET"});
     return handleResponse(response);
 }
 
+export async function getStudentNotifications(studentId) {
+    const response = await fetcher(`student/${studentId}/notifications`, {method: "GET"});
+    return handleResponse(response);
+}
+
+export async function markStudentCvNotificationAsRead(studentId, notificationId) {
+    const response = await fetcher(`student/${studentId}/notifications/${notificationId}/read`, {method: "PUT"});
+    return handleEmpty(response);
+}
 //endregion

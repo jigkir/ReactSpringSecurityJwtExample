@@ -90,6 +90,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const {t, i18n} = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isManager = mode === "manager";
+    const isStudent = mode === "student";
 
     // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
     const defaultApi = useMemo(

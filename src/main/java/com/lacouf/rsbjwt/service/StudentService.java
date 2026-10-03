@@ -272,16 +272,23 @@ public class StudentService {
         return notifications.stream().map(NotificationDto::of).toList();
     }
 
-    public void markInternshipsNotificationAsRead(long studentId) throws UserNotFoundException {
-        Student student = findById(studentId);
-        notificationRepository.markAllAsReadByUserIdAndType(student.getId(), NotificationType.NEW_INTERNSHIP_OFFER);
+    public void markNotificationAsRead(long notificationId) throws UserNotFoundException {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(UserNotFoundException::new);
+
+        notification.setStatus(NotificationStatus.READ);
+        notificationRepository.save(notification);
     }
 
+    public void markInternshipsNotificationAsRead(long studentId) throws UserNotFoundException {
+        Student student = findById(studentId);
+        notificationRepository.markAllAsReadByUserIdAndNotificationType(student.getId(), NotificationType.NEW_INTERNSHIP_OFFER);
+    }
 
     public int getUnreadNotificationCountForInternships(long studentId) throws UserNotFoundException {
         Student student = findById(studentId);
         List<Notification> notifications = notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(student.getCredentials().getEmail(), NotificationStatus.UNREAD);
-        return (int) notifications.stream().filter(notification -> notification.getType() == NotificationType.NEW_INTERNSHIP_OFFER).count();
+        return (int) notifications.stream().filter(notification -> notification.getNotificationType() == NotificationType.NEW_INTERNSHIP_OFFER).count();
     }
 
     public void createNewInternshipNotificationsForStudents(Internship internship) {
@@ -290,7 +297,7 @@ public class StudentService {
         for (Student student : students) {
             List<CV> studentCvs = cvRepository.findByStudent(student);
             boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
-            boolean notificationExists = notificationRepository.existsByTypeAndTargetIdAndUser(NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student);
+            boolean notificationExists = notificationRepository.existsByNotificationTypeAndTargetIdAndUser(NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student);
             if (!notificationExists && hasApprovedCv) {
                 createNewInternshipNotificationForStudent(
                         internship.getId(),
@@ -369,11 +376,11 @@ public class StudentService {
 
     private void notifyManagersOfSubmittedCv(CV cv) {
         managerRepository.findAll().stream()
-                .filter(manager -> !notificationRepository.existsByTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
+                .filter(manager -> !notificationRepository.existsByNotificationTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
                 .forEach(manager -> notificationRepository.save(new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cv.getId(), manager)));
     }
 
     private void closeCvSubmittedNotifications(long cvId) {
-        notificationRepository.markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
+        notificationRepository.markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
     }
 }

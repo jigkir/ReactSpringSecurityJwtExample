@@ -29,7 +29,7 @@ public class Notification {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private NotificationType type;
+    private NotificationType notificationType;
 
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
@@ -43,11 +43,11 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private UserApp user;
 
-    public Notification(String title, String message, NotificationStatus status, NotificationType type, TargetType targetType, Long targetId, UserApp user) {
+    public Notification(String title, String message, NotificationStatus status, NotificationType notificationType, TargetType targetType, Long targetId, UserApp user) {
         this.title = title;
         this.message = message;
         this.status = status;
-        this.type = type;
+        this.notificationType = notificationType;
         this.targetType = targetType;
         this.targetId = targetId;
         this.user = user;

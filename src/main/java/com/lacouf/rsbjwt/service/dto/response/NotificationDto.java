@@ -24,7 +24,7 @@ public record NotificationDto(
                 notification.getMessage(),
                 notification.getStatus(),
                 notification.getTargetType(),
-                notification.getType(),
+                notification.getNotificationType(),
                 notification.getTargetId(),
                 notification.getCreatedAt()
         );

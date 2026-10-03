@@ -201,6 +201,6 @@ public class ManagerService {
     }
 
     private void closeCvSubmittedNotifications(long cvId) {
-        notificationRepository.markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
+        notificationRepository.markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
     }
 }

@@ -54,6 +54,8 @@ public class ManagerServiceTest {
     private ManagerService managerService;
 
     @Mock
+    private StudentService studentService;
+    @Mock
     private ManagerRepository managerRepository;
     @Mock
     private UserAppRepository userAppRepository;
@@ -207,7 +209,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test
@@ -273,7 +275,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test

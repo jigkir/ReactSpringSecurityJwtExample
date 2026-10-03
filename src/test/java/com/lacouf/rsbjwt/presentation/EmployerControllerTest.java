@@ -235,7 +235,6 @@ public class EmployerControllerTest {
 
         // Act + Assert
         mockMvc.perform(post("/api/employer/internship")
-                        .principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(internship)))
                 .andExpect(status().isBadRequest());
@@ -270,11 +269,9 @@ public class EmployerControllerTest {
                 Arguments.of("location", "a"),
 
                 Arguments.of("startDate", null),
-               // Arguments.of("startDate", "2020-01-01"),
                 Arguments.of("startDate", "not-a-date"),
 
                 Arguments.of("applicationDeadline", null),
-               // Arguments.of("applicationDeadline", "2020-01-01"),
                 Arguments.of("applicationDeadline", "not-a-date"),
 
                 Arguments.of("compensationAmount", -5),

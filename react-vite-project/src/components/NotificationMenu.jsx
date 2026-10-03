@@ -3,7 +3,6 @@ import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses, getNotificationMenuClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
-import {markNotificationAsRead} from "./api/Api.jsx";
 
 export default function NotificationMenu({notifications = [], dark}) {
     const {t} = useTranslation();
@@ -73,7 +72,7 @@ export default function NotificationMenu({notifications = [], dark}) {
                                                 </Link>
                                             </div>
                                         ) : (
-                                            <div role="menuitem" className={menuClasses.item}>{content}</div>
+                                            <div role="menuitem" className={menuClasses.item}>{notif.label}</div>
                                         )}
                                     </li>
                                 );

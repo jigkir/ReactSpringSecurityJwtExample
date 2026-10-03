@@ -359,7 +359,7 @@ public class StudentServiceTest {
 
         assert CvVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
     }
 
     @Test
@@ -424,7 +424,7 @@ public class StudentServiceTest {
 
         assert CVSharingScope.PRIVATE.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
     }
 
     @Test
@@ -594,7 +594,7 @@ public class StudentServiceTest {
 
         List<Notification> notifications = notificationArgumentCaptor.getAllValues();
 
-        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.getFirst().getType());
+        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.getFirst().getNotificationType());
         assert (Long.valueOf(10L)).equals(notifications.getFirst().getTargetId());
         assert (firstManager).equals(notifications.get(0).getUser());
         assert (secondManager).equals(notifications.get(1).getUser());
@@ -647,9 +647,9 @@ public class StudentServiceTest {
         when(cvRepository.findByStudent(eligibleStudent)).thenReturn(List.of(approvedVisibleCv));
         when(cvRepository.findByStudent(ineligibleStudent)).thenReturn(List.of(pendingCv));
 
-        when(notificationRepository.existsByTypeAndTargetIdAndUser(
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
                 NotificationType.NEW_INTERNSHIP_OFFER, 42L, eligibleStudent)).thenReturn(false);
-        when(notificationRepository.existsByTypeAndTargetIdAndUser(
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
                 NotificationType.NEW_INTERNSHIP_OFFER, 42L, ineligibleStudent)).thenReturn(false);
 
         // Act
@@ -657,7 +657,7 @@ public class StudentServiceTest {
 
         // Assert
         verify(notificationRepository, times(1)).save(argThat(notification ->
-                notification.getType() == NotificationType.NEW_INTERNSHIP_OFFER
+                notification.getNotificationType() == NotificationType.NEW_INTERNSHIP_OFFER
                         && notification.getTargetType() == TargetType.INTERNSHIP_OFFER
                         && notification.getTargetId().equals(42L)
                         && notification.getUser() == eligibleStudent
@@ -686,7 +686,7 @@ public class StudentServiceTest {
         when(approvedVisibleCv.getStatus()).thenReturn(CvStatus.APPROVED);
         when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedVisibleCv));
 
-        when(notificationRepository.existsByTypeAndTargetIdAndUser(
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
                 NotificationType.NEW_INTERNSHIP_OFFER, 42L, student)).thenReturn(true);
 
         // Act
@@ -710,7 +710,7 @@ public class StudentServiceTest {
 
         // Assert
         verify(notificationRepository, times(1))
-                .markAllAsReadByUserIdAndType(studentId, NotificationType.NEW_INTERNSHIP_OFFER);
+                .markAllAsReadByUserIdAndNotificationType(studentId, NotificationType.NEW_INTERNSHIP_OFFER);
 
         verify(notificationRepository, never()).save(any(Notification.class));
     }
