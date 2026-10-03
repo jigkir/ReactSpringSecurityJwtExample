@@ -1,7 +1,6 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -170,6 +169,7 @@ public class StudentService {
         return MAX_FILE_SIZE;
     }
 
+    @Transactional
     public void setCvAsInvisible(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
@@ -202,6 +202,7 @@ public class StudentService {
         if (cv.getStatus() == CvStatus.PENDING) notifyManagersOfSubmittedCv(cv);
     }
 
+    @Transactional
     public void setCVAsSecondary(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
         Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
@@ -266,12 +267,13 @@ public class StudentService {
         return internships.stream().map(InternshipResponseDto::of).toList();
     }
 
-    public List<NotificationDto> getStudentNotifications(long studentId) throws UserNotFoundException {
-        Student student = findById(studentId);
-        List<Notification> notifications = getNotificationsForStudent(student);
-        return notifications.stream().map(NotificationDto::of).toList();
+    public List<NotificationDto> getStudentNotifications(String email) {
+        return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD).stream()
+                .map(NotificationDto::of)
+                .toList();
     }
 
+    @Transactional
     public void markNotificationAsRead(long notificationId) throws UserNotFoundException {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(UserNotFoundException::new);
@@ -280,17 +282,19 @@ public class StudentService {
         notificationRepository.save(notification);
     }
 
-    public void markInternshipsNotificationAsRead(long studentId) throws UserNotFoundException {
-        Student student = findById(studentId);
-        notificationRepository.markAllAsReadByUserIdAndNotificationType(student.getId(), NotificationType.NEW_INTERNSHIP_OFFER);
+    @Transactional
+    public void markInternshipsNotificationAsRead(String email) {
+        notificationRepository.markAllAsReadByEmailAndNotificationType(email, NotificationType.NEW_INTERNSHIP_OFFER);
     }
 
-    public int getUnreadNotificationCountForInternships(long studentId) throws UserNotFoundException {
-        Student student = findById(studentId);
-        List<Notification> notifications = notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(student.getCredentials().getEmail(), NotificationStatus.UNREAD);
-        return (int) notifications.stream().filter(notification -> notification.getNotificationType() == NotificationType.NEW_INTERNSHIP_OFFER).count();
+    public int getUnreadNotificationCountForInternships(String email) {
+        List<Notification> notifications = notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD);
+        return (int) notifications.stream()
+                .filter(notification -> notification.getNotificationType() == NotificationType.NEW_INTERNSHIP_OFFER)
+                .count();
     }
 
+    @Transactional
     public void createNewInternshipNotificationsForStudents(Internship internship) {
         List<Student> students = studentRepository.findByDiscipline(getEmployerDisciplineByInternship(internship));
 
@@ -321,10 +325,6 @@ public class StudentService {
                 .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
                 .filter(internship -> internship.getStatus() == InternshipStatus.APPROVED)
                 .toList();
-    }
-
-    private List<Notification> getNotificationsForStudent(Student student) {
-        return notificationRepository.findByUserId(student.getId());
     }
 
     private void createNewInternshipNotificationForStudent(long internshipId, Student student) {

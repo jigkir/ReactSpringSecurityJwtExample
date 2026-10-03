@@ -63,10 +63,10 @@ public class SecurityConfiguration {
     private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
 
     // STUDENT NOTIFICATIONS PATHS
-    private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/{studentId}/notifications";
-    private static final String STUDENT_INTERNSHIP_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/internship/read";
-    private static final String STUDENT_INTERNSHIP_NOTIFICATION_UNREAD_COUNT_PATH = "/api/student/{studentId}/notifications/internship/unread/count";
-    private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/{studentId}/notifications/{notificationId}/read";
+    private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/notifications";
+    private static final String STUDENT_INTERNSHIP_NOTIFICATION_READ_PATH = "/api/student/notifications/internship/read";
+    private static final String STUDENT_INTERNSHIP_NOTIFICATION_UNREAD_COUNT_PATH = "/api/student/notifications/internship/unread/count";
+    private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/notifications/{notificationId}/read";
 
     // INTERNSHIP PATHS
     private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";

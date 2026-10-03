@@ -227,15 +227,15 @@ export async function deleteInternship(internshipId) {
     return handleEmpty(response);
 }
 
-export async function markNotificationAsRead(studentId) {
-    const response = await fetcher(`student/${studentId}/notifications/internship/read`, {
+export async function markNotificationAsRead() {
+    const response = await fetcher(`student/notifications/internship/read`, {
         method: "PUT"
     });
     return handleEmpty(response);
 }
 
-export async function getUnreadNotificationCount(studentId) {
-    const response = await fetcher(`student/${studentId}/notifications/internship/unread/count`, { method: "GET" });
+export async function getUnreadNotificationCount() {
+    const response = await fetcher(`student/notifications/internship/unread/count`, { method: "GET" });
     return handleResponse(response);
 }
 
@@ -284,8 +284,8 @@ export async function getManagerNotifications() {
     return handleResponse(response);
 }
 
-export async function getStudentNotifications(studentId) {
-    const response = await fetcher(`student/${studentId}/notifications`, {method: "GET"});
+export async function getStudentNotifications() {
+    const response = await fetcher(`student/notifications`, {method: "GET"});
     return handleResponse(response);
 }
 

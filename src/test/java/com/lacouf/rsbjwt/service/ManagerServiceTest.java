@@ -67,8 +67,6 @@ public class ManagerServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private InternshipRepository internshipRepository;
-    @Mock
-    private StudentService studentService;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;

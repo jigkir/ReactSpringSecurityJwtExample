@@ -710,7 +710,7 @@ public class StudentServiceTest {
 
         // Assert
         verify(notificationRepository, times(1))
-                .markAllAsReadByUserIdAndNotificationType(studentId, NotificationType.NEW_INTERNSHIP_OFFER);
+                .markAllAsReadByEmailAndNotificationType(studentId, NotificationType.NEW_INTERNSHIP_OFFER);
 
         verify(notificationRepository, never()).save(any(Notification.class));
     }
