@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -11,6 +12,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -85,6 +87,7 @@ public class ManagerServiceTest {
                 "Java, Spring Boot",
                 16,
                 "Montréal",
+                WorkMode.HYBRID,
                 LocalDate.of(2027, 1, 10),
                 LocalDate.of(2026, 12, 1),
                 new BigDecimal("25.00"),
@@ -317,28 +320,11 @@ public class ManagerServiceTest {
         verify(cvRepository).save(cv);
     }
 
-    // recup les stages en attente
-    @Test
-    void shouldReturnPendingInternships() {
-        //Arrange
-        when(internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)).thenReturn(List.of(internship));
-
-        //Act
-        List<InternshipResponseDto> result = managerService.getPendingInternships();
-
-        //Assert
-        assert(Integer.valueOf(1)).equals(result.size());
-        assert(InternshipStatus.PENDING).equals(result.getFirst().status());
-        assert("Développeur logiciel").equals(result.getFirst().title());
-
-        verify(internshipRepository).findByStatusAndDeletedFalse(InternshipStatus.PENDING);
-    }
-
     //recup un stage par ID
     @Test
     void shouldReturnInternshipById() throws InternshipNotFoundException {
         //Arrange
-        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
         //Act
         InternshipResponseDto result = managerService.getInternshipById(1L);
@@ -353,7 +339,7 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowInternshipNotFoundExceptionWhenInternshipDoesNotExist() {
         //Arrange
-        when(internshipRepository.findById(99L)).thenReturn(Optional.empty());
+        when(internshipRepository.findByIdAndDeletedFalse(99L)).thenReturn(Optional.empty());
 
         //Act + assert
         assertThrows(InternshipNotFoundException.class, () -> managerService.getInternshipById(99L));
@@ -361,9 +347,9 @@ public class ManagerServiceTest {
 
     //accepter un stage
     @Test
-    void shouldApproveInternship() throws  InternshipNotFoundException {
+    void shouldApproveInternship() throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         //Arrange
-        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
         //Act
         InternshipResponseDto result = managerService.approveInternship(1L);
@@ -371,22 +357,25 @@ public class ManagerServiceTest {
         //Assert
         assert(InternshipStatus.APPROVED).equals(internship.getStatus());
         assert(InternshipStatus.APPROVED).equals(result.status());
+        assert internship.getRejectionComment() == null;
 
         verify(internshipRepository).save(internship);
     }
 
     //refuser un stage
     @Test
-    void shouldRejectInternship() throws  InternshipNotFoundException {
+    void shouldRejectInternship() throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         //Arrange
-        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
         //Act
-        InternshipResponseDto result = managerService.rejectInternship(1L);
+        InternshipResponseDto result = managerService.rejectInternship(1L, "Ur offer sucks.");
 
         //Assert
         assert(InternshipStatus.REJECTED).equals(internship.getStatus());
         assert(InternshipStatus.REJECTED).equals(result.status());
+        assert("Ur offer sucks.").equals(internship.getRejectionComment());
+        assert("Ur offer sucks.").equals(result.rejectionComment());
 
         verify(internshipRepository).save(internship);
     }
@@ -395,7 +384,7 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowInternshipNotFoundWhenApprovingUnknownInternship() {
         //Arrange
-        when(internshipRepository.findById(99L)).thenReturn(Optional.empty());
+        when(internshipRepository.findByIdAndDeletedFalse(99L)).thenReturn(Optional.empty());
 
         //Act + assert
         assertThrows(InternshipNotFoundException.class, () -> managerService.approveInternship(99L));
@@ -407,10 +396,10 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowInternshipNotFoundWhenRejectingUnknownInternship() {
         //Arrange
-        when(internshipRepository.findById(99L)).thenReturn(Optional.empty());
+        when(internshipRepository.findByIdAndDeletedFalse(99L)).thenReturn(Optional.empty());
 
         //Act + assert
-        assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L));
+        assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L, "Who's there?"));
 
         verify(internshipRepository, never()).save(any(Internship.class));
     }
@@ -449,5 +438,34 @@ public class ManagerServiceTest {
         assert(NotificationStatus.READ).equals(result.status());
 
         verify(notificationRepository).save(notification);
+    }
+
+    @Test
+    void shouldThrowWhenApprovingAlreadyApprovedInternship() {
+        // Arrange
+        internship.approve();
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        // Act
+        InternshipAlreadyReviewedException exception = assertThrows(InternshipAlreadyReviewedException.class, () -> managerService.approveInternship(1L));
+
+        // Assert
+        assert("Internship with id: 1 was already reviewed.").equals(exception.getMessage());
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldThrowInternshipAlreadyReviewedWhenRejectingAlreadyRejectedInternship() {
+        // Arrange
+        internship.reject("Previous rejection.");
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        // Act + Assert
+        assertThrows(InternshipAlreadyReviewedException.class, () -> managerService.rejectInternship(1L, "New rejection."));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
     }
 }

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
@@ -80,9 +81,9 @@ public class EmployerServiceTest {
         employer = new Employer("First Name", "Last Name", credentials, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
         employer.setId(1L);
 
-        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
+        internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
-        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, employer);
+        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, employer);
         internship.setId(10L);
     }
 
@@ -172,7 +173,7 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowInvalidInternshipDateWhenStartDateIsNotInFuture() {
         // Arrange
-        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", LocalDate.now(), APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
+        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, LocalDate.now(), APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
         // Act
         InvalidInternshipDateException exception = assertThrows(InvalidInternshipDateException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
@@ -186,7 +187,7 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowInvalidInternshipDateWhenApplicationDeadlineIsNotInFuture() {
         // Arrange
-        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, LocalDate.now().minusDays(1), new BigDecimal("25.00"), false);
+        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, LocalDate.now().minusDays(1), new BigDecimal("25.00"), false);
 
         // Act
         InvalidInternshipDateException exception = assertThrows(InvalidInternshipDateException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
@@ -229,7 +230,7 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowInvalidCompensationWhenAmountIsMissingAndNotNegotiable() {
         // Arrange
-        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, null, false);
+        InternshipRequestDto invalidDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, null, false);
 
         // Act + Assert
         assertThrows(InvalidCompensationException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
@@ -240,7 +241,7 @@ public class EmployerServiceTest {
     @Test
     void shouldSaveInternshipWithoutAmountWhenNegotiable() throws Exception {
         // Arrange
-        InternshipRequestDto negotiableDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, null, true);
+        InternshipRequestDto negotiableDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, null, true);
 
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
         when(internshipRepository.save(any(Internship.class))).thenAnswer(invocation -> { Internship saved = invocation.getArgument(0); saved.setId(10L); return saved; });

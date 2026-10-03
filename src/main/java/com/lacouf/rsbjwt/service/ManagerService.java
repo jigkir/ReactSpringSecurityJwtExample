@@ -22,7 +22,6 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.*;
-import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.response.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -70,13 +69,6 @@ public class ManagerService {
 
         return UserResponseDto.of(manager);
     }
-      // TODO : FIX cause we no longueur use getAllManagers
-//    public void addNewCVNotificationToManager(String title, String message, Long cvId) throws UserNotFoundException {
-//        List <Manager> managers = getAllManagers();
-//        Manager manager = managers.stream().findFirst()
-//                .orElseThrow(UserNotFoundException::new);
-//        notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cvId, manager));
-//    }
 
     public List<NotificationDto> getNotificationsForManager(String email) throws UserNotFoundException {
         return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD)
@@ -151,10 +143,12 @@ public class ManagerService {
     public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         Internship internship = findInternship(internshipId);
 
-        if (internship.getStatus() != InternshipStatus.APPROVED) {
-            internship.approve();
-            internshipRepository.save(internship);
+        if (internship.getStatus() != InternshipStatus.PENDING) {
+            throw new InternshipAlreadyReviewedException(internship.getId());
         }
+
+        internship.approve();
+        internshipRepository.save(internship);
 
         return InternshipResponseDto.of(internship);
     }
@@ -162,6 +156,10 @@ public class ManagerService {
     @Transactional
     public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         Internship internship = findInternship(internshipId);
+
+        if (internship.getStatus() != InternshipStatus.PENDING) {
+            throw new InternshipAlreadyReviewedException(internship.getId());
+        }
 
         internship.reject(comment);
         internshipRepository.save(internship);
