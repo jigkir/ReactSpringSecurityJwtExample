@@ -38,18 +38,20 @@ public class ManagerService {
     private final NotificationRepository notificationRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
+    private final StudentService studentService;
 
     private static final String CV_APPROVED_TITLE = "CV Approved";
     private static final String CV_APPROVED_MESSAGE = "Your CV has been approved.";
     private static final String CV_REJECTED_TITLE = "CV Rejected";
 
-    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository) {
+    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentService studentService) {
         this.managerRepository = managerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.notificationRepository = notificationRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
+        this.studentService = studentService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -149,6 +151,7 @@ public class ManagerService {
 
         internship.approve();
         internshipRepository.save(internship);
+        studentService.createNewInternshipNotificationsForStudents(internship);
 
         return InternshipResponseDto.of(internship);
     }
