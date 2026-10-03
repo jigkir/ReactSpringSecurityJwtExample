@@ -155,6 +155,7 @@ public class ManagerService {
         if (internship.getStatus() != InternshipStatus.APPROVED) {
             internship.approve();
             internshipRepository.save(internship);
+            studentService.createNewInternshipNotificationsForStudents(internship);
         }
 
         return InternshipResponseDto.of(internship);
