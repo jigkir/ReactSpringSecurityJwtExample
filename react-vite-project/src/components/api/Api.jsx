@@ -240,7 +240,7 @@ export async function markNotificationAsRead(studentId) {
 }
 
 export async function getUnreadNotificationCount(studentId) {
-    const response = await fetcher(`student/${studentId}/notifications/unread/count`, { method: "GET" });
+    const response = await fetcher(`student/${studentId}/notifications/internship/unread/count`, { method: "GET" });
     return handleResponse(response);
 }
 
