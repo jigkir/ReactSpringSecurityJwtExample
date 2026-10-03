@@ -699,19 +699,105 @@ public class StudentServiceTest {
     @Test
     void markInternshipsNotificationAsRead_shouldCallRepositoryBulkUpdateForStudent() throws UserNotFoundException {
         // Arrange
-        long studentId = 10L;
-        Student student = mock(Student.class);
-
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
-        when(student.getId()).thenReturn(studentId);
+        String studentEmail = "student@example.com";
 
         // Act
-        studentService.markInternshipsNotificationAsRead(studentId);
+        studentService.markInternshipsNotificationAsRead(studentEmail);
 
         // Assert
         verify(notificationRepository, times(1))
-                .markAllAsReadByEmailAndNotificationType(studentId, NotificationType.NEW_INTERNSHIP_OFFER);
+                .markAllAsReadByEmailAndNotificationType(studentEmail, NotificationType.NEW_INTERNSHIP_OFFER);
 
+        verify(notificationRepository, never()).save(any(Notification.class));
+    }
+
+    @Test
+    void createNewInternshipNotificationsForStudents_shouldCreateAndSaveNotification_whenStudentMatchesDisciplineHasApprovedCv() {
+        // Arrange
+        Discipline discipline = Discipline.COMPUTER_SCIENCE;
+
+        Employer employer = mock(Employer.class);
+        when(employer.getDiscipline()).thenReturn(discipline);
+
+        Internship internship = mock(Internship.class);
+        when(internship.getId()).thenReturn(100L);
+        when(internship.getPostedBy()).thenReturn(employer);
+
+        Student student = mock(Student.class);
+        when(studentRepository.findByDiscipline(discipline)).thenReturn(List.of(student));
+
+        CV approvedCv = mock(CV.class);
+        when(approvedCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
+        when(approvedCv.getStatus()).thenReturn(CvStatus.APPROVED);
+
+        when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedCv));
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
+                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student)).thenReturn(false);
+
+        // Act
+        studentService.createNewInternshipNotificationsForStudents(internship);
+
+        // Assert
+        verify(notificationRepository, times(1)).save(any(Notification.class));
+    }
+
+    @Test
+    void createNewInternshipNotificationsForStudents_shouldSkipCreation_whenNotificationAlreadyExists() {
+        // Arrange
+        Discipline discipline = Discipline.COMPUTER_SCIENCE;
+
+        Employer employer = mock(Employer.class);
+        when(employer.getDiscipline()).thenReturn(discipline);
+
+        Internship internship = mock(Internship.class);
+        when(internship.getId()).thenReturn(100L);
+        when(internship.getPostedBy()).thenReturn(employer);
+
+        Student student = mock(Student.class);
+        when(studentRepository.findByDiscipline(discipline)).thenReturn(List.of(student));
+
+        CV approvedCv = mock(CV.class);
+        when(approvedCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
+        when(approvedCv.getStatus()).thenReturn(CvStatus.APPROVED);
+
+        when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedCv));
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
+                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student)).thenReturn(true);
+
+        // Act
+        studentService.createNewInternshipNotificationsForStudents(internship);
+
+        // Assert
+        verify(notificationRepository, never()).save(any(Notification.class));
+    }
+
+    @Test
+    void createNewInternshipNotificationsForStudents_shouldSkipCreation_whenStudentHasNoApprovedCv() {
+        // Arrange
+        Discipline discipline = Discipline.COMPUTER_SCIENCE;
+
+        Employer employer = mock(Employer.class);
+        when(employer.getDiscipline()).thenReturn(discipline);
+
+        Internship internship = mock(Internship.class);
+        when(internship.getId()).thenReturn(100L);
+        when(internship.getPostedBy()).thenReturn(employer);
+
+        Student student = mock(Student.class);
+        when(studentRepository.findByDiscipline(discipline)).thenReturn(List.of(student));
+
+        CV pendingCv = mock(CV.class);
+        when(pendingCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
+        when(pendingCv.getStatus()).thenReturn(CvStatus.PENDING);
+
+        when(cvRepository.findByStudent(student)).thenReturn(List.of(pendingCv));
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
+                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student)).thenReturn(false);
+
+        // Act
+        studentService.createNewInternshipNotificationsForStudents(internship);
+
+        // Assert
         verify(notificationRepository, never()).save(any(Notification.class));
     }
 }
