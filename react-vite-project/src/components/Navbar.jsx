@@ -5,7 +5,7 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markNotificationAsRead, markStudentCvNotificationAsRead} from './api/Api.jsx';
+import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markInternshipNotificationAsRead, markStudentNotificationAsRead} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -25,6 +25,8 @@ function useNotifications(role, t, user) {
     const [cvApprovedCount, setCvApprovedCount] = useState(0);
     const [cvRejectedCount, setCvRejectedCount] = useState(0);
     const [internshipCount, setInternshipCount] = useState(0);
+
+    const {pathname} = useLocation();
 
     useEffect(() => {
         if (!user?.id) {
@@ -60,12 +62,11 @@ function useNotifications(role, t, user) {
                 const rejected = unread.filter((n) => n.notificationType === "CV_REJECTED");
                 if (window.location.pathname === "/cv" && (approved.length > 0 || rejected.length > 0)) {
                     const toMark = approved.concat(rejected);
-
                     // Each call catches its own error, so one failure doesn't reject the whole batch
                     Promise.all(
-                        toMark.map((n) =>
-                            markStudentCvNotificationAsRead(user.id, n.id).catch((error) =>
-                                console.error("Mark as read failed for", n.id, error)
+                        toMark.map((notif) =>
+                            markStudentNotificationAsRead(notif.id).catch((error) =>
+                                console.error("Mark as read failed for", notif.id, error)
                             )
                         )
                     ).then(() => {
@@ -85,7 +86,7 @@ function useNotifications(role, t, user) {
         return () => {
             cancelled = true;
         };
-    }, [role, user?.id]);
+    }, [role, user?.id, pathname]);
 
     // If there are no notifications, return an empty array immediately
     if (cvCount === 0 && internshipCount === 0 && cvApprovedCount === 0 && cvRejectedCount === 0) return [];
@@ -107,7 +108,7 @@ function useNotifications(role, t, user) {
             label: t("navbar.internshipNotification", {amount: internshipCount}),
             to: "/internship",
             func: () => {
-                markNotificationAsRead(user.id)
+                markInternshipNotificationAsRead(user.id)
                     .then(() => setInternshipCount(0))
                     .catch((error) => console.error("Mark internship notifications failed:", error))
             }
