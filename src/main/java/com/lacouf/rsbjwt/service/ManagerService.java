@@ -1,10 +1,10 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -38,18 +38,20 @@ public class ManagerService {
     private final NotificationRepository notificationRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
+    private final StudentService studentService;
 
     private static final String CV_APPROVED_TITLE = "CV Approved";
     private static final String CV_APPROVED_MESSAGE = "Your CV has been approved.";
     private static final String CV_REJECTED_TITLE = "CV Rejected";
 
-    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository) {
+    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentService studentService) {
         this.managerRepository = managerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.notificationRepository = notificationRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
+        this.studentService = studentService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -69,13 +71,6 @@ public class ManagerService {
 
         return UserResponseDto.of(manager);
     }
-      // TODO : FIX cause we no longueur use getAllManagers
-//    public void addNewCVNotificationToManager(String title, String message, Long cvId) throws UserNotFoundException {
-//        List <Manager> managers = getAllManagers();
-//        Manager manager = managers.stream().findFirst()
-//                .orElseThrow(UserNotFoundException::new);
-//        notificationRepository.save(new Notification(title, message, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cvId, manager));
-//    }
 
     public List<NotificationDto> getNotificationsForManager(String email) throws UserNotFoundException {
         return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD)
@@ -150,10 +145,13 @@ public class ManagerService {
     public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         Internship internship = findInternship(internshipId);
 
-        if (internship.getStatus() != InternshipStatus.APPROVED) {
-            internship.approve();
-            internshipRepository.save(internship);
+        if (internship.getStatus() != InternshipStatus.PENDING) {
+            throw new InternshipAlreadyReviewedException(internship.getId());
         }
+
+        internship.approve();
+        internshipRepository.save(internship);
+        studentService.createNewInternshipNotificationsForStudents(internship);
 
         return InternshipResponseDto.of(internship);
     }
@@ -161,6 +159,10 @@ public class ManagerService {
     @Transactional
     public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         Internship internship = findInternship(internshipId);
+
+        if (internship.getStatus() != InternshipStatus.PENDING) {
+            throw new InternshipAlreadyReviewedException(internship.getId());
+        }
 
         internship.reject(comment);
         internshipRepository.save(internship);

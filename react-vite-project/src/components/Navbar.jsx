@@ -5,12 +5,7 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {
-    getManagerNotifications,
-    getStudentInternships,
-    getStudentNotifications,
-    markStudentCvNotificationAsRead
-} from './api/Api.jsx';
+import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markNotificationAsRead, markStudentCvNotificationAsRead} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -50,9 +45,9 @@ function useNotifications(role, t, user) {
                     console.error("Manager notifications failed:", err?.status, err?.body);
                 });
         } else if (role === "STUDENT") {
-            getStudentInternships(user.id)
-                .then((data) => {
-                    if (!cancelled) setInternshipCount(Array.isArray(data) ? data.length : 0);
+            getUnreadNotificationCount(user.id)
+                .then((unreadCount) => {
+                    if (!cancelled) setInternshipCount(typeof unreadCount === 'number' ? unreadCount : 0);
                 })
                 .catch((error) => {
                     console.error("Student notification error:", error);
@@ -111,6 +106,11 @@ function useNotifications(role, t, user) {
             count: internshipCount,
             label: t("navbar.internshipNotification", {amount: internshipCount}),
             to: "/internship",
+            func: () => {
+                markNotificationAsRead(user.id)
+                    .then(() => setInternshipCount(0))
+                    .catch((error) => console.error("Mark internship notifications failed:", error))
+            }
         },
         {
             id: "cvsApproved",
@@ -232,7 +232,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            <NotificationMenu notifications={notifications} dark={dark}/>
+                            <NotificationMenu notifications={notifications} dark={dark} />
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}
@@ -264,14 +264,14 @@ function Navbar({user, dark, toggleDark}) {
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    {/* ───────── Right side ───────── */}
-                    <div className="flex items-center gap-2 md:gap-3 ml-auto">
                         {/* Mobile bell (always visible, in the top bar) */}
                         <div className="md:hidden">
                             <NotificationMenu notifications={notifications} dark={dark}/>
                         </div>
+                    </div>
+
+                    {/* ───────── Right side ───────── */}
+                    <div className="flex items-center gap-2 md:gap-3 ml-auto">
 
                         <button onClick={toggleLang}
                                 className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}

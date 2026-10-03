@@ -2,12 +2,14 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -54,7 +56,7 @@ public class ManagerControllerTest {
         return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
     }
 
-    private static InternshipResponseDto internshipWith(InternshipStatus status) {
+    private static InternshipResponseDto internshipWith(InternshipStatus status, String comment) {
         return new InternshipResponseDto(
                 1L,
                 "Développeur logiciel",
@@ -62,12 +64,14 @@ public class ManagerControllerTest {
                 "Java, Spring Boot",
                 16,
                 "Montréal",
+                WorkMode.HYBRID,
                 LocalDate.of(2027, 1, 10),
                 LocalDate.of(2026, 12, 1),
                 new BigDecimal("25.00"),
                 false,
                 status,
-                3L
+                comment,
+                1L
         );
     }
 
@@ -209,27 +213,11 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.status").value("READ"));
     }
 
-    //get pending offers
-    @Test
-    void shouldReturnPendingInternships() throws Exception {
-        // Arrange
-        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING)));
-
-        // Act + Assert
-        mockMvc.perform(get("/api/manager/internships/pending"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].status").value("PENDING"))
-                .andExpect(jsonPath("$[0].title").value("Développeur logiciel"));
-
-        verify(managerService).getPendingInternships();
-    }
-
     //get offer by id
     @Test
     void shouldReturnInternshipById() throws Exception {
         // Arrange
-        when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING));
+        when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING, null));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/1"))
@@ -243,9 +231,9 @@ public class ManagerControllerTest {
 
     //approve internship
     @Test
-    void shouldReturnOkWhenInternshipIsApprovved() throws Exception {
+    void shouldReturnOkWhenInternshipIsApproved() throws Exception {
         // Arrange
-        when(managerService.approveInternship(1L)).thenReturn(internshipWith(InternshipStatus.APPROVED));
+        when(managerService.approveInternship(1L)).thenReturn(internshipWith(InternshipStatus.APPROVED, null));
 
         // Act + assert
         mockMvc.perform(put("/api/manager/internships/1/approve"))
@@ -259,13 +247,16 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnOkWhenInternshipIsRejected() throws Exception {
         // Arrange
-        when(managerService.rejectInternship(1L)).thenReturn(internshipWith(InternshipStatus.REJECTED));
+        when(managerService.rejectInternship(1L, "Offer = bad.")).thenReturn(internshipWith(InternshipStatus.REJECTED, "Offer = bad."));
 
         // Act + assert
-        mockMvc.perform(put("/api/manager/internships/1/reject")).andExpect(status().isOk())
+        mockMvc.perform(put("/api/manager/internships/1/reject")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\":\"Offer = bad.\"}"))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("REJECTED"));
 
-        verify(managerService).rejectInternship(1L);
+        verify(managerService).rejectInternship(1L, "Offer = bad.");
     }
 
     //404 approve internship inexistant
@@ -282,9 +273,22 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenRejectingUnknownInternship() throws Exception {
         // Arrange
-        when(managerService.rejectInternship(99L)).thenThrow(new InternshipNotFoundException(99L));
+        when(managerService.rejectInternship(99L, "A ghost?!?")).thenThrow(new InternshipNotFoundException(99L));
 
         // Act + assert
-        mockMvc.perform(put("/api/manager/internships/99/reject")).andExpect(status().isNotFound());
+        mockMvc.perform(put("/api/manager/internships/99/reject")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"comment\": \"A ghost?!?\"}")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenInternshipAlreadyReviewed() throws Exception {
+        // Arrange
+        when(managerService.approveInternship(1L)).thenThrow(new InternshipAlreadyReviewedException(1L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internships/1/approve"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Internship with id: 1 was already reviewed."));
     }
 }

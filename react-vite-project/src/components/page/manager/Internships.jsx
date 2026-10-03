@@ -12,7 +12,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import InternshipCard from '../internship/InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
-import AutoResizeTextarea from '../internship/AutoResizeTextarea.jsx';
+import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
 import Button from '../../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {approveInternship, getManagerInternships, rejectInternship} from '../../api/Api.jsx';
@@ -98,7 +98,6 @@ const ManagerInternships = () => {
                     <AutoResizeTextarea
                         value={rejectComment}
                         onChange={(e) => setRejectComment(e.target.value)}
-                        maxLength={1000}
                         rows={2}
                         autoFocus
                         placeholder="Reason for rejection (required)"

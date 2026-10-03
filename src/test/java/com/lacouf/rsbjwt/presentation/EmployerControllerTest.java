@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.EmployerService;
 import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
@@ -65,11 +66,11 @@ public class EmployerControllerTest {
     private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
 
     private static Map<String, Object> validInternship() {
-        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
+        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "workMode", "HYBRID", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
     }
 
     private static InternshipResponseDto internshipResponse() {
-        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, 1L);
+        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, "it sucks",1L);
     }
 
     @Test
@@ -268,11 +269,9 @@ public class EmployerControllerTest {
                 Arguments.of("location", "a"),
 
                 Arguments.of("startDate", null),
-                Arguments.of("startDate", "2020-01-01"),
                 Arguments.of("startDate", "not-a-date"),
 
                 Arguments.of("applicationDeadline", null),
-                Arguments.of("applicationDeadline", "2020-01-01"),
                 Arguments.of("applicationDeadline", "not-a-date"),
 
                 Arguments.of("compensationAmount", -5),

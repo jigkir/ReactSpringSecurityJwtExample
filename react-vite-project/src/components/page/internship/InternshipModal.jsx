@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {getInternshipModalClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
-import AutoResizeTextarea from './AutoResizeTextarea.jsx';
+import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
 
 const INITIAL_FORM = {
     title: "",

@@ -59,12 +59,20 @@ export default function NotificationMenu({notifications = [], dark}) {
                                 return (
                                     <li key={notif.id} role="none">
                                         {notif.to ? (
-                                            <Link to={notif.to} role="menuitem" className={menuClasses.item}
-                                                  onClick={() => setOpen(false)}>
-                                                <span className="min-w-0 flex-1">{notif.label}</span>
-                                            </Link>
+                                            <div role="menuitem" className={`${menuClasses.item} flex items-center justify-between`}>
+                                                <Link
+                                                    to={notif.to}
+                                                    className="min-w-0 flex-1 truncate"
+                                                    onClick={() => {
+                                                        setOpen(false);
+                                                        notif.func?.();
+                                                    }}
+                                                >
+                                                    <span>{notif.label}</span>
+                                                </Link>
+                                            </div>
                                         ) : (
-                                            <div role="menuitem" className={menuClasses.item}>{content}</div>
+                                            <div role="menuitem" className={menuClasses.item}>{notif.label}</div>
                                         )}
                                     </li>
                                 );

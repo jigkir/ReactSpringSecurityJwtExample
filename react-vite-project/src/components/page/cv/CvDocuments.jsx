@@ -34,11 +34,12 @@
  *   onAddClick  function  optional — shows the "add CV" button (student mode)
  */
 
-import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button, {useButtonClasses} from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
+import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
 import {
     approveCv,
     getManagerCvFile,
@@ -83,18 +84,6 @@ const STATUS_ICON = {
     APPROVED: "check_circle",
     REFUSED: "close",
     REJECTED: "close",
-};
-
-// Textarea that grows/shrinks with its content (no inner scrollbar, no manual resize).
-const AutoResizeTextarea = ({value, className = "", ...props}) => {
-    const ref = useRef(null);
-    useLayoutEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        el.style.height = "auto";
-        el.style.height = `${el.scrollHeight}px`;
-    }, [value]);
-    return <textarea ref={ref} value={value} className={`${className} resize-none overflow-hidden`} {...props}/>;
 };
 
 const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClick}) => {
@@ -453,7 +442,6 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                                 <AutoResizeTextarea
                                                     value={refuseComment}
                                                     onChange={(e) => setRefuseComment(e.target.value)}
-                                                    maxLength={1000}
                                                     rows={2}
                                                     placeholder={t("cvDocuments.refuseCommentPlaceholder")}
                                                     aria-label={t("cvDocuments.refuseCommentPlaceholder")}
