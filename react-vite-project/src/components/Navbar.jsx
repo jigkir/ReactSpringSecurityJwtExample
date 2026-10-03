@@ -163,15 +163,6 @@ function Navbar({user, dark, toggleDark}) {
 
     const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
-    const handleNotificationRead = async (notificationId) => {
-        try {
-            await markNotificationAsRead(user.id, notificationId);
-            // Optionally, you can trigger a re-fetch or state update here if needed
-        } catch (err) {
-            console.error("Failed to mark notification as read:", err);
-        }
-    };
-
     return (
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
             <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
@@ -224,14 +215,14 @@ function Navbar({user, dark, toggleDark}) {
                                 </div>
                             )}
                         </div>
+                        {/* Mobile bell (always visible, in the top bar) */}
+                        <div className="md:hidden">
+                            <NotificationMenu notifications={notifications} dark={dark}/>
+                        </div>
                     </div>
 
                     {/* ───────── Right side ───────── */}
                     <div className="flex items-center gap-2 md:gap-3 ml-auto">
-                        {/* Mobile bell (always visible, in the top bar) */}
-                        <div className="md:hidden">
-                            <NotificationMenu notifications={notifications} dark={dark} studentId={user?.id} onNotificationRead={handleNotificationRead}/>
-                        </div>
 
                         <button onClick={toggleLang}
                                 className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
