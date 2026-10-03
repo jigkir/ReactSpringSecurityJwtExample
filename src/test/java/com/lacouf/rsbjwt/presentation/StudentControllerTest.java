@@ -14,7 +14,7 @@ import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.exception.cv.CVAlreadyPublicException;
-import com.lacouf.rsbjwt.exception.cv.CVAlredyPrivateException;
+import com.lacouf.rsbjwt.exception.cv.CVAlreadyPrivateException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -293,7 +293,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnConflictWhenCVAlreadyPrivate() throws Exception {
         when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CVAlredyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
+        doThrow(new CVAlreadyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
 
         mockMvc.perform(put("/api/student/1/cvs/10/private"))
                 .andExpect(status().isConflict());

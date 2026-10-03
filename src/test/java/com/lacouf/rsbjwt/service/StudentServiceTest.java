@@ -428,7 +428,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowCVAlredyPrivateExceptionWhenCvIsAlreadyPrivate() {
+    void shouldThrowCVAlreadyPrivateExceptionWhenCvIsAlreadyPrivate() {
         when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
 
         CV cv = new CV();
@@ -438,7 +438,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(CVAlredyPrivateException.class, () -> studentService.setCvAsPrivate(dummyStudent.getId(), 10L));
+        assertThrows(CVAlreadyPrivateException.class, () -> studentService.setCvAsPrivate(dummyStudent.getId(), 10L));
     }
 
     @Test

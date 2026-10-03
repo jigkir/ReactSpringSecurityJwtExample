@@ -224,11 +224,11 @@ public class StudentService {
     }
 
     @Transactional
-    public void setCvAsPrivate(long id, long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+    public void setCvAsPrivate(long id, long cvId) throws UserNotFoundException, CVAlreadyPrivateException, CvNotFoundException {
         Student student = findById(id);
         CV cv = validateAndGetStudentCv(student, cvId);
         if (cv.getSharingScope() == CVSharingScope.PRIVATE) {
-            throw new CVAlredyPrivateException("The CV with ID " + cvId + " is already private.");
+            throw new CVAlreadyPrivateException("The CV with ID " + cvId + " is already private.");
         }
         cv.setSharingScope(CVSharingScope.PRIVATE);
         cvRepository.save(cv);

@@ -72,7 +72,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}/cvs/{cvId}/private")
-    public ResponseEntity<String> makeCVPrivate(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+    public ResponseEntity<String> makeCVPrivate(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CVAlreadyPrivateException, CvNotFoundException {
         studentService.setCvAsPrivate(id, cvId);
         return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
     }

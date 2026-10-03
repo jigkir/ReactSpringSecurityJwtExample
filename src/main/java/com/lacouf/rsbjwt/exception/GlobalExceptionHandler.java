@@ -86,8 +86,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(CVAlredyPrivateException.class)
-    public ResponseEntity<Map<String, String>> handleCVAlredyPrivateException(CVAlredyPrivateException exception) {
+    @ExceptionHandler(CVAlreadyPrivateException.class)
+    public ResponseEntity<Map<String, String>> handleCVAlreadyPrivateException(CVAlreadyPrivateException exception) {
         return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
     }
 
