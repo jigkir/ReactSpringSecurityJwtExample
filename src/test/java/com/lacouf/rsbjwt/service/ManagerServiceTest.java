@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -361,7 +362,7 @@ public class ManagerServiceTest {
 
     //accepter un stage
     @Test
-    void shouldApproveInternship() throws  InternshipNotFoundException {
+    void shouldApproveInternship() throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         //Arrange
         when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
 
@@ -377,7 +378,7 @@ public class ManagerServiceTest {
 
     //refuser un stage
     @Test
-    void shouldRejectInternship() throws  InternshipNotFoundException {
+    void shouldRejectInternship() throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         //Arrange
         when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
 

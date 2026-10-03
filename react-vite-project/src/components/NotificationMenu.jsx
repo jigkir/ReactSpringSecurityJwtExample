@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses, getNotificationMenuClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
+import {markNotificationAsRead} from "./api/Api.jsx";
 
 export default function NotificationMenu({notifications = [], dark}) {
     const {t} = useTranslation();
@@ -59,10 +60,18 @@ export default function NotificationMenu({notifications = [], dark}) {
                                 return (
                                     <li key={notif.id} role="none">
                                         {notif.to ? (
-                                            <Link to={notif.to} role="menuitem" className={menuClasses.item}
-                                                  onClick={() => setOpen(false)}>
-                                                <span className="min-w-0 flex-1">{notif.label}</span>
-                                            </Link>
+                                            <div role="menuitem" className={`${menuClasses.item} flex items-center justify-between`}>
+                                                <Link
+                                                    to={notif.to}
+                                                    className="min-w-0 flex-1 truncate"
+                                                    onClick={() => {
+                                                        setOpen(false);
+                                                        notif.func?.();
+                                                    }}
+                                                >
+                                                    <span>{notif.label}</span>
+                                                </Link>
+                                            </div>
                                         ) : (
                                             <div role="menuitem" className={menuClasses.item}>{content}</div>
                                         )}
