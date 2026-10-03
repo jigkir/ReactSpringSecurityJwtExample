@@ -356,7 +356,7 @@ public class StudentServiceTest {
 
         assert CvVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
     }
 
     @Test
@@ -421,7 +421,7 @@ public class StudentServiceTest {
 
         assert CVSharingScope.PRIVATE.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
     }
 
     @Test

@@ -9,7 +9,7 @@ import {
     getManagerNotifications,
     getStudentInternships,
     getStudentNotifications,
-    markStudentCvNotificationsAsRead
+    markStudentCvNotificationAsRead
 } from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
@@ -58,8 +58,29 @@ function useNotifications(role, t, user) {
                     console.error("Student notification error:", error);
                 });
             getStudentNotifications(user.id).then((data) => {
-                if (!cancelled) setCvApprovedCount(Array.isArray(data) ? data.filter(notif => notif.notificationType === "CV_APPROVED").length : 0);
-                if (!cancelled) setCvRejectedCount(Array.isArray(data) ? data.filter(notif => notif.notificationType === "CV_REJECTED").length : 0);
+                if (cancelled) return;
+                // The endpoint returns READ and UNREAD, so only count UNREAD
+                const unread = Array.isArray(data) ? data.filter((n) => n.status === "UNREAD") : [];
+                const approved = unread.filter((n) => n.notificationType === "CV_APPROVED");
+                const rejected = unread.filter((n) => n.notificationType === "CV_REJECTED");
+                if (window.location.pathname === "/cv" && (approved.length > 0 || rejected.length > 0)) {
+                    const toMark = approved.concat(rejected);
+
+                    // Each call catches its own error, so one failure doesn't reject the whole batch
+                    Promise.all(
+                        toMark.map((n) =>
+                            markStudentCvNotificationAsRead(user.id, n.id).catch((error) =>
+                                console.error("Mark as read failed for", n.id, error)
+                            )
+                        )
+                    ).then(() => {
+                        if (cancelled) return;
+                        setCvApprovedCount(0);
+                        setCvRejectedCount(0);
+                    });
+                }
+                setCvApprovedCount(approved.length);
+                setCvRejectedCount(rejected.length);
             })
                 .catch((error) => {
                     console.error("Student notification error:", error);
@@ -85,11 +106,6 @@ function useNotifications(role, t, user) {
     }
 
     if (role === "STUDENT") {
-        if(window.location.pathname === "/cv"){
-            markStudentCvNotificationsAsRead(studentId).catch((error) => {
-                console.error("Student notification error:", error);
-            });
-        }
         return [{
             id: "internship",
             count: internshipCount,

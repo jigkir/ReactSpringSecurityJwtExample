@@ -282,8 +282,8 @@ export async function getStudentNotifications(studentId) {
     return handleResponse(response);
 }
 
-export async function markStudentCvNotificationsAsRead(studentId, notificationId) {
-    const response = await fetcher(`/${studentId}/notifications/${notificationId}/read`, {method: "PUT"});
-    return handleResponse(response);
+export async function markStudentCvNotificationAsRead(studentId, notificationId) {
+    const response = await fetcher(`student/${studentId}/notifications/${notificationId}/read`, {method: "PUT"});
+    return handleEmpty(response);
 }
 //endregion

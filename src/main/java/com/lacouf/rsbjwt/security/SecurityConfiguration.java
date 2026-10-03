@@ -134,6 +134,7 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers("/error").permitAll()
 
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 ) // for h2-console

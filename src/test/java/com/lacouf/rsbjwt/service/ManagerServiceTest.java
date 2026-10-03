@@ -202,7 +202,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
     }
 
     @Test
