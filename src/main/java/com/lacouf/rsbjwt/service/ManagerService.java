@@ -13,23 +13,20 @@ import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
-import com.lacouf.rsbjwt.model.user.Manager;
-import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.notification.Notification;
+import com.lacouf.rsbjwt.model.notification.NotificationStatus;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.response.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.notification.Notification;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
-import com.lacouf.rsbjwt.model.notification.NotificationType;
-import com.lacouf.rsbjwt.model.notification.TargetType;
 
 import java.util.List;
 import java.util.Optional;
@@ -154,8 +151,10 @@ public class ManagerService {
     public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
         Internship internship = findInternship(internshipId);
 
-        internship.approve();
-        internshipRepository.save(internship);
+        if (internship.getStatus() != InternshipStatus.APPROVED) {
+            internship.approve();
+            internshipRepository.save(internship);
+        }
 
         return InternshipResponseDto.of(internship);
     }

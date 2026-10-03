@@ -40,6 +40,11 @@ public class EmployerController {
         return new ResponseEntity<>(internshipResponseDto, HttpStatus.CREATED);
     }
 
+    @PutMapping("/internships/{internshipId}")
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
+        return ResponseEntity.ok(employerService.updateInternship(internshipId, internshipRequestDto, authentication.getName()));
+    }
+
     @DeleteMapping("/internships/{internshipId}")
     public ResponseEntity<Void> deleteInternship(@PathVariable long internshipId, Authentication authentication) throws InternshipNotFoundException {
         employerService.deleteInternship(internshipId, authentication.getName());

@@ -1,9 +1,11 @@
 package com.lacouf.rsbjwt.service.dto.request;
 
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 public record InternshipRequestDto(
         @NotBlank
         @Size(min = 2, max = 50)
@@ -26,34 +28,33 @@ public record InternshipRequestDto(
         String location,
 
         @NotNull
-        @Future
+        WorkMode workMode,
+
+        @NotNull
         LocalDate startDate,
 
         @NotNull
-        @Future
+        //@Future // Needed ???
         LocalDate applicationDeadline,
 
         @PositiveOrZero
-        @Digits(integer=2, fraction=2)
+        @Digits(integer = 2, fraction = 2)
         BigDecimal compensationAmount,
 
         boolean compensationNegotiable
 ) {
     public InternshipRequestDto {
-        if (title != null) {
-            title = title.trim();
-        }
+        if (title != null) title = title.strip();
+        if (location != null) location = location.strip();
 
-        if (description != null) {
-            description = description.trim();
-        }
+        if (description != null) description = description.strip();
 
         if (requiredSkills != null) {
-            requiredSkills = requiredSkills.trim();
-        }
-
-        if (location != null) {
-            location = location.trim();
+            requiredSkills = java.util.Arrays.stream(requiredSkills.split("[,;\\n]"))
+                    .map(String::strip)
+                    .filter(s -> !s.isEmpty())
+                    .distinct()
+                    .collect(java.util.stream.Collectors.joining(", "));
         }
     }
 }
