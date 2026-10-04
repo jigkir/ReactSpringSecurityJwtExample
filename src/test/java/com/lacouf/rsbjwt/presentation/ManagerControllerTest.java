@@ -2,7 +2,6 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
@@ -279,16 +278,5 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/internships/99/reject")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"comment\": \"A ghost?!?\"}")).andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldReturnConflictWhenInternshipAlreadyReviewed() throws Exception {
-        // Arrange
-        when(managerService.approveInternship(1L)).thenThrow(new InternshipAlreadyReviewedException(1L));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/manager/internships/1/approve"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Internship with id: 1 was already reviewed."));
     }
 }

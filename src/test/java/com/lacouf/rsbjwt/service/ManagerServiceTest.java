@@ -21,6 +21,7 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.*;
+import com.lacouf.rsbjwt.service.dto.request.InternshipRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.ManagerCvResponseDto;
@@ -349,7 +350,7 @@ public class ManagerServiceTest {
 
     //accepter un stage
     @Test
-    void shouldApproveInternship() throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+    void shouldApproveInternship() throws InternshipNotFoundException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -362,11 +363,12 @@ public class ManagerServiceTest {
         assert internship.getRejectionComment() == null;
 
         verify(internshipRepository).save(internship);
+        verify(studentService).createNewInternshipNotificationsForStudents(internship);
     }
 
     //refuser un stage
     @Test
-    void shouldRejectInternship() throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+    void shouldRejectInternship() throws InternshipNotFoundException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -443,31 +445,58 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldThrowWhenApprovingAlreadyApprovedInternship() {
+    void shouldAllowApprovingRejectedInternship() throws InternshipNotFoundException {
+        //Arrange
+        internship.reject("Offer is no good.");
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto result = managerService.approveInternship(1L);
+
+        // Assert
+        assert(InternshipStatus.APPROVED).equals(internship.getStatus());
+        assert internship.getRejectionComment() == null;
+        assert(InternshipStatus.APPROVED).equals(result.status());
+        assert result.rejectionComment() == null;
+
+        verify(internshipRepository).save(internship);
+        verify(studentService).createNewInternshipNotificationsForStudents(internship);
+    }
+
+    @Test
+    void shouldAllowRejectingPreviouslyApprovedInternship() throws InternshipNotFoundException {
         // Arrange
         internship.approve();
 
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
         // Act
-        InternshipAlreadyReviewedException exception = assertThrows(InternshipAlreadyReviewedException.class, () -> managerService.approveInternship(1L));
+        InternshipResponseDto result = managerService.rejectInternship(1L, "Offer does not meet requirements.");
 
         // Assert
-        assert("Internship with id: 1 was already reviewed.").equals(exception.getMessage());
+        assert(InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert("Offer does not meet requirements.").equals(internship.getRejectionComment());
+        assert(InternshipStatus.REJECTED).equals(result.status());
 
-        verify(internshipRepository, never()).save(any(Internship.class));
+        verify(internshipRepository).save(internship);
     }
 
     @Test
-    void shouldThrowInternshipAlreadyReviewedWhenRejectingAlreadyRejectedInternship() {
+    void shouldAllowUpdatingRejectionComment() throws InternshipNotFoundException {
         // Arrange
-        internship.reject("Previous rejection.");
+        internship.reject("Old comment.");
 
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
-        // Act + Assert
-        assertThrows(InternshipAlreadyReviewedException.class, () -> managerService.rejectInternship(1L, "New rejection."));
+        // Act
+        InternshipResponseDto result = managerService.rejectInternship(1L, "New comment.");
 
-        verify(internshipRepository, never()).save(any(Internship.class));
+        // Assert
+        assert(InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert("New comment.").equals(internship.getRejectionComment());
+        assert("New comment.").equals(result.rejectionComment());
+
+        verify(internshipRepository).save(internship);
     }
 }

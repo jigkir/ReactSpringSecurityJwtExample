@@ -1,7 +1,6 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -142,27 +141,24 @@ public class ManagerService {
     }
 
     @Transactional
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
         Internship internship = findInternship(internshipId);
 
-        if (internship.getStatus() != InternshipStatus.PENDING) {
-            throw new InternshipAlreadyReviewedException(internship.getId());
-        }
+        boolean wasAlreadyApprove = internship.getStatus() == InternshipStatus.APPROVED;
 
         internship.approve();
         internshipRepository.save(internship);
-        studentService.createNewInternshipNotificationsForStudents(internship);
+
+        if (!wasAlreadyApprove) {
+            studentService.createNewInternshipNotificationsForStudents(internship);
+        }
 
         return InternshipResponseDto.of(internship);
     }
 
     @Transactional
-    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException {
         Internship internship = findInternship(internshipId);
-
-        if (internship.getStatus() != InternshipStatus.PENDING) {
-            throw new InternshipAlreadyReviewedException(internship.getId());
-        }
 
         internship.reject(comment);
         internshipRepository.save(internship);
