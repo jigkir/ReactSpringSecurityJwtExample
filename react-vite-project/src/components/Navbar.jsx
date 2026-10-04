@@ -227,7 +227,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            <NotificationMenu notifications={notifications} dark={dark} />
+                            {isLoggedIn && <NotificationMenu notifications={notifications} dark={dark}/>}
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}
@@ -261,7 +261,7 @@ function Navbar({user, dark, toggleDark}) {
                         </div>
                         {/* Mobile bell (always visible, in the top bar) */}
                         <div className="md:hidden">
-                            <NotificationMenu notifications={notifications} dark={dark}/>
+                            {isLoggedIn && <NotificationMenu notifications={notifications} dark={dark}/>}
                         </div>
                     </div>
 
