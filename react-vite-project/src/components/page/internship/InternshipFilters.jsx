@@ -1,4 +1,5 @@
 import {useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import Icon from '../../../styles/Icon.jsx';
 
 // ── Sorting helpers ──────────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ export function useInternshipFilters(list) {
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
 export default function InternshipFilters({dark, filters, showStatus = true}) {
+    const {t} = useTranslation();
     const {search, setSearch, status, setStatus, sort, setSort} = filters;
 
     const selectClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
