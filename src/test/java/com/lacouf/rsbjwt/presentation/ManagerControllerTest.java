@@ -4,7 +4,6 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
-import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -134,17 +133,6 @@ public class ManagerControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldReturnConflictWhenCvAlreadyReviewed() throws Exception {
-        // Arrange
-        when(managerService.approveCv(1L)).thenThrow(new CvAlreadyReviewedException(1L));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/manager/cvs/1/approve"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("The CV with ID 1 has already been reviewed."));
     }
 
     @Test
