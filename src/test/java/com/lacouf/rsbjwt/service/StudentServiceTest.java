@@ -359,7 +359,7 @@ public class StudentServiceTest {
 
         assert CvVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
+        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 10L);
     }
 
     @Test
@@ -410,7 +410,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlredyPrivateException, CvNotFoundException {
+    void shouldSetCvAsPrivate() throws UserNotFoundException, CVAlreadyPrivateException, CvNotFoundException {
         when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
 
         CV cv = new CV();
@@ -424,7 +424,7 @@ public class StudentServiceTest {
 
         assert CVSharingScope.PRIVATE.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L);
+        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 10L);
     }
 
     @Test

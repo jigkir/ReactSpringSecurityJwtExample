@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -412,21 +413,22 @@ public class StudentControllerTest {
 
     @Test
     void shouldMarkNotificationAsReadSuccessfully() throws Exception {
-        doNothing().when(studentService).markNotificationAsRead(100L);
+        doNothing().when(studentService).markNotificationAsRead(100L, "test@claurendeau.qc.ca");
 
         mockMvc.perform(put("/api/student/notifications/100/read").principal(authentication)
                         .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Notification marked as read successfully"));
 
-        verify(studentService).markNotificationAsRead(100L);
+        verify(studentService).markNotificationAsRead(100L, "test@claurendeau.qc.ca");
     }
 
     @Test
     void shouldReturnNotFoundWhenMarkingNonExistentNotificationAsRead() throws Exception {
-        doThrow(new UserNotFoundException()).when(studentService).markNotificationAsRead(999L);
+        doThrow(new NotificationNotFoundException(999L)).when(studentService).markNotificationAsRead(999L, "test@claurendeau.qc.ca");
 
         mockMvc.perform(put("/api/student/notifications/999/read")
+                        .principal(authentication)
                         .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
                 .andExpect(status().isNotFound());
     }
@@ -454,5 +456,16 @@ public class StudentControllerTest {
                 .andExpect(content().string("5"));
 
         verify(studentService).getUnreadNotificationCountForInternships("test@claurendeau.qc.ca");
+    }
+
+    @Test
+    void shouldMarkCvNotificationsAsReadSuccessfully() throws Exception {
+        doNothing().when(studentService).markCvNotificationsAsRead("test@claurendeau.qc.ca");
+
+        mockMvc.perform(put("/api/student/notifications/cv/read").principal(authentication).with(user("test@claurendeau.qc.ca").roles("STUDENT")))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Notifications marked as read successfully"));
+
+        verify(studentService).markCvNotificationsAsRead("test@claurendeau.qc.ca");
     }
 }

@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -28,10 +27,7 @@ import com.lacouf.rsbjwt.service.dto.response.NotificationDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -70,6 +66,8 @@ public class ManagerServiceTest {
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Notification> notificationArgumentCaptor;
 
     private CV cv;
     private Internship internship;
@@ -193,7 +191,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldApproveCv() throws CvNotFoundException, CvAlreadyReviewedException {
+    void shouldApproveCv() throws CvNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -207,11 +205,11 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 1L);
     }
 
     @Test
-    void shouldClearRejectionCommentWhenApprovingPreviouslyRejectedCv() throws CvNotFoundException, CvAlreadyReviewedException {
+    void shouldClearRejectionCommentWhenApprovingPreviouslyRejectedCv() throws CvNotFoundException {
         // Arrange
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
@@ -230,7 +228,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws CvNotFoundException, CvAlreadyReviewedException {
+    void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws CvNotFoundException {
         // Arrange
         cv.setStatus(CvStatus.APPROVED);
         when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
@@ -273,7 +271,7 @@ public class ManagerServiceTest {
 
         verify(cvRepository).save(cv);
         verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L);
+        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 1L);
     }
 
     @Test
@@ -409,7 +407,7 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnOnlyUnreadNotificationsOfConnectedManager() throws Exception {
         // Arrange
-        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, 1L, new Manager());
+        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, new Manager());
         notification.setId(5L);
 
         when(notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc("manager@example.com", NotificationStatus.UNREAD)).thenReturn(List.of(notification));
@@ -427,7 +425,7 @@ public class ManagerServiceTest {
     @Test
     void shouldMarkNotificationAsRead() throws NotificationNotFoundException {
         // Arrange
-        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, 1L, new Manager());
+        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, new Manager());
         notification.setId(5L);
 
         when(notificationRepository.findByIdAndUser_Credentials_Email(5L, "manager@example.com")).thenReturn(Optional.of(notification));
@@ -469,5 +467,81 @@ public class ManagerServiceTest {
         assertThrows(InternshipAlreadyReviewedException.class, () -> managerService.rejectInternship(1L, "New rejection."));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldNotifyStudentWhenApprovingCv() throws CvNotFoundException {
+        // Arrange
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+
+        // Act
+        managerService.approveCv(1L);
+
+        // Assert
+        verify(notificationRepository).save(notificationArgumentCaptor.capture());
+
+        Notification notification = notificationArgumentCaptor.getValue();
+
+        assert(NotificationType.CV_APPROVED).equals(notification.getNotificationType());
+        assert(TargetType.CV).equals(notification.getTargetType());
+        assert(NotificationStatus.UNREAD).equals(notification.getStatus());
+        assert Long.valueOf(1L).equals(notification.getTargetId());
+        assert(cv.getStudent()).equals(notification.getUser());
+        assert("Your CV has been approved.").equals(notification.getMessage());
+    }
+
+    @Test
+    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws CvNotFoundException {
+        // Arrange
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+
+        // Act
+        managerService.rejectCv(1L, "CV too detailed");
+
+        // Assert
+        verify(notificationRepository).save(notificationArgumentCaptor.capture());
+
+        Notification notification = notificationArgumentCaptor.getValue();
+
+        assert(NotificationType.CV_REJECTED).equals(notification.getNotificationType());
+        assert(TargetType.CV).equals(notification.getTargetType());
+        assert(NotificationStatus.UNREAD).equals(notification.getStatus());
+        assert Long.valueOf(1L).equals(notification.getTargetId());
+        assert(cv.getStudent()).equals(notification.getUser());
+        assert("CV too detailed").equals(notification.getMessage());
+    }
+
+    @Test
+    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws CvNotFoundException {
+        // Arrange
+        cv.setStatus(CvStatus.REJECTED);
+        cv.setRejectionComment("CV too detailed");
+
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+
+        // Act
+        ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
+
+        // Assert
+        assert("CV too detailed").equals(result.rejectionComment());
+
+        verify(cvRepository, never()).save(any(CV.class));
+        verifyNoInteractions(notificationRepository);
+    }
+
+    @Test
+    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws CvNotFoundException {
+        // Arrange
+        cv.setStatus(CvStatus.APPROVED);
+
+        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+
+        // Act
+        managerService.rejectCv(1L, "Changed my mind");
+
+        // Assert
+        InOrder inOrder = inOrder(notificationRepository);
+        inOrder.verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 1L);
+        inOrder.verify(notificationRepository).save(any(Notification.class));
     }
 }
