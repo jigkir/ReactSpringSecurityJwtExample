@@ -322,6 +322,16 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                 <option value="NAME_ASC">Student A → Z</option>
                 <option value="NAME_DESC">Student Z → A</option>
             </select>
+
+            <button
+                className={`px-3 py-1.5 rounded-lg border text-sm flex items-center gap-1 ml-auto ${
+                    dark ? "bg-slate-700 border-slate-600 text-white hover:bg-slate-600" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+                onClick={() => void load()}
+                title="Refresh"
+            >
+                <Icon name="refresh" size={20} />
+            </button>
         </div>
     );
 
