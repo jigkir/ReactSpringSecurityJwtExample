@@ -5,11 +5,15 @@
  *  - A decision can be changed at any time (approve a rejected offer, reject an approved one,
  *    or edit the rejection reason).
  *
+ * `actionError` stores a translation KEY (not text) and is translated at render,
+ * so it follows the language switch live.
+ *
  * Access control: <RequireRole roles={["MANAGER"]}/> in App.jsx + backend.
  */
 
 import {useCallback, useEffect, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import InternshipCard from '../internship/InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
 import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
@@ -19,6 +23,7 @@ import {approveInternship, getManagerInternships, rejectInternship} from '../../
 
 const ManagerInternships = () => {
     const {dark} = useOutletContext();
+    const {t} = useTranslation();
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -65,11 +70,11 @@ const ManagerInternships = () => {
             closeForm();
         } catch (e) {
             if (e.status === 404) {
-                setActionError("This offer no longer exists.");
+                setActionError("managerInternships.notFound");
                 await load();
                 closeForm();
             } else {
-                setActionError("The action failed. Please try again.");
+                setActionError("managerInternships.actionFailed");
             }
         } finally {
             setBusyId(null);
@@ -92,25 +97,25 @@ const ManagerInternships = () => {
                 <>
                     <span className={`text-sm ${dark ? "text-slate-300" : "text-gray-700"}`}>
                         {isRejected
-                            ? "Edit the rejection reason."
-                            : "Why are you rejecting this offer? The employer will see this reason."}
+                            ? t("managerInternships.editRejectAsk")
+                            : t("managerInternships.rejectAsk")}
                     </span>
                     <AutoResizeTextarea
                         value={rejectComment}
                         onChange={(e) => setRejectComment(e.target.value)}
                         rows={2}
                         autoFocus
-                        placeholder="Reason for rejection (required)"
-                        aria-label="Reason for rejection"
+                        placeholder={t("managerInternships.rejectPlaceholder")}
+                        aria-label={t("managerInternships.rejectAria")}
                         className={textareaClass}
                     />
                     <Button tone="danger" dark={dark} icon="check"
                             disabled={busy || !rejectComment.trim()}
                             onClick={() => decide(internship, "reject")}>
-                        Confirm
+                        {t("managerInternships.confirmBtn")}
                     </Button>
                     <Button tone="neutral" dark={dark} icon="close" disabled={busy} onClick={closeForm}>
-                        Cancel
+                        {t("managerInternships.cancelBtn")}
                     </Button>
                 </>
             );
@@ -122,21 +127,21 @@ const ManagerInternships = () => {
                 {!isApproved && (
                     <Button tone="success" dark={dark} icon="check" disabled={busy}
                             onClick={() => decide(internship, "approve")}
-                            aria-label={`Approve : ${internship.title}`}>
-                        Approve
+                            aria-label={t("managerInternships.approveBtnAria", {title: internship.title})}>
+                        {t("managerInternships.approveBtn")}
                     </Button>
                 )}
                 {isRejected ? (
                     <Button tone="neutral" dark={dark} icon="edit" disabled={busy}
                             onClick={() => startReject(internship)}
-                            aria-label={`Edit reason : ${internship.title}`}>
-                        Edit reason
+                            aria-label={t("managerInternships.editReasonBtnAria", {title: internship.title})}>
+                        {t("managerInternships.editReasonBtn")}
                     </Button>
                 ) : (
                     <Button tone="danger" dark={dark} icon="close" disabled={busy}
                             onClick={() => startReject(internship)}
-                            aria-label={`Reject : ${internship.title}`}>
-                        Reject
+                            aria-label={t("managerInternships.rejectBtnAria", {title: internship.title})}>
+                        {t("managerInternships.rejectBtn")}
                     </Button>
                 )}
             </>
@@ -147,16 +152,18 @@ const ManagerInternships = () => {
     if (loadFailed) {
         body = (
             <div className={s.errorText} role="alert">
-                <p>Unable to load internship offers.</p>
-                <Button tone="neutral" dark={dark} onClick={load} className="mt-3">Retry</Button>
+                <p>{t("managerInternships.loadError")}</p>
+                <Button tone="neutral" dark={dark} onClick={load} className="mt-3">
+                    {t("managerInternships.retryBtn")}
+                </Button>
             </div>
         );
     } else if (internships === null) {
-        body = <p className={s.loadingText} aria-busy="true">Loading…</p>;
+        body = <p className={s.loadingText} aria-busy="true">{t("managerInternships.loading")}</p>;
     } else if (internships.length === 0) {
-        body = <p className={s.emptyText}>No internship offers yet.</p>;
+        body = <p className={s.emptyText}>{t("managerInternships.empty")}</p>;
     } else if (visible.length === 0) {
-        body = <p className={s.emptyText}>No internships match your filters.</p>;
+        body = <p className={s.emptyText}>{t("internshipFilters.noMatch")}</p>;
     } else {
         body = visible.map((internship) => (
             <InternshipCard
@@ -172,14 +179,13 @@ const ManagerInternships = () => {
         <div className={s.page}>
             <div className={s.headerSection}>
                 <div>
-                    <h1 className={s.title}>Internship offers</h1>
-                    <p className={s.subtitle}>Approve an offer to publish it to eligible students. You can change a
-                        decision at any time.</p>
+                    <h1 className={s.title}>{t("managerInternships.title")}</h1>
+                    <p className={s.subtitle}>{t("managerInternships.subtitle")}</p>
                 </div>
             </div>
 
             <div className={s.listSection}>
-                {actionError && <p className={`${s.errorText} mb-4`} role="alert">{actionError}</p>}
+                {actionError && <p className={`${s.errorText} mb-4`} role="alert">{t(actionError)}</p>}
                 {internships && internships.length > 0 && <InternshipFilters dark={dark} filters={filters}/>}
                 <div className={s.scrollArea}>{body}</div>
             </div>

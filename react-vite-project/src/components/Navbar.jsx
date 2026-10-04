@@ -5,14 +5,20 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markInternshipNotificationAsRead, markCvNotificationsAsRead} from './api/Api.jsx';
+import {
+    getManagerNotifications,
+    getStudentNotifications,
+    getUnreadNotificationCount,
+    markCvNotificationsAsRead,
+    markInternshipNotificationAsRead
+} from './api/Api.jsx';
 
-// Links by role. `end` = only active on the exact path (needed for "/" and "/home").
+// Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
-    STUDENT: [{to: "/cv", label: "CV"}],
+    STUDENT: [{to: "/cv", labelKey: "navbar.cv"}],
     MANAGER: [
-        {to: "/manager/cvs", label: "CV"},
-        {to: "/manager/internships", label: "Internships"},
+        {to: "/manager/cvs", labelKey: "navbar.cv"},
+        {to: "/manager/internships", labelKey: "navbar.internships"},
     ],
     EMPLOYER: [{to: "/post", labelKey: "navbar.postInternship"}],
     TEACHER: [],

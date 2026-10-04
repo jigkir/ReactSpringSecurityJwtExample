@@ -286,15 +286,15 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     type="search"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search name, email, student ID…"
-                    aria-label="Search"
+                    placeholder={t("cvDocuments.searchPlaceholder")}
+                    aria-label={t("cvDocuments.searchAria")}
                     className={`${selectClass} w-full pr-8 [&::-webkit-search-cancel-button]:appearance-none`}
                 />
                 {search && (
                     <button
                         type="button"
                         onClick={() => setSearch("")}
-                        aria-label="Clear search"
+                        aria-label={t("cvDocuments.clearSearchAria")}
                         className="absolute right-2 top-1/2 -translate-y-1/2 flex text-red-500 hover:text-red-600"
                     >
                         <Icon name="close" size={18}/>
@@ -302,25 +302,27 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                 )}
             </div>
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-                    className={selectClass} aria-label="Status">
-                <option value="ALL">All statuses</option>
-                <option value="PENDING">Pending</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
+                    className={selectClass} aria-label={t("cvDocuments.statusAria")}>
+                <option value="ALL">{t("cvDocuments.allStatuses")}</option>
+                <option value="PENDING">{t("cvDocuments.filterPending")}</option>
+                <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
+                <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
             </select>
             <select value={disciplineFilter} onChange={(e) => setDisciplineFilter(e.target.value)}
-                    className={selectClass} aria-label="Discipline">
-                <option value="ALL">All disciplines</option>
+                    className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
+                <option value="ALL">{t("cvDocuments.allDisciplines")}</option>
                 {disciplines.map((d) => (
-                    <option key={d} value={d}>{d}</option>
+                    <option key={d} value={d}>
+                        {t(`disciplines.${d.toLowerCase()}`, {defaultValue: d})}
+                    </option>
                 ))}
             </select>
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                    className={selectClass} aria-label="Sort">
-                <option value="DATE_DESC">Newest first</option>
-                <option value="DATE_ASC">Oldest first</option>
-                <option value="NAME_ASC">Student A → Z</option>
-                <option value="NAME_DESC">Student Z → A</option>
+                    className={selectClass} aria-label={t("cvDocuments.sortAria")}>
+                <option value="DATE_DESC">{t("cvDocuments.sortNewest")}</option>
+                <option value="DATE_ASC">{t("cvDocuments.sortOldest")}</option>
+                <option value="NAME_ASC">{t("cvDocuments.sortNameAsc")}</option>
+                <option value="NAME_DESC">{t("cvDocuments.sortNameDesc")}</option>
             </select>
         </div>
     );
@@ -389,7 +391,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                                             {doc.student.firstName} {doc.student.lastName}
                                             {" · "}{doc.student.studentId}
                                             {" · "}{doc.student.email}
-                                            {" · "}{doc.student.discipline}
+                                            {" · "}{t(`disciplines.${(doc.student.discipline ?? "").toLowerCase()}`, {defaultValue: doc.student.discipline})}
                                         </p>
                                     )}
                                     <p className={th.meta}>

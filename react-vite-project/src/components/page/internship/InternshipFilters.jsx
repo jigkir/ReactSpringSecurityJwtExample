@@ -29,6 +29,17 @@ const SORTERS = {
     PAY_DESC: (a, b) => pay(b) - pay(a),
 };
 
+// Sort option value -> translation key
+const SORT_OPTIONS = [
+    ["NEWEST", "internshipFilters.newest"],
+    ["OLDEST", "internshipFilters.oldest"],
+    ["DEADLINE_ASC", "internshipFilters.deadlineAsc"],
+    ["START_ASC", "internshipFilters.startAsc"],
+    ["TITLE_ASC", "internshipFilters.titleAsc"],
+    ["TITLE_DESC", "internshipFilters.titleDesc"],
+    ["PAY_DESC", "internshipFilters.payDesc"],
+];
+
 // ── Hook: owns filter state and returns the visible list ─────────────────────
 
 export function useInternshipFilters(list) {
@@ -77,15 +88,15 @@ export default function InternshipFilters({dark, filters, showStatus = true}) {
                     type="search"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search title, skills, location…"
-                    aria-label="Search"
+                    placeholder={t("internshipFilters.searchPlaceholder")}
+                    aria-label={t("internshipFilters.searchAria")}
                     className={`${selectClass} w-full pr-8 [&::-webkit-search-cancel-button]:appearance-none`}
                 />
                 {search && (
                     <button
                         type="button"
                         onClick={() => setSearch("")}
-                        aria-label="Clear search"
+                        aria-label={t("internshipFilters.clearSearchAria")}
                         className="absolute right-2 top-1/2 -translate-y-1/2 flex text-red-500 hover:text-red-600"
                     >
                         <Icon name="close" size={18}/>
@@ -95,23 +106,19 @@ export default function InternshipFilters({dark, filters, showStatus = true}) {
 
             {showStatus && (
                 <select value={status} onChange={(e) => setStatus(e.target.value)}
-                        className={selectClass} aria-label="Status">
-                    <option value="ALL">All statuses</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="APPROVED">Approved</option>
-                    <option value="REJECTED">Rejected</option>
+                        className={selectClass} aria-label={t("internshipFilters.statusAria")}>
+                    <option value="ALL">{t("internshipFilters.allStatuses")}</option>
+                    <option value="PENDING">{t("internshipFilters.pending")}</option>
+                    <option value="APPROVED">{t("internshipFilters.approved")}</option>
+                    <option value="REJECTED">{t("internshipFilters.rejected")}</option>
                 </select>
             )}
 
             <select value={sort} onChange={(e) => setSort(e.target.value)}
-                    className={selectClass} aria-label="Sort">
-                <option value="NEWEST">Newest first</option>
-                <option value="OLDEST">Oldest first</option>
-                <option value="DEADLINE_ASC">Deadline: soonest</option>
-                <option value="START_ASC">Start date: soonest</option>
-                <option value="TITLE_ASC">Title A → Z</option>
-                <option value="TITLE_DESC">Title Z → A</option>
-                <option value="PAY_DESC">Pay: highest first</option>
+                    className={selectClass} aria-label={t("internshipFilters.sortAria")}>
+                {SORT_OPTIONS.map(([value, key]) => (
+                    <option key={value} value={value}>{t(key)}</option>
+                ))}
             </select>
         </div>
     );
