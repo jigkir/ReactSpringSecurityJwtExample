@@ -101,12 +101,6 @@ public class StudentController {
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getStudentInternships(@PathVariable long id) throws UserNotFoundException {
-        List<InternshipResponseDto> internships = studentService.getStudentInternships(id);
-        return ResponseEntity.ok(internships);
-    }
-
     @GetMapping("/notifications")
     public ResponseEntity<List<NotificationDto>> getStudentNotifications(Authentication authentication) {
         List<NotificationDto> notifications = studentService.getStudentNotifications(authentication.getName());
