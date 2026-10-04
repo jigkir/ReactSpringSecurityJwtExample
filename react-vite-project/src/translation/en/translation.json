@@ -368,7 +368,7 @@
     "durationLabel": "Duration (weeks):",
     "durationPlaceholder": "e.g. 12",
     "locationLabel": "Location:",
-    "locationPlaceholder": "e.g. Montréal (Hybrid)",
+    "locationPlaceholder": "e.g. Montréal",
     "workModeLabel": "Work mode:",
     "workModes": {
       "IN_PERSON": "In person",

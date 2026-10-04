@@ -6,9 +6,9 @@ export {useInternshipFilters};
 
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
-export default function InternshipFilters({dark, filters, showStatus = true}) {
+export default function InternshipFilters({dark, filters, showStatus = true, showDiscipline = false}) {
     const {t} = useTranslation();
-    const {search, setSearch, status, setStatus, sort, setSort} = filters;
+    const {search, setSearch, status, setStatus, discipline, setDiscipline, disciplines = [], sort, setSort} = filters;
 
     const selectClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
@@ -44,6 +44,18 @@ export default function InternshipFilters({dark, filters, showStatus = true}) {
                     <option value="PENDING">{t("internshipFilters.pending")}</option>
                     <option value="APPROVED">{t("internshipFilters.approved")}</option>
                     <option value="REJECTED">{t("internshipFilters.rejected")}</option>
+                </select>
+            )}
+
+            {showDiscipline && (
+                <select value={discipline} onChange={(e) => setDiscipline(e.target.value)}
+                        className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
+                    <option value="ALL">{t("cvDocuments.allDisciplines")}</option>
+                    {disciplines.map((d) => (
+                        <option key={d} value={d}>
+                            {t(`disciplines.${d.toLowerCase()}`, {defaultValue: d})}
+                        </option>
+                    ))}
                 </select>
             )}
 

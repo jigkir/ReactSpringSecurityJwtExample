@@ -52,9 +52,13 @@ export const matchesSearch = (values, search) => {
 const internshipPay = (i) =>
     i.compensationNegotiable || i.compensationAmount == null ? -1 : Number(i.compensationAmount);
 
+// Upload date first (offers without a date count as oldest), then id
+const compareUpload = (a, b) =>
+    String(a.uploadedAt ?? "").localeCompare(String(b.uploadedAt ?? "")) || compareId(a, b);
+
 export const INTERNSHIP_SORTERS = {
-    NEWEST: reverse(compareId),
-    OLDEST: compareId,
+    NEWEST: reverse(compareUpload),
+    OLDEST: compareUpload,
     DEADLINE_ASC: compareIsoDate("applicationDeadline"),
     START_ASC: compareIsoDate("startDate"),
     TITLE_ASC: compareText("title"),
@@ -73,10 +77,15 @@ export const INTERNSHIP_SORT_OPTIONS = [
     ["PAY_DESC", "internshipFilters.payDesc"],
 ];
 
-export function filterInternships(list, {search = "", status = "ALL"} = {}) {
+/** Distinct, sorted disciplines found in an internship list (manager view). */
+export const getInternshipDisciplines = (list) =>
+    [...new Set((list ?? []).map((i) => i.discipline).filter(Boolean))].sort();
+
+export function filterInternships(list, {search = "", status = "ALL", discipline = "ALL"} = {}) {
     return list.filter((i) => {
         if (status !== "ALL" && i.status !== status) return false;
-        return matchesSearch([i.title, i.description, i.requiredSkills, i.location], search);
+        if (discipline !== "ALL" && i.discipline !== discipline) return false;
+        return matchesSearch([i.title, i.description, i.requiredSkills, i.location, i.employerEmail], search);
     });
 }
 
@@ -84,25 +93,28 @@ export function sortInternships(list, sort = "NEWEST") {
     return [...list].sort(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST);
 }
 
-export function applyInternshipFilters(list, {search, status, sort} = {}) {
+export function applyInternshipFilters(list, {search, status, discipline, sort} = {}) {
     if (!list) return null;
-    return sortInternships(filterInternships(list, {search, status}), sort);
+    return sortInternships(filterInternships(list, {search, status, discipline}), sort);
 }
 
 /** Owns the filter state and returns the visible list (null while `list` is null). */
 export function useInternshipFilters(list) {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("ALL");
+    const [discipline, setDiscipline] = useState("ALL");
     const [sort, setSort] = useState("NEWEST");
 
+    const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
     const visible = useMemo(
-        () => applyInternshipFilters(list, {search, status, sort}),
-        [list, search, status, sort],
+        () => applyInternshipFilters(list, {search, status, discipline, sort}),
+        [list, search, status, discipline, sort],
     );
 
     return {
-        search, setSearch, status, setStatus, sort, setSort, visible,
-        filtersActive: search.trim() !== "" || status !== "ALL",
+        search, setSearch, status, setStatus, discipline, setDiscipline, sort, setSort,
+        disciplines, visible,
+        filtersActive: search.trim() !== "" || status !== "ALL" || discipline !== "ALL",
     };
 }
 

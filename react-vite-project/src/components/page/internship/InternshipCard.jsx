@@ -1,6 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
+import {formatDate} from '../cv/cvUtils.js';
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -22,7 +23,15 @@ const parseSkills = (raw) =>
         .map((skill) => skill.trim())
         .filter(Boolean);
 
-export default function InternshipCard({internship, OnDelete, OnEdit, footer, dark, hideStatus = false}) {
+export default function InternshipCard({
+                                           internship,
+                                           OnDelete,
+                                           OnEdit,
+                                           footer,
+                                           dark,
+                                           hideStatus = false,
+                                           showEmployer = false
+                                       }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
 
@@ -147,11 +156,24 @@ export default function InternshipCard({internship, OnDelete, OnEdit, footer, da
                 )}
             </div>
 
-            {/* Footer actions (manager) */}
-            {footer && (
+            {/* Footer: manager info on the left, actions on the right */}
+            {(footer || showEmployer) && (
                 <div
-                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
-                    {footer}
+                    className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
+                    {showEmployer && (
+                        <div className="mr-auto flex flex-wrap items-center gap-2">
+                            <span className={`${s.detailBadge} break-all`}>{internship.employerEmail}</span>
+                            <span className={s.detailBadge}>
+                                <Icon name="home_work" size={20}/>
+                                {t(`disciplines.${(internship.discipline ?? "").toLowerCase()}`, {defaultValue: internship.discipline})}
+                            </span>
+                            <span className={s.detailBadge}>
+                                <Icon name="event" size={20}/>
+                                {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
+                            </span>
+                        </div>
+                    )}
+                    {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
                 </div>
             )}
         </div>

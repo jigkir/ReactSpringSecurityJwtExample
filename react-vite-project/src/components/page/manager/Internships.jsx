@@ -170,6 +170,7 @@ const ManagerInternships = () => {
                 key={internship.id}
                 internship={internship}
                 dark={dark}
+                showEmployer
                 footer={renderActions(internship)}
             />
         ));
@@ -186,7 +187,8 @@ const ManagerInternships = () => {
 
             <div className={s.listSection}>
                 {actionError && <p className={`${s.errorText} mb-4`} role="alert">{t(actionError)}</p>}
-                {internships && internships.length > 0 && <InternshipFilters dark={dark} filters={filters}/>}
+                {internships && internships.length > 0 &&
+                    <InternshipFilters dark={dark} filters={filters} showDiscipline/>}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>
