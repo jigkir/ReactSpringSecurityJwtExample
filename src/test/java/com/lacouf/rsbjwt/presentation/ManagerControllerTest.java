@@ -253,7 +253,8 @@ public class ManagerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"comment\":\"Offer = bad.\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("REJECTED"));
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.rejectionComment").value("Offer = bad."));
 
         verify(managerService).rejectInternship(1L, "Offer = bad.");
     }

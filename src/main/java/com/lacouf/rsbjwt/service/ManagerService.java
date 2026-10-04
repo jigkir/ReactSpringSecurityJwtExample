@@ -144,14 +144,14 @@ public class ManagerService {
     public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
         Internship internship = findInternship(internshipId);
 
-        boolean wasAlreadyApprove = internship.getStatus() == InternshipStatus.APPROVED;
+        if (internship.getStatus() == InternshipStatus.APPROVED) {
+            return InternshipResponseDto.of(internship);
+        }
 
         internship.approve();
         internshipRepository.save(internship);
 
-        if (!wasAlreadyApprove) {
-            studentService.createNewInternshipNotificationsForStudents(internship);
-        }
+        studentService.createNewInternshipNotificationsForStudents(internship);
 
         return InternshipResponseDto.of(internship);
     }
