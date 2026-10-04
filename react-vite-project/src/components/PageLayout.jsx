@@ -4,10 +4,10 @@ import Footer from './Footer.jsx';
 
 function PageLayout({user, dark, toggleDark}) {
     return (
-        <div id="pagelayout" className="pageLayout flex flex-col flex-1">
+        <div className="flex flex-col flex-1">
             <Navbar user={user} dark={dark} toggleDark={toggleDark}/>
             <Outlet context={{dark, user}}/>
-            <Footer/>
+            <Footer dark={dark}/>
         </div>
     );
 }

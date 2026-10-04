@@ -19,11 +19,7 @@ const INITIAL_FORM = {
 
 const TRIMMED_FIELDS = ["title", "description", "requiredSkills", "location"];
 
-const WORK_MODES = [
-    {value: "IN_PERSON", label: "In person"},
-    {value: "HYBRID", label: "Hybrid"},
-    {value: "REMOTE", label: "Remote"},
-];
+const WORK_MODES = ["IN_PERSON", "HYBRID", "REMOTE"];
 
 const isUnpaid = (i) => !i.compensationNegotiable && i.compensationAmount != null && Number(i.compensationAmount) === 0;
 
@@ -124,7 +120,7 @@ export default function InternshipModal({isOpen, onClose, onSubmitInternship, in
         const durationInWeeks = Number(formData.durationInWeeks);
         if (!Number.isInteger(durationInWeeks) || durationInWeeks < 1) return setError({key: "internshipModal.errorDuration"});
 
-        if (!WORK_MODES.some((m) => m.value === formData.workMode)) return setError("Please choose a work mode.");
+        if (!WORK_MODES.includes(formData.workMode)) return setError({key: "internshipModal.errorWorkMode"});
 
         if (isPastDate(formData.startDate, internship?.startDate)
             || isPastDate(formData.applicationDeadline, internship?.applicationDeadline)) {
@@ -164,7 +160,7 @@ export default function InternshipModal({isOpen, onClose, onSubmitInternship, in
             <div className={s.panel}>
                 {/* Header */}
                 <div className={s.header}>
-                    <h2 className={s.title}>{isEdit ? "Edit internship" : t("internshipModal.title")}</h2>
+                    <h2 className={s.title}>{isEdit ? t("internshipModal.editTitle") : t("internshipModal.title")}</h2>
                     <button type="button" onClick={handleClose} className={s.closeBtn}
                             aria-label={t("internshipModal.closeAria")}>
                         <Icon name="close"/>
@@ -233,7 +229,7 @@ export default function InternshipModal({isOpen, onClose, onSubmitInternship, in
 
                     {/* Work mode */}
                     <div>
-                        <label className={s.label}>Work mode:</label>
+                        <label className={s.label}>{t("internshipModal.workModeLabel")}</label>
                         <select
                             name="workMode"
                             value={formData.workMode}
@@ -241,9 +237,9 @@ export default function InternshipModal({isOpen, onClose, onSubmitInternship, in
                             className={s.input}
                             required
                         >
-                            <option value="" disabled>Choose an option...</option>
-                            {WORK_MODES.map(({value, label}) => (
-                                <option key={value} value={value}>{label}</option>
+                            <option value="" disabled>{t("internshipModal.selectPlaceholder")}</option>
+                            {WORK_MODES.map((value) => (
+                                <option key={value} value={value}>{t(`internshipModal.workModes.${value}`)}</option>
                             ))}
                         </select>
                     </div>
@@ -280,7 +276,7 @@ export default function InternshipModal({isOpen, onClose, onSubmitInternship, in
                         >
                             <option value="" disabled>{t("internshipModal.selectPlaceholder")}</option>
                             <option value="amount">{t("internshipModal.amountOption")}</option>
-                            <option value="unpaid">Unpaid</option>
+                            <option value="unpaid">{t("internshipModal.unpaidOption")}</option>
                             <option value="to_be_discussed">{t("internshipModal.tbdOption")}</option>
                         </select>
                     </div>
@@ -307,7 +303,7 @@ export default function InternshipModal({isOpen, onClose, onSubmitInternship, in
                             {t("internshipModal.cancelBtn")}
                         </button>
                         <button type="submit" className={s.submitBtn}>
-                            {isEdit ? "Save changes" : t("internshipModal.submitBtn")}
+                            {isEdit ? t("internshipModal.saveChanges") : t("internshipModal.submitBtn")}
                         </button>
                     </div>
                 </form>

@@ -1,5 +1,16 @@
 {
   "about": {
+    "title": "À propos",
+    "description": "Cette plateforme simplifie la gestion des stages entre les étudiants, les employeurs, les professeurs et le gestionnaire de stage du collège.",
+    "rolesTitle": "Les acteurs de la plateforme",
+    "managerTitle": "Gestionnaire de stage",
+    "managerSummary": "Supervise tout le processus : valide les CV et les offres de stage, fait le lien entre les étudiants et les entreprises, assigne les professeurs, lance la signature des contrats et suit l'avancement grâce à des rapports.",
+    "employerTitle": "Employeur",
+    "employerSummary": "Publie des offres de stage, consulte les étudiants intéressés, les convoque en entrevue, signe les documents d'embauche et évalue le stagiaire à la fin du stage.",
+    "studentTitle": "Étudiant",
+    "studentSummary": "Choisit sa discipline, téléverse son CV pour approbation, consulte les offres et y applique, inscrit ses dates d'entrevue et indique quand il a trouvé un stage.",
+    "teacherTitle": "Professeur",
+    "teacherSummary": "Suit et accompagne ses étudiants pendant le stage par des appels hebdomadaires, visite l'entreprise et remplit le formulaire d'évaluation du milieu de stage.",
     "version": "Version 1.0.0",
     "backLabel": "Retour"
   },
@@ -19,12 +30,12 @@
     "server": "Erreur du serveur ({{status}}). Veuillez réessayer."
   },
   "footer": {
-    "copyright": "Droits d'auteur © 2026",
-    "about": "À propos"
+    "copyright": "Droits d'auteur © 2026"
   },
   "mainContainer": {
-    "title": "Exemple de Spring Security avec JWT",
-    "subtitle": "Dans cet exemple, vous trouverez le nécessaire pour implanter la sécurité avec des jetons JWT"
+    "title": "Plateforme de gestion des stages",
+    "subtitle": "Trouvez un stage, publiez une offre ou gérez les candidatures en un seul endroit.",
+    "learnMore": "Vous voulez en savoir plus ?"
   },
   "navbar": {
     "appName": "My App",
@@ -47,6 +58,8 @@
     "switchToLight": "Passer en mode clair",
     "switchToDark": "Passer en mode sombre",
     "postInternship": "Offrir un stage",
+    "cv": "CV",
+    "internships": "Stages",
     "cvReview": "CVs à valider",
     "hello": "Bonjour,",
     "pagesMenu": "Menu des pages",
@@ -220,6 +233,7 @@
     "statusPending": "En attente de validation",
     "statusApproved": "Approuvé",
     "statusRefused": "Refusé",
+    "filterPending": "En attente",
     "alreadyReviewed": "Ce CV a déjà été traité par un gestionnaire.",
     "empty": "Aucun document déposé pour l'instant.",
     "emptyManager": "Aucun CV en attente de validation.",
@@ -301,8 +315,51 @@
     "deleteError": "Échec de la suppression de l'offre de stage",
     "deleteGenericError": "Impossible de supprimer l'offre de stage."
   },
+  "managerInternships": {
+    "title": "Offres de stage",
+    "subtitle": "Approuvez une offre pour la publier aux étudiants admissibles. Vous pouvez modifier une décision à tout moment.",
+    "loading": "Chargement…",
+    "empty": "Aucune offre de stage pour l'instant.",
+    "loadError": "Impossible de charger les offres de stage.",
+    "retryBtn": "Réessayer",
+    "notFound": "Cette offre n'existe plus.",
+    "actionFailed": "L'action a échoué. Veuillez réessayer.",
+    "rejectAsk": "Pourquoi refusez-vous cette offre ? L'employeur verra ce motif.",
+    "editRejectAsk": "Modifier le motif du refus.",
+    "rejectPlaceholder": "Motif du refus (obligatoire)",
+    "rejectAria": "Motif du refus",
+    "confirmBtn": "Confirmer",
+    "cancelBtn": "Annuler",
+    "approveBtn": "Approuver",
+    "rejectBtn": "Refuser",
+    "editReasonBtn": "Modifier le motif",
+    "approveBtnAria": "Approuver : {{title}}",
+    "rejectBtnAria": "Refuser : {{title}}",
+    "editReasonBtnAria": "Modifier le motif : {{title}}"
+  },
+  "internshipFilters": {
+    "searchPlaceholder": "Rechercher titre, compétences, lieu…",
+    "searchAria": "Rechercher",
+    "clearSearchAria": "Effacer la recherche",
+    "statusAria": "Statut",
+    "allStatuses": "Tous les statuts",
+    "pending": "En attente",
+    "approved": "Approuvée",
+    "rejected": "Rejetée",
+    "sortAria": "Trier",
+    "newest": "Plus récentes d'abord",
+    "oldest": "Plus anciennes d'abord",
+    "deadlineAsc": "Date limite : la plus proche",
+    "startAsc": "Date de début : la plus proche",
+    "titleAsc": "Titre A → Z",
+    "titleDesc": "Titre Z → A",
+    "payDesc": "Rémunération : la plus élevée d'abord",
+    "noMatch": "Aucune offre ne correspond à vos filtres."
+  },
   "internshipModal": {
     "title": "Publier une nouvelle offre de stage",
+    "editTitle": "Modifier l'offre de stage",
+    "saveChanges": "Enregistrer les modifications",
     "titleLabel": "Titre :",
     "descriptionLabel": "Description :",
     "skillsLabel": "Compétences requises :",
@@ -312,6 +369,12 @@
     "durationPlaceholder": "ex. : 12",
     "locationLabel": "Lieu :",
     "locationPlaceholder": "ex. : Montréal (hybride)",
+    "workModeLabel": "Mode de travail :",
+    "workModes": {
+      "IN_PERSON": "En présentiel",
+      "HYBRID": "Hybride",
+      "REMOTE": "À distance"
+    },
     "startDateLabel": "Date de début :",
     "deadlineLabel": "Date limite de candidature :",
     "compensationLabel": "Rémunération :",
@@ -319,6 +382,7 @@
     "selectPlaceholder": "Choisissez une option...",
     "amountOption": "Montant",
     "amountLabel": "Montant ($/h) :",
+    "unpaidOption": "Non rémunéré",
     "tbdOption": "À discuter",
     "cancelBtn": "Annuler",
     "submitBtn": "Soumettre",
@@ -326,6 +390,7 @@
     "errorCompensation": "Veuillez entrer un montant valide entre 0 et 99,99 (max. 2 décimales).",
     "errorDuration": "La durée doit être un nombre entier de semaines (minimum 1).",
     "errorTooShort": "La description, les compétences et le lieu doivent contenir au moins 2 caractères.",
+    "errorWorkMode": "Veuillez choisir un mode de travail.",
     "errorDate": "Les dates doivent être dans le futur.",
     "titleTooShort": "Le titre doit contenir entre 2 et 50 caractères.",
     "errorRequired": "Veuillez remplir tous les champs.",
@@ -335,10 +400,17 @@
   "internshipCard": {
     "requiredSkills": "Compétences requises :",
     "deleteAria": "Supprimer l'offre de stage",
+    "editAria": "Modifier l'offre de stage",
     "durationWeeks_one": "{{count}} semaine",
     "durationWeeks_other": "{{count}} semaines",
     "compensationAmount": "{{amount}} $/h",
     "compensationTbd": "À discuter",
+    "compensationUnpaid": "Non rémunéré",
+    "rejectionReason": "Motif du refus",
+    "starts": "Début",
+    "startsTitle": "Date de début du stage",
+    "applyBy": "Postuler avant le",
+    "applyByTitle": "Date limite de candidature",
     "status": {
       "pendingValidation": "En attente de validation",
       "approved": "Approuvée",

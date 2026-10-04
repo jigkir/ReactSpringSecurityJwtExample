@@ -9,7 +9,6 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -40,7 +39,6 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final CVRepository cvRepository;
-    private final InternshipRepository internshipRepository;
     private final NotificationRepository notificationRepository;
     private final ManagerRepository managerRepository;
 
@@ -54,12 +52,11 @@ public class StudentService {
     private static final String INTERNSHIP_TITLE = "New Internship Offer";
     private static final String INTERNSHIP_MESSAGE = "A new internship offer has been posted that matches your discipline.";
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository, ManagerRepository managerRepository) {
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, NotificationRepository notificationRepository, ManagerRepository managerRepository) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
-        this.internshipRepository = internshipRepository;
         this.notificationRepository = notificationRepository;
         this.managerRepository = managerRepository;
     }
@@ -91,12 +88,14 @@ public class StudentService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
+    @Transactional
     public void uploadCV(CvUploadDto upload, long studentId) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException {
         Student student = findById(studentId);
 
         saveCV(upload, student);
     }
 
+    @Transactional
     public void saveCV(CvUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException {
         verifyFileSize(upload.content());
 
@@ -115,12 +114,6 @@ public class StudentService {
         }
 
         cvRepository.save(cv);
-    }
-
-    public String calculateFileHash(byte[] content) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(content);
-        return HexFormat.of().formatHex(hashBytes);
     }
 
     public boolean isCVReadable(CV cv) throws NoSuchAlgorithmException {
@@ -144,17 +137,13 @@ public class StudentService {
 
     public long getCVCountByStudentId(long id) throws UserNotFoundException {
         Student student = findById(id);
-        if (student == null) {
-            return 0;
-        }
+
         return cvRepository.countByStudentAndVisibility(student, CvVisibility.VISIBLE);
     }
 
     public List<StudentCvResponseDto> getCVs(long id) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
         Student student = findById(id);
-        if (student == null) {
-            throw new UserNotFoundException();
-        }
+
         List<CV> cvs = cvRepository.findByStudent(student);
         List<StudentCvResponseDto> studentCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
@@ -181,14 +170,6 @@ public class StudentService {
         cvRepository.save(cv);
 
         closeCvNotifications(cvId);
-    }
-
-    public CV findCvById(long cvId) throws CvNotFoundException {
-        CV cv = cvRepository.findById(cvId).orElse(null);
-        if (cv == null) {
-            throw new CvNotFoundException("CV with ID " + cvId + " not found.");
-        }
-        return cv;
     }
 
     @Transactional
@@ -255,22 +236,6 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<InternshipResponseDto> getStudentInternships(long studentId) throws UserNotFoundException {
-        Student student = findById(studentId);
-        List<CV> studentCvs = cvRepository.findByStudent(student);
-        boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
-
-        if (!hasApprovedCv) {
-            return Collections.emptyList();
-        }
-
-        Discipline discipline = getDisciplineByStudent(student);
-        List<Internship> internships = filterInternshipsByDisciplineAndStatus(internshipRepository.findAll(), discipline);
-
-
-        return internships.stream().map(InternshipResponseDto::of).toList();
-    }
-
     public List<NotificationDto> getStudentNotifications(String email) {
         return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD).stream()
                 .map(NotificationDto::of)
@@ -296,10 +261,7 @@ public class StudentService {
     }
 
     public int getUnreadNotificationCountForInternships(String email) {
-        List<Notification> notifications = notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD);
-        return (int) notifications.stream()
-                .filter(notification -> notification.getNotificationType() == NotificationType.NEW_INTERNSHIP_OFFER)
-                .count();
+        return notificationRepository.countByUser_Credentials_EmailAndStatusAndNotificationType(email, NotificationStatus.UNREAD, NotificationType.NEW_INTERNSHIP_OFFER);
     }
 
     @Transactional
@@ -319,20 +281,9 @@ public class StudentService {
         }
     }
 
-    private Discipline getDisciplineByStudent(Student student) {
-        return student.getDiscipline();
-    }
-
     private Discipline getEmployerDisciplineByInternship(Internship internship) {
         Employer employer = internship.getPostedBy();
         return employer.getDiscipline();
-    }
-
-    private List<Internship> filterInternshipsByDisciplineAndStatus(List<Internship> internships, Discipline discipline) {
-        return internships.stream()
-                .filter(internship -> getEmployerDisciplineByInternship(internship).equals(discipline))
-                .filter(internship -> internship.getStatus() == InternshipStatus.APPROVED)
-                .toList();
     }
 
     private void createNewInternshipNotificationForStudent(long internshipId, Student student) {
@@ -353,7 +304,7 @@ public class StudentService {
         CV cv = findCvById(cvId);
         Student cvStudent = cv.getStudent();
         if (!Objects.equals(student.getId(), cvStudent.getId())) {
-            throw new UserNotFoundException();
+            throw new CvNotFoundException("CV does not belong to the student with ID " + student.getId());
         }
         return cv;
     }
@@ -388,5 +339,19 @@ public class StudentService {
 
     private void closeCvNotifications(long cvId) {
         notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.CV, cvId);
+    }
+
+    private String calculateFileHash(byte[] content) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(content);
+        return HexFormat.of().formatHex(hashBytes);
+    }
+
+    private CV findCvById(long cvId) throws CvNotFoundException {
+        CV cv = cvRepository.findById(cvId).orElse(null);
+        if (cv == null) {
+            throw new CvNotFoundException("CV with ID " + cvId + " not found.");
+        }
+        return cv;
     }
 }

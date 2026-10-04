@@ -103,7 +103,7 @@ function PostInternship({user}) {
                         <p className={s.emptyText}>{t("postInternship.empty")}</p>
                     )}
                     {hasItems && visible.length === 0 && (
-                        <p className={s.emptyText}>No internships match your filters.</p>
+                        <p className={s.emptyText}>{t("internshipFilters.noMatch")}</p>
                     )}
                     {hasItems && visible.map((internship) => (
                         <InternshipCard key={internship.id}
