@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:17
     container_name: rsbjwt-postgres
