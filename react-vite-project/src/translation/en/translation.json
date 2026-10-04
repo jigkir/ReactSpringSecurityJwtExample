@@ -1,5 +1,16 @@
 {
   "about": {
+    "title": "About",
+    "description": "This platform simplifies internship management between students, employers, teachers and the college internship manager.",
+    "rolesTitle": "Platform actors",
+    "managerTitle": "Internship Manager",
+    "managerSummary": "Oversees the whole process: approves CVs and internship offers, connects students with companies, assigns teachers, starts contract signing and tracks progress through reports.",
+    "employerTitle": "Employer",
+    "employerSummary": "Posts internship offers, reviews interested students, invites them to interviews, signs hiring documents and evaluates the intern at the end of the internship.",
+    "studentTitle": "Student",
+    "studentSummary": "Chooses a discipline, uploads a CV for approval, browses and applies to offers, records interview dates and reports when an internship is found.",
+    "teacherTitle": "Teacher",
+    "teacherSummary": "Follows and coaches assigned students during the internship with weekly calls, visits the company and fills in the workplace evaluation form.",
     "version": "Version 1.0.0",
     "backLabel": "Go Back"
   },
@@ -19,12 +30,12 @@
     "server": "Server error ({{status}}). Please try again."
   },
   "footer": {
-    "copyright": "Copyright © 2026",
-    "about": "About"
+    "copyright": "Copyright © 2026"
   },
   "mainContainer": {
-    "title": "Example of Spring Security with JWT",
-    "subtitle": "In this example, you'll find everything you need to implement security using JWT tokens"
+    "title": "Internship management platform",
+    "subtitle": "Find an internship, post an offer or manage applications in one place.",
+    "learnMore": "Want to learn more?"
   },
   "navbar": {
     "appName": "My App",

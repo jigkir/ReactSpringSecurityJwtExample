@@ -6,6 +6,25 @@ const TRANSITION = "transition-colors duration-200";
 const TRANSITION_150 = "transition-colors duration-150";
 const ROUNDED = "rounded-lg";
 const BORDER = "border";
+const FADE_IN_DOWN = "animate-fade-in-down motion-reduce:animate-none";
+const BRAND_BTN = "bg-indigo-600 hover:bg-indigo-700 text-white";
+const BRAND_FOCUS = "focus:ring-indigo-500";
+
+// ─── Brand surface (hero + footer) ────────────────────────────────────────────
+
+export function getBrandSurface(dark) {
+    return dark ? "bg-blue-950" : "bg-violet-200";
+}
+
+// ─── Shared link buttons ──────────────────────────────────────────────────────
+
+const LINK_BTN_BASE = `inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-colors ${FOCUS_RING_OFFSET}`;
+
+export const PRIMARY_LINK_BTN = `${LINK_BTN_BASE} ${BRAND_BTN}`;
+
+export function getSecondaryLinkBtn(dark) {
+    return `${LINK_BTN_BASE} ${dark ? "border-2 border-slate-500 text-slate-200 hover:bg-slate-700" : "bg-white text-indigo-700 shadow-sm hover:bg-indigo-50"}`;
+}
 
 // ─── Auth / shared form classes ───────────────────────────────────────────────
 
@@ -64,9 +83,9 @@ export function getAuthClasses(dark) {
 
         submitClass: [
             "w-full mt-2",
-            "bg-indigo-600 hover:bg-indigo-700",
+            BRAND_BTN,
+            "font-semibold py-2.5",
             "disabled:opacity-40 disabled:cursor-not-allowed",
-            "text-white font-semibold py-2.5",
             ROUNDED, TRANSITION,
             FOCUS_RING_OFFSET,
         ].join(" "),
@@ -77,10 +96,7 @@ export function getAuthClasses(dark) {
             dark ? card.dark : card.light,
         ].join(" "),
 
-        pageClass: [
-            "flex-1 flex items-center justify-center p-4",
-            dark ? "bg-gray-900" : "bg-gray-100",
-        ].join(" "),
+        pageClass: "flex-1 flex items-center justify-center p-4",
 
         titleClass: [
             "text-2xl font-bold text-center mb-6",
@@ -146,16 +162,16 @@ export function getHomeClasses(dark) {
     return {
         page: `flex-1 p-6 ${dark ? "text-white" : "text-gray-900"}`,
         heading: "text-2xl font-bold mb-4",
-        subhead: "text-xl font-semibold mb-2",
-        bodyText: "text-base",
+        subhead: "text-xl font-semibold mb-2"
     };
 }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
-export function getFooterClasses() {
+export function getFooterClasses(dark) {
     return {
-        footer: "text-center flex flex-col mt-auto",
+        footer: `mt-auto w-full py-3 text-center ${getBrandSurface(dark)}`,
+        copyright: `text-sm font-bold ${dark ? "text-slate-200" : "text-gray-700"}`,
     };
 }
 
@@ -163,7 +179,19 @@ export function getFooterClasses() {
 
 export function getAboutClasses(dark) {
     return {
-        page: dark ? "text-white" : "text-gray-900",
+        page: `flex flex-1 items-center justify-center px-4 py-12 ${dark ? "text-white" : "text-gray-900"}`,
+        card: `w-full max-w-4xl rounded-2xl border shadow-lg p-6 md:p-10 flex flex-col gap-6 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        title: "text-3xl md:text-4xl font-bold tracking-tight text-center",
+        description: `text-base md:text-lg font-semibold leading-relaxed text-center ${dark ? "text-slate-300" : "text-gray-600"}`,
+        rolesTitle: "text-xl font-bold text-center",
+        rolesGrid: `grid grid-cols-1 md:grid-cols-2 gap-px rounded-2xl overflow-hidden border ${dark ? "bg-blue-600 border-blue-950" : "bg-violet-400 border-violet-100"}`,
+        roleCell: `flex flex-col items-center text-center gap-3 p-6 md:p-8 ${dark ? "bg-blue-950" : "bg-violet-100"}`,
+        roleIcon: `flex items-center justify-center w-16 h-16 rounded-full ${dark ? "bg-blue-900 text-indigo-300" : "bg-white text-indigo-600"}`,
+        roleTitle: "text-lg md:text-xl font-bold",
+        roleSummary: `text-sm md:text-base font-semibold leading-relaxed ${dark ? "text-slate-300" : "text-gray-700"}`,
+        footer: `flex flex-col sm:flex-row items-center sm:justify-between gap-4 pt-4 border-t ${dark ? "border-slate-700" : "border-gray-200"}`,
+        version: `text-xs font-medium px-3 py-1 rounded-full ${dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600"}`,
+        backBtn: `${LINK_BTN_BASE} border-2 ${dark ? "border-slate-500 text-slate-200 hover:bg-slate-700" : "bg-violet-100 border-violet-200 text-indigo-700 hover:bg-violet-200"}`,
     };
 }
 
@@ -171,7 +199,15 @@ export function getAboutClasses(dark) {
 
 export function getMainContainerClasses(dark) {
     return {
-        page: `maincontainer ${dark ? "text-white" : "text-gray-900"}`,
+        page: `flex flex-1 flex-col items-center text-center ${dark ? "text-white" : "text-gray-900"}`,
+        hero: `w-full flex flex-col items-center gap-6 px-4 py-20 md:py-28 ${getBrandSurface(dark)}`,
+        title: `${FADE_IN_DOWN} text-4xl md:text-6xl font-bold tracking-tight`,
+        subtitle: `${FADE_IN_DOWN} [animation-delay:150ms] max-w-2xl font-semibold text-lg md:text-2xl leading-relaxed ${dark ? "text-slate-300" : "text-gray-600"}`,
+        authActions: `${FADE_IN_DOWN} [animation-delay:300ms] flex flex-wrap justify-center gap-4 pt-4`,
+        learnMore: `${FADE_IN_DOWN} [animation-delay:450ms] flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16`,
+        question: `text-2xl md:text-4xl font-bold ${dark ? "text-slate-100" : "text-gray-800"}`,
+        primaryBtn: PRIMARY_LINK_BTN,
+        secondaryBtn: getSecondaryLinkBtn(dark),
     };
 }
 
@@ -179,11 +215,11 @@ export function getMainContainerClasses(dark) {
 
 export function getPostInternshipClasses(dark) {
     return {
-        page: `min-h-screen p-4 md:p-10 flex flex-col ${dark ? "bg-gray-900" : "bg-gray-50"}`,
+        page: `min-h-screen p-4 md:p-10 flex flex-col`,
         headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-3xl font-bold ${dark ? "text-white" : "text-gray-900"}`,
         subtitle: `mt-1 ${dark ? "text-slate-400" : "text-gray-600"}`,
-        addBtn: "px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shrink-0",
+        addBtn: `px-5 py-2.5 font-semibold rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 ${BRAND_FOCUS} focus:ring-offset-2 shrink-0 ${BRAND_BTN}`,
         listSection: "max-w-5xl w-full mx-auto flex-1 flex flex-col",
         listHeading: `text-xl font-semibold mb-4 shrink-0 ${dark ? "text-white" : "text-gray-800"}`,
         scrollArea: "flex-1 space-y-4",
@@ -238,7 +274,7 @@ export function getInternshipModalClasses(dark) {
         grid2: "grid grid-cols-1 md:grid-cols-2 gap-4",
         footer: `flex items-center justify-end space-x-3 pt-6 border-t mt-6 ${dark ? "border-slate-700" : "border-gray-200"}`,
         cancelBtn: `px-5 py-2.5 rounded-lg font-medium transition-colors ${dark ? "text-slate-200 bg-slate-700 hover:bg-slate-600" : "text-gray-700 bg-gray-100 hover:bg-gray-200"}`,
-        submitBtn: "px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium shadow-sm transition-colors",
+        submitBtn: `px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors ${BRAND_BTN}`,
     };
 }
 
@@ -271,7 +307,7 @@ export function getCvDocumentsClasses(dark) {
         card: `w-full rounded-xl border shadow-sm ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
         header: `flex items-center justify-between gap-4 px-6 py-4 border-b ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-base font-semibold ${dark ? "text-white" : "text-gray-900"}`,
-        addBtn: "text-sm font-semibold px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2",
+        addBtn: `text-sm font-semibold px-3.5 py-1.5 rounded-lg ${BRAND_BTN} transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2`,
         list: `divide-y ${dark ? "divide-slate-700" : "divide-gray-200"}`,
         row: `flex flex-col gap-4 px-6 py-4 md:flex-row md:items-center transition-colors duration-150 ${dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"}`,
         name: `max-w-full truncate text-left text-sm font-semibold ${dark ? "text-white" : "text-gray-900"}`,

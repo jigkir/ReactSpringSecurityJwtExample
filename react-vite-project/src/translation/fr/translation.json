@@ -1,5 +1,16 @@
 {
   "about": {
+    "title": "À propos",
+    "description": "Cette plateforme simplifie la gestion des stages entre les étudiants, les employeurs, les professeurs et le gestionnaire de stage du collège.",
+    "rolesTitle": "Les acteurs de la plateforme",
+    "managerTitle": "Gestionnaire de stage",
+    "managerSummary": "Supervise tout le processus : valide les CV et les offres de stage, fait le lien entre les étudiants et les entreprises, assigne les professeurs, lance la signature des contrats et suit l'avancement grâce à des rapports.",
+    "employerTitle": "Employeur",
+    "employerSummary": "Publie des offres de stage, consulte les étudiants intéressés, les convoque en entrevue, signe les documents d'embauche et évalue le stagiaire à la fin du stage.",
+    "studentTitle": "Étudiant",
+    "studentSummary": "Choisit sa discipline, téléverse son CV pour approbation, consulte les offres et y applique, inscrit ses dates d'entrevue et indique quand il a trouvé un stage.",
+    "teacherTitle": "Professeur",
+    "teacherSummary": "Suit et accompagne ses étudiants pendant le stage par des appels hebdomadaires, visite l'entreprise et remplit le formulaire d'évaluation du milieu de stage.",
     "version": "Version 1.0.0",
     "backLabel": "Retour"
   },
@@ -19,12 +30,12 @@
     "server": "Erreur du serveur ({{status}}). Veuillez réessayer."
   },
   "footer": {
-    "copyright": "Droits d'auteur © 2026",
-    "about": "À propos"
+    "copyright": "Droits d'auteur © 2026"
   },
   "mainContainer": {
-    "title": "Exemple de Spring Security avec JWT",
-    "subtitle": "Dans cet exemple, vous trouverez le nécessaire pour implanter la sécurité avec des jetons JWT"
+    "title": "Plateforme de gestion des stages",
+    "subtitle": "Trouvez un stage, publiez une offre ou gérez les candidatures en un seul endroit.",
+    "learnMore": "Vous voulez en savoir plus ?"
   },
   "navbar": {
     "appName": "My App",

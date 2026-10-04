@@ -1,14 +1,13 @@
-import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getFooterClasses} from '../styles/AppStyles.jsx';
 
-function Footer() {
+function Footer({dark}) {
     const {t} = useTranslation();
-    const classes = getFooterClasses();
+    const classes = getFooterClasses(dark);
+
     return (
         <footer className={classes.footer}>
-            <p>{t("footer.copyright")}</p>
-            <Link to="/about">{t("footer.about")}</Link>
+            <p className={classes.copyright}>{t("footer.copyright")}</p>
         </footer>
     );
 }
