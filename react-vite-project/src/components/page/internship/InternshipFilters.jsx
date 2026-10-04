@@ -1,77 +1,8 @@
-import {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Icon from '../../../styles/Icon.jsx';
+import {INTERNSHIP_SORT_OPTIONS, useInternshipFilters} from '../../../utils/Sort.jsx';
 
-// ── Sorting helpers ──────────────────────────────────────────────────────────
-
-const toNum = (v) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-};
-
-const byId = (a, b) => {
-    const x = toNum(a.id);
-    const y = toNum(b.id);
-    return x !== null && y !== null ? x - y : String(a.id).localeCompare(String(b.id));
-};
-
-// ISO dates (YYYY-MM-DD) sort correctly as strings
-const byDate = (field) => (a, b) => String(a[field] ?? "").localeCompare(String(b[field] ?? ""));
-const byTitle = (a, b) => (a.title ?? "").localeCompare(b.title ?? "");
-const pay = (i) => (i.compensationNegotiable || i.compensationAmount == null ? -1 : Number(i.compensationAmount));
-
-const SORTERS = {
-    NEWEST: (a, b) => byId(b, a),
-    OLDEST: byId,
-    DEADLINE_ASC: byDate("applicationDeadline"),
-    START_ASC: byDate("startDate"),
-    TITLE_ASC: byTitle,
-    TITLE_DESC: (a, b) => byTitle(b, a),
-    PAY_DESC: (a, b) => pay(b) - pay(a),
-};
-
-// Sort option value -> translation key
-const SORT_OPTIONS = [
-    ["NEWEST", "internshipFilters.newest"],
-    ["OLDEST", "internshipFilters.oldest"],
-    ["DEADLINE_ASC", "internshipFilters.deadlineAsc"],
-    ["START_ASC", "internshipFilters.startAsc"],
-    ["TITLE_ASC", "internshipFilters.titleAsc"],
-    ["TITLE_DESC", "internshipFilters.titleDesc"],
-    ["PAY_DESC", "internshipFilters.payDesc"],
-];
-
-// ── Hook: owns filter state and returns the visible list ─────────────────────
-
-export function useInternshipFilters(list) {
-    const [search, setSearch] = useState("");
-    const [status, setStatus] = useState("ALL");
-    const [sort, setSort] = useState("NEWEST");
-
-    const visible = useMemo(() => {
-        if (!list) return null;
-        const q = search.trim().toLowerCase();
-
-        return list
-            .filter((i) => {
-                if (status !== "ALL" && i.status !== status) return false;
-                if (q) {
-                    const haystack = [i.title, i.description, i.requiredSkills, i.location]
-                        .filter(Boolean)
-                        .join(" ")
-                        .toLowerCase();
-                    if (!haystack.includes(q)) return false;
-                }
-                return true;
-            })
-            .sort(SORTERS[sort] ?? SORTERS.NEWEST);
-    }, [list, search, status, sort]);
-
-    return {
-        search, setSearch, status, setStatus, sort, setSort, visible,
-        filtersActive: search.trim() !== "" || status !== "ALL",
-    };
-}
+export {useInternshipFilters};
 
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
@@ -118,7 +49,7 @@ export default function InternshipFilters({dark, filters, showStatus = true}) {
 
             <select value={sort} onChange={(e) => setSort(e.target.value)}
                     className={selectClass} aria-label={t("internshipFilters.sortAria")}>
-                {SORT_OPTIONS.map(([value, key]) => (
+                {INTERNSHIP_SORT_OPTIONS.map(([value, key]) => (
                     <option key={value} value={value}>{t(key)}</option>
                 ))}
             </select>

@@ -5,6 +5,8 @@
  * mode="manager":           list all public CVs, filter/sort (status, discipline, search, date, student),
  *                           preview, approve, refuse (with comment).
  *
+ * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters, sortCvsNewest).
+ *
  * Preview is rendered inline under the row (toggle), several can be open at once.
  *
  * Row layout (md and up): 3 columns
@@ -40,6 +42,7 @@ import Button, {useButtonClasses} from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
 import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
+import {CV_SORT_OPTIONS, sortCvsNewest, useCvFilters} from '../../../utils/Sort.jsx';
 import {
     approveCv,
     getManagerCvFile,
@@ -51,7 +54,7 @@ import {
     setCvScope,
     setMainCv,
 } from '../../api/Api.jsx';
-import {base64ToBlobUrl, formatBytes, formatDate, sortDocs} from './cvUtils.js';
+import {base64ToBlobUrl, formatBytes, formatDate} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
@@ -90,7 +93,6 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const {t, i18n} = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isManager = mode === "manager";
-    const isStudent = mode === "student";
 
     // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
     const defaultApi = useMemo(
@@ -110,11 +112,7 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     const [actionError, setActionError] = useState("");
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
-    // Manager-only filters / sort
-    const [statusFilter, setStatusFilter] = useState("ALL");
-    const [disciplineFilter, setDisciplineFilter] = useState("ALL");
-    const [search, setSearch] = useState("");
-    const [sortBy, setSortBy] = useState("DATE_DESC");
+    const filters = useCvFilters(docs);
 
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
@@ -139,8 +137,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         setLoadFailed(false);
         try {
             const all = await api.list();
-            // Manager: sorting/filtering is done in `visibleDocs`.
-            setDocs(isManager ? all : sortDocs(all.filter((d) => d.visibility === "VISIBLE")));
+            // Manager: sorting/filtering is done by useCvFilters.
+            setDocs(isManager ? all : sortCvsNewest(all.filter((d) => d.visibility === "VISIBLE")));
         } catch {
             setLoadFailed(true);
         }
@@ -150,50 +148,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
         if (isManager || studentId) void load();
     }, [load, isManager, studentId]);
 
-    // ── Manager filter / sort ─────────────────────────────────────────────────
-
-    const disciplines = useMemo(
-        () => [...new Set((docs ?? []).map((d) => d.student?.discipline).filter(Boolean))].sort(),
-        [docs],
-    );
-
-    const visibleDocs = useMemo(() => {
-        if (!docs) return null;
-        if (!isManager) return docs;
-
-        const q = search.trim().toLowerCase();
-
-        const filtered = docs.filter((d) => {
-            if (statusFilter !== "ALL" && d.status !== statusFilter) return false;
-            if (disciplineFilter !== "ALL" && d.student?.discipline !== disciplineFilter) return false;
-            if (q) {
-                const s = d.student ?? {};
-                const haystack = [s.firstName, s.lastName, s.email, s.studentId, d.fileName]
-                    .filter(Boolean)
-                    .join(" ")
-                    .toLowerCase();
-                if (!haystack.includes(q)) return false;
-            }
-            return true;
-        });
-
-        const byName = (a, b) =>
-            (a.student?.lastName ?? "").localeCompare(b.student?.lastName ?? "") ||
-            (a.student?.firstName ?? "").localeCompare(b.student?.firstName ?? "");
-
-        return filtered.sort((a, b) => {
-            switch (sortBy) {
-                case "DATE_ASC":
-                    return new Date(a.uploadedAt) - new Date(b.uploadedAt);
-                case "NAME_ASC":
-                    return byName(a, b);
-                case "NAME_DESC":
-                    return byName(b, a);
-                default:
-                    return new Date(b.uploadedAt) - new Date(a.uploadedAt);
-            }
-        });
-    }, [docs, isManager, statusFilter, disciplineFilter, search, sortBy]);
+    // Student: list as loaded. Manager: filtered + sorted list from the hook.
+    const visibleDocs = docs === null ? null : isManager ? filters.visible : docs;
 
     // ── Student mutations ─────────────────────────────────────────────────────
 
@@ -284,16 +240,16 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
             <div className="relative w-full md:w-64">
                 <input
                     type="search"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    value={filters.search}
+                    onChange={(e) => filters.setSearch(e.target.value)}
                     placeholder={t("cvDocuments.searchPlaceholder")}
                     aria-label={t("cvDocuments.searchAria")}
                     className={`${selectClass} w-full pr-8 [&::-webkit-search-cancel-button]:appearance-none`}
                 />
-                {search && (
+                {filters.search && (
                     <button
                         type="button"
-                        onClick={() => setSearch("")}
+                        onClick={() => filters.setSearch("")}
                         aria-label={t("cvDocuments.clearSearchAria")}
                         className="absolute right-2 top-1/2 -translate-y-1/2 flex text-red-500 hover:text-red-600"
                     >
@@ -301,28 +257,27 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     </button>
                 )}
             </div>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+            <select value={filters.status} onChange={(e) => filters.setStatus(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.statusAria")}>
                 <option value="ALL">{t("cvDocuments.allStatuses")}</option>
                 <option value="PENDING">{t("cvDocuments.filterPending")}</option>
                 <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
                 <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
             </select>
-            <select value={disciplineFilter} onChange={(e) => setDisciplineFilter(e.target.value)}
+            <select value={filters.discipline} onChange={(e) => filters.setDiscipline(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
                 <option value="ALL">{t("cvDocuments.allDisciplines")}</option>
-                {disciplines.map((d) => (
+                {filters.disciplines.map((d) => (
                     <option key={d} value={d}>
                         {t(`disciplines.${d.toLowerCase()}`, {defaultValue: d})}
                     </option>
                 ))}
             </select>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+            <select value={filters.sort} onChange={(e) => filters.setSort(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.sortAria")}>
-                <option value="DATE_DESC">{t("cvDocuments.sortNewest")}</option>
-                <option value="DATE_ASC">{t("cvDocuments.sortOldest")}</option>
-                <option value="NAME_ASC">{t("cvDocuments.sortNameAsc")}</option>
-                <option value="NAME_DESC">{t("cvDocuments.sortNameDesc")}</option>
+                {CV_SORT_OPTIONS.map(([value, key]) => (
+                    <option key={value} value={value}>{t(key)}</option>
+                ))}
             </select>
         </div>
     );
