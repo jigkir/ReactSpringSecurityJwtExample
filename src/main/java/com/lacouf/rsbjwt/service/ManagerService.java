@@ -100,11 +100,11 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = findPublicCv(cvId); // decision can be changed later
+    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException {
+        CV cv = findPublicCv(cvId);
 
         if (cv.getStatus() == CvStatus.APPROVED) {
-            return ManagerCvResponseDto.of(cv); // already approved: nothing to do, no duplicate notification
+            return ManagerCvResponseDto.of(cv);
         }
         cv.setStatus(CvStatus.APPROVED);
         cv.setRejectionComment(null);
@@ -116,7 +116,7 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException, CvAlreadyReviewedException {
+    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException {
         CV cv = findPublicCv(cvId);
 
         cv.setStatus(CvStatus.REJECTED);
