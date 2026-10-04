@@ -5,7 +5,7 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markInternshipNotificationAsRead, markStudentNotificationAsRead} from './api/Api.jsx';
+import {getManagerNotifications, getStudentNotifications, getUnreadNotificationCount, markInternshipNotificationAsRead, markCvNotificationsAsRead} from './api/Api.jsx';
 
 // Links by role. `end` = only active on the exact path (needed for "/" and "/home").
 const NAV_BY_ROLE = {
@@ -54,29 +54,23 @@ function useNotifications(role, t, user) {
                 .catch((error) => {
                     console.error("Student notification error:", error);
                 });
-            getStudentNotifications(user.id).then((data) => {
+            getStudentNotifications().then((data) => {
                 if (cancelled) return;
-                // The endpoint returns READ and UNREAD, so only count UNREAD
-                const unread = Array.isArray(data) ? data.filter((n) => n.status === "UNREAD") : [];
-                const approved = unread.filter((n) => n.notificationType === "CV_APPROVED");
-                const rejected = unread.filter((n) => n.notificationType === "CV_REJECTED");
-                if (window.location.pathname === "/cv" && (approved.length > 0 || rejected.length > 0)) {
-                    const toMark = approved.concat(rejected);
-                    // Each call catches its own error, so one failure doesn't reject the whole batch
-                    Promise.all(
-                        toMark.map((notif) =>
-                            markStudentNotificationAsRead(notif.id).catch((error) =>
-                                console.error("Mark as read failed for", notif.id, error)
-                            )
-                        )
-                    ).then(() => {
-                        if (cancelled) return;
-                        setCvApprovedCount(0);
-                        setCvRejectedCount(0);
-                    });
+                const notifications = Array.isArray(data) ? data : [];
+                const approvedCount = notifications.filter((n) => n.notificationType === "CV_APPROVED").length;
+                const rejectedCount = notifications.filter((n) => n.notificationType === "CV_REJECTED").length;
+
+                if (pathname === "/cv" && approvedCount + rejectedCount > 0) {
+                    markCvNotificationsAsRead()
+                        .then(() => {
+                            if (cancelled) return;
+                            setCvApprovedCount(0);
+                            setCvRejectedCount(0);
+                        })
+                        .catch((error) => console.error("Mark CV notifications failed:", error));
                 }
-                setCvApprovedCount(approved.length);
-                setCvRejectedCount(rejected.length);
+                setCvApprovedCount(approvedCount);
+                setCvRejectedCount(rejectedCount);
             })
                 .catch((error) => {
                     console.error("Student notification error:", error);
