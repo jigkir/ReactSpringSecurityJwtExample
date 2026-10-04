@@ -43,12 +43,12 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private UserApp user;
 
-    public Notification(String title, String message, NotificationStatus status, NotificationType notificationType, TargetType targetType, Long targetId, UserApp user) {
+    public Notification(String title, String message, NotificationType notificationType, Long targetId, UserApp user) {
         this.title = title;
         this.message = message;
-        this.status = status;
+        this.status = NotificationStatus.UNREAD;
         this.notificationType = notificationType;
-        this.targetType = targetType;
+        this.targetType = notificationType.getTargetType();
         this.targetId = targetId;
         this.user = user;
     }

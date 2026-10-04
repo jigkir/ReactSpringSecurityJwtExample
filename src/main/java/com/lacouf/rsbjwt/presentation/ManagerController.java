@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.presentation;
 
-import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -57,12 +56,12 @@ public class ManagerController {
     }
 
     @PutMapping("/cvs/{cvId}/approve")
-    public ResponseEntity<ManagerCvResponseDto> approveCv(@PathVariable long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
+    public ResponseEntity<ManagerCvResponseDto> approveCv(@PathVariable long cvId) throws CvNotFoundException {
         return ResponseEntity.ok(managerService.approveCv(cvId));
     }
 
     @PutMapping("/cvs/{cvId}/reject")
-    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws CvNotFoundException, CvAlreadyReviewedException {
+    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws CvNotFoundException {
         return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
 

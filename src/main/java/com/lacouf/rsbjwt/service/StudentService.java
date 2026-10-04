@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -49,6 +50,9 @@ public class StudentService {
 
     private static final String CV_SUBMITTED_TITLE = "New CV Pending Review";
     private static final String CV_SUBMITTED_MESSAGE = "A new CV has been submitted for review.";
+
+    private static final String INTERNSHIP_TITLE = "New Internship Offer";
+    private static final String INTERNSHIP_MESSAGE = "A new internship offer has been posted that matches your discipline.";
 
     public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository, ManagerRepository managerRepository) {
         this.cvRepository = cvRepository;
@@ -176,7 +180,7 @@ public class StudentService {
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
 
-        closeCvSubmittedNotifications(cvId);
+        closeCvNotifications(cvId);
     }
 
     public CV findCvById(long cvId) throws CvNotFoundException {
@@ -233,7 +237,7 @@ public class StudentService {
         cv.setSharingScope(CVSharingScope.PRIVATE);
         cvRepository.save(cv);
 
-        closeCvSubmittedNotifications(cvId);
+        closeCvNotifications(cvId);
     }
 
     public CvFileResponseDto getCVByStudentId(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
@@ -274,12 +278,16 @@ public class StudentService {
     }
 
     @Transactional
-    public void markNotificationAsRead(long notificationId) throws UserNotFoundException {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(UserNotFoundException::new);
+    public void markNotificationAsRead(long notificationId, String email) throws NotificationNotFoundException {
+        Notification notification = notificationRepository.findByIdAndUser_Credentials_Email(notificationId, email)
+                .orElseThrow(() -> new NotificationNotFoundException(notificationId));
 
         notification.setStatus(NotificationStatus.READ);
-        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void markCvNotificationsAsRead(String email) {
+        notificationRepository.markAllAsReadByEmailAndTargetType(email, TargetType.CV);
     }
 
     @Transactional
@@ -329,11 +337,9 @@ public class StudentService {
 
     private void createNewInternshipNotificationForStudent(long internshipId, Student student) {
         Notification notification = new Notification(
-                "New Internship Offer",
-                "A new internship offer has been posted that matches your discipline.",
-                NotificationStatus.UNREAD,
+                INTERNSHIP_TITLE,
+                INTERNSHIP_MESSAGE,
                 NotificationType.NEW_INTERNSHIP_OFFER,
-                TargetType.INTERNSHIP_OFFER,
                 internshipId,
                 student
         );
@@ -377,10 +383,10 @@ public class StudentService {
     private void notifyManagersOfSubmittedCv(CV cv) {
         managerRepository.findAll().stream()
                 .filter(manager -> !notificationRepository.existsByNotificationTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
-                .forEach(manager -> notificationRepository.save(new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationStatus.UNREAD, NotificationType.CV_SUBMITTED_FOR_REVIEW, TargetType.CV, cv.getId(), manager)));
+                .forEach(manager -> notificationRepository.save(new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager)));
     }
 
-    private void closeCvSubmittedNotifications(long cvId) {
-        notificationRepository.markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
+    private void closeCvNotifications(long cvId) {
+        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.CV, cvId);
     }
 }

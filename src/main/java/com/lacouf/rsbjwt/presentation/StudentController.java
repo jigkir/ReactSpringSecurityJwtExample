@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.StudentService;
@@ -107,25 +108,31 @@ public class StudentController {
     }
 
     @GetMapping("/notifications")
-    public ResponseEntity<List<NotificationDto>> getStudentNotifications(Authentication authentication) throws UserNotFoundException {
+    public ResponseEntity<List<NotificationDto>> getStudentNotifications(Authentication authentication) {
         List<NotificationDto> notifications = studentService.getStudentNotifications(authentication.getName());
         return ResponseEntity.ok(notifications);
     }
 
+    @PutMapping("/notifications/cv/read")
+    public ResponseEntity<String> markCvNotificationsAsRead(Authentication authentication) {
+        studentService.markCvNotificationsAsRead(authentication.getName());
+        return new ResponseEntity<>("Notifications marked as read successfully", HttpStatus.OK);
+    }
+
     @PutMapping("/notifications/{notificationId}/read")
-    public ResponseEntity<String> markNotificationAsRead(@PathVariable long notificationId) throws UserNotFoundException {
-        studentService.markNotificationAsRead(notificationId);
+    public ResponseEntity<String> markNotificationAsRead(@PathVariable long notificationId, Authentication authentication) throws NotificationNotFoundException {
+        studentService.markNotificationAsRead(notificationId, authentication.getName());
         return new ResponseEntity<>("Notification marked as read successfully", HttpStatus.OK);
     }
 
     @PutMapping("/notifications/internship/read")
-    public ResponseEntity<String> markInternshipsNotificationsAsRead(Authentication authentication) throws UserNotFoundException {
+    public ResponseEntity<String> markInternshipsNotificationsAsRead(Authentication authentication) {
         studentService.markInternshipsNotificationAsRead(authentication.getName());
         return new ResponseEntity<>("Notifications marked as read successfully", HttpStatus.OK);
     }
 
     @GetMapping("/notifications/internship/unread/count")
-    public ResponseEntity<Long> getUnreadInternshipNotificationsCount(Authentication authentication) throws UserNotFoundException {
+    public ResponseEntity<Long> getUnreadInternshipNotificationsCount(Authentication authentication) {
         long unreadCount = studentService.getUnreadNotificationCountForInternships(authentication.getName());
         return new ResponseEntity<>(unreadCount, HttpStatus.OK);
     }

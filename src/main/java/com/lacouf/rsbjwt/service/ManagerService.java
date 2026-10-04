@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.cv.CvAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
@@ -101,30 +100,32 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException, CvAlreadyReviewedException {
-        CV cv = findPublicCv(cvId); // decision can be changed later
+    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException {
+        CV cv = findPublicCv(cvId);
 
         if (cv.getStatus() == CvStatus.APPROVED) {
-            return ManagerCvResponseDto.of(cv); // already approved: nothing to do, no duplicate notification
+            return ManagerCvResponseDto.of(cv);
         }
         cv.setStatus(CvStatus.APPROVED);
         cv.setRejectionComment(null);
-        addCVApprovalNotificationToStudent(cvId, cv.getStudent());
 
-        closeCvSubmittedNotifications(cvId);
+        notifyStudentOfCvReviewDecision(cv, NotificationType.CV_APPROVED, CV_APPROVED_TITLE, CV_APPROVED_MESSAGE);
 
         return saveAndConvert(cv);
     }
 
     @Transactional
-    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException, CvAlreadyReviewedException {
+    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException {
         CV cv = findPublicCv(cvId);
+
+        if (cv.getStatus() == CvStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
+            return ManagerCvResponseDto.of(cv);
+        }
 
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment(comment);
-        addCVRejectionNotificationToStudent(comment, cvId, cv.getStudent());
 
-        closeCvSubmittedNotifications(cvId);
+        notifyStudentOfCvReviewDecision(cv, NotificationType.CV_REJECTED, CV_REJECTED_TITLE, comment);
 
         return saveAndConvert(cv);
     }
@@ -192,15 +193,9 @@ public class ManagerService {
         }
     }
 
-    private void addCVRejectionNotificationToStudent(String message, Long cvId, UserApp student) {
-        notificationRepository.save(new Notification(CV_REJECTED_TITLE, message, NotificationStatus.UNREAD, NotificationType.CV_REJECTED, TargetType.CV, cvId, student));
-    }
+    private void notifyStudentOfCvReviewDecision(CV cv, NotificationType type, String title, String message) {
+        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.CV, cv.getId());
 
-    private void addCVApprovalNotificationToStudent(Long cvId, UserApp student) {
-        notificationRepository.save(new Notification(CV_APPROVED_TITLE, CV_APPROVED_MESSAGE, NotificationStatus.UNREAD, NotificationType.CV_APPROVED, TargetType.CV, cvId, student));
-    }
-
-    private void closeCvSubmittedNotifications(long cvId) {
-        notificationRepository.markAllAsReadByNotificationTypeAndTargetId(NotificationType.CV_SUBMITTED_FOR_REVIEW, cvId);
+        notificationRepository.save(new Notification(title, message, type, cv.getId(), cv.getStudent()));
     }
 }
