@@ -132,7 +132,7 @@ export function getNavbarClasses(dark) {
 // ─── Notifications ────────────────────────────────────────────────────────────
  export function getNotificationMenuClasses(dark) {
     return {
-        panel: `absolute left-0 mt-2 w-71 max-w-[calc(100vw-2rem)] z-50 rounded-xl border shadow-lg overflow-hidden ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        panel: `absolute left-1/2 -translate-x-1/4 mt-2 w-64 max-w-[calc(100vw-2rem)] box-border z-50 rounded-xl border shadow-lg overflow-hidden ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
         list: `divide-y ${dark ? "divide-slate-700" : "divide-gray-100"}`,
         item: `flex items-center gap-3 px-4 py-3 text-sm ${TRANSITION_150} ${dark ? "text-slate-200 hover:bg-slate-700/60" : "text-gray-700 hover:bg-gray-50"}`,
         empty: `px-4 py-6 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
