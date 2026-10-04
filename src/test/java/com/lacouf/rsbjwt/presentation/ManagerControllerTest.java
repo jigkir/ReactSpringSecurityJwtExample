@@ -69,7 +69,10 @@ public class ManagerControllerTest {
                 false,
                 status,
                 comment,
-                1L
+                1L,
+                "employer@example.com",
+                Discipline.COMPUTER_SCIENCE,
+                LocalDateTime.of(2026, 9, 1, 10, 0)
         );
     }
 

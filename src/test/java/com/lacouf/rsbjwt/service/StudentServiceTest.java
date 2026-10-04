@@ -363,7 +363,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenSettingInvisibleForDifferentStudent() {
+    void shouldThrowCvNotFoundExceptionWhenSettingInvisibleForDifferentStudent() {
         when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
 
         Student existingStudent = new Student();
@@ -375,7 +375,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(UserNotFoundException.class, () -> studentService.setCvAsInvisible(dummyStudent.getId(), 10L));
+        assertThrows(CvNotFoundException.class, () -> studentService.setCvAsInvisible(dummyStudent.getId(), 10L));
     }
 
     @Test
@@ -459,7 +459,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenSettingSecondaryForDifferentStudent() {
+    void shouldThrowCvNotFoundExceptionWhenSettingSecondaryForDifferentStudent() {
         when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
 
         Student otherStudent = new Student();
@@ -471,7 +471,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(UserNotFoundException.class, () -> studentService.setCVAsSecondary(dummyStudent.getId(), 10L));
+        assertThrows(CvNotFoundException.class, () -> studentService.setCVAsSecondary(dummyStudent.getId(), 10L));
     }
 
     @Test
@@ -547,7 +547,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenSettingMainForDifferentStudent() {
+    void shouldThrowCvNotFoundExceptionWhenSettingMainForDifferentStudent() {
         when(studentRepository.findById(dummyStudent.getId())).thenReturn(Optional.of(dummyStudent));
 
         Student otherStudent = new Student();
@@ -559,7 +559,7 @@ public class StudentServiceTest {
 
         when(cvRepository.findById(10L)).thenReturn(Optional.of(cv));
 
-        assertThrows(UserNotFoundException.class, () -> studentService.setCVAsMain(dummyStudent.getId(), 10L));
+        assertThrows(CvNotFoundException.class, () -> studentService.setCVAsMain(dummyStudent.getId(), 10L));
     }
 
     @Test
