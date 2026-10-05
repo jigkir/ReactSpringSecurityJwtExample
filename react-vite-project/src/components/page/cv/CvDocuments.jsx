@@ -347,7 +347,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
                     return (
                         <li key={doc.id} aria-busy={busy}>
                             <div className={rowClass}>
-
+TODO for internship and cv for manager the filter to look good on mobile
+                                TODO when student put the status an visiblity next to each other when on mobile
                                 {/* Column 1 — Identity */}
                                 <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
