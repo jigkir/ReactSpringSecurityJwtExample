@@ -1,5 +1,4 @@
-// ─── Shared tokens ────────────────────────────────────────────────────────────
-
+// region Shared tokens
 const FOCUS_RING = "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
 const FOCUS_RING_OFFSET = "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2";
 const TRANSITION = "transition-colors duration-200";
@@ -9,15 +8,16 @@ const BORDER = "border";
 const FADE_IN_DOWN = "animate-fade-in-down motion-reduce:animate-none";
 const BRAND_BTN = "bg-indigo-600 hover:bg-indigo-700 text-white";
 const BRAND_FOCUS = "focus:ring-indigo-500";
+// endregion
 
-// ─── Brand surface (hero + footer) ────────────────────────────────────────────
-
+// region Brand surface (hero + footer)
 export function getBrandSurface(dark) {
     return dark ? "bg-blue-950" : "bg-violet-200";
 }
 
-// ─── Shared link buttons ──────────────────────────────────────────────────────
+// endregion
 
+// region Shared link buttons
 const LINK_BTN_BASE = `inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-colors ${FOCUS_RING_OFFSET}`;
 
 export const PRIMARY_LINK_BTN = `${LINK_BTN_BASE} ${BRAND_BTN}`;
@@ -26,8 +26,9 @@ export function getSecondaryLinkBtn(dark) {
     return `${LINK_BTN_BASE} ${dark ? "border-2 border-slate-500 text-slate-200 hover:bg-slate-700" : "bg-white text-indigo-700 shadow-sm hover:bg-indigo-50"}`;
 }
 
-// ─── Auth / shared form classes ───────────────────────────────────────────────
+// endregion
 
+// region Auth / shared form classes
 const field = {
     dark: "bg-slate-700 border-slate-600 text-white",
     light: "bg-white border-gray-300 text-gray-900",
@@ -110,8 +111,9 @@ export function getAuthClasses(dark) {
     };
 }
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
+// endregion
 
+// region Navbar
 export function getNavbarClasses(dark) {
     return {
         header: dark
@@ -145,19 +147,23 @@ export function getNavbarClasses(dark) {
         ].join(" "),
     };
 }
-// ─── Notifications ────────────────────────────────────────────────────────────
- export function getNotificationMenuClasses(dark) {
+
+// endregion
+
+// region Notifications
+export function getNotificationMenuClasses(dark) {
     return {
         panel: `fixed left-4 right-4 top-14 md:absolute md:left-0 md:right-auto md:top-auto md:w-71 mt-2 z-50 rounded-xl border shadow-lg overflow-hidden ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
         list: `divide-y ${dark ? "divide-slate-700" : "divide-gray-100"}`,
         item: `flex items-center gap-3 px-4 py-3 text-sm ${TRANSITION_150} ${dark ? "text-slate-200 hover:bg-slate-700/60" : "text-gray-700 hover:bg-gray-50"}`,
         empty: `px-4 py-6 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
         redDot: `absolute -top-2 -right-2 h-4 w-4 rounded-full bg-red-500 text-xs text-white`,
-    }
- }
+    };
+}
 
-// ─── Home ─────────────────────────────────────────────────────────────────────
+// endregion
 
+// region Home
 export function getHomeClasses(dark) {
     return {
         page: `flex-1 p-6 ${dark ? "text-white" : "text-gray-900"}`,
@@ -166,8 +172,9 @@ export function getHomeClasses(dark) {
     };
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
+// endregion
 
+// region Footer
 export function getFooterClasses(dark) {
     return {
         footer: `mt-auto w-full py-3 text-center ${getBrandSurface(dark)}`,
@@ -175,8 +182,9 @@ export function getFooterClasses(dark) {
     };
 }
 
-// ─── About ────────────────────────────────────────────────────────────────────
+// endregion
 
+// region About
 export function getAboutClasses(dark) {
     return {
         page: `flex flex-1 items-center justify-center px-4 py-12 ${dark ? "text-white" : "text-gray-900"}`,
@@ -195,8 +203,9 @@ export function getAboutClasses(dark) {
     };
 }
 
-// ─── MainContainer ────────────────────────────────────────────────────────────
+// endregion
 
+// region MainContainer
 export function getMainContainerClasses(dark) {
     return {
         page: `flex flex-1 flex-col items-center text-center ${dark ? "text-white" : "text-gray-900"}`,
@@ -211,8 +220,9 @@ export function getMainContainerClasses(dark) {
     };
 }
 
-// ─── PostInternship ───────────────────────────────────────────────────────────
+// endregion
 
+// region PostInternship
 export function getPostInternshipClasses(dark) {
     return {
         page: `min-h-screen p-4 md:p-10 flex flex-col`,
@@ -229,21 +239,22 @@ export function getPostInternshipClasses(dark) {
     };
 }
 
-// ─── InternshipCard ───────────────────────────────────────────────────────────
+// endregion
 
+// region InternshipCard
 export function getInternshipCardClasses(dark) {
     return {
         card: `rounded-xl shadow-sm border p-6 text-left space-y-3 overflow-hidden min-w-0 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
         topRow: "flex justify-between items-start gap-4 min-w-0",
-        title: `text-xl font-bold break-words break-all min-w-0 w-full ${dark ? "text-white" : "text-gray-900"}`,
-        description: `text-md mt-1 break-words whitespace-normal min-w-0 ${dark ? "text-slate-400" : "text-gray-600"}`,
-        skillsRow: `text-md ${dark ? "text-slate-300" : "text-gray-700"}`,
+        title: `text-xl font-bold break-words min-w-0 w-full ${dark ? "text-white" : "text-gray-900"}`,
+        description: `text-base mt-1 break-words whitespace-normal min-w-0 ${dark ? "text-slate-400" : "text-gray-600"}`,
+        skillsRow: `text-base ${dark ? "text-slate-300" : "text-gray-700"}`,
         skillBadge: `px-2 py-0.5 rounded font-medium ${dark ? "bg-blue-900/40 text-blue-300" : "bg-blue-50 text-blue-700"}`,
-        detailsRow: `flex flex-wrap gap-2 text-md pt-1 border-t ${dark ? "text-slate-400 border-slate-700" : "text-gray-500 border-gray-100"}`,
+        detailsRow: `flex flex-wrap gap-2 text-base pt-1 border-t ${dark ? "text-slate-400 border-slate-700" : "text-gray-500 border-gray-100"}`,
         detailBadge: `px-2.5 py-1 rounded flex items-center gap-1.5 ${dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-500"}`,
         deleteBtn: `p-1.5 rounded ml-auto transition-colors ${dark ? "text-slate-400 hover:bg-slate-700 hover:text-red-400" : "text-gray-600 hover:bg-gray-200 hover:text-red-600"}`,
         statusBadge: (status) => {
-            const base = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-md font-medium shrink-0";
+            const base = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-base font-medium shrink-0";
             if (status === "PENDING") return dark
                 ? `${base} bg-yellow-900/30 text-yellow-300 border border-yellow-700`
                 : `${base} bg-yellow-50 text-yellow-700 border border-yellow-200`;
@@ -257,8 +268,9 @@ export function getInternshipCardClasses(dark) {
     };
 }
 
-// ─── InternshipModal ──────────────────────────────────────────────────────────
+// endregion
 
+// region InternshipModal
 export function getInternshipModalClasses(dark) {
     return {
         overlay: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto",
@@ -266,7 +278,7 @@ export function getInternshipModalClasses(dark) {
         header: `flex justify-between items-center border-b pb-4 mb-6 ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-2xl font-bold ${dark ? "text-white" : "text-gray-800"}`,
         closeBtn: `font-bold text-2xl transition-colors ${dark ? "text-slate-400 hover:text-slate-200" : "text-gray-400 hover:text-gray-600"}`,
-        errorBanner: "p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-red-600 text-sm font-medium animate-fadeIn",
+        errorBanner: `p-3 border rounded-lg flex items-center space-x-2 text-sm font-medium ${dark ? "bg-red-900/30 border-red-700 text-red-300" : "bg-red-50 border-red-200 text-red-600"}`,
         label: `block text-sm font-semibold mb-1 ${dark ? "text-slate-300" : "text-gray-700"}`,
         input: `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-gray-300 text-gray-900"}`,
         textarea: `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-gray-300 text-gray-900"}`,
@@ -278,8 +290,9 @@ export function getInternshipModalClasses(dark) {
     };
 }
 
-// ─── Button ─────────────────────────────────────────────────────────────────
+// endregion
 
+// region Button
 export const CV_BUTTON_BASE =
     "inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors duration-150 whitespace-nowrap " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
@@ -299,9 +312,9 @@ export const CV_BUTTON_TONES = {
         success: "border-green-200 bg-green-50 text-green-700 hover:bg-green-100",
     },
 };
+// endregion
 
-// ─── CvDocuments ─────────────────────────────────────────────────────────────
-
+// region CvDocuments
 export function getCvDocumentsClasses(dark) {
     return {
         card: `w-full rounded-xl border shadow-sm ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
@@ -331,8 +344,9 @@ export function getCvDocumentsClasses(dark) {
     };
 }
 
-// ─── CvPreview ────────────────────────────────────────────────────────────────
+// endregion
 
+// region CvPreview
 export function getCvPreviewClasses(dark) {
     return {
         overlay: "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4",
@@ -344,8 +358,9 @@ export function getCvPreviewClasses(dark) {
     };
 }
 
-// ─── CvUpload ─────────────────────────────────────────────────────────────────
+// endregion
 
+// region CvUpload
 export function getCvUploadClasses(dark, isDragging) {
     return {
         iconColor: dark ? "text-indigo-400" : "text-indigo-600",
@@ -382,3 +397,5 @@ export function getCvUploadClasses(dark, isDragging) {
         successText: dark ? "text-green-400" : "text-green-600",
     };
 }
+
+// endregion

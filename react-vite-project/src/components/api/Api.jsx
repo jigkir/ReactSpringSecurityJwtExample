@@ -242,21 +242,9 @@ export async function getUnreadNotificationCount() {
 // endregion
 
 // region Manager internships
-// Returns InternshipResponseDto[] (status PENDING only)
-export async function getPendingInternships() {
-    const response = await fetcher("manager/internships/pending", {method: "GET"});
-    return handleResponse(response);
-}
-
 // Returns InternshipResponseDto[] (ALL statuses: pending, approved, rejected)
 export async function getManagerInternships() {
     const response = await fetcher("manager/internships", {method: "GET"});
-    return handleResponse(response);
-}
-
-// Returns a single InternshipResponseDto
-export async function getManagerInternship(internshipId) {
-    const response = await fetcher(`manager/internships/${internshipId}`, {method: "GET"});
     return handleResponse(response);
 }
 
