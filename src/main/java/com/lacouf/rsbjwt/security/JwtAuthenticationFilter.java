@@ -1,7 +1,7 @@
 package com.lacouf.rsbjwt.security;
 
 import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.InvalidJwtTokenException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import jakarta.servlet.FilterChain;

@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.repository;
+package com.lacouf.rsbjwt.repository.users;
 
 import com.lacouf.rsbjwt.model.user.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;

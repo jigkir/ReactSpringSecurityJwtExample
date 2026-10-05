@@ -2,8 +2,8 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.user.Teacher;
-import com.lacouf.rsbjwt.repository.TeacherRepository;
-import com.lacouf.rsbjwt.repository.UserAppRepository;
+import com.lacouf.rsbjwt.repository.users.TeacherRepository;
+import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
 import org.junit.jupiter.api.BeforeAll;
