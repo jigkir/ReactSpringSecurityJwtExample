@@ -38,7 +38,6 @@
     "learnMore": "Vous voulez en savoir plus ?"
   },
   "navbar": {
-    "appName": "Internly",
     "accueil": "Accueil",
     "about": "À propos",
     "student": "Étudiant",
@@ -51,6 +50,7 @@
     "disconnect": "Déconnexion",
     "login": "Se connecter",
     "signup": "S'inscrire",
+    "getStarted": "Commencer",
     "switchFench": "FR",
     "switchEnglish": "EN",
     "switchToFrench": "Passer en français",

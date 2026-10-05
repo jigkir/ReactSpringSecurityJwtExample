@@ -1,9 +1,10 @@
 import {createPortal} from "react-dom";
-import {Link, NavLink, useLocation} from 'react-router-dom';
+import {Link, NavLink, useLocation, useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
+import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
 
 // Links by role. Every label is a translation key (`labelKey`).
@@ -29,6 +30,8 @@ function Navbar({user, dark, toggleDark}) {
     const [authMenuOpen, setAuthMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const authRef = useRef(null);
+    const sidebarRef = useRef(null);
+
 
     // Close both on route change
     useEffect(() => {
@@ -40,7 +43,9 @@ function Navbar({user, dark, toggleDark}) {
     useEffect(() => {
         if (!menuOpen && !authMenuOpen) return;
         const onPointerDown = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+            const clickedInsideSidebar = sidebarRef.current && sidebarRef.current.contains(e.target);
+            const clickedMenuBtn = menuRef.current && menuRef.current.contains(e.target);
+            if (!clickedMenuBtn && !clickedInsideSidebar) setMenuOpen(false);
             if (authRef.current && !authRef.current.contains(e.target)) setAuthMenuOpen(false);
         };
         const onKey = (e) => {
@@ -89,9 +94,9 @@ function Navbar({user, dark, toggleDark}) {
         dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
     }`;
     const mobileLinkClass = ({isActive}) =>
-        `block px-4 py-2 text-sm ${
+        `block px-4 py-2 text-lg pl-8 ${
             isActive
-                ? (dark ? "bg-slate-700 text-white" : "bg-indigo-50 text-indigo-700")
+                ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700")
                 : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")
         }`;
     const mobileAuthLink = `block px-4 py-2 text-sm ${
@@ -101,6 +106,7 @@ function Navbar({user, dark, toggleDark}) {
     const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
     return (
+        <>
         <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
             <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-14">
@@ -110,7 +116,20 @@ function Navbar({user, dark, toggleDark}) {
                         {/* Desktop brand */}
                         <Link to={homePath}
                               className={`hidden md:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
-                            {t("navbar.appName")}
+                            <div className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
+                                {/* Always light text for dark-colored navbars */}
+                                <span className="text-white transition-colors duration-150">
+                                    Intern
+                                </span>
+                                {/* TLD Badge adapted for dark backgrounds */}
+                                <span className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
+                                    dark
+                                        ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
+                                        : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
+                                }`}>
+                                    .ly
+                                </span>
+                            </div>
                         </Link>
 
                         {/* Desktop nav (bell always visible) */}
@@ -139,58 +158,24 @@ function Navbar({user, dark, toggleDark}) {
                                     <Icon name="menu" size={24}/>
                                 </button>
 
-                                {/* Text - added leading-none to remove line-height padding */}
-                                <span className="text-2xl leading-none tracking-tight">
-                                    {t("navbar.appName")}
-                                </span>
+                                <Link to={homePath} className="text-2xl leading-none tracking-tight">
+                                    <div className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
+                                        {/* Always light text for dark-colored navbars */}
+                                        <span className="text-white transition-colors duration-150">
+                                            Intern
+                                        </span>
+                                        {/* TLD Badge adapted for dark backgrounds */}
+                                        <span className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
+                                            dark
+                                                ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
+                                                : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
+                                        }`}>
+                                            .ly
+                                        </span>
+                                    </div>
+                                </Link>
                             </div>
 
-                            {/* Side Menu Drawer & Backdrop */}
-                            {menuOpen && createPortal(
-                                <>
-                                    {/* Backdrop Overlay */}
-                                    <div
-                                        className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50"
-                                        onClick={() => setMenuOpen(false)}
-                                    />
-
-                                    {/* Slide-out Panel */}
-                                    <div className={`fixed inset-y-0 left-0 border-r w-64 sm:w-72 z-50 shadow-2xl flex flex-col overflow-hidden  ${dark ? "bg-slate-800/95  border-slate-700" : "bg-white border-gray-200"}`}>
-                                        {/* Header inside side menu */}
-                                        <div className={`flex items-center justify-between pb-4 mb-4 border-b -mx-1 -mt-1 pl-4 pt-4 ${ dark ? "bg-slate-800/95 border-slate-700" : "bg-indigo-600 border-indigo-700"} `}>
-                                            <span className={`font-bold text-2xl tracking-tight ${dark ? "text-gray-500" : "text-white"}`}>
-                                                {t("navbar.appName")}
-                                            </span>
-
-                                            <button
-                                                onClick={() => setMenuOpen(false)}
-                                                className={`p-1.5 rounded-lg ${dark ? "text-gray-400 hover:text-red-600" : "text-white hover:text-red-600"}`}
-                                                aria-label="Close menu"
-                                            >
-                                                <Icon name="close" size={24}/>
-                                            </button>
-                                        </div>
-
-                                        {/* Navigation Links */}
-                                        <div>
-                                            <nav className="flex flex-col gap-1">
-                                                {navItems.map(({to, label, end}) => (
-                                                    <NavLink
-                                                        key={to}
-                                                        to={to}
-                                                        end={end}
-                                                        className={mobileLinkClass}
-                                                        onClick={() => setMenuOpen(false)}
-                                                    >
-                                                        {label}
-                                                    </NavLink>
-                                                ))}
-                                            </nav>
-                                        </div>
-                                    </div>
-                                </>,
-                                document.body
-                            )}
                         </div>
                         {/* Mobile bell (always visible, in the top bar) */}
                         <div className="md:hidden">
@@ -257,10 +242,10 @@ function Navbar({user, dark, toggleDark}) {
                                 aria-label={t("navbar.accountMenu")}
                                 aria-expanded={authMenuOpen}
                             >
-                                <span className="max-w-[6rem] truncate"
+                                <span className="max-w-[6rem] truncate text-md"
                                       title={isLoggedIn ? t("navbar.account") : undefined}
                                 >
-                                    {isLoggedIn ? <Icon name="person" size={20}/> : t("navbar.login")}
+                                    {isLoggedIn ? <Icon name="person" size={20}/> : t("navbar.getStarted")}
                                 </span>
                             </button>
 
@@ -274,7 +259,10 @@ function Navbar({user, dark, toggleDark}) {
                                             </div>
                                             <Link to="/logout"
                                                   className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
-                                                {t("navbar.disconnect")}
+                                                <span className={"flex gap-2 items-center"}>
+                                                    <Icon name={"logout"} size={20}/>
+                                                    {t("navbar.disconnect")}
+                                                </span>
                                             </Link>
                                         </>
                                     ) : (
@@ -290,6 +278,17 @@ function Navbar({user, dark, toggleDark}) {
                 </div>
             </div>
         </header>
+        {/* Side Menu Drawer & Backdrop */}
+        <MobileSidebar
+            ref={sidebarRef}
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            navItems={navItems}
+            dark={dark}
+            t={t}
+            mobileLinkClass={mobileLinkClass}
+        />
+        </>
     );
 }
 
