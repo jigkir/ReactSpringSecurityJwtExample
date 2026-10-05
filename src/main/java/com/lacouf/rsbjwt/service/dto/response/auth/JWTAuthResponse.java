@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.response;
+package com.lacouf.rsbjwt.service.dto.response.auth;
 
 
 public record JWTAuthResponse(String tokenType, String accessToken) {

@@ -15,9 +15,9 @@ import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.request.CvUploadDto;
-import com.lacouf.rsbjwt.service.dto.response.StudentCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.request.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
