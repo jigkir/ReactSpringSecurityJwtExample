@@ -5,14 +5,6 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import NotificationMenu from './NotificationMenu.jsx';
 
-import {
-    getManagerNotifications,
-    getStudentNotifications,
-    getUnreadNotificationCount,
-    markCvNotificationsAsRead,
-    markInternshipNotificationAsRead
-} from './api/Api.jsx';
-
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
     STUDENT: [{to: "/cv", labelKey: "navbar.cv"}],
@@ -25,110 +17,6 @@ const NAV_BY_ROLE = {
 };
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
-
-function useNotifications(role, t, user) {
-    const [cvCount, setCvCount] = useState(0);
-    const [cvApprovedCount, setCvApprovedCount] = useState(0);
-    const [cvRejectedCount, setCvRejectedCount] = useState(0);
-    const [internshipCount, setInternshipCount] = useState(0);
-
-    const {pathname} = useLocation();
-
-    useEffect(() => {
-        if (!user?.id) {
-            setCvCount(0);
-            setInternshipCount(0);
-            setCvApprovedCount(0);
-            setCvRejectedCount(0);
-            return;
-        }
-        let cancelled = false;
-
-        if (role === "MANAGER") {
-            getManagerNotifications()
-                .then((data) => {
-                    if (!cancelled) setCvCount(Array.isArray(data) ? data.length : 0);
-                })
-                .catch((err) => {
-                    console.error("Manager notifications failed:", err?.status, err?.body);
-                });
-        } else if (role === "STUDENT") {
-            getUnreadNotificationCount(user.id)
-                .then((unreadCount) => {
-                    if (!cancelled) setInternshipCount(typeof unreadCount === 'number' ? unreadCount : 0);
-                })
-                .catch((error) => {
-                    console.error("Student notification error:", error);
-                });
-            getStudentNotifications().then((data) => {
-                if (cancelled) return;
-                const notifications = Array.isArray(data) ? data : [];
-                const approvedCount = notifications.filter((n) => n.notificationType === "CV_APPROVED").length;
-                const rejectedCount = notifications.filter((n) => n.notificationType === "CV_REJECTED").length;
-
-                if (pathname === "/cv" && approvedCount + rejectedCount > 0) {
-                    markCvNotificationsAsRead()
-                        .then(() => {
-                            if (cancelled) return;
-                            setCvApprovedCount(0);
-                            setCvRejectedCount(0);
-                        })
-                        .catch((error) => console.error("Mark CV notifications failed:", error));
-                }
-                setCvApprovedCount(approvedCount);
-                setCvRejectedCount(rejectedCount);
-            })
-                .catch((error) => {
-                    console.error("Student notification error:", error);
-                });
-        }
-
-        return () => {
-            cancelled = true;
-        };
-    }, [role, user?.id, pathname]);
-
-    // If there are no notifications, return an empty array immediately
-    if (cvCount === 0 && internshipCount === 0 && cvApprovedCount === 0 && cvRejectedCount === 0) return [];
-
-    // Return the correct notification based on the role
-    if (role === "MANAGER") {
-        return [{
-            id: "cvPosted",
-            count: cvCount,
-            label: t("navbar.cvNotification", {amount: cvCount}),
-            to: "/manager/cvs",
-        }];
-    }
-
-    if (role === "STUDENT") {
-        return [{
-            id: "internship",
-            count: internshipCount,
-            label: t("navbar.internshipNotification", {amount: internshipCount}),
-            to: "/internship",
-            func: () => {
-                markInternshipNotificationAsRead(user.id)
-                    .then(() => setInternshipCount(0))
-                    .catch((error) => console.error("Mark internship notifications failed:", error))
-            }
-        },
-        {
-            id: "cvsApproved",
-            count: cvApprovedCount,
-            label: t("navbar.cvApprovedNotification", {amount: cvApprovedCount}),
-            to: "/cv",
-        },
-            {
-                id: "cvsRejected",
-                count: cvRejectedCount,
-                label: t("navbar.cvRejectedNotification", {amount: cvRejectedCount}),
-                to: "/cv",
-            }];
-    }
-
-    return [];
-}
 
 function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
@@ -174,8 +62,6 @@ function Navbar({user, dark, toggleDark}) {
 
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
-
-    const notifications = useNotifications(role, t, user);
 
     const formatRole = (r) => {
         if (!r) return "";
@@ -233,7 +119,7 @@ function Navbar({user, dark, toggleDark}) {
                                     {label}
                                 </NavLink>
                             ))}
-                            {isLoggedIn && <NotificationMenu notifications={notifications} dark={dark}/>}
+                            {isLoggedIn && <NotificationMenu dark={dark}/>}
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}
@@ -267,7 +153,7 @@ function Navbar({user, dark, toggleDark}) {
                         </div>
                         {/* Mobile bell (always visible, in the top bar) */}
                         <div className="md:hidden">
-                            {isLoggedIn && <NotificationMenu notifications={notifications} dark={dark}/>}
+                            {isLoggedIn && <NotificationMenu dark={dark}/>}
                         </div>
                     </div>
 

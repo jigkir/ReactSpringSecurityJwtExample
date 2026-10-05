@@ -3,16 +3,18 @@ import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses, getNotificationMenuClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
+import {useNotifications} from './NotificationsProvider.jsx';
 
-export default function NotificationMenu({notifications = [], dark}) {
+export default function NotificationMenu({dark}) {
     const {t} = useTranslation();
+    const {items} = useNotifications();
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef(null);
 
     const theme = getNavbarClasses(dark);
     const menuClasses = getNotificationMenuClasses(dark);
 
-    const active = notifications.filter((notif) => (notif.count ?? 0) > 0);
+    const active = items.filter((notif) => (notif.count ?? 0) > 0);
     const total = active.reduce((sum, notif) => sum + notif.count, 0);
 
     useEffect(() => {
@@ -38,13 +40,12 @@ export default function NotificationMenu({notifications = [], dark}) {
                 onClick={() => setOpen((opened) => !opened)}
                 aria-haspopup="menu"
                 aria-expanded={open}
-
                 className={`${theme.toggleBase} ${theme.toggleBtn}`}
             >
                 <span className="relative inline-flex">
                     <Icon name="notifications" size={20}/>
                     {total > 0 && (
-                        <span className={`${menuClasses.redDot}`}> {total} </span>
+                        <span className={menuClasses.redDot}> {total} </span>
                     )}
                 </span>
             </button>
@@ -55,28 +56,23 @@ export default function NotificationMenu({notifications = [], dark}) {
                         <p className={menuClasses.empty}>{t("navbar.noNotifications")}</p>
                     ) : (
                         <ul className={menuClasses.list}>
-                            {active.map((notif) => {
-                                return (
-                                    <li key={notif.id} role="none">
-                                        {notif.to ? (
-                                            <div role="menuitem" className={`${menuClasses.item} flex items-center justify-between`}>
-                                                <Link
-                                                    to={notif.to}
-                                                    className="min-w-0 flex-1 truncate"
-                                                    onClick={() => {
-                                                        setOpen(false);
-                                                        notif.func?.();
-                                                    }}
-                                                >
-                                                    <span>{notif.label}</span>
-                                                </Link>
-                                            </div>
-                                        ) : (
-                                            <div role="menuitem" className={menuClasses.item}>{notif.label}</div>
-                                        )}
-                                    </li>
-                                );
-                            })}
+                            {active.map((notif) => (
+                                <li key={notif.id} role="none">
+                                    <div role="menuitem"
+                                         className={`${menuClasses.item} flex items-center justify-between`}>
+                                        <Link
+                                            to={notif.to}
+                                            className="min-w-0 flex-1 truncate"
+                                            onClick={() => {
+                                                setOpen(false);
+                                                notif.onClick?.();
+                                            }}
+                                        >
+                                            <span>{t(notif.labelKey, {amount: notif.count})}</span>
+                                        </Link>
+                                    </div>
+                                </li>
+                            ))}
                         </ul>
                     )}
                 </div>
