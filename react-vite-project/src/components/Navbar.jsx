@@ -1,3 +1,4 @@
+import {createPortal} from "react-dom";
 import {Link, NavLink, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useEffect, useRef, useState} from 'react';
@@ -123,32 +124,72 @@ function Navbar({user, dark, toggleDark}) {
                         </nav>
 
                         {/* Mobile: app name doubles as the pages dropdown button */}
-                        <div ref={menuRef} className="relative md:hidden">
-                            <button
-                                onClick={() => {
-                                    setMenuOpen((o) => !o);
-                                    setAuthMenuOpen(false);
-                                }}
-                                className={`p-1 -ml-1 rounded-lg font-bold text-base tracking-tight flex items-center gap-1.5 ${theme.brand}`}
-                                aria-label={t("navbar.pagesMenu")}
-                                aria-expanded={menuOpen}
-                            >
-                                <span>{t("navbar.appName")}</span>
-                                <svg className={`h-4 w-4 transition-transform ${menuOpen ? "rotate-180" : ""}`}
-                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
-                                          d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
+                        <div ref={menuRef} className="md:hidden">
+                            <div className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-2 ${theme.brand}`}>
+                                {/* Burger Button - added flex items-center */}
+                                <button
+                                    onClick={() => {
+                                        setMenuOpen((o) => !o);
+                                        setAuthMenuOpen(false);
+                                    }}
+                                    className="flex items-center justify-center"
+                                    aria-label={t("navbar.pagesMenu")}
+                                    aria-expanded={menuOpen}
+                                >
+                                    <Icon name="menu" size={24}/>
+                                </button>
 
-                            {menuOpen && (
-                                <div className={`${dropdownPanel} left-0`}>
-                                    {navItems.map(({to, label, end}) => (
-                                        <NavLink key={to} to={to} end={end} className={mobileLinkClass}>
-                                            {label}
-                                        </NavLink>
-                                    ))}
-                                </div>
+                                {/* Text - added leading-none to remove line-height padding */}
+                                <span className="text-2xl leading-none tracking-tight">
+                                    {t("navbar.appName")}
+                                </span>
+                            </div>
+
+                            {/* Side Menu Drawer & Backdrop */}
+                            {menuOpen && createPortal(
+                                <>
+                                    {/* Backdrop Overlay */}
+                                    <div
+                                        className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50"
+                                        onClick={() => setMenuOpen(false)}
+                                    />
+
+                                    {/* Slide-out Panel */}
+                                    <div className={`fixed inset-y-0 left-0 border-r w-64 sm:w-72 z-50 shadow-2xl flex flex-col overflow-hidden  ${dark ? "bg-slate-800/95  border-slate-700" : "bg-white border-gray-200"}`}>
+                                        {/* Header inside side menu */}
+                                        <div className={`flex items-center justify-between pb-4 mb-4 border-b -mx-1 -mt-1 pl-4 pt-4 ${ dark ? "bg-slate-800/95 border-slate-700" : "bg-indigo-600 border-indigo-700"} `}>
+                                            <span className={`font-bold text-2xl tracking-tight ${dark ? "text-gray-500" : "text-white"}`}>
+                                                {t("navbar.appName")}
+                                            </span>
+
+                                            <button
+                                                onClick={() => setMenuOpen(false)}
+                                                className={`p-1.5 rounded-lg ${dark ? "text-gray-400 hover:text-red-600" : "text-white hover:text-red-600"}`}
+                                                aria-label="Close menu"
+                                            >
+                                                <Icon name="close" size={24}/>
+                                            </button>
+                                        </div>
+
+                                        {/* Navigation Links */}
+                                        <div>
+                                            <nav className="flex flex-col gap-1">
+                                                {navItems.map(({to, label, end}) => (
+                                                    <NavLink
+                                                        key={to}
+                                                        to={to}
+                                                        end={end}
+                                                        className={mobileLinkClass}
+                                                        onClick={() => setMenuOpen(false)}
+                                                    >
+                                                        {label}
+                                                    </NavLink>
+                                                ))}
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </>,
+                                document.body
                             )}
                         </div>
                         {/* Mobile bell (always visible, in the top bar) */}
@@ -216,15 +257,11 @@ function Navbar({user, dark, toggleDark}) {
                                 aria-label={t("navbar.accountMenu")}
                                 aria-expanded={authMenuOpen}
                             >
-                                <span className="max-w-[6rem] truncate">
-                                    {isLoggedIn ? (user.firstName || t("navbar.account")) : t("navbar.login")}
+                                <span className="max-w-[6rem] truncate"
+                                      title={isLoggedIn ? t("navbar.account") : undefined}
+                                >
+                                    {isLoggedIn ? <Icon name="person" size={20}/> : t("navbar.login")}
                                 </span>
-                                <svg
-                                    className={`h-4 w-4 shrink-0 transition-transform ${authMenuOpen ? "rotate-180" : ""}`}
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M19 9l-7 7-7-7"/>
-                                </svg>
                             </button>
 
                             {authMenuOpen && (
