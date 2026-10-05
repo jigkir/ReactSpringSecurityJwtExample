@@ -143,27 +143,24 @@ public class ManagerService {
     }
 
     @Transactional
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
         Internship internship = findInternship(internshipId);
 
-        if (internship.getStatus() != InternshipStatus.PENDING) {
-            throw new InternshipAlreadyReviewedException(internship.getId());
+        if (internship.getStatus() == InternshipStatus.APPROVED) {
+            return InternshipResponseDto.of(internship);
         }
 
         internship.approve();
         internshipRepository.save(internship);
+
         studentService.createNewInternshipNotificationsForStudents(internship);
 
         return InternshipResponseDto.of(internship);
     }
 
     @Transactional
-    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException, InternshipAlreadyReviewedException {
+    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException {
         Internship internship = findInternship(internshipId);
-
-        if (internship.getStatus() != InternshipStatus.PENDING) {
-            throw new InternshipAlreadyReviewedException(internship.getId());
-        }
 
         internship.reject(comment);
         internshipRepository.save(internship);
