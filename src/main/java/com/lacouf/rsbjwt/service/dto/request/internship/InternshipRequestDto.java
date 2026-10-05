@@ -34,7 +34,6 @@ public record InternshipRequestDto(
         LocalDate startDate,
 
         @NotNull
-        //@Future // Needed ???
         LocalDate applicationDeadline,
 
         @PositiveOrZero

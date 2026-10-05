@@ -41,7 +41,4 @@ public class Student extends UserApp {
         this.cvs.add(cv);
         cv.setStudent(this);
     }
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
 }
