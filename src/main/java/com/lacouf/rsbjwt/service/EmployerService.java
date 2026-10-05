@@ -8,7 +8,6 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
@@ -86,7 +85,6 @@ public class EmployerService {
                 internshipDto.applicationDeadline(),
                 internshipDto.compensationAmount(),
                 internshipDto.compensationNegotiable(),
-                InternshipStatus.PENDING,
                 employer
         );
 

@@ -66,7 +66,7 @@ public class Internship {
     @Column
     private LocalDateTime uploadDate;
 
-    public Internship(String title, String description, String requiredSkills, int durationInWeeks, String location, WorkMode workMode, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, InternshipStatus status, Employer employer) {
+    public Internship(String title, String description, String requiredSkills, int durationInWeeks, String location, WorkMode workMode, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, Employer employer) {
         this.title = title;
         this.description = description;
         this.requiredSkills = requiredSkills;
@@ -77,7 +77,7 @@ public class Internship {
         this.applicationDeadline = applicationDeadline;
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
-        this.status = status;
+        this.status = InternshipStatus.PENDING;
         this.postedBy = employer;
         this.deleted = false;
         this.uploadDate = LocalDateTime.now();

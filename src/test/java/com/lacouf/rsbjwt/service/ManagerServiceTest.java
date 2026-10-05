@@ -93,7 +93,6 @@ public class ManagerServiceTest {
                 LocalDate.of(2026, 12, 1),
                 new BigDecimal("25.00"),
                 false,
-                InternshipStatus.PENDING,
                 employer);
 
         internship.setId(1L);
