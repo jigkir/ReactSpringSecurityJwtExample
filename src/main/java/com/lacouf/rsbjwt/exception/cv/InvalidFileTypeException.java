@@ -1,7 +1,10 @@
 package com.lacouf.rsbjwt.exception.cv;
 
-public class InvalidFileTypeException extends Exception {
+import com.lacouf.rsbjwt.exception.APIException;
+import org.springframework.http.HttpStatus;
+
+public class InvalidFileTypeException extends APIException {
     public InvalidFileTypeException(String message) {
-        super(message);
+        super(HttpStatus.BAD_REQUEST, message);
     }
 }

@@ -1,7 +1,10 @@
 package com.lacouf.rsbjwt.exception.cv;
 
-public class CorruptedFileException extends Exception {
+import com.lacouf.rsbjwt.exception.APIException;
+import org.springframework.http.HttpStatus;
+
+public class CorruptedFileException extends APIException {
     public CorruptedFileException(String message) {
-        super(message);
+        super(HttpStatus.UNPROCESSABLE_CONTENT, message);
     }
 }

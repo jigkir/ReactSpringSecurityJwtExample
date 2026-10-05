@@ -1,7 +1,10 @@
 package com.lacouf.rsbjwt.exception.cv;
 
-public class CvNotFoundException extends Exception {
+import com.lacouf.rsbjwt.exception.APIException;
+import org.springframework.http.HttpStatus;
+
+public class CvNotFoundException extends APIException {
     public CvNotFoundException(String message) {
-        super(message);
+        super(HttpStatus.NOT_FOUND, message);
     }
 }
