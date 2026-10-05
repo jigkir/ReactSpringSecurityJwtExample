@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react';
 import {Navigate, Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 import {useDarkMode} from './styles/DarkMode.jsx';
 import PageLayout from './components/PageLayout.jsx';
-import MainContainer from './components/MainContainer.jsx';
 import About from './components/About.jsx';
 import Login from './components/page/auth/Login.jsx';
 import Signup from './components/page/auth/Signup.jsx';
@@ -10,19 +9,13 @@ import {getCurrentUser} from './components/api/Api.jsx';
 import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
 import PostInternship from './components/page/internship/PostInternship.jsx';
-import Home from './components/page/Home.jsx';
+import Home from './components/Home.jsx';
 import StudentCv from './components/page/student/Cv.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternship from "./components/page/internship/StudentInternship.jsx";
-
-function LandingRoute({user}) {
-    if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
-    if (localStorage.getItem("token") && user?.isLoggedIn === undefined) return <div aria-busy="true"/>;
-    return <MainContainer/>;
-}
 
 function App() {
     const [user, setUser] = useState({});
@@ -68,8 +61,8 @@ function App() {
             <Routes>
                 <Route element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
 
-                    {/* Public */}
-                    <Route path="/" element={<LandingRoute user={user}/>}/>
+                    {/* Public: Home shows the landing page when logged out, the role home when logged in */}
+                    <Route path="/" element={<Home/>}/>
                     <Route path="/about" element={<About/>}/>
                     <Route path="/login" element={<Login user={user} setError={setError}/>}/>
                     <Route path="/signup" element={<Signup/>}/>
