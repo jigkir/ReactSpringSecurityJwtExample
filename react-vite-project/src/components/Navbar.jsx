@@ -127,7 +127,7 @@ function Navbar({user, dark, toggleDark}) {
                                         ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
                                         : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
                                 }`}>
-                                    . ly
+                                    .ly
                                 </span>
                             </div>
                         </Link>
@@ -170,7 +170,7 @@ function Navbar({user, dark, toggleDark}) {
                                                 ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
                                                 : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
                                         }`}>
-                                            . ly
+                                            .ly
                                         </span>
                                     </div>
                                 </Link>
@@ -259,7 +259,10 @@ function Navbar({user, dark, toggleDark}) {
                                             </div>
                                             <Link to="/logout"
                                                   className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
-                                                {t("navbar.disconnect")}
+                                                <span className={"flex gap-2 items-center"}>
+                                                    <Icon name={"logout"} size={20}/>
+                                                    {t("navbar.disconnect")}
+                                                </span>
                                             </Link>
                                         </>
                                     ) : (

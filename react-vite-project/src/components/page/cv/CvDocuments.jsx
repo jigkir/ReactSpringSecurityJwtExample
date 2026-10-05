@@ -279,15 +279,6 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                 ))}
             </select>
 
-            <button
-                className={`px-3 py-1.5 rounded-lg border text-sm flex items-center gap-1 ml-auto ${
-                    dark ? "bg-slate-700 border-slate-600 text-white hover:bg-slate-600" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                }`}
-                onClick={() => void load()}
-                title="Refresh"
-            >
-                <Icon name="refresh" size={20} />
-            </button>
         </div>
     );
 
@@ -346,8 +337,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                     return (
                         <li key={doc.id} aria-busy={busy}>
                             <div className={rowClass}>
-TODO for internship and cv for manager the filter to look good on mobile
-                                TODO when student put the status an visiblity next to each other when on mobile
+
                                 {/* Column 1 — Identity */}
                                 <div className="min-w-0">
                                     <p className={th.name}>{doc.fileName}</p>
@@ -498,6 +488,15 @@ TODO for internship and cv for manager the filter to look good on mobile
                 {!isManager && onAddClick && (
                     <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
                 )}
+                <button
+                    className={`px-3 py-1.5 rounded-lg border text-sm flex items-center gap-1 ml-auto ${
+                        dark ? "bg-slate-700 border-slate-600 text-white hover:bg-slate-600" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                    onClick={() => void load()}
+                    title="Refresh"
+                >
+                    <Icon name="refresh" size={20} />
+                </button>
             </div>
 
             {actionError && (

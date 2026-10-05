@@ -29,7 +29,7 @@ const MobileSidebar = forwardRef(function MobileSidebar({ isOpen, onClose, navIt
                                     ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
                                     : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
                             }`}>
-                                . ly
+                                .ly
                             </span>
                         </div>
                     </span>
