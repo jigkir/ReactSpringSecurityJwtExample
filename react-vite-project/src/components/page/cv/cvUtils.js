@@ -54,10 +54,6 @@ export function formatBytes(bytes, lang = "en") {
 /** en-CA renders dates as YYYY-MM-DD (language-neutral on purpose) */
 export const formatDate = (iso) => new Date(iso).toLocaleDateString("en-CA");
 
-/** Sort CVDto array newest-first */
-export const sortDocs = (list) =>
-    [...list].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-
 // ─── Blob / PDF helpers ───────────────────────────────────────────────────────
 
 /** Caller must call URL.revokeObjectURL(url) when done. */

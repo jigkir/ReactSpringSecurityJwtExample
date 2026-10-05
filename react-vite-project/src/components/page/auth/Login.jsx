@@ -88,24 +88,21 @@ const Login = ({user, setError}) => {
                 navigate("/home");
             }
         } catch (err) {
-            if (err.i18n) {
-                setError(err);
-                navigate("/error");
+            // Wrong credentials: stay on the login page and show the inline error
+            if (err.status === 401 || err.status === 403) {
+                setServerError({key: "login.invalidCredentials"});
                 return;
             }
-            switch (err.status) {
-                case 401:
-                    setServerError({key: "login.invalidCredentials"});
-                    return;
-                case 404:
-                    setError(i18nError("login.noServer"));
-                    navigate("/error");
-                    return;
-                default:
-                    setError(i18nError("login.genericError"));
-                    navigate("/error");
-                    return;
+
+            // Everything else is a real failure (server down, user fetch failed, etc.)
+            if (err.status === 404) {
+                setError(i18nError("login.noServer"));
+            } else if (err.i18n) {
+                setError(err);
+            } else {
+                setError(i18nError("login.genericError"));
             }
+            navigate("/error");
         }
     };
     // endregion

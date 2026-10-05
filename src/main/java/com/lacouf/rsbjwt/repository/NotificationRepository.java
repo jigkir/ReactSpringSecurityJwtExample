@@ -20,6 +20,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(String email, NotificationStatus status);
 
+    int countByUser_Credentials_EmailAndStatusAndNotificationType(String email, NotificationStatus status, NotificationType notificationType);
+
     Optional<Notification> findByIdAndUser_Credentials_Email(long id, String email);
 
     @Transactional
@@ -36,4 +38,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user.credentials.email = :email AND n.targetType = :targetType AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
     void markAllAsReadByEmailAndTargetType(@Param("email") String email, @Param("targetType") TargetType targetType);
+
 }

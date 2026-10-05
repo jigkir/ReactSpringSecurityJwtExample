@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+@theme {
+    --animate-fade-in-down: fade-in-down 0.6s ease-out both;
+
+    @keyframes fade-in-down {
+        from {
+            opacity: 0;
+            transform: translateY(-16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
 .app-dark {
     background-color: #111827;
     color: #f9fafb;
@@ -7,7 +22,7 @@
 }
 
 .app-light {
-    background-color: #ffffff;
+    background-color: #ebe9fb;
     color: #111827;
     transition: background-color 0.3s ease, color 0.3s ease;
 }

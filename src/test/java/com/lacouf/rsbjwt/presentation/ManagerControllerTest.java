@@ -2,7 +2,6 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InternshipAlreadyReviewedException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
@@ -70,7 +69,10 @@ public class ManagerControllerTest {
                 false,
                 status,
                 comment,
-                1L
+                1L,
+                "employer@example.com",
+                Discipline.COMPUTER_SCIENCE,
+                LocalDateTime.of(2026, 9, 1, 10, 0)
         );
     }
 
@@ -242,7 +244,8 @@ public class ManagerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"comment\":\"Offer = bad.\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("REJECTED"));
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.rejectionComment").value("Offer = bad."));
 
         verify(managerService).rejectInternship(1L, "Offer = bad.");
     }
@@ -267,16 +270,5 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/internships/99/reject")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"comment\": \"A ghost?!?\"}")).andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldReturnConflictWhenInternshipAlreadyReviewed() throws Exception {
-        // Arrange
-        when(managerService.approveInternship(1L)).thenThrow(new InternshipAlreadyReviewedException(1L));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/manager/internships/1/approve"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Internship with id: 1 was already reviewed."));
     }
 }

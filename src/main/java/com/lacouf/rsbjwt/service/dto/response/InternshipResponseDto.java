@@ -1,11 +1,13 @@
 package com.lacouf.rsbjwt.service.dto.response;
 
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record InternshipResponseDto(
         long id,
@@ -21,7 +23,10 @@ public record InternshipResponseDto(
         boolean compensationNegotiable,
         InternshipStatus status,
         String rejectionComment,
-        long employerId
+        long employerId,
+        String employerEmail,
+        Discipline discipline,
+        LocalDateTime uploadedAt
 ) {
     public static InternshipResponseDto of(Internship internship) {
         return new InternshipResponseDto(
@@ -38,7 +43,10 @@ public record InternshipResponseDto(
                 internship.isCompensationNegotiable(),
                 internship.getStatus(),
                 internship.getRejectionComment(),
-                internship.getPostedBy().getId()
+                internship.getPostedBy().getId(),
+                internship.getPostedBy().getEmail(),
+                internship.getPostedBy().getDiscipline(),
+                internship.getUploadDate()
         );
     }
 }

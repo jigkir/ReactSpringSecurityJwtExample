@@ -1,6 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
+import {formatDate} from '../cv/cvUtils.js';
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -22,7 +23,15 @@ const parseSkills = (raw) =>
         .map((skill) => skill.trim())
         .filter(Boolean);
 
-export default function InternshipCard({internship, OnDelete, OnEdit, footer, dark, hideStatus = false}) {
+export default function InternshipCard({
+                                           internship,
+                                           OnDelete,
+                                           OnEdit,
+                                           footer,
+                                           dark,
+                                           hideStatus = false,
+                                           showEmployer = false
+                                       }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
 
@@ -41,7 +50,7 @@ export default function InternshipCard({internship, OnDelete, OnEdit, footer, da
     const compensationText = internship.compensationNegotiable
         ? t("internshipCard.compensationTbd")
         : isUnpaid
-            ? "Unpaid"
+            ? t("internshipCard.compensationUnpaid")
             : t("internshipCard.compensationAmount", {amount: internship.compensationAmount});
 
     const editBtn = `p-1.5 rounded transition-colors ${dark
@@ -71,7 +80,7 @@ export default function InternshipCard({internship, OnDelete, OnEdit, footer, da
                     className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
                     role="note">
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
-                        Reason for rejection
+                        {t("internshipCard.rejectionReason")}
                     </p>
                     <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
                        style={{whiteSpace: "pre-wrap"}}>
@@ -111,15 +120,15 @@ export default function InternshipCard({internship, OnDelete, OnEdit, footer, da
                 </span>
 
                 {/* Start date: "play" icon = the internship begins */}
-                <span className={s.detailBadge} title="Internship start date">
+                <span className={s.detailBadge} title={t("internshipCard.startsTitle")}>
                     <Icon name="play_circle" size={20}/>
-                    <span className="font-medium">Starts</span> {internship.startDate}
+                    <span className="font-medium">{t("internshipCard.starts")}</span> {internship.startDate}
                 </span>
 
                 {/* Deadline: "hourglass" icon = time left to apply */}
-                <span className={s.detailBadge} title="Application deadline">
+                <span className={s.detailBadge} title={t("internshipCard.applyByTitle")}>
                     <Icon name="hourglass_bottom" size={20}/>
-                    <span className="font-medium">Apply by</span> {internship.applicationDeadline}
+                    <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
 
                 {/* Edit / Delete (employer only) */}
@@ -128,7 +137,7 @@ export default function InternshipCard({internship, OnDelete, OnEdit, footer, da
                         {OnEdit && (
                             <button
                                 className={editBtn}
-                                aria-label="Edit internship"
+                                aria-label={t("internshipCard.editAria")}
                                 onClick={() => OnEdit(internship)}
                             >
                                 <Icon name="edit" size={24}/>
@@ -147,11 +156,24 @@ export default function InternshipCard({internship, OnDelete, OnEdit, footer, da
                 )}
             </div>
 
-            {/* Footer actions (manager) */}
-            {footer && (
+            {/* Footer: manager info on the left, actions on the right */}
+            {(footer || showEmployer) && (
                 <div
-                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
-                    {footer}
+                    className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
+                    {showEmployer && (
+                        <div className="mr-auto flex flex-wrap items-center gap-2">
+                            <span className={`${s.detailBadge} break-all`}>{internship.employerEmail}</span>
+                            <span className={s.detailBadge}>
+                                <Icon name="home_work" size={20}/>
+                                {t(`disciplines.${(internship.discipline ?? "").toLowerCase()}`, {defaultValue: internship.discipline})}
+                            </span>
+                            <span className={s.detailBadge}>
+                                <Icon name="event" size={20}/>
+                                {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
+                            </span>
+                        </div>
+                    )}
+                    {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
                 </div>
             )}
         </div>
