@@ -337,6 +337,10 @@
     "rejectBtnAria": "Reject: {{title}}",
     "editReasonBtnAria": "Edit reason: {{title}}"
   },
+  "studentInternship": {
+    "title": "Available Internships",
+    "comingSoon": "Coming soon!"
+  },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",
     "searchAria": "Search",

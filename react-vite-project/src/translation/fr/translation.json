@@ -337,6 +337,10 @@
     "rejectBtnAria": "Refuser : {{title}}",
     "editReasonBtnAria": "Modifier le motif : {{title}}"
   },
+  "studentInternship": {
+    "title": "Stages disponibles",
+    "comingSoon": "Bientôt disponible !"
+  },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",
     "searchAria": "Rechercher",
