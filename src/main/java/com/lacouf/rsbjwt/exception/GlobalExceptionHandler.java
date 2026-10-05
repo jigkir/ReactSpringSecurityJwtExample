@@ -1,9 +1,7 @@
 package com.lacouf.rsbjwt.exception;
 
 import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
@@ -22,6 +20,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String MESSAGE_KEY = "message";
+    private static final String FIELD_KEY = "field";
+    private static final String FILE_TOO_LARGE = "File is too large.";
+    private static final String BAD_CREDENTIALS = "Incorrect email or password";
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
@@ -38,66 +41,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage(), "field", exception.getField()), exception.getStatus());
+        return new ResponseEntity<>(
+                Map.of(MESSAGE_KEY, exception.getMessage(), FIELD_KEY, exception.getField()),
+                exception.getStatus());
     }
 
     @ExceptionHandler(APIException.class)
     public ResponseEntity<Map<String, String>> handleApiException(APIException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), exception.getStatus());
+        return new ResponseEntity<>(Map.of(MESSAGE_KEY, exception.getMessage()), exception.getStatus());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleBadCredentials() {
-        return new ResponseEntity<>(Map.of("message", "Incorrect email or password"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(Map.of(MESSAGE_KEY, BAD_CREDENTIALS), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(InvalidFileTypeException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidFileTypeException(InvalidFileTypeException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(CorruptedFileException.class)
-    public ResponseEntity<Map<String, String>> handleCorruptedFileException(CorruptedFileException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.UNPROCESSABLE_CONTENT);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(InvalidFileSizeException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidFileSizeException(InvalidFileSizeException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONTENT_TOO_LARGE);
-    }
-
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
-        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.CONTENT_TOO_LARGE);
-    }
-
-    @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<Map<String, String>> handleMultipartException(MultipartException exception) {
-        return new ResponseEntity<>(Map.of("message", "File is too large."), HttpStatus.CONTENT_TOO_LARGE);
-    }
-
-    @ExceptionHandler(CVAlreadyPublicException.class)
-    public ResponseEntity<Map<String, String>> handleCVAlreadyPublicException(CVAlreadyPublicException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(CVAlreadyPrivateException.class)
-    public ResponseEntity<Map<String, String>> handleCVAlreadyPrivateException(CVAlreadyPrivateException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(CvNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleCVNotFoundException(CvNotFoundException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(NotificationNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotificationNotFoundException(NotificationNotFoundException exception) {
-        return new ResponseEntity<>(Map.of("message", exception.getMessage()), HttpStatus.NOT_FOUND);
+    @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
+    public ResponseEntity<Map<String, String>> handleFileTooLarge() {
+        return new ResponseEntity<>(Map.of(MESSAGE_KEY, FILE_TOO_LARGE), HttpStatus.CONTENT_TOO_LARGE);
     }
 }
