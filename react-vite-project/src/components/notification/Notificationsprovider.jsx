@@ -6,7 +6,7 @@ import {
     getUnreadNotificationCount,
     markCvNotificationsAsRead,
     markInternshipNotificationAsRead,
-} from './api/Api.jsx';
+} from '../api/Api.jsx';
 
 /**
  * Owns all notification data (fetching, counts, mark-as-read).

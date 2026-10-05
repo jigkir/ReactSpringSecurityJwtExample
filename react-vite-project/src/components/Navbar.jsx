@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
-import NotificationMenu from './NotificationMenu.jsx';
+import NotificationMenu from './notification/NotificationMenu.jsx';
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
