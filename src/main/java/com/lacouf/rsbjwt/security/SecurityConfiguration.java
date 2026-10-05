@@ -50,36 +50,10 @@ public class SecurityConfiguration {
     // LOGGED-IN USER PATH
     private static final String CURRENT_USER_PATH = "/api/users/current";
 
-    // CV PATHS
-    private static final String MAKE_CV_PUBLIC_PATH = "/api/student/{studentId}/cvs/{cvId}/public";
-    private static final String MAKE_CV_PRIVATE_PATH = "/api/student/{studentId}/cvs/{cvId}/private";
-    private static final String STUDENT_UPLOAD_CV_PATH = "/api/student/{studentId}/cvs";
-    private static final String STUDENT_DOWNLOAD_CV_PATH = "/api/student/{studentId}/cvs/**";
-    private static final String HIDE_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/hide";
-    private static final String MAIN_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/main";
-    private static final String SECONDARY_STUDENT_CV_PATH = "/api/student/{studentId}/cvs/{cvId}/secondary";
-    private static final String STUDENT_CV_COUNT_PATH = "/api/student/{studentId}/cvs/count";
-    private static final String STUDENT_CV_STATUS_PATH = "/api/student/{studentId}/cvs/{cvId}/status";
-
-    // STUDENT NOTIFICATIONS PATHS
-    private static final String STUDENT_NOTIFICATIONS_PATH = "/api/student/notifications";
-    private static final String STUDENT_INTERNSHIP_NOTIFICATION_READ_PATH = "/api/student/notifications/internship/read";
-    private static final String STUDENT_INTERNSHIP_NOTIFICATION_UNREAD_COUNT_PATH = "/api/student/notifications/internship/unread/count";
-    private static final String STUDENT_NOTIFICATION_READ_PATH = "/api/student/notifications/{notificationId}/read";
-
-    // INTERNSHIP PATHS
-    private static final String EMPLOYER_INTERNSHIP_CREATION_PATH = "/api/employer/internship";
-    private static final String EMPLOYER_INTERNSHIP_DELETION_PATH = "/api/employer/internships/{internshipId}";
-    private static final String EMPLOYER_INTERNSHIPS_BY_ID_PATH = "/api/employer/{employerId}/internships";
-
-    // MANAGER PATHS
+    // ROLES PATHS
+    private static final String STUDENT_PATH = "/api/student/**";
+    private static final String EMPLOYER_PATH = "/api/employer/**";
     private static final String MANAGER_PATH = "/api/manager/**";
-    private static final String MANAGER_NOTIFICATIONS_PATH = "/api/manager/notifications";
-    private static final String MANAGER_NOTIFICATION_READ_PATH = "/api/manager/notifications/{notificationId}/read";
-    private static final String MANAGER_APPROVE_CV_PATH = "/api/manager/cvs/{cvId}/approve";
-    private static final String MANAGER_REJECT_CV_PATH = "/api/manager/cvs/{cvId}/reject";
-    private static final String MANAGER_APPROVE_INTERNSHIP_PATH = "/api/manager/internships/{internshipId}/approve";
-    private static final String MANAGER_REJECT_INTERNSHIP_PATH = "/api/manager/internships/{internshipId}/reject";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -103,37 +77,10 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
                         // STUDENT : NOTIFICATIONS
-                        .requestMatchers(GET, STUDENT_NOTIFICATIONS_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, STUDENT_INTERNSHIP_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_INTERNSHIP_NOTIFICATION_UNREAD_COUNT_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, STUDENT_NOTIFICATION_READ_PATH).hasAuthority(Role.STUDENT.name())
-
-                        // STUDENT : CV
-                        .requestMatchers(GET, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_CV_COUNT_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_CV_STATUS_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(GET, STUDENT_DOWNLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(POST, STUDENT_UPLOAD_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, MAKE_CV_PUBLIC_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, MAKE_CV_PRIVATE_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, HIDE_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, MAIN_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
-                        .requestMatchers(PUT, SECONDARY_STUDENT_CV_PATH).hasAuthority(Role.STUDENT.name())
-
-                        // EMPLOYER : INTERNSHIP
-                        .requestMatchers(POST, EMPLOYER_INTERNSHIP_CREATION_PATH).hasAuthority(Role.EMPLOYER.name())
-                        .requestMatchers(PUT, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
-                        .requestMatchers(DELETE, EMPLOYER_INTERNSHIP_DELETION_PATH).hasAuthority(Role.EMPLOYER.name())
-                        .requestMatchers(GET, EMPLOYER_INTERNSHIPS_BY_ID_PATH).hasAuthority(Role.EMPLOYER.name())
-
-                        // MANAGER
-                        .requestMatchers(PUT, MANAGER_APPROVE_CV_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(PUT, MANAGER_REJECT_CV_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(PUT, MANAGER_APPROVE_INTERNSHIP_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(PUT, MANAGER_REJECT_INTERNSHIP_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(GET, MANAGER_NOTIFICATIONS_PATH).hasAuthority(Role.MANAGER.name())
-                        .requestMatchers(PUT, MANAGER_NOTIFICATION_READ_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(STUDENT_PATH).hasAuthority(Role.STUDENT.name())
+                        .requestMatchers(EMPLOYER_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+
                         .requestMatchers("/error").permitAll()
 
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed

@@ -23,12 +23,12 @@ function PostInternship({user}) {
     const visible = filters.visible ?? [];
 
     useEffect(() => {
-        if (!user?.id) return;
-        getEmployerInternships(user.id)
+        if (!user?.isLoggedIn) return;
+        getEmployerInternships()
             .then(setInternships)
             .catch(() => setError({key: "postInternship.loadError"}))
             .finally(() => setLoading(false));
-    }, [user?.id]);
+    }, [user?.isLoggedIn]);
 
     const openCreate = () => {
         setEditing(null);

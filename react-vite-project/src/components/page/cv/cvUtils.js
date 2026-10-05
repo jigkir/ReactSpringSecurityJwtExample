@@ -19,13 +19,6 @@ export const ACCEPTED_EXT = ".pdf";
 /** Bytes → whole megabytes, as a NUMBER (never a string). */
 export const bytesToMb = (bytes) => Math.round(bytes / (1024 * 1024));
 
-// ─── Student-ID resolution ────────────────────────────────────────────────────
-
-export function resolveStudentId(user) {
-    if (!user) return "";
-    return (user.studentId || user.matricule || user.id || "").toString();
-}
-
 // ─── File validation ──────────────────────────────────────────────────────────
 
 /** Returns { key, options } for t() when the file is invalid, or null when acceptable. */

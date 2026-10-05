@@ -15,9 +15,9 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
-import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -213,12 +213,12 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldReturnInternshipsByEmployerId() {
+    void shouldReturnInternshipsOfEmployer() {
         // Arrange
-        when(internshipRepository.findByPostedBy_IdAndDeletedIsFalse(1L)).thenReturn(List.of(internship));
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(EMPLOYER_EMAIL)).thenReturn(List.of(internship));
 
         // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsByEmployerId(1L);
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL);
 
         // Assert
         assert(Integer.valueOf(1)).equals(response.size());

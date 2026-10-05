@@ -1,9 +1,9 @@
-package com.lacouf.rsbjwt.service.dto.request;
+package com.lacouf.rsbjwt.service.dto.request.signup;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import jakarta.validation.constraints.*;
 
-public record TeacherSignUpDto(
+public record StudentSignUpDto(
         @NotBlank
         @Size(min = 2, max = 50)
         @Pattern(regexp = "^(?=.*\\p{L})[\\p{L}\\p{M}'’\\-. ]+$", message = "must contain at least one letter and only letters, spaces, hyphens, apostrophes and periods")
@@ -15,8 +15,8 @@ public record TeacherSignUpDto(
         String lastName,
 
         @NotBlank
-        @Pattern(regexp = "^[0-9]{5}$", message = "teacher ID must contain 5 digits")
-        String teacherId,
+        @Pattern(regexp = "^[0-9]{7}$", message = "student ID must contain 7 digits")
+        String studentId,
 
         @NotBlank
         @Size(max = 100)
@@ -32,7 +32,7 @@ public record TeacherSignUpDto(
         Discipline discipline
 ) {
 
-        public TeacherSignUpDto {
+        public StudentSignUpDto {
                 if (firstName != null) {
                         firstName = firstName.trim();
                 }
@@ -45,8 +45,8 @@ public record TeacherSignUpDto(
                         email = email.trim().toLowerCase();
                 }
 
-                if (teacherId != null) {
-                        teacherId = teacherId.trim();
+                if (studentId != null) {
+                        studentId = studentId.trim();
                 }
         }
 }

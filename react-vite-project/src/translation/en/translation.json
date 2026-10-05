@@ -289,7 +289,6 @@
   },
   "cv": {
     "goToDashboard": "Go to my dashboard",
-    "studentIdMissing": "Student ID not found. Please log out and log back in.",
     "uploadFailed": "Upload failed. Please try again.",
     "fileTooLarge": "Your file is too large. The maximum allowed size is {{mb}} MB.",
     "fileInvalid": "The file appears to be corrupted or invalid. Please select another one."
@@ -336,6 +335,10 @@
     "approveBtnAria": "Approve: {{title}}",
     "rejectBtnAria": "Reject: {{title}}",
     "editReasonBtnAria": "Edit reason: {{title}}"
+  },
+  "studentInternship": {
+    "title": "Available Internships",
+    "comingSoon": "Coming soon!"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",

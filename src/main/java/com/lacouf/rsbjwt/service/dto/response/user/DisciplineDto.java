@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.response;
+package com.lacouf.rsbjwt.service.dto.response.user;
 
 import com.lacouf.rsbjwt.model.Discipline;
 

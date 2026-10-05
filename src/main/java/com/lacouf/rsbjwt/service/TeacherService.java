@@ -7,8 +7,8 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.TeacherRepository;
 import com.lacouf.rsbjwt.repository.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.dto.request.TeacherSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

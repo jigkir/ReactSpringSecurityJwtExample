@@ -77,10 +77,9 @@ const Login = ({user, setError}) => {
             }
 
             if (userData.role === "STUDENT") {
-                const studentId = userData.studentId || userData.matricule || userData.id;
                 let hasCv = false;
                 try {
-                    const count = await getCvCount(studentId);
+                    const count = await getCvCount();
                     hasCv = count > 0;
                 } catch { /* fallback: send to /cv */ }
                 navigate(hasCv ? "/home" : "/cv");

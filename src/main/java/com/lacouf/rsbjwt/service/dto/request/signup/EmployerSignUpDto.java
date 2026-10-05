@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.request;
+package com.lacouf.rsbjwt.service.dto.request.signup;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import jakarta.validation.constraints.*;

@@ -22,7 +22,7 @@ import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import CvUpload from '../cv/CvUpload.jsx';
 import CvDocuments from '../cv/CvDocuments.jsx';
 import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';
-import {ACCEPTED_EXT, bytesToMb, FALLBACK_MAX_BYTES, resolveStudentId, STATE, validateFile,} from '../cv/cvUtils.js';
+import {ACCEPTED_EXT, bytesToMb, FALLBACK_MAX_BYTES, STATE, validateFile,} from '../cv/cvUtils.js';
 
 // ─── API helpers (thin wrappers with fallbacks; HTTP itself is in Api.jsx) ────
 
@@ -34,9 +34,9 @@ async function fetchMaxBytes() {
     }
 }
 
-async function hasResume(studentId) {
+async function hasResume() {
     try {
-        return (await getCvCount(studentId)) > 0;
+        return (await getCvCount()) > 0;
     } catch {
         return false;
     }
@@ -50,7 +50,6 @@ const Cv = ({user}) => {
     const {t} = useTranslation();
     const {pageClass} = getAuthClasses(dark);
 
-    const studentId = resolveStudentId(user);
     const isLoggedIn = user?.isLoggedIn ?? false;
 
     const fileInputRef = useRef(null);
@@ -71,17 +70,8 @@ const Cv = ({user}) => {
     useEffect(() => {
         if (!isLoggedIn) return;
 
-        if (!studentId) {
-            console.warn(
-                "[Cv] Could not find studentId in user object. Received keys:",
-                Object.keys(user ?? {}),
-            );
-            setUploadState(STATE.IDLE);
-            return;
-        }
-
         let cancelled = false;
-        Promise.all([fetchMaxBytes(), hasResume(studentId)]).then(([bytes, exists]) => {
+        Promise.all([fetchMaxBytes(), hasResume()]).then(([bytes, exists]) => {
             if (cancelled) return;
             setMaxBytes(bytes);
             setUploadState(exists ? STATE.EXISTING : STATE.IDLE);
@@ -90,7 +80,7 @@ const Cv = ({user}) => {
         return () => {
             cancelled = true;
         };
-    }, [isLoggedIn, studentId]);
+    }, [isLoggedIn]);
 
     // ── File selection ────────────────────────────────────────────────────────
 
@@ -154,17 +144,11 @@ const Cv = ({user}) => {
     const handleUpload = async () => {
         if (!selectedFile || uploadState === STATE.UPLOADING) return;
 
-        if (!studentId) {
-            setServerError({key: "cv.studentIdMissing"});
-            setUploadState(STATE.ERROR);
-            return;
-        }
-
         setUploadState(STATE.UPLOADING);
         setServerError(null);
 
         try {
-            await uploadCv(studentId, selectedFile);
+            await uploadCv(selectedFile);
             setUploadState(STATE.SUCCESS);
         } catch (err) {
             console.error("Upload failed:", err.status, err.body);
@@ -224,7 +208,6 @@ const Cv = ({user}) => {
                         onChange={(e) => handleFileChosen(e.target.files?.[0])}
                     />
                     <CvDocuments
-                        studentId={studentId}
                         dark={dark}
                         onAddClick={startReplacing}
                     />

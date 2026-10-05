@@ -14,15 +14,11 @@ import java.util.Optional;
 
 @Repository
 public interface CVRepository extends JpaRepository<CV, Long> {
-    long countByStudent(Student student);
-
     List<CV> findByStudent(Student student);
 
     CV findByStudentAndPriority(Student student, CvPriority priority);
 
-    Optional<CV> findByIdAndSharingScope(long id, CVSharingScope sharingScope);
-
-    List<CV> findBySharingScope(CVSharingScope sharingScope);
+    Optional<CV> findByIdAndStudent_Credentials_Email(long id, String email);
 
     long countByStudentAndVisibility(Student student, CvVisibility visibility);
 

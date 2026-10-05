@@ -6,7 +6,7 @@ import {
     getUnreadNotificationCount,
     markCvNotificationsAsRead,
     markInternshipNotificationAsRead,
-} from './api/Api.jsx';
+} from '../api/Api.jsx';
 
 /**
  * Owns all notification data (fetching, counts, mark-as-read).
@@ -19,6 +19,8 @@ import {
 const EMPTY_COUNTS = {manager: 0, internship: 0, cvApproved: 0, cvRejected: 0};
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
+
+const hasToken = () => Boolean(localStorage.getItem("token"));
 
 const NotificationsContext = createContext({
     items: [],
@@ -39,7 +41,7 @@ export function NotificationsProvider({user, children}) {
     const refresh = useCallback(async () => {
         const id = ++requestId.current;
 
-        if (!userId) {
+        if (!userId || !hasToken()) {
             setCounts(EMPTY_COUNTS);
             return;
         }
@@ -57,7 +59,7 @@ export function NotificationsProvider({user, children}) {
 
         if (role === "STUDENT") {
             const [unread, list] = await Promise.allSettled([
-                getUnreadNotificationCount(userId),
+                getUnreadNotificationCount(),
                 getStudentNotifications(),
             ]);
             if (id !== requestId.current) return;

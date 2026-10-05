@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.request;
+package com.lacouf.rsbjwt.service.dto.request.internship;
 
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import jakarta.validation.constraints.*;

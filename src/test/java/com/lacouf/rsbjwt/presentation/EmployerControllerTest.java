@@ -9,10 +9,10 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.EmployerService;
-import com.lacouf.rsbjwt.service.dto.request.EmployerSignUpDto;
-import com.lacouf.rsbjwt.service.dto.request.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.response.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -295,16 +295,16 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInternshipsOfEmployer() throws Exception {
         // Arrange
-        when(employerService.getInternshipsByEmployerId(1L)).thenReturn(List.of(internshipResponse()));
+        when(employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(internshipResponse()));
 
         // Act + Assert
-        mockMvc.perform(get("/api/employer/1/internships"))
+        mockMvc.perform(get("/api/employer/internships").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].title").value("Software Developer"))
                 .andExpect(jsonPath("$[0].employerId").value(1));
 
-        verify(employerService).getInternshipsByEmployerId(1L);
+        verify(employerService).getInternshipsOfEmployer(EMPLOYER_EMAIL);
     }
 }

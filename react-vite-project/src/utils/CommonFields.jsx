@@ -3,12 +3,13 @@ import Icon from '../styles/Icon.jsx';
 
 export const RoleField = ({
     value, onChange, labelClass, errorClass, fieldClass,
-    label = "Role", options = [], loading = false, fetchError = "",
+                              label, options = [], loading = false, fetchError = "",
 }) => {
     const {t} = useTranslation();
+    const effectiveLabel = label ?? t("commonFields.role");
     const roleOptions = options.map(v => ({value: v, label: t(`signup.${v}`)}));
     return (
-        <Field id="role" label={label} warning={fetchError} labelClass={labelClass} errorClass={errorClass}>
+        <Field id="role" label={effectiveLabel} warning={fetchError} labelClass={labelClass} errorClass={errorClass}>
             <select
                 id="role" name="role"
                 value={value} onChange={onChange}
@@ -16,7 +17,7 @@ export const RoleField = ({
                 disabled={loading}
             >
                 <option value="">
-                    {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectXText", {selectType: label.toLowerCase()})}
+                    {loading ? t("commonFields.loading") : fetchError ? t("commonFields.fetchError") : t("commonFields.selectXText", {selectType: effectiveLabel.toLowerCase()})}
                 </option>
                 {roleOptions.map(({value: v, label: l}) => (
                     <option key={v} value={v}>{l}</option>

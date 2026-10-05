@@ -2,8 +2,8 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.TeacherService;
-import com.lacouf.rsbjwt.service.dto.request.TeacherSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.UserResponseDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

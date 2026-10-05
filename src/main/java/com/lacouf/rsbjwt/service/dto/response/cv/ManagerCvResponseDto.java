@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.response;
+package com.lacouf.rsbjwt.service.dto.response.cv;
 
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
