@@ -295,16 +295,16 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInternshipsOfEmployer() throws Exception {
         // Arrange
-        when(employerService.getInternshipsByEmployerId(1L)).thenReturn(List.of(internshipResponse()));
+        when(employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(internshipResponse()));
 
         // Act + Assert
-        mockMvc.perform(get("/api/employer/1/internships"))
+        mockMvc.perform(get("/api/employer/internships").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].title").value("Software Developer"))
                 .andExpect(jsonPath("$[0].employerId").value(1));
 
-        verify(employerService).getInternshipsByEmployerId(1L);
+        verify(employerService).getInternshipsOfEmployer(EMPLOYER_EMAIL);
     }
 }

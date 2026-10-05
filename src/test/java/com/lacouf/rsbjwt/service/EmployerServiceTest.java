@@ -213,12 +213,12 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldReturnInternshipsByEmployerId() {
+    void shouldReturnInternshipsOfEmployer() {
         // Arrange
-        when(internshipRepository.findByPostedBy_IdAndDeletedIsFalse(1L)).thenReturn(List.of(internship));
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(EMPLOYER_EMAIL)).thenReturn(List.of(internship));
 
         // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsByEmployerId(1L);
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL);
 
         // Assert
         assert(Integer.valueOf(1)).equals(response.size());

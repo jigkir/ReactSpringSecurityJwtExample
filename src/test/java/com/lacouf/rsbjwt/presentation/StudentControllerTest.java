@@ -4,16 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.model.*;
-import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.TargetType;
-import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvPriority;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
-import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.exception.cv.CVAlreadyPublicException;
 import com.lacouf.rsbjwt.exception.cv.CVAlreadyPrivateException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
@@ -64,22 +61,14 @@ public class StudentControllerTest {
     private MockMvc mockMvc;
 
     private ObjectMapper objectMapper;
-    private Student dummyStudent;
+
+    private static final String STUDENT_EMAIL = "test@claurendeau.qc.ca";
+    private final Authentication authentication = new UsernamePasswordAuthenticationToken(STUDENT_EMAIL, null);
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-
-        dummyStudent = new Student(
-                "First Name", "Last Name", "1234567",
-                Credentials.builder().email("test@claurendeau.qc.ca").role(Role.STUDENT).build(),
-                Discipline.COMPUTER_SCIENCE
-        );
-        dummyStudent.setId(1L);
     }
-
-    private final Authentication authentication = new UsernamePasswordAuthenticationToken("test@claurendeau.qc.ca", null);
-
 
     @MockitoBean
     private StudentService studentService;
@@ -197,10 +186,9 @@ public class StudentControllerTest {
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
         StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING, null);
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        when(studentService.getCVs(dummyStudent.getId())).thenReturn(List.of(studentCvResponseDto));
+        when(studentService.getCVs(STUDENT_EMAIL)).thenReturn(List.of(studentCvResponseDto));
 
-        mockMvc.perform(get("/api/student/1/cvs"))
+        mockMvc.perform(get("/api/student/cvs").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(10))
@@ -212,27 +200,26 @@ public class StudentControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingCVsForNonExistentStudent() throws Exception {
-        when(studentService.getCVs(99L)).thenThrow(new UserNotFoundException());
+        when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new UserNotFoundException());
 
-        mockMvc.perform(get("/api/student/99/cvs"))
+        mockMvc.perform(get("/api/student/cvs").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldGetCVCountSuccessfully() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        when(studentService.getCVCountByStudentId(dummyStudent.getId())).thenReturn(3L);
+        when(studentService.getCVCount(STUDENT_EMAIL)).thenReturn(3L);
 
-        mockMvc.perform(get("/api/student/1/cvs/count"))
+        mockMvc.perform(get("/api/student/cvs/count").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
 
     @Test
     void shouldReturnNotFoundWhenGettingCVCountForNonExistentStudent() throws Exception {
-        when(studentService.getCVCountByStudentId(99L)).thenThrow(new UserNotFoundException());
+        when(studentService.getCVCount(STUDENT_EMAIL)).thenThrow(new UserNotFoundException());
 
-        mockMvc.perform(get("/api/student/99/cvs/count"))
+        mockMvc.perform(get("/api/student/cvs/count").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -240,121 +227,86 @@ public class StudentControllerTest {
 
     @Test
     void shouldHideCVSuccessfully() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCvAsInvisible(dummyStudent.getId(), 10L);
-
-        mockMvc.perform(put("/api/student/1/cvs/10/hide"))
+        mockMvc.perform(put("/api/student/cvs/10/hide").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV hidden successfully"));
 
-        verify(studentService).setCvAsInvisible(dummyStudent.getId(), 10L);
+        verify(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
     }
 
     @Test
-    void shouldReturnNotFoundWhenHidingCVForNonExistentStudent() throws Exception {
-        doThrow(new UserNotFoundException()).when(studentService).setCvAsInvisible(99L, 10L);
+    void shouldReturnNotFoundWhenHidingCvNotOwnedByStudent() throws Exception {
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
 
-        mockMvc.perform(put("/api/student/99/cvs/10/hide"))
+        mockMvc.perform(put("/api/student/cvs/10/hide").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldMakeCVPublicSuccessfully() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCvAsPublic(dummyStudent.getId(), 10L);
-
-        mockMvc.perform(put("/api/student/1/cvs/10/public"))
+        mockMvc.perform(put("/api/student/cvs/10/public").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made public successfully"));
 
-        verify(studentService).setCvAsPublic(dummyStudent.getId(), 10L);
+        verify(studentService).setCvAsPublic(STUDENT_EMAIL, 10L);
     }
 
     @Test
     void shouldReturnConflictWhenCVAlreadyPublic() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CVAlreadyPublicException("CV is already public")).when(studentService).setCvAsPublic(dummyStudent.getId(), 10L);
+        doThrow(new CVAlreadyPublicException("CV is already public")).when(studentService).setCvAsPublic(STUDENT_EMAIL, 10L);
 
-        mockMvc.perform(put("/api/student/1/cvs/10/public"))
+        mockMvc.perform(put("/api/student/cvs/10/public").principal(authentication))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void shouldMakeCVPrivateSuccessfully() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
-
-        mockMvc.perform(put("/api/student/1/cvs/10/private"))
+        mockMvc.perform(put("/api/student/cvs/10/private").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made private successfully"));
 
-        verify(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
+        verify(studentService).setCvAsPrivate(STUDENT_EMAIL, 10L);
     }
 
     @Test
     void shouldReturnConflictWhenCVAlreadyPrivate() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CVAlreadyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(dummyStudent.getId(), 10L);
+        doThrow(new CVAlreadyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(STUDENT_EMAIL, 10L);
 
-        mockMvc.perform(put("/api/student/1/cvs/10/private"))
+        mockMvc.perform(put("/api/student/cvs/10/private").principal(authentication))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void shouldMakeCVSecondarySuccessfully() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCVAsSecondary(dummyStudent.getId(), 10L);
-
-        mockMvc.perform(put("/api/student/1/cvs/10/secondary"))
+        mockMvc.perform(put("/api/student/cvs/10/secondary").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made secondary successfully"));
 
-        verify(studentService).setCVAsSecondary(dummyStudent.getId(), 10L);
+        verify(studentService).setCVAsSecondary(STUDENT_EMAIL, 10L);
     }
 
     @Test
-    void shouldReturnNotFoundWhenMakingCVSecondaryForNonExistentStudent() throws Exception {
-        doThrow(new UserNotFoundException()).when(studentService).setCVAsSecondary(99L, 10L);
+    void shouldReturnNotFoundWhenMakingSecondaryForCvNotOwnedByStudent() throws Exception {
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsSecondary(STUDENT_EMAIL, 999L);
 
-        mockMvc.perform(put("/api/student/99/cvs/10/secondary"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenMakingSecondaryForNonExistentCv() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsSecondary(dummyStudent.getId(), 999L);
-
-        mockMvc.perform(put("/api/student/1/cvs/999/secondary"))
+        mockMvc.perform(put("/api/student/cvs/999/secondary").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldMakeCVMainSuccessfully() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doNothing().when(studentService).setCVAsMain(dummyStudent.getId(), 10L);
-
-        mockMvc.perform(put("/api/student/1/cvs/10/main"))
+        mockMvc.perform(put("/api/student/cvs/10/main").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV made main successfully"));
 
-        verify(studentService).setCVAsMain(dummyStudent.getId(), 10L);
+        verify(studentService).setCVAsMain(STUDENT_EMAIL, 10L);
     }
 
     @Test
-    void shouldReturnNotFoundWhenMakingCVMainForNonExistentStudent() throws Exception {
-        doThrow(new UserNotFoundException()).when(studentService).setCVAsMain(99L, 10L);
+    void shouldReturnNotFoundWhenMakingMainForCvNotOwnedByStudent() throws Exception {
+        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsMain(STUDENT_EMAIL, 999L);
 
-        mockMvc.perform(put("/api/student/99/cvs/10/main"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenMakingMainForNonExistentCv() throws Exception {
-        when(studentService.findById(1L)).thenReturn(dummyStudent);
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsMain(dummyStudent.getId(), 999L);
-
-        mockMvc.perform(put("/api/student/1/cvs/999/main"))
+        mockMvc.perform(put("/api/student/cvs/999/main").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -362,20 +314,28 @@ public class StudentControllerTest {
     void shouldUploadCvSuccessfully() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
-        mockMvc.perform(multipart("/api/student/1/cvs").file(file))
+        mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
                 .andExpect(status().isCreated());
 
-        verify(studentService).uploadCV(any(CvUploadDto.class), eq(1L));
+        verify(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
     }
 
     @Test
     void shouldReturnCvFileSuccessfully() throws Exception {
-        when(studentService.getCVByStudentId(1L, 10L)).thenReturn(new CvFileResponseDto(10L, "my_cv.pdf", "pdf".getBytes()));
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenReturn(new CvFileResponseDto(10L, "my_cv.pdf", "pdf".getBytes()));
 
-        mockMvc.perform(get("/api/student/1/cvs/10"))
+        mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileName").value("my_cv.pdf"))
                 .andExpect(jsonPath("$.content").value("cGRm"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingCvNotOwnedByStudent() throws Exception {
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException("CV not found"));
+
+        mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
+                .andExpect(status().isNotFound());
     }
 
     // Notification Tests

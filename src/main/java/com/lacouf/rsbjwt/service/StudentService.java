@@ -86,14 +86,9 @@ public class StudentService {
         return UserResponseDto.of(student);
     }
 
-    public Student findById(long id) throws UserNotFoundException {
-        return studentRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
-    }
-
     @Transactional
-    public void uploadCV(CvUploadDto upload, long studentId) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException {
-        Student student = findById(studentId);
+    public void uploadCV(CvUploadDto upload, String email) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException {
+        Student student = findByEmail(email);
 
         saveCV(upload, student);
     }
@@ -138,16 +133,12 @@ public class StudentService {
         }
     }
 
-    public long getCVCountByStudentId(long id) throws UserNotFoundException {
-        Student student = findById(id);
-
-        return cvRepository.countByStudentAndVisibility(student, CvVisibility.VISIBLE);
+    public long getCVCount(String email) throws UserNotFoundException {
+        return cvRepository.countByStudentAndVisibility(findByEmail(email), CvVisibility.VISIBLE);
     }
 
-    public List<StudentCvResponseDto> getCVs(long id) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
-        Student student = findById(id);
-
-        List<CV> cvs = cvRepository.findByStudent(student);
+    public List<StudentCvResponseDto> getCVs(String email) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
+        List<CV> cvs = cvRepository.findByStudent(findByEmail(email));
         List<StudentCvResponseDto> studentCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
             if (!isCVReadable(cv)) {
@@ -166,9 +157,8 @@ public class StudentService {
     }
 
     @Transactional
-    public void setCvAsInvisible(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
-        Student student = findById(id);
-        CV cv = validateAndGetStudentCv(student, cvId);
+    public void setCvAsInvisible(String email, long cvId) throws CvNotFoundException {
+        CV cv = findStudentCv(email, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
 
@@ -176,9 +166,8 @@ public class StudentService {
     }
 
     @Transactional
-    public void setCvAsPublic(long id, long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
-        Student student = findById(id);
-        CV cv = validateAndGetStudentCv(student, cvId);
+    public void setCvAsPublic(String email, long cvId) throws CVAlreadyPublicException, CvNotFoundException {
+        CV cv = findStudentCv(email, cvId);
 
         if (cv.getSharingScope() == CVSharingScope.PUBLIC) {
             throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
@@ -191,18 +180,16 @@ public class StudentService {
     }
 
     @Transactional
-    public void setCVAsSecondary(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
-        Student student = findById(id);
-        CV cv = validateAndGetStudentCv(student, cvId);
+    public void setCVAsSecondary(String email, long cvId) throws CvNotFoundException {
+        CV cv = findStudentCv(email, cvId);
         cv.setPriority(CvPriority.SECONDARY);
         cvRepository.save(cv);
     }
 
     @Transactional
-    public void setCVAsMain(long id, long cvId) throws UserNotFoundException, CvNotFoundException {
-        Student student = findById(id);
-        CV cv = validateAndGetStudentCv(student, cvId);
-        CV currentMainCv = cvRepository.findByStudentAndPriority(student, CvPriority.MAIN);
+    public void setCVAsMain(String email, long cvId) throws CvNotFoundException {
+        CV cv = findStudentCv(email, cvId);
+        CV currentMainCv = cvRepository.findByStudentAndPriority(cv.getStudent(), CvPriority.MAIN);
         if (currentMainCv != null && !currentMainCv.getId().equals(cvId)) {
             currentMainCv.setPriority(CvPriority.SECONDARY);
             cvRepository.save(currentMainCv);
@@ -212,9 +199,8 @@ public class StudentService {
     }
 
     @Transactional
-    public void setCvAsPrivate(long id, long cvId) throws UserNotFoundException, CVAlreadyPrivateException, CvNotFoundException {
-        Student student = findById(id);
-        CV cv = validateAndGetStudentCv(student, cvId);
+    public void setCvAsPrivate(String email, long cvId) throws CVAlreadyPrivateException, CvNotFoundException {
+        CV cv = findStudentCv(email, cvId);
         if (cv.getSharingScope() == CVSharingScope.PRIVATE) {
             throw new CVAlreadyPrivateException("The CV with ID " + cvId + " is already private.");
         }
@@ -224,18 +210,16 @@ public class StudentService {
         closeCvNotifications(cvId);
     }
 
-    public CvFileResponseDto getCVByStudentId(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
-        Student student = findById(studentId);
-        CV cv = validateAndGetStudentCv(student, cvId);
+    public CvFileResponseDto getCV(String email, long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+        CV cv = findStudentCv(email, cvId);
         if (!isCVReadable(cv)) {
             throw new CorruptedFileException("The CV with ID " + cv.getId() + " is corrupted or unreadable.");
         }
         return CvFileResponseDto.of(cv);
     }
 
-    public String getCVStatus(long studentId, long cvId) throws UserNotFoundException, CvNotFoundException {
-        Student student = findById(studentId);
-        CV cv = validateAndGetStudentCv(student, cvId);
+    public String getCVStatus(String email, long cvId) throws CvNotFoundException {
+        CV cv = findStudentCv(email, cvId);
         return cv.getStatus().name();
     }
 
@@ -300,18 +284,6 @@ public class StudentService {
         notificationRepository.save(notification);
     }
 
-    private CV validateAndGetStudentCv(Student student, long cvId) throws UserNotFoundException, CvNotFoundException {
-        if (student == null) {
-            throw new UserNotFoundException();
-        }
-        CV cv = findCvById(cvId);
-        Student cvStudent = cv.getStudent();
-        if (!Objects.equals(student.getId(), cvStudent.getId())) {
-            throw new CvNotFoundException("CV does not belong to the student with ID " + student.getId());
-        }
-        return cv;
-    }
-
     private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
         Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
         Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
@@ -350,11 +322,11 @@ public class StudentService {
         return HexFormat.of().formatHex(hashBytes);
     }
 
-    private CV findCvById(long cvId) throws CvNotFoundException {
-        CV cv = cvRepository.findById(cvId).orElse(null);
-        if (cv == null) {
-            throw new CvNotFoundException("CV with ID " + cvId + " not found.");
-        }
-        return cv;
+    private Student findByEmail(String email) throws UserNotFoundException {
+        return studentRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    private CV findStudentCv(String email, long cvId) throws CvNotFoundException {
+        return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
     }
 }

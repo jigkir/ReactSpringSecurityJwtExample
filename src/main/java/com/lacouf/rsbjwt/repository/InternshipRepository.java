@@ -10,9 +10,13 @@ import java.util.Optional;
 
 @Repository
 public interface InternshipRepository extends JpaRepository<Internship, Long> {
-    List<Internship> findByPostedBy_IdAndDeletedIsFalse(Long id);
     Optional<Internship> findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(long id, String employerEmail);
+
     List<Internship> findByStatusAndDeletedFalse(InternshipStatus status);
+
     Optional<Internship> findByIdAndDeletedFalse(long id);
+
     List<Internship> findByDeletedFalse();
+
+    List<Internship> findByPostedBy_Credentials_EmailAndDeletedIsFalse(String email);
 }

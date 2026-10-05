@@ -113,8 +113,8 @@ export const signupEmployer = (payload) => postJson("employer/signup", payload);
 // endregion
 
 // region Student CVs
-export async function getCvCount(studentId) {
-    const response = await fetcher(`student/${studentId}/cvs/count`, {});
+export async function getCvCount() {
+    const response = await fetcher(`student/cvs/count`, {});
     return handleResponse(response);
 }
 
@@ -126,10 +126,10 @@ export async function getMaxCvSize() {
 
 // Uploads a PDF (multipart). Do NOT set Content-Type: the browser adds the multipart boundary.
 // Throws an Error with .status on failure.
-export async function uploadCv(studentId, file) {
+export async function uploadCv(file) {
     const form = new FormData();
     form.append("file", file);
-    const response = await fetcher(`student/${studentId}/cvs`, {
+    const response = await fetcher(`student/cvs`, {
         method: "POST",
         headers: {Accept: "application/json"},
         body: form,
@@ -137,30 +137,30 @@ export async function uploadCv(studentId, file) {
     return handleEmpty(response);
 }
 
-export async function getStudentCvs(studentId) {
-    const response = await fetcher(`student/${studentId}/cvs`, {method: "GET"});
+export async function getStudentCvs() {
+    const response = await fetcher(`student/cvs`, {method: "GET"});
     return handleResponse(response);
 }
 
 // Returns {id, fileName, content (Base64)}
-export async function getStudentCvFile(studentId, cvId) {
-    const response = await fetcher(`student/${studentId}/cvs/${cvId}`, {method: "GET"});
+export async function getStudentCvFile(cvId) {
+    const response = await fetcher(`student/cvs/${cvId}`, {method: "GET"});
     return handleResponse(response);
 }
 
 // scope: "public" | "private"
-export async function setCvScope(studentId, cvId, scope) {
-    const response = await fetcher(`student/${studentId}/cvs/${cvId}/${scope}`, {method: "PUT"});
+export async function setCvScope(cvId, scope) {
+    const response = await fetcher(`student/cvs/${cvId}/${scope}`, {method: "PUT"});
     return handleEmpty(response);
 }
 
-export async function hideCv(studentId, cvId) {
-    const response = await fetcher(`student/${studentId}/cvs/${cvId}/hide`, {method: "PUT"});
+export async function hideCv(cvId) {
+    const response = await fetcher(`student/cvs/${cvId}/hide`, {method: "PUT"});
     return handleEmpty(response);
 }
 
-export async function setMainCv(studentId, cvId) {
-    const response = await fetcher(`student/${studentId}/cvs/${cvId}/main`, {method: "PUT"});
+export async function setMainCv(cvId) {
+    const response = await fetcher(`student/cvs/${cvId}/main`, {method: "PUT"});
     return handleEmpty(response);
 }
 
@@ -198,8 +198,8 @@ export async function rejectCv(cvId, comment) {
 // endregion
 
 // region Internship
-export async function getEmployerInternships(employerId) {
-    const response = await fetcher(`employer/${employerId}/internships`, {});
+export async function getEmployerInternships() {
+    const response = await fetcher(`employer/internships`, {});
     return handleResponse(response);
 }
 

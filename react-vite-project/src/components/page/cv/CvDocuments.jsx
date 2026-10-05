@@ -29,7 +29,6 @@
  * so an open PDF preview is not reloaded when the language changes.
  *
  * Props
- *   studentId   string    required in student mode
  *   dark        boolean
  *   mode        "student" | "manager"
  *   api         object    optional override
@@ -59,13 +58,13 @@ import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
-const buildStudentApi = (studentId) => ({
-    list: () => getStudentCvs(studentId),
-    file: (cvId) => getStudentCvFile(studentId, cvId),
-    setScope: (cvId, scope) => setCvScope(studentId, cvId, scope),
-    hide: (cvId) => hideCv(studentId, cvId),
-    makeMain: (cvId) => setMainCv(studentId, cvId),
-});
+const studentApi = {
+    list: getStudentCvs,
+    file: getStudentCvFile,
+    setScope: setCvScope,
+    hide: hideCv,
+    makeMain: setMainCv,
+};
 
 const managerApi = {
     list: getPublicCvs,
@@ -89,15 +88,15 @@ const STATUS_ICON = {
     REJECTED: "close",
 };
 
-const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClick}) => {
+const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
     const {t, i18n} = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isManager = mode === "manager";
 
     // Stable reference avoids a reload loop; hook is always called (no conditional hooks).
     const defaultApi = useMemo(
-        () => (isManager ? managerApi : buildStudentApi(studentId)),
-        [isManager, studentId],
+        () => (isManager ? managerApi : studentApi),
+        [isManager],
     );
     const api = apiProp ?? defaultApi;
 
@@ -145,8 +144,8 @@ const CvDocuments = ({studentId, dark, mode = "student", api: apiProp, onAddClic
     }, [api, isManager]);
 
     useEffect(() => {
-        if (isManager || studentId) void load();
-    }, [load, isManager, studentId]);
+        void load();
+    }, [load]);
 
     // Student: list as loaded. Manager: filtered + sorted list from the hook.
     const visibleDocs = docs === null ? null : isManager ? filters.visible : docs;

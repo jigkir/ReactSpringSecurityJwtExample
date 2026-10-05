@@ -51,8 +51,8 @@ public class EmployerController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/{employerId}/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(@PathVariable long employerId) {
-        return ResponseEntity.ok(employerService.getInternshipsByEmployerId(employerId));
+    @GetMapping("/internships")
+    public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication) {
+        return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName()));
     }
 }

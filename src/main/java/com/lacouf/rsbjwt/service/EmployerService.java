@@ -138,8 +138,8 @@ public class EmployerService {
         internshipRepository.save(internship);
     }
 
-    public List<InternshipResponseDto> getInternshipsByEmployerId(long employerId) {
-        List<Internship> internships = internshipRepository.findByPostedBy_IdAndDeletedIsFalse(employerId);
+    public List<InternshipResponseDto> getInternshipsOfEmployer(String email) {
+        List<Internship> internships = internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(email);
         return internships.stream()
                 .map(InternshipResponseDto::of)
                 .toList();

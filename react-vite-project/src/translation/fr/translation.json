@@ -289,7 +289,6 @@
   },
   "cv": {
     "goToDashboard": "Accéder à mon tableau de bord",
-    "studentIdMissing": "Identifiant étudiant introuvable. Veuillez vous déconnecter et vous reconnecter.",
     "uploadFailed": "Le téléversement a échoué. Veuillez réessayer.",
     "fileTooLarge": "Votre fichier est trop volumineux. La taille maximale autorisée est de {{mb}} Mo.",
     "fileInvalid": "Le fichier semble corrompu ou invalide. Veuillez en sélectionner un autre."

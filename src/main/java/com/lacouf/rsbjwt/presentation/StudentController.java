@@ -36,70 +36,70 @@ public class StudentController {
         return new ResponseEntity<>(signedUpStudent, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}/cvs")
-    public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, @PathVariable long id) throws IOException, UserNotFoundException, InvalidFileTypeException, NoSuchAlgorithmException, CorruptedFileException, InvalidFileSizeException {
+    @PostMapping("/cvs")
+    public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication) throws IOException, UserNotFoundException, InvalidFileTypeException, NoSuchAlgorithmException, CorruptedFileException, InvalidFileSizeException {
         CvUploadDto upload = new CvUploadDto(file.getBytes(), file.getOriginalFilename());
 
-        studentService.uploadCV(upload, id);
+        studentService.uploadCV(upload, authentication.getName());
 
         return new ResponseEntity<>("CV uploaded successfully", HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/cvs")
-    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(@PathVariable long id)
+    @GetMapping("/cvs")
+    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(Authentication authentication)
             throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
 
-        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(id);
+        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(authentication.getName());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(studentCvResponseDtos);
     }
 
-    @GetMapping("/{id}/cvs/count")
-    public ResponseEntity<Long> getCVCount(@PathVariable long id) throws UserNotFoundException {
-        long cvCount = studentService.getCVCountByStudentId(id);
+    @GetMapping("/cvs/count")
+    public ResponseEntity<Long> getCVCount(Authentication authentication) throws UserNotFoundException {
+        long cvCount = studentService.getCVCount(authentication.getName());
         return new ResponseEntity<>(cvCount, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/cvs/{cvId}/hide")
-    public ResponseEntity<String> hideCV(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
-        studentService.setCvAsInvisible(id, cvId);
+    @PutMapping("/cvs/{cvId}/hide")
+    public ResponseEntity<String> hideCV(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
+        studentService.setCvAsInvisible(authentication.getName(), cvId);
         return new ResponseEntity<>("CV hidden successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/cvs/{cvId}/public")
-    public ResponseEntity<String> makeCVPublic(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CVAlreadyPublicException, CvNotFoundException {
-        studentService.setCvAsPublic(id, cvId);
+    @PutMapping("/cvs/{cvId}/public")
+    public ResponseEntity<String> makeCVPublic(Authentication authentication, @PathVariable long cvId) throws CVAlreadyPublicException, CvNotFoundException {
+        studentService.setCvAsPublic(authentication.getName(), cvId);
         return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/cvs/{cvId}/private")
-    public ResponseEntity<String> makeCVPrivate(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CVAlreadyPrivateException, CvNotFoundException {
-        studentService.setCvAsPrivate(id, cvId);
+    @PutMapping("/cvs/{cvId}/private")
+    public ResponseEntity<String> makeCVPrivate(Authentication authentication, @PathVariable long cvId) throws CVAlreadyPrivateException, CvNotFoundException {
+        studentService.setCvAsPrivate(authentication.getName(), cvId);
         return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/cvs/{cvId}/secondary")
-    public ResponseEntity<String> makeCVSecondary(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
-        studentService.setCVAsSecondary(id, cvId);
+    @PutMapping("/cvs/{cvId}/secondary")
+    public ResponseEntity<String> makeCVSecondary(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
+        studentService.setCVAsSecondary(authentication.getName(), cvId);
         return new ResponseEntity<>("CV made secondary successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/cvs/{cvId}/main")
-    public ResponseEntity<String> makeCVMain(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
-        studentService.setCVAsMain(id, cvId);
+    @PutMapping("/cvs/{cvId}/main")
+    public ResponseEntity<String> makeCVMain(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
+        studentService.setCVAsMain(authentication.getName(), cvId);
         return new ResponseEntity<>("CV made main successfully", HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/cvs/{cvId}")
-    public ResponseEntity<CvFileResponseDto> getCVByStudentIdAndCvId(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
-        return ResponseEntity.ok(studentService.getCVByStudentId(id, cvId));
+    @GetMapping("/cvs/{cvId}")
+    public ResponseEntity<CvFileResponseDto> getCV(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+        return ResponseEntity.ok(studentService.getCV(authentication.getName(), cvId));
     }
 
-    @GetMapping("/{id}/cvs/{cvId}/status")
-    public ResponseEntity<String> getCVStatus(@PathVariable long id, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException {
-        String status = studentService.getCVStatus(id, cvId);
+    @GetMapping("/cvs/{cvId}/status")
+    public ResponseEntity<String> getCVStatus(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
+        String status = studentService.getCVStatus(authentication.getName(), cvId);
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
