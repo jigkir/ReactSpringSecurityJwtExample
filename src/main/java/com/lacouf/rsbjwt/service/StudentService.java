@@ -311,8 +311,10 @@ public class StudentService {
 
     private void notifyManagersOfSubmittedCv(CV cv) {
         managerRepository.findAll().stream()
-                .filter(manager -> !notificationRepository.existsByNotificationTypeAndTargetIdAndUser(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager))
-                .forEach(manager -> notificationRepository.save(new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager)));
+                .filter(manager -> !notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                        NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager, NotificationStatus.UNREAD))
+                .forEach(manager -> notificationRepository.save(
+                        new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager)));
     }
 
     private void closeCvNotifications(long cvId) {

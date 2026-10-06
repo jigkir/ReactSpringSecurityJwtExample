@@ -18,6 +18,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     boolean existsByNotificationTypeAndTargetIdAndUser(NotificationType notificationType, Long targetId, UserApp user);
 
+    boolean existsByNotificationTypeAndTargetIdAndUserAndStatus(NotificationType notificationType, Long targetId, UserApp user, NotificationStatus status);
+
     List<Notification> findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(String email, NotificationStatus status);
 
     int countByUser_Credentials_EmailAndStatusAndNotificationType(String email, NotificationStatus status, NotificationType notificationType);

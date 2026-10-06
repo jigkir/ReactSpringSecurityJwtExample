@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.Notification;
@@ -593,6 +594,37 @@ public class StudentServiceTest {
         assert (CVSharingScope.PUBLIC).equals(cv.getSharingScope());
 
         verifyNoInteractions(managerRepository, notificationRepository);
+    }
+
+    @Test
+    void shouldNotifyManagersAgainWhenCvBecomesPublicAfterBeingPrivate() throws Exception {
+        // Arrange
+        CV cv = new CV(validPdfBytes, CvVisibility.VISIBLE, CVSharingScope.PRIVATE, CvPriority.MAIN, "cv.pdf", LocalDateTime.now());
+        cv.setId(10L);
+        cv.setStudent(dummyStudent);
+
+        Manager manager = new Manager();
+
+        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
+        when(managerRepository.findAll()).thenReturn(List.of(manager));
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L, manager, NotificationStatus.UNREAD))
+                .thenReturn(false);
+
+        studentService.setCvAsPublic(STUDENT_EMAIL, 10L);
+        studentService.setCvAsPrivate(STUDENT_EMAIL, 10L);
+        studentService.setCvAsPublic(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 10L);
+        verify(notificationRepository, times(2)).save(notificationArgumentCaptor.capture());
+
+        List<Notification> notifications = notificationArgumentCaptor.getAllValues();
+
+        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.get(0).getNotificationType());
+        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.get(1).getNotificationType());
+        assert (manager).equals(notifications.get(1).getUser());
+        assert (Long.valueOf(10L)).equals(notifications.get(1).getTargetId());
     }
 
     @Test
