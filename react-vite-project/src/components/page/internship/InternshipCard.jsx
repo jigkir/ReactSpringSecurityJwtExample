@@ -9,14 +9,12 @@ const STATUS_KEY_MAP = {
     REJECTED: "internshipCard.status.rejected",
 };
 
-// Material Symbols name shown inside each status badge
 const STATUS_ICON = {
     PENDING: "schedule",
     APPROVED: "check_circle",
     REJECTED: "close",
 };
 
-// Split "React, Node.js , Python" into ["React", "Node.js", "Python"]
 const parseSkills = (raw) =>
     (raw ?? "")
         .split(",")
@@ -42,7 +40,6 @@ export default function InternshipCard({
     const skills = parseSkills(internship.requiredSkills);
     const isRejected = internship.status === "REJECTED";
 
-    // Unpaid = not negotiable and amount is exactly 0
     const isUnpaid = !internship.compensationNegotiable
         && internship.compensationAmount != null
         && Number(internship.compensationAmount) === 0;
@@ -57,20 +54,34 @@ export default function InternshipCard({
         ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
         : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
 
+    // Extract status badge element to easily reuse between mobile and desktop layouts
+    const statusBadge = !hideStatus && (
+        <span className={s.statusBadge(internship.status)}>
+            <Icon name={STATUS_ICON[internship.status] ?? "close"} size={16}/>
+            {statusLabel}
+        </span>
+    );
+
     return (
         <div className={s.card}>
+            {/* MOBILE ONLY: Status badge at the very top of card */}
+            {statusBadge && (
+                <div className="mb-2 block md:hidden">
+                    {statusBadge}
+                </div>
+            )}
+
             {/* Top row */}
             <div className={s.topRow}>
                 <div className="min-w-0 flex-1">
                     <h3 className={s.title}>{internship.title}</h3>
-                    {/* pre-wrap keeps the line breaks typed in the description */}
                     <p className={s.description} style={{whiteSpace: "pre-wrap"}}>{internship.description}</p>
                 </div>
-                {!hideStatus && (
-                    <span className={s.statusBadge(internship.status)}>
-                        <Icon name={STATUS_ICON[internship.status] ?? "close"} size={16}/>
-                        {statusLabel}
-                    </span>
+                {/* DESKTOP ONLY: Status badge aligned on top-right */}
+                {statusBadge && (
+                    <div className="hidden md:block">
+                        {statusBadge}
+                    </div>
                 )}
             </div>
 
@@ -113,25 +124,25 @@ export default function InternshipCard({
                     {t("internshipCard.durationWeeks", {count: internship.durationInWeeks})}
                 </span>
 
-                {/* Compensation: amount / unpaid / to be discussed */}
+                {/* Compensation */}
                 <span className={s.detailBadge}>
                     <Icon name="payments" size={20}/>
                     {compensationText}
                 </span>
 
-                {/* Start date: "play" icon = the internship begins */}
+                {/* Start date */}
                 <span className={s.detailBadge} title={t("internshipCard.startsTitle")}>
                     <Icon name="play_circle" size={20}/>
                     <span className="font-medium">{t("internshipCard.starts")}</span> {internship.startDate}
                 </span>
 
-                {/* Deadline: "hourglass" icon = time left to apply */}
+                {/* Deadline */}
                 <span className={s.detailBadge} title={t("internshipCard.applyByTitle")}>
                     <Icon name="hourglass_bottom" size={20}/>
                     <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
 
-                {/* Edit / Delete (employer only) */}
+                {/* Edit / Delete */}
                 {(OnEdit || OnDelete) && (
                     <div className="ml-auto flex items-center gap-1">
                         {OnEdit && (
@@ -156,7 +167,7 @@ export default function InternshipCard({
                 )}
             </div>
 
-            {/* Footer: manager info on the left, actions on the right */}
+            {/* Footer */}
             {(footer || showEmployer) && (
                 <div
                     className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>

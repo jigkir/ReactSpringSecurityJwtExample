@@ -233,25 +233,39 @@ function Navbar({user, dark, toggleDark}) {
 
                         {/* Mobile account dropdown */}
                         <div ref={authRef} className="relative md:hidden">
-                            <button
-                                onClick={() => {
-                                    setAuthMenuOpen((o) => !o);
-                                    setMenuOpen(false);
-                                }}
-                                className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
-                                aria-label={t("navbar.accountMenu")}
-                                aria-expanded={authMenuOpen}
-                            >
-                                <span className="max-w-[6rem] truncate text-md"
-                                      title={isLoggedIn ? t("navbar.account") : undefined}
+                            {isLoggedIn ? (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setAuthMenuOpen((o) => !o);
+                                        setMenuOpen(false);
+                                    }}
+                                    className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
+                                    aria-label={t("navbar.accountMenu")}
+                                    aria-expanded={authMenuOpen}
                                 >
-                                    {isLoggedIn ? <Icon name="person" size={20}/> : t("navbar.getStarted")}
+                                    <span
+                                        className="max-w-[6rem] truncate text-md"
+                                        title={t("navbar.account")}
+                                    >
+                                      <Icon name="person" size={20} />
+                                    </span>
+                                </button>
+                            ) : (
+                                <Link
+                                    to="/login" // Use `href="/login"` if using Next.js
+                                    className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
+                                    aria-label={t("navbar.login")}
+                                >
+                                <span className="max-w-[6rem] truncate text-md">
+                                  {t("navbar.login")}
                                 </span>
-                            </button>
+                                </Link>
+                            )}
 
                             {authMenuOpen && (
                                 <div className={`${dropdownPanel} right-0`}>
-                                    {isLoggedIn ? (
+                                    {isLoggedIn && (
                                         <>
                                             <div
                                                 className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
@@ -264,11 +278,6 @@ function Navbar({user, dark, toggleDark}) {
                                                     {t("navbar.disconnect")}
                                                 </span>
                                             </Link>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Link to="/login" className={mobileAuthLink}>{t("navbar.login")}</Link>
-                                            <Link to="/signup" className={mobileAuthLink}>{t("navbar.signup")}</Link>
                                         </>
                                     )}
                                 </div>

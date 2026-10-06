@@ -105,7 +105,7 @@ export function getAuthClasses(dark) {
         ].join(" "),
 
         subtextClass: [
-            "mt-4 text-center text-sm",
+            "mt-4 text-center text-lg",
             dark ? "text-slate-400" : "text-gray-600",
         ].join(" "),
     };
