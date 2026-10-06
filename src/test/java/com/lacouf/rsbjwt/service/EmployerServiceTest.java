@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.repository.NotificationRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
@@ -50,6 +51,8 @@ public class EmployerServiceTest {
     private UserAppRepository userAppRepository;
     @Mock
     private InternshipRepository internshipRepository;
+    @Mock
+    private NotificationRepository notificationRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
 

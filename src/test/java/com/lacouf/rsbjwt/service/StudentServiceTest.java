@@ -653,10 +653,10 @@ public class StudentServiceTest {
         when(cvRepository.findByStudent(eligibleStudent)).thenReturn(List.of(approvedVisibleCv));
         when(cvRepository.findByStudent(ineligibleStudent)).thenReturn(List.of(pendingCv));
 
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
-                NotificationType.NEW_INTERNSHIP_OFFER, 42L, eligibleStudent)).thenReturn(false);
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
-                NotificationType.NEW_INTERNSHIP_OFFER, 42L, ineligibleStudent)).thenReturn(false);
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.NEW_INTERNSHIP_OFFER, 42L, eligibleStudent, NotificationStatus.UNREAD)).thenReturn(false);
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.NEW_INTERNSHIP_OFFER, 42L, ineligibleStudent, NotificationStatus.UNREAD)).thenReturn(false);
 
         // Act
         studentService.createNewInternshipNotificationsForStudents(internship);
@@ -692,8 +692,8 @@ public class StudentServiceTest {
         when(approvedVisibleCv.getStatus()).thenReturn(CvStatus.APPROVED);
         when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedVisibleCv));
 
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
-                NotificationType.NEW_INTERNSHIP_OFFER, 42L, student)).thenReturn(true);
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.NEW_INTERNSHIP_OFFER, 42L, student, NotificationStatus.UNREAD)).thenReturn(true);
 
         // Act
         studentService.createNewInternshipNotificationsForStudents(internship);
@@ -737,8 +737,8 @@ public class StudentServiceTest {
         when(approvedCv.getStatus()).thenReturn(CvStatus.APPROVED);
 
         when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedCv));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
-                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student)).thenReturn(false);
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student, NotificationStatus.UNREAD)).thenReturn(false);
 
         // Act
         studentService.createNewInternshipNotificationsForStudents(internship);
@@ -767,8 +767,8 @@ public class StudentServiceTest {
         when(approvedCv.getStatus()).thenReturn(CvStatus.APPROVED);
 
         when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedCv));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
-                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student)).thenReturn(true);
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student, NotificationStatus.UNREAD)).thenReturn(true);
 
         // Act
         studentService.createNewInternshipNotificationsForStudents(internship);
@@ -797,8 +797,8 @@ public class StudentServiceTest {
         when(pendingCv.getStatus()).thenReturn(CvStatus.PENDING);
 
         when(cvRepository.findByStudent(student)).thenReturn(List.of(pendingCv));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUser(
-                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student)).thenReturn(false);
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student, NotificationStatus.UNREAD)).thenReturn(false);
 
         // Act
         studentService.createNewInternshipNotificationsForStudents(internship);

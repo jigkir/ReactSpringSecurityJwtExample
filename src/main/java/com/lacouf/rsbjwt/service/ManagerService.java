@@ -170,6 +170,8 @@ public class ManagerService {
         internship.reject(comment);
         internshipRepository.save(internship);
 
+        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, internshipId);
+
         return InternshipResponseDto.of(internship);
     }
 

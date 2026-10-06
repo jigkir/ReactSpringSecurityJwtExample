@@ -261,7 +261,8 @@ public class StudentService {
         for (Student student : students) {
             List<CV> studentCvs = cvRepository.findByStudent(student);
             boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
-            boolean notificationExists = notificationRepository.existsByNotificationTypeAndTargetIdAndUser(NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student);
+            boolean notificationExists = notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                    NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student, NotificationStatus.UNREAD);
             if (!notificationExists && hasApprovedCv) {
                 createNewInternshipNotificationForStudent(
                         internship.getId(),

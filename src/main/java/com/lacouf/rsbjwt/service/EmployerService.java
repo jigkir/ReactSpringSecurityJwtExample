@@ -8,8 +8,10 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.repository.NotificationRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
@@ -31,12 +33,14 @@ public class EmployerService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final InternshipRepository internshipRepository;
+    private final NotificationRepository notificationRepository;
 
-    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository) {
+    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository) {
         this.employerRepository = employerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.internshipRepository = internshipRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -94,12 +98,10 @@ public class EmployerService {
     }
 
     public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
-        // Ownership check: only the employer who posted the offer can edit it
         Internship internship = internshipRepository
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
-        // Only re-validate dates that changed (an unchanged, now-past date is accepted)
         if (!dto.startDate().equals(internship.getStartDate())) {
             requireFuture(dto.startDate(), "start date");
         }
@@ -122,6 +124,8 @@ public class EmployerService {
                 dto.compensationNegotiable()
         );
 
+        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, id);
+
         internshipRepository.save(internship);
 
         return InternshipResponseDto.of(internship);
@@ -132,6 +136,8 @@ public class EmployerService {
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
         internship.markAsDeleted();
+
+        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, id);
 
         internshipRepository.save(internship);
     }
