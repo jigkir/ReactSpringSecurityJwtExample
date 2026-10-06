@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getNavbarClasses, getNotificationMenuClasses} from '../../styles/AppStyles.jsx';
 import Icon from '../../styles/Icon.jsx';
-import {useNotifications} from './Notificationsprovider.jsx';
+import {useNotifications} from './NotificationsProvider.jsx';
 
 export default function NotificationMenu({dark}) {
     const {t} = useTranslation();

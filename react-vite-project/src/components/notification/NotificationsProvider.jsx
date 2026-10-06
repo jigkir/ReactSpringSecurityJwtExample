@@ -47,13 +47,18 @@ export function NotificationsProvider({user, children}) {
         }
 
         if (role === "MANAGER") {
-            try {
-                const data = await getManagerNotifications();
-                if (id !== requestId.current) return;
-                setCounts({...EMPTY_COUNTS, manager: Array.isArray(data) ? data.length : 0});
-            } catch (err) {
-                console.error("Manager notifications failed:", err?.status, err?.body);
-            }
+            const [list] = await Promise.allSettled([
+                getManagerNotifications(),
+            ]);
+            if (id !== requestId.current) return;
+
+            if (list.status === "rejected") console.error("Manager notification error:", list.reason);
+
+            const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
+            setCounts({
+                ...EMPTY_COUNTS,
+                manager: notifications.filter((n) => n.notificationType === "CV_SUBMITTED_FOR_REVIEW").length,
+            });
             return;
         }
 
