@@ -331,7 +331,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
 
                     // Student normal state → 2x2 grid. Manager / confirm state → wrapping flex row.
                     const actionsClass = (!isManager && !confirming)
-                        ? "grid grid-cols-2 gap-2"
+                        ? "grid grid-cols-1 sm:grid-cols-2 gap-2"
                         : "flex flex-wrap items-center gap-2 md:justify-end";
 
                     return (
@@ -495,7 +495,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                     onClick={() => void load()}
                     title="Refresh"
                 >
-                    <Icon name="refresh" size={20} />
+                    <Icon name="refresh" size={20}/>
                 </button>
             </div>
 
