@@ -140,9 +140,9 @@ export function getNavbarClasses(dark) {
         signupBtn: dark
             ? "bg-transparent border border-indigo-400 text-indigo-300 hover:bg-indigo-500/20"
             : "bg-transparent border border-white text-white hover:bg-white/15",
-        linkBase: `text-sm font-medium px-3 py-1.5 rounded-full ${TRANSITION_150} ${FOCUS_RING_OFFSET}`,
+        linkBase: `whitespace-nowrap text-sm font-medium px-3 py-1.5 rounded-full ${TRANSITION_150} ${FOCUS_RING_OFFSET}`,
         toggleBase: [
-            "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full",
+            "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full whitespace-nowrap",
             TRANSITION_150, FOCUS_RING_OFFSET,
         ].join(" "),
     };

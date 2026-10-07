@@ -1,5 +1,4 @@
-import {createPortal} from "react-dom";
-import {Link, NavLink, useLocation, useNavigate} from 'react-router-dom';
+import {Link, NavLink, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
@@ -107,196 +106,203 @@ function Navbar({user, dark, toggleDark}) {
 
     return (
         <>
-        <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
-            <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-14">
+            <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
+                <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-14">
 
-                    {/* ───────── Left side ───────── */}
-                    <div className="flex items-center gap-3 md:gap-6">
-                        {/* Desktop brand */}
-                        <Link to={homePath}
-                              className={`hidden md:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
-                            <div className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
-                                {/* Always light text for dark-colored navbars */}
-                                <span className="text-white transition-colors duration-150">
+                        {/* ───────── Left side ───────── */}
+                        <div className="flex items-center gap-3 lg:gap-6">
+                            {/* Desktop brand */}
+                            <Link to={homePath}
+                                  className={`hidden lg:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
+                                <div
+                                    className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
+                                    {/* Always light text for dark-colored navbars */}
+                                    <span className="text-white transition-colors duration-150">
                                     Intern
                                 </span>
-                                {/* TLD Badge adapted for dark backgrounds */}
-                                <span className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
-                                    dark
-                                        ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
-                                        : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
-                                }`}>
-                                    .ly
-                                </span>
-                            </div>
-                        </Link>
-
-                        {/* Desktop nav (bell always visible) */}
-                        <nav className="hidden md:flex items-center gap-1">
-                            {navItems.map(({to, label, end}) => (
-                                <NavLink key={to} to={to} end={end} className={linkClass}>
-                                    {label}
-                                </NavLink>
-                            ))}
-                            {isLoggedIn && <NotificationMenu dark={dark}/>}
-                        </nav>
-
-                        {/* Mobile: app name doubles as the pages dropdown button */}
-                        <div ref={menuRef} className="md:hidden">
-                            <div className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-2 ${theme.brand}`}>
-                                {/* Burger Button - added flex items-center */}
-                                <button
-                                    onClick={() => {
-                                        setMenuOpen((o) => !o);
-                                        setAuthMenuOpen(false);
-                                    }}
-                                    className="flex items-center justify-center"
-                                    aria-label={t("navbar.pagesMenu")}
-                                    aria-expanded={menuOpen}
-                                >
-                                    <Icon name="menu" size={24}/>
-                                </button>
-
-                                <Link to={homePath} className="text-2xl leading-none tracking-tight">
-                                    <div className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
-                                        {/* Always light text for dark-colored navbars */}
-                                        <span className="text-white transition-colors duration-150">
-                                            Intern
-                                        </span>
-                                        {/* TLD Badge adapted for dark backgrounds */}
-                                        <span className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
+                                    {/* TLD Badge adapted for dark backgrounds */}
+                                    <span
+                                        className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
                                             dark
                                                 ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
                                                 : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
                                         }`}>
+                                    .ly
+                                </span>
+                                </div>
+                            </Link>
+
+                            {/* Desktop nav (bell always visible) */}
+                            <nav className="hidden lg:flex items-center gap-1">
+                                {navItems.map(({to, label, end}) => (
+                                    <NavLink key={to} to={to} end={end} className={linkClass}>
+                                        {label}
+                                    </NavLink>
+                                ))}
+                                {isLoggedIn && <NotificationMenu dark={dark}/>}
+                            </nav>
+
+                            {/* Mobile: app name doubles as the pages dropdown button */}
+                            <div ref={menuRef} className="lg:hidden">
+                                <div
+                                    className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-2 ${theme.brand}`}>
+                                    {/* Burger Button - added flex items-center */}
+                                    <button
+                                        onClick={() => {
+                                            setMenuOpen((o) => !o);
+                                            setAuthMenuOpen(false);
+                                        }}
+                                        className="flex items-center justify-center"
+                                        aria-label={t("navbar.pagesMenu")}
+                                        aria-expanded={menuOpen}
+                                    >
+                                        <Icon name="menu" size={24}/>
+                                    </button>
+
+                                    <Link to={homePath} className="text-2xl leading-none tracking-tight">
+                                        <div
+                                            className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
+                                            {/* Always light text for dark-colored navbars */}
+                                            <span className="text-white transition-colors duration-150">
+                                            Intern
+                                        </span>
+                                            {/* TLD Badge adapted for dark backgrounds */}
+                                            <span
+                                                className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
+                                                    dark
+                                                        ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
+                                                        : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
+                                                }`}>
                                             .ly
                                         </span>
-                                    </div>
-                                </Link>
+                                        </div>
+                                    </Link>
+                                </div>
+
                             </div>
-
+                            {/* Mobile bell (always visible, in the top bar) */}
+                            <div className="lg:hidden">
+                                {isLoggedIn && <NotificationMenu dark={dark}/>}
+                            </div>
                         </div>
-                        {/* Mobile bell (always visible, in the top bar) */}
-                        <div className="md:hidden">
-                            {isLoggedIn && <NotificationMenu dark={dark}/>}
-                        </div>
-                    </div>
 
-                    {/* ───────── Right side ───────── */}
-                    <div className="flex items-center gap-2 md:gap-3 ml-auto">
+                        {/* ───────── Right side ───────── */}
+                        <div className="flex items-center gap-2 lg:gap-3 ml-auto">
 
-                        <button onClick={toggleLang}
-                                className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
-                                aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
-                            {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
-                        </button>
+                            <button onClick={toggleLang}
+                                    className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
+                                    aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
+                                {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                            </button>
 
-                        <button onClick={toggleDark}
-                                className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
-                                aria-label={dark ? t("navbar.switchToLight") : t("navbar.switchToDark")}>
-                            <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
-                            <span className="hidden md:inline">
+                            <button onClick={toggleDark}
+                                    className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
+                                    aria-label={dark ? t("navbar.switchToLight") : t("navbar.switchToDark")}>
+                                <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
+                                <span className="hidden xl:inline">
                                 {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                             </span>
-                        </button>
+                            </button>
 
-                        {/* Desktop greeting + auth */}
-                        <div className="hidden md:flex items-center gap-3 ml-2">
-                            {isLoggedIn && (
-                                <div className={`flex items-center gap-2 text-sm ${theme.greeting}`}>
-                                    <span>{t("navbar.hello")}</span>
-                                    <span className={`font-semibold ${theme.greetingName}`}>
+                            {/* Desktop greeting + auth */}
+                            <div className="hidden lg:flex items-center gap-3 ml-2">
+                                {isLoggedIn && (
+                                    <div
+                                        className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
+                                        <span className="hidden lg:inline">{t("navbar.hello")}</span>
+                                        <span className={`font-semibold ${theme.greetingName}`}>
                                         {user.firstName} {user.lastName}
                                     </span>
-                                    {role && (
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
+                                        {role && (
+                                            <span
+                                                className={`hidden lg:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
                                             {formatRole(role)}
                                         </span>
-                                    )}
-                                </div>
-                            )}
+                                        )}
+                                    </div>
+                                )}
 
-                            {isLoggedIn ? (
-                                <NavLink to="/logout" className={linkClass}>{t("navbar.disconnect")}</NavLink>
-                            ) : (
-                                <>
-                                    <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
-                                        {t("navbar.login")}
-                                    </Link>
-                                    <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}>
-                                        {t("navbar.signup")}
-                                    </Link>
-                                </>
-                            )}
-                        </div>
+                                {isLoggedIn ? (
+                                    <NavLink to="/logout" className={linkClass}>{t("navbar.disconnect")}</NavLink>
+                                ) : (
+                                    <>
+                                        <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
+                                            {t("navbar.login")}
+                                        </Link>
+                                        <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}>
+                                            {t("navbar.signup")}
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
 
-                        {/* Mobile account dropdown */}
-                        <div ref={authRef} className="relative md:hidden">
-                            {isLoggedIn ? (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setAuthMenuOpen((o) => !o);
-                                        setMenuOpen(false);
-                                    }}
-                                    className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
-                                    aria-label={t("navbar.accountMenu")}
-                                    aria-expanded={authMenuOpen}
-                                >
+                            {/* Mobile account dropdown */}
+                            <div ref={authRef} className="relative lg:hidden">
+                                {isLoggedIn ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAuthMenuOpen((o) => !o);
+                                            setMenuOpen(false);
+                                        }}
+                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
+                                        aria-label={t("navbar.accountMenu")}
+                                        aria-expanded={authMenuOpen}
+                                    >
                                     <span
                                         className="max-w-[6rem] truncate text-md"
                                         title={t("navbar.account")}
                                     >
-                                      <Icon name="person" size={20} />
+                                      <Icon name="person" size={20}/>
                                     </span>
-                                </button>
-                            ) : (
-                                <Link
-                                    to="/login" // Use `href="/login"` if using Next.js
-                                    className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
-                                    aria-label={t("navbar.login")}
-                                >
+                                    </button>
+                                ) : (
+                                    <Link
+                                        to="/login" // Use `href="/login"` if using Next.js
+                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
+                                        aria-label={t("navbar.login")}
+                                    >
                                 <span className="max-w-[6rem] truncate text-md">
                                   {t("navbar.login")}
                                 </span>
-                                </Link>
-                            )}
+                                    </Link>
+                                )}
 
-                            {authMenuOpen && (
-                                <div className={`${dropdownPanel} right-0`}>
-                                    {isLoggedIn && (
-                                        <>
-                                            <div
-                                                className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
-                                                {user.firstName} {user.lastName} ({formatRole(role)})
-                                            </div>
-                                            <Link to="/logout"
-                                                  className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
+                                {authMenuOpen && (
+                                    <div className={`${dropdownPanel} right-0`}>
+                                        {isLoggedIn && (
+                                            <>
+                                                <div
+                                                    className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
+                                                    {user.firstName} {user.lastName} ({formatRole(role)})
+                                                </div>
+                                                <Link to="/logout"
+                                                      className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
                                                 <span className={"flex gap-2 items-center"}>
                                                     <Icon name={"logout"} size={20}/>
                                                     {t("navbar.disconnect")}
                                                 </span>
-                                            </Link>
-                                        </>
-                                    )}
-                                </div>
-                            )}
+                                                </Link>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </header>
-        {/* Side Menu Drawer & Backdrop */}
-        <MobileSidebar
-            ref={sidebarRef}
-            isOpen={menuOpen}
-            onClose={() => setMenuOpen(false)}
-            navItems={navItems}
-            dark={dark}
-            t={t}
-            mobileLinkClass={mobileLinkClass}
-        />
+            </header>
+            {/* Side Menu Drawer & Backdrop */}
+            <MobileSidebar
+                ref={sidebarRef}
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                navItems={navItems}
+                dark={dark}
+                t={t}
+                mobileLinkClass={mobileLinkClass}
+            />
         </>
     );
 }
