@@ -2,7 +2,7 @@
   "about": {
     "title": "About",
     "description": "This platform simplifies internship management between students, employers, teachers and the college internship manager.",
-    "rolesTitle": "Platform actors",
+    "rolesTitle": "Who uses the platform?",
     "managerTitle": "Internship Manager",
     "managerSummary": "Oversees the whole process: approves CVs and internship offers, connects students with companies, assigns teachers, starts contract signing and tracks progress through reports.",
     "employerTitle": "Employer",

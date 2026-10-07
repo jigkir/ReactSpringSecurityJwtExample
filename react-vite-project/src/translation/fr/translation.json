@@ -2,7 +2,7 @@
   "about": {
     "title": "À propos",
     "description": "Cette plateforme simplifie la gestion des stages entre les étudiants, les employeurs, les professeurs et le gestionnaire de stage du collège.",
-    "rolesTitle": "Les acteurs de la plateforme",
+    "rolesTitle": "Qui utilise la plateforme?",
     "managerTitle": "Gestionnaire de stage",
     "managerSummary": "Supervise tout le processus : valide les CV et les offres de stage, fait le lien entre les étudiants et les entreprises, assigne les professeurs, lance la signature des contrats et suit l'avancement grâce à des rapports.",
     "employerTitle": "Employeur",

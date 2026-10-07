@@ -187,19 +187,19 @@ export function getFooterClasses(dark) {
 // region About
 export function getAboutClasses(dark) {
     return {
-        page: `flex flex-1 items-center justify-center px-4 py-12 ${dark ? "text-white" : "text-gray-900"}`,
-        card: `w-full max-w-4xl rounded-2xl border shadow-lg p-6 md:p-10 flex flex-col gap-6 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        page: `flex flex-1 items-center justify-center px-4 py-12 ${dark ? "text-white" : "text-black"}`,
+        card: "w-full max-w-4xl p-6 md:p-10 flex flex-col gap-6",
         title: "text-3xl md:text-4xl font-bold tracking-tight text-center",
-        description: `text-base md:text-lg font-semibold leading-relaxed text-center ${dark ? "text-slate-300" : "text-gray-600"}`,
+        description: "text-base md:text-lg font-semibold leading-relaxed text-center",
         rolesTitle: "text-xl font-bold text-center",
-        rolesGrid: `grid grid-cols-1 md:grid-cols-2 gap-px rounded-2xl overflow-hidden border ${dark ? "bg-blue-600 border-blue-950" : "bg-violet-400 border-violet-100"}`,
-        roleCell: `flex flex-col items-center text-center gap-3 p-6 md:p-8 ${dark ? "bg-blue-950" : "bg-violet-100"}`,
-        roleIcon: `flex items-center justify-center w-16 h-16 rounded-full ${dark ? "bg-blue-900 text-indigo-300" : "bg-white text-indigo-600"}`,
+        rolesGrid: "grid grid-cols-1 md:grid-cols-2 auto-rows-fr gap-10",
+        roleCell: `flex flex-col justify-center items-center text-center gap-3 p-6 md:p-8 rounded-none ${dark ? "bg-blue-950 shadow-[10px_10px_25px_rgba(0,0,0,0.6)]" : "bg-violet-300 shadow-[5px_10px_25px_rgba(167,139,255,0.6)]"}`,
+        roleIcon: `flex items-center justify-center ${dark ? "text-indigo-300" : "text-indigo-800"}`,
         roleTitle: "text-lg md:text-xl font-bold",
-        roleSummary: `text-sm md:text-base font-semibold leading-relaxed ${dark ? "text-slate-300" : "text-gray-700"}`,
-        footer: `flex flex-col sm:flex-row items-center sm:justify-between gap-4 pt-4 border-t ${dark ? "border-slate-700" : "border-gray-200"}`,
-        version: `text-xs font-medium px-3 py-1 rounded-full ${dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600"}`,
-        backBtn: `${LINK_BTN_BASE} border-2 ${dark ? "border-slate-500 text-slate-200 hover:bg-slate-700" : "bg-violet-100 border-violet-200 text-indigo-700 hover:bg-violet-200"}`,
+        roleSummary: "text-sm md:text-base font-semibold leading-relaxed",
+        footer: "flex flex-col sm:flex-row items-center sm:justify-between gap-4 pt-4",
+        version: `text-xs font-medium px-3 py-1 rounded-full ${dark ? "bg-slate-700 text-white" : "bg-gray-100 text-black"}`,
+        backBtn: `${LINK_BTN_BASE} border-2 ${dark ? "bg-blue-900 border-blue-900 text-white hover:bg-blue-800" : "bg-indigo-900 border-indigo-900 text-white hover:bg-indigo-800"}`,
     };
 }
 
