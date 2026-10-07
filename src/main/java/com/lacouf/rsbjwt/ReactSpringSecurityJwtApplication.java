@@ -12,7 +12,7 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
     private final ManagerService managerService;
     private final UserAppRepository userAppRepository;
 
-    private static final String MANAGER_EMAIL = "manager@email.com";
+    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
 
     public ReactSpringSecurityJwtApplication(ManagerService managerService, UserAppRepository userAppRepository) {
         this.managerService = managerService;
@@ -27,6 +27,6 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if (userAppRepository.findByCredentialsEmail(MANAGER_EMAIL).isPresent()) return;
 
-        managerService.save("John", "Doe", "manager@email.com", "Password123#", "0123456789");
+        managerService.save("John", "Doe", MANAGER_EMAIL, "John123#", "4505550000");
     }
 }
