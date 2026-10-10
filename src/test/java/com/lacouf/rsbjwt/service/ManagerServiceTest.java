@@ -650,8 +650,8 @@ public class ManagerServiceTest {
         InOrder inOrder = inOrder(notificationService);
 
         inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
-        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_APPROVED,
-                NotificationType.INTERNSHIP_APPROVED.getMessage(), 1L, internship.getPostedBy());
+        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_APPROVED,
+                NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage(), 1L, internship.getPostedBy());
     }
 
     @Test
@@ -666,7 +666,7 @@ public class ManagerServiceTest {
         InOrder inOrder = inOrder(notificationService);
 
         inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
-        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_REJECTED,
+        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REJECTED,
                 "Offer is no good.", 1L, internship.getPostedBy());
     }
 }
