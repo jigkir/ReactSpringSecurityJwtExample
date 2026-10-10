@@ -3,12 +3,14 @@ package com.lacouf.rsbjwt.service;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -122,6 +124,30 @@ public class EmployerServiceTest {
         assert (savedEmployer.getCompanyName()).equals("Company Name");
         assert (savedEmployer.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
         assert (savedEmployer.getPhoneNumber()).equals("514-123-4567");
+    }
+
+    @Test
+    void shouldNotifyManagerWhenInternshipIsSubmitted() throws Exception {
+        // Arrange
+        when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
+
+        when(internshipRepository.save(any(Internship.class)))
+                .thenAnswer(invocation -> {
+                    Internship internship = invocation.getArgument(0);
+                    internship.setId(10L);
+                    return internship;
+                });
+
+        Manager firstManager = new Manager();
+        Manager secondManager = new Manager();
+        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
+
+        // Act
+        employerService.saveInternship(internshipRequestDto, EMPLOYER_EMAIL);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
     }
 
     @Test
