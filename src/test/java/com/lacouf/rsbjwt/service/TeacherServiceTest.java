@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.repository.users.TeacherRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
+import com.lacouf.rsbjwt.service.users.TeacherService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,12 +66,12 @@ public class TeacherServiceTest {
 
         Teacher teacher = teacherArgumentCaptor.getValue();
 
-        assert(teacher.getFirstName()).equals("First Name");
-        assert(teacher.getLastName()).equals("Last Name");
-        assert(teacher.getTeacherId()).equals("12345");
-        assert(teacher.getEmail()).equals("test@claurendeau.qc.ca");
-        assert(teacher.getPassword()).equals("Test123@-encoded");
-        assert(teacher.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
+        assert (teacher.getFirstName()).equals("First Name");
+        assert (teacher.getLastName()).equals("Last Name");
+        assert (teacher.getTeacherId()).equals("12345");
+        assert (teacher.getEmail()).equals("test@claurendeau.qc.ca");
+        assert (teacher.getPassword()).equals("Test123@-encoded");
+        assert (teacher.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
     }
 
     @Test
@@ -85,8 +86,8 @@ public class TeacherServiceTest {
         );
 
         // Assert
-        assert("teacherId").equals(exception.getField());
-        assert("user already exists").equals(exception.getMessage());
+        assert ("teacherId").equals(exception.getField());
+        assert ("user already exists").equals(exception.getMessage());
 
         verify(teacherRepository, never()).save(any(Teacher.class));
     }
@@ -103,8 +104,8 @@ public class TeacherServiceTest {
         );
 
         // Assert
-        assert("email").equals(exception.getField());
-        assert("user already exists").equals(exception.getMessage());
+        assert ("email").equals(exception.getField());
+        assert ("user already exists").equals(exception.getMessage());
 
         verify(teacherRepository, never()).save(any(Teacher.class));
     }

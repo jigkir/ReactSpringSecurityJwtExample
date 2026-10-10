@@ -1,11 +1,11 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.notification;
 
 import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.repository.NotificationRepository;
+import com.lacouf.rsbjwt.repository.notification.NotificationRepository;
 import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import org.springframework.stereotype.Service;
 

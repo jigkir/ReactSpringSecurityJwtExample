@@ -1,0 +1,50 @@
+package com.lacouf.rsbjwt.presentation.users;
+
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.users.StudentService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
+import com.lacouf.rsbjwt.service.dto.request.auth.UserLoginDTO;
+import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
+import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.response.user.RoleDto;
+import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    private final UserAppService userAppService;
+    private final StudentService studentService;
+
+
+    @PostMapping("/login")
+    public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody UserLoginDTO userLoginDto) {
+        return ResponseEntity.ok(userAppService.login(userLoginDto));
+    }
+
+    @GetMapping("/users/current")
+    public ResponseEntity<UserResponseDto> getCurrentUser(Authentication authentication) throws UserNotFoundException {
+        return ResponseEntity.ok(userAppService.getUserByEmail(authentication.getName()));
+    }
+
+    @GetMapping("/disciplines")
+    public ResponseEntity<DisciplineDto> getAllDisciplines() {
+        return ResponseEntity.ok(userAppService.getAllDisciplines());
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<RoleDto> getAllRoles() {
+        return ResponseEntity.ok(userAppService.getAllRoles());
+    }
+
+    @GetMapping("/max-cv-size")
+    public ResponseEntity<Integer> getMaxCVSize() {
+        return ResponseEntity.ok(studentService.getMaxCVSize());
+    }
+}

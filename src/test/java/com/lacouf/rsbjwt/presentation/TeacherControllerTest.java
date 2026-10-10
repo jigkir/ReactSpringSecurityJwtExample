@@ -3,7 +3,8 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.TeacherService;
+import com.lacouf.rsbjwt.presentation.users.TeacherController;
+import com.lacouf.rsbjwt.service.users.TeacherService;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.junit.jupiter.api.Test;
@@ -57,15 +58,15 @@ public class TeacherControllerTest {
         mockMvc.perform(post("/api/teacher/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "firstName": "First Name",
-                                "lastName": "Last Name",
-                                "teacherId": "12345",
-                                "email": "test@claurendeau.qc.ca",
-                                "password": "Test123@",
-                                "discipline": "COMPUTER_SCIENCE"
-                            }
-                            """))
+                                {
+                                    "firstName": "First Name",
+                                    "lastName": "Last Name",
+                                    "teacherId": "12345",
+                                    "email": "test@claurendeau.qc.ca",
+                                    "password": "Test123@",
+                                    "discipline": "COMPUTER_SCIENCE"
+                                }
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("First Name"))
@@ -84,15 +85,15 @@ public class TeacherControllerTest {
         mockMvc.perform(post("/api/teacher/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "firstName": "First Name",
-                            "lastName": "Last Name",
-                            "teacherId": "12345",
-                            "email": "test@claurendeau.qc.ca",
-                            "password": "Test123@",
-                            "discipline": "COMPUTER_SCIENCE"
-                        }
-                        """))
+                                {
+                                    "firstName": "First Name",
+                                    "lastName": "Last Name",
+                                    "teacherId": "12345",
+                                    "email": "test@claurendeau.qc.ca",
+                                    "password": "Test123@",
+                                    "discipline": "COMPUTER_SCIENCE"
+                                }
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("user already exists"))
                 .andExpect(jsonPath("$.field").value(conflictField));

@@ -1,7 +1,7 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.service.TeacherService;
+import com.lacouf.rsbjwt.service.users.TeacherService;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import jakarta.validation.Valid;
@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class TeacherController {
     private final TeacherService teacherService;
 
-    public TeacherController(TeacherService teacherService){this.teacherService = teacherService;}
+    public TeacherController(TeacherService teacherService) {
+        this.teacherService = teacherService;
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> save(@Valid @RequestBody TeacherSignUpDto teacherSignUpDto) throws UserAlreadyExistsException {

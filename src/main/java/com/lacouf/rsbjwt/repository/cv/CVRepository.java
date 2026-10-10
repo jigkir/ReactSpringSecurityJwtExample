@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.repository;
+package com.lacouf.rsbjwt.repository.cv;
 
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;

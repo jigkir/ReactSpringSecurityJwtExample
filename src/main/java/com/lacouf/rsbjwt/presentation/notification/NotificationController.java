@@ -1,8 +1,8 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.notification;
 
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
-import com.lacouf.rsbjwt.service.NotificationService;
+import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

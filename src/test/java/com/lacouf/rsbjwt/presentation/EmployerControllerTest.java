@@ -8,7 +8,8 @@ import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.service.EmployerService;
+import com.lacouf.rsbjwt.presentation.users.EmployerController;
+import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
@@ -88,16 +89,16 @@ public class EmployerControllerTest {
         mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "firstName": "George",
-                                "lastName": "Hudubulla",
-                                "email": "email@email.com",
-                                "password": "Password123@",
-                                "companyName": "Tech Corp",
-                                "discipline": "COMPUTER_SCIENCE",
-                                "phoneNumber": "5550199999"
-                            }
-                            """))
+                                {
+                                    "firstName": "George",
+                                    "lastName": "Hudubulla",
+                                    "email": "email@email.com",
+                                    "password": "Password123@",
+                                    "companyName": "Tech Corp",
+                                    "discipline": "COMPUTER_SCIENCE",
+                                    "phoneNumber": "5550199999"
+                                }
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("George"))
@@ -116,16 +117,16 @@ public class EmployerControllerTest {
         mockMvc.perform(post("/api/employer/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "firstName": "George",
-                                "lastName": "Hudubulla",
-                                "email": "email@email.com",
-                                "password": "Password123@",
-                                "companyName": "Tech Corp",
-                                "discipline": "COMPUTER_SCIENCE",
-                                "phoneNumber": "5550199999"
-                            }
-                            """))
+                                {
+                                    "firstName": "George",
+                                    "lastName": "Hudubulla",
+                                    "email": "email@email.com",
+                                    "password": "Password123@",
+                                    "companyName": "Tech Corp",
+                                    "discipline": "COMPUTER_SCIENCE",
+                                    "phoneNumber": "5550199999"
+                                }
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("user already exists"))
                 .andExpect(jsonPath("$.field").value("email"));

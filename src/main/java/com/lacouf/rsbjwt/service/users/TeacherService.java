@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.model.user.Teacher;
 import com.lacouf.rsbjwt.model.user.UserApp;

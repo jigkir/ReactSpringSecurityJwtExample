@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.repository;
+package com.lacouf.rsbjwt.repository.notification;
 
 import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;

@@ -1,7 +1,7 @@
 package com.lacouf.rsbjwt;
 
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
-import com.lacouf.rsbjwt.service.ManagerService;
+import com.lacouf.rsbjwt.service.users.ManagerService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

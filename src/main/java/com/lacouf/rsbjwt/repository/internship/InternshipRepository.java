@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.repository;
+package com.lacouf.rsbjwt.repository.internship;
 
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;

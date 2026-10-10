@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
-import com.lacouf.rsbjwt.service.ManagerService;
-import com.lacouf.rsbjwt.service.UserAppService;
+import com.lacouf.rsbjwt.service.users.ManagerService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.request.auth.UserLoginDTO;
@@ -109,11 +109,11 @@ class UserControllerWebMvcTest {
         // Arrange
         DisciplineDto disciplines = new DisciplineDto(
                 List.of(
-                    "COMPUTER_SCIENCE",
-                    "CIVIL_ENGINEERING",
-                    "ELECTRICAL_ENGINEERING",
-                    "MARKETING",
-                    "NURSING"
+                        "COMPUTER_SCIENCE",
+                        "CIVIL_ENGINEERING",
+                        "ELECTRICAL_ENGINEERING",
+                        "MARKETING",
+                        "NURSING"
                 ));
 
         when(userService.getAllDisciplines()).thenReturn(disciplines);

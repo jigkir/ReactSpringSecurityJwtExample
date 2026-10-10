@@ -12,6 +12,7 @@ import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.user.RoleDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -56,7 +57,7 @@ class UserAppServiceTest {
         JWTAuthResponse response = userAppService.login(login);
 
         // Assert
-        assert("jwt-token").equals(response.accessToken());
+        assert ("jwt-token").equals(response.accessToken());
 
         ArgumentCaptor<Authentication> captor = ArgumentCaptor.forClass(Authentication.class);
 
@@ -64,8 +65,8 @@ class UserAppServiceTest {
 
         Authentication authenticationRequest = captor.getValue();
 
-        assert("user@example.com").equals(authenticationRequest.getName());
-        assert("Password123").equals(authenticationRequest.getCredentials());
+        assert ("user@example.com").equals(authenticationRequest.getName());
+        assert ("Password123").equals(authenticationRequest.getCredentials());
 
         verify(jwtTokenProvider).generateToken(authentication);
     }
@@ -103,11 +104,11 @@ class UserAppServiceTest {
         UserResponseDto response = userAppService.getUserByEmail("student@example.com");
 
         // Assert
-        assert(Long.valueOf(1L)).equals(response.id());
-        assert("John").equals(response.firstName());
-        assert("Doe").equals(response.lastName());
-        assert("student@example.com").equals(response.email());
-        assert("STUDENT").equals(response.role());
+        assert (Long.valueOf(1L)).equals(response.id());
+        assert ("John").equals(response.firstName());
+        assert ("Doe").equals(response.lastName());
+        assert ("student@example.com").equals(response.email());
+        assert ("STUDENT").equals(response.role());
 
         verify(userAppRepository).findByCredentialsEmail("student@example.com");
     }
@@ -137,7 +138,7 @@ class UserAppServiceTest {
         RoleDto response = userAppService.getAllRoles();
 
         // Assert
-        assert(roles).equals(response.roles());
+        assert (roles).equals(response.roles());
     }
 
     @Test
@@ -155,6 +156,6 @@ class UserAppServiceTest {
         DisciplineDto response = userAppService.getAllDisciplines();
 
         // Assert
-        assert(disciplines).equals(response.disciplines());
+        assert (disciplines).equals(response.disciplines());
     }
 }
