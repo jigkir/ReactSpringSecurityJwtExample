@@ -139,6 +139,7 @@ public class ManagerService {
         internship.approve();
         internshipRepository.save(internship);
 
+        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_APPROVED, NotificationType.INTERNSHIP_APPROVED.getMessage());
         notifyMatchingStudentsOfInternship(internship);
 
         return InternshipResponseDto.of(internship);
@@ -151,7 +152,7 @@ public class ManagerService {
         internship.reject(comment);
         internshipRepository.save(internship);
 
-        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, internshipId);
+        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_REJECTED, comment);
 
         return InternshipResponseDto.of(internship);
     }
@@ -181,6 +182,11 @@ public class ManagerService {
     private void notifyStudentOfCvReviewDecision(CV cv, NotificationType notificationType, String message) {
         notificationService.closeNotificationsOfTarget(TargetType.CV, cv.getId());
         notificationService.notifyIfAbsent(notificationType, message, cv.getId(), cv.getStudent());
+    }
+
+    private void notifyEmployerOfInternshipReviewDecision(Internship internship, NotificationType notificationType, String message) {
+        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, internship.getId());
+        notificationService.notifyIfAbsent(notificationType, message, internship.getId(), internship.getPostedBy());
     }
 
     private void notifyMatchingStudentsOfInternship(Internship internship) {

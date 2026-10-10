@@ -11,6 +11,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
+import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -52,6 +53,8 @@ public class EmployerServiceTest {
 
     @Mock
     private EmployerRepository employerRepository;
+    @Mock
+    private ManagerRepository managerRepository;
     @Mock
     private UserAppRepository userAppRepository;
     @Mock
