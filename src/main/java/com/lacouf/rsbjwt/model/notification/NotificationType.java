@@ -5,7 +5,9 @@ public enum NotificationType {
     CV_REJECTED(TargetType.CV, "CV Rejected", null),
     CV_SUBMITTED_FOR_REVIEW(TargetType.CV, "New CV Pending Review", "A new CV has been submitted for review."),
 
-    INTERNSHIP_SUBMITTED_FOR_REVIEW(TargetType.INTERNSHIP_OFFER, "New Internship Offer", "A new Internship has been submitted for review."),
+    INTERNSHIP_APPROVED(TargetType.INTERNSHIP_OFFER, "Internship Offer Approved", "Your internship offer has been approved."),
+    INTERNSHIP_REJECTED(TargetType.INTERNSHIP_OFFER, "Internship Offer Rejected", null),
+    INTERNSHIP_SUBMITTED_FOR_REVIEW(TargetType.INTERNSHIP_OFFER, "New Internship Pending Review", "A new internship has been submitted for review."),
     NEW_INTERNSHIP_OFFER(TargetType.INTERNSHIP_OFFER, "New Internship Offer", "A new internship offer has been posted that matches your discipline.");
 
     private final TargetType targetType;

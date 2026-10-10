@@ -15,6 +15,7 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -615,7 +616,7 @@ public class ManagerServiceTest {
         managerService.approveInternship(1L);
 
         // Assert
-        verifyNoInteractions(notificationService);
+        verify(notificationService, never()).notifyIfAbsent(eq(NotificationType.NEW_INTERNSHIP_OFFER), anyLong(), any(UserApp.class));
     }
 
     @Test
@@ -634,6 +635,38 @@ public class ManagerServiceTest {
         managerService.approveInternship(1L);
 
         // Assert
-        verifyNoInteractions(notificationService);
+        verify(notificationService, never()).notifyIfAbsent(eq(NotificationType.NEW_INTERNSHIP_OFFER), anyLong(), any(UserApp.class));
+    }
+
+    @Test
+    void shouldNotifyEmployerWhenApprovingInternship() throws InternshipNotFoundException {
+        // Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        // Act
+        managerService.approveInternship(1L);
+
+        // Assert
+        InOrder inOrder = inOrder(notificationService);
+
+        inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
+        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_APPROVED,
+                NotificationType.INTERNSHIP_APPROVED.getMessage(), 1L, internship.getPostedBy());
+    }
+
+    @Test
+    void shouldNotifyEmployerWithCommentWhenRejectingInternship() throws InternshipNotFoundException {
+        // Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        // Act
+        managerService.rejectInternship(1L, "Offer is no good.");
+
+        // Assert
+        InOrder inOrder = inOrder(notificationService);
+
+        inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
+        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_REJECTED,
+                "Offer is no good.", 1L, internship.getPostedBy());
     }
 }

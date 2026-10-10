@@ -80,7 +80,7 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
                         // NOTIFICATIONS
-                        .requestMatchers(NOTIFICATIONS_PATH).hasAnyAuthority(Role.STUDENT.name(), Role.MANAGER.name())
+                        .requestMatchers(NOTIFICATIONS_PATH).hasAnyAuthority(Role.STUDENT.name(), Role.MANAGER.name(), Role.EMPLOYER.name())
 
                         // ROLES
                         .requestMatchers(STUDENT_PATH).hasAuthority(Role.STUDENT.name())
