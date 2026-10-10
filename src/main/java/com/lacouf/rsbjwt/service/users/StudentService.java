@@ -92,7 +92,7 @@ public class StudentService {
             throw new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.");
         }
 
-        CV cv = new CV(upload.content(), CvVisibility.VISIBLE, CVSharingScope.PRIVATE, CvPriority.SECONDARY, upload.fileName(), LocalDateTime.now());
+        CV cv = new CV(upload.content(), CvVisibility.VISIBLE, upload.fileName(), LocalDateTime.now());
 
         cv.setStudent(student);
 
@@ -102,7 +102,9 @@ public class StudentService {
             throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
         }
 
-        cvRepository.save(cv);
+        CV savedCv = cvRepository.save(cv);
+
+        notifyManagersOfSubmittedCv(savedCv);
     }
 
     public boolean isCVReadable(CV cv) throws NoSuchAlgorithmException {
@@ -151,51 +153,6 @@ public class StudentService {
     public void setCvAsInvisible(String email, long cvId) throws CvNotFoundException {
         CV cv = findStudentCv(email, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
-        cvRepository.save(cv);
-
-        closeCvNotifications(cvId);
-    }
-
-    @Transactional
-    public void setCvAsPublic(String email, long cvId) throws CVAlreadyPublicException, CvNotFoundException {
-        CV cv = findStudentCv(email, cvId);
-
-        if (cv.getSharingScope() == CVSharingScope.PUBLIC) {
-            throw new CVAlreadyPublicException("The CV with ID " + cvId + " is already public.");
-        }
-
-        cv.setSharingScope(CVSharingScope.PUBLIC);
-        cvRepository.save(cv);
-
-        if (cv.getStatus() == CvStatus.PENDING) notifyManagersOfSubmittedCv(cv);
-    }
-
-    @Transactional
-    public void setCVAsSecondary(String email, long cvId) throws CvNotFoundException {
-        CV cv = findStudentCv(email, cvId);
-        cv.setPriority(CvPriority.SECONDARY);
-        cvRepository.save(cv);
-    }
-
-    @Transactional
-    public void setCVAsMain(String email, long cvId) throws CvNotFoundException {
-        CV cv = findStudentCv(email, cvId);
-        CV currentMainCv = cvRepository.findByStudentAndPriority(cv.getStudent(), CvPriority.MAIN);
-        if (currentMainCv != null && !currentMainCv.getId().equals(cvId)) {
-            currentMainCv.setPriority(CvPriority.SECONDARY);
-            cvRepository.save(currentMainCv);
-        }
-        cv.setPriority(CvPriority.MAIN);
-        cvRepository.save(cv);
-    }
-
-    @Transactional
-    public void setCvAsPrivate(String email, long cvId) throws CVAlreadyPrivateException, CvNotFoundException {
-        CV cv = findStudentCv(email, cvId);
-        if (cv.getSharingScope() == CVSharingScope.PRIVATE) {
-            throw new CVAlreadyPrivateException("The CV with ID " + cvId + " is already private.");
-        }
-        cv.setSharingScope(CVSharingScope.PRIVATE);
         cvRepository.save(cv);
 
         closeCvNotifications(cvId);

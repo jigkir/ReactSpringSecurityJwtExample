@@ -24,8 +24,8 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<ManagerCvResponseDto>> getAllPublicCvs() {
-        return ResponseEntity.ok(managerService.getAllPublicCvs());
+    public ResponseEntity<List<ManagerCvResponseDto>> getAllVisibleCvs() {
+        return ResponseEntity.ok(managerService.getAllVisibleCvs());
     }
 
     @GetMapping("/cvs/{cvId}")

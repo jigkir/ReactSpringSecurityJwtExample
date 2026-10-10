@@ -7,7 +7,6 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
-import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -72,23 +71,23 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    public List<ManagerCvResponseDto> getAllPublicCvs() {
-        List<CV> cvs = cvRepository.findBySharingScopeAndVisibility(CVSharingScope.PUBLIC, CvVisibility.VISIBLE);
+    public List<ManagerCvResponseDto> getAllVisibleCvs() {
+        List<CV> cvs = cvRepository.findByVisibility(CvVisibility.VISIBLE);
 
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
 
     public ManagerCvResponseDto getCv(long cvId) throws CvNotFoundException {
-        return ManagerCvResponseDto.of(findPublicCv(cvId));
+        return ManagerCvResponseDto.of(findVisibleCv(cvId));
     }
 
     public CvFileResponseDto getCvFile(long cvId) throws CvNotFoundException {
-        return CvFileResponseDto.of(findPublicCv(cvId));
+        return CvFileResponseDto.of(findVisibleCv(cvId));
     }
 
     @Transactional
     public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException {
-        CV cv = findPublicCv(cvId);
+        CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == CvStatus.APPROVED) {
             return ManagerCvResponseDto.of(cv);
@@ -103,7 +102,7 @@ public class ManagerService {
 
     @Transactional
     public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException {
-        CV cv = findPublicCv(cvId);
+        CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == CvStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
             return ManagerCvResponseDto.of(cv);
@@ -161,8 +160,8 @@ public class ManagerService {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }
 
-    private CV findPublicCv(long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndSharingScopeAndVisibility(cvId, CVSharingScope.PUBLIC, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+    private CV findVisibleCv(long cvId) throws CvNotFoundException {
+        return cvRepository.findByIdAndVisibility(cvId, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
     }
 
     private ManagerCvResponseDto saveAndConvert(CV cv) {

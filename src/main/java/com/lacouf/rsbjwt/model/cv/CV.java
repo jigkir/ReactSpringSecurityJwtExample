@@ -33,14 +33,6 @@ public class CV {
     @Column
     private CvVisibility visibility;
 
-    @Enumerated(EnumType.STRING)
-    @Column
-    private CVSharingScope sharingScope;
-
-    @Enumerated(EnumType.STRING)
-    @Column
-    private CvPriority priority;
-
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
@@ -55,11 +47,9 @@ public class CV {
     public CV() {
     }
 
-    public CV(byte[] content, CvVisibility visibility, CVSharingScope sharingScope, CvPriority priority, String fileName, LocalDateTime uploadDate) {
+    public CV(byte[] content, CvVisibility visibility, String fileName, LocalDateTime uploadDate) {
         this.content = content;
         this.visibility = visibility;
-        this.sharingScope = sharingScope;
-        this.priority = priority;
         this.fileName = fileName;
         this.uploadDate = uploadDate;
         this.status = CvStatus.PENDING;

@@ -66,30 +66,6 @@ public class StudentController {
         return new ResponseEntity<>("CV hidden successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/cvs/{cvId}/public")
-    public ResponseEntity<String> makeCVPublic(Authentication authentication, @PathVariable long cvId) throws CVAlreadyPublicException, CvNotFoundException {
-        studentService.setCvAsPublic(authentication.getName(), cvId);
-        return new ResponseEntity<>("CV made public successfully", HttpStatus.OK);
-    }
-
-    @PutMapping("/cvs/{cvId}/private")
-    public ResponseEntity<String> makeCVPrivate(Authentication authentication, @PathVariable long cvId) throws CVAlreadyPrivateException, CvNotFoundException {
-        studentService.setCvAsPrivate(authentication.getName(), cvId);
-        return new ResponseEntity<>("CV made private successfully", HttpStatus.OK);
-    }
-
-    @PutMapping("/cvs/{cvId}/secondary")
-    public ResponseEntity<String> makeCVSecondary(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
-        studentService.setCVAsSecondary(authentication.getName(), cvId);
-        return new ResponseEntity<>("CV made secondary successfully", HttpStatus.OK);
-    }
-
-    @PutMapping("/cvs/{cvId}/main")
-    public ResponseEntity<String> makeCVMain(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
-        studentService.setCVAsMain(authentication.getName(), cvId);
-        return new ResponseEntity<>("CV made main successfully", HttpStatus.OK);
-    }
-
     @GetMapping("/cvs/{cvId}")
     public ResponseEntity<CvFileResponseDto> getCV(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
         return ResponseEntity.ok(studentService.getCV(authentication.getName(), cvId));
