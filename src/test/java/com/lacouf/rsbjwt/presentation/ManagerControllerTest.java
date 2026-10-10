@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,8 +47,6 @@ public class ManagerControllerTest {
     private static final String REJECTION_BODY = "{\"comment\": \"CV too detailed\"}";
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
 
-    private final Authentication authentication = new UsernamePasswordAuthenticationToken("manager@example.com", null);
-
     private static ManagerCvResponseDto cvWith(CvStatus status, String comment) {
         return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
     }
@@ -78,9 +74,9 @@ public class ManagerControllerTest {
     }
 
     @Test
-    void shouldReturnAllPublicCvs() throws Exception {
+    void shouldReturnAllVisibleCvs() throws Exception {
         // Arrange
-        when(managerService.getAllPublicCvs()).thenReturn(List.of(cvWith(CvStatus.PENDING, null), cvWith(CvStatus.REJECTED, "CV too detailed")));
+        when(managerService.getAllVisibleCvs()).thenReturn(List.of(cvWith(CvStatus.PENDING, null), cvWith(CvStatus.REJECTED, "CV too detailed")));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs"))
@@ -88,7 +84,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].status").value("REJECTED"));
 
-        verify(managerService).getAllPublicCvs();
+        verify(managerService).getAllVisibleCvs();
     }
 
     @Test
@@ -150,6 +146,16 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnNotFoundWhenGettingUnknownCv() throws Exception {
+        // Arrange
+        when(managerService.getCv(99L)).thenThrow(new CvNotFoundException("CV with ID 99 not found."));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/cvs/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void shouldReturnCvFile() throws Exception {
         // Arrange
         when(managerService.getCvFile(1L)).thenReturn(new CvFileResponseDto(1L, "cv.pdf", "pdf".getBytes()));
@@ -158,6 +164,16 @@ public class ManagerControllerTest {
         mockMvc.perform(get("/api/manager/cvs/1/file"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("cGRm"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingFileOfUnknownCv() throws Exception {
+        // Arrange
+        when(managerService.getCvFile(99L)).thenThrow(new CvNotFoundException("CV with ID 99 not found."));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/cvs/99/file"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -179,6 +195,34 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnAllInternships() throws Exception {
+        // Arrange
+        when(managerService.getAllInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING, null), internshipWith(InternshipStatus.APPROVED, null)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[1].status").value("APPROVED"));
+
+        verify(managerService).getAllInternships();
+    }
+
+    @Test
+    void shouldReturnPendingInternships() throws Exception {
+        // Arrange
+        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING, null)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
+
+        verify(managerService).getPendingInternships();
+    }
+
+    @Test
     void shouldReturnInternshipById() throws Exception {
         // Arrange
         when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING, null));
@@ -191,6 +235,15 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.title").value("Développeur logiciel"));
 
         verify(managerService).getInternshipById(1L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingUnknownInternship() throws Exception {
+        // Arrange
+        when(managerService.getInternshipById(99L)).thenThrow(new InternshipNotFoundException(99L));
+
+        // Act + assert
+        mockMvc.perform(get("/api/manager/internships/99")).andExpect(status().isNotFound());
     }
 
     @Test
@@ -240,5 +293,15 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/internships/99/reject")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"comment\": \"A ghost?!?\"}")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenInternshipRejectionCommentIsBlank() throws Exception {
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/reject")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"comment\": \"   \"}")).andExpect(status().isBadRequest());
+
+        verifyNoInteractions(managerService);
     }
 }

@@ -1,11 +1,15 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -14,12 +18,12 @@ import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
-import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.notification.NotificationService;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
@@ -31,7 +35,10 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentService {
@@ -119,7 +126,8 @@ public class StudentService {
         if (!hash.equals(cv.getFileHash())) {
             return false;
         }
-        try (PDDocument document = Loader.loadPDF(cv.getContent())) {
+        // Unnamed variable: loading the PDF is the check itself, the document is never used
+        try (PDDocument _ = Loader.loadPDF(cv.getContent())) {
             return true;
         } catch (IOException e) {
             return false;
