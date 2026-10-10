@@ -5,12 +5,8 @@ import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.TargetType;
-import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
-import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.*;
@@ -57,24 +53,22 @@ public class StudentServiceTest {
     private StudentService studentService;
 
     @Mock
+    private NotificationService notificationService;
+
+    @Mock
     private StudentRepository studentRepository;
     @Mock
     private UserAppRepository userAppRepository;
     @Mock
     private CVRepository cvRepository;
     @Mock
-    private NotificationRepository notificationRepository;
-    @Mock
     private ManagerRepository managerRepository;
+
     @Mock
     private PasswordEncoder passwordEncoder;
 
     @Captor
-    private ArgumentCaptor<Notification> notificationArgumentCaptor;
-
-    @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
-
     @Captor
     private ArgumentCaptor<CV> cvArgumentCaptor;
 
@@ -398,7 +392,7 @@ public class StudentServiceTest {
 
         assert CvVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 10L);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.CV, 10L);
     }
 
     @Test
@@ -450,7 +444,7 @@ public class StudentServiceTest {
 
         assert CVSharingScope.PRIVATE.equals(cv.getSharingScope());
         verify(cvRepository).save(cv);
-        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 10L);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.CV, 10L);
     }
 
     @Test
@@ -567,14 +561,8 @@ public class StudentServiceTest {
         studentService.setCvAsPublic(STUDENT_EMAIL, 10L);
 
         // Assert
-        verify(notificationRepository, times(2)).save(notificationArgumentCaptor.capture());
-
-        List<Notification> notifications = notificationArgumentCaptor.getAllValues();
-
-        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.getFirst().getNotificationType());
-        assert (Long.valueOf(10L)).equals(notifications.getFirst().getTargetId());
-        assert (firstManager).equals(notifications.get(0).getUser());
-        assert (secondManager).equals(notifications.get(1).getUser());
+        verify(notificationService).notifyIfAbsent(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L, secondManager);
     }
 
     @Test
@@ -593,7 +581,7 @@ public class StudentServiceTest {
         // Assert
         assert (CVSharingScope.PUBLIC).equals(cv.getSharingScope());
 
-        verifyNoInteractions(managerRepository, notificationRepository);
+        verifyNoInteractions(managerRepository, notificationService);
     }
 
     @Test
@@ -607,203 +595,13 @@ public class StudentServiceTest {
 
         when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
         when(managerRepository.findAll()).thenReturn(List.of(manager));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L, manager, NotificationStatus.UNREAD))
-                .thenReturn(false);
 
         studentService.setCvAsPublic(STUDENT_EMAIL, 10L);
         studentService.setCvAsPrivate(STUDENT_EMAIL, 10L);
         studentService.setCvAsPublic(STUDENT_EMAIL, 10L);
 
         // Assert
-        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 10L);
-        verify(notificationRepository, times(2)).save(notificationArgumentCaptor.capture());
-
-        List<Notification> notifications = notificationArgumentCaptor.getAllValues();
-
-        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.get(0).getNotificationType());
-        assert (NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(notifications.get(1).getNotificationType());
-        assert (manager).equals(notifications.get(1).getUser());
-        assert (Long.valueOf(10L)).equals(notifications.get(1).getTargetId());
-    }
-
-    @Test
-    void createNewInternshipNotificationsForStudents_shouldNotifyOnlyEligibleStudents() {
-        // Arrange
-        Internship internship = mock(Internship.class);
-        Employer employer = mock(Employer.class);
-        Student eligibleStudent = mock(Student.class);
-        Student ineligibleStudent = mock(Student.class);
-
-        when(internship.getId()).thenReturn(42L);
-        when(internship.getPostedBy()).thenReturn(employer);
-        when(employer.getDiscipline()).thenReturn(Discipline.COMPUTER_SCIENCE);
-
-        when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE))
-                .thenReturn(List.of(eligibleStudent, ineligibleStudent));
-
-        CV approvedVisibleCv = mock(CV.class);
-        when(approvedVisibleCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
-        when(approvedVisibleCv.getStatus()).thenReturn(CvStatus.APPROVED);
-
-        CV pendingCv = mock(CV.class);
-        when(pendingCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
-        when(pendingCv.getStatus()).thenReturn(CvStatus.PENDING);
-
-        when(cvRepository.findByStudent(eligibleStudent)).thenReturn(List.of(approvedVisibleCv));
-        when(cvRepository.findByStudent(ineligibleStudent)).thenReturn(List.of(pendingCv));
-
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.NEW_INTERNSHIP_OFFER, 42L, eligibleStudent, NotificationStatus.UNREAD)).thenReturn(false);
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.NEW_INTERNSHIP_OFFER, 42L, ineligibleStudent, NotificationStatus.UNREAD)).thenReturn(false);
-
-        // Act
-        studentService.createNewInternshipNotificationsForStudents(internship);
-
-        // Assert
-        verify(notificationRepository, times(1)).save(argThat(notification ->
-                notification.getNotificationType() == NotificationType.NEW_INTERNSHIP_OFFER
-                        && notification.getTargetType() == TargetType.INTERNSHIP_OFFER
-                        && notification.getTargetId().equals(42L)
-                        && notification.getUser() == eligibleStudent
-        ));
-
-        verify(notificationRepository, never()).save(argThat(notification ->
-                notification.getUser() == ineligibleStudent
-        ));
-    }
-
-    @Test
-    void createNewInternshipNotificationsForStudents_shouldNotCreateDuplicateNotification() {
-        // Arrange
-        Internship internship = mock(Internship.class);
-        Employer employer = mock(Employer.class);
-        Student student = mock(Student.class);
-
-        when(internship.getId()).thenReturn(42L);
-        when(internship.getPostedBy()).thenReturn(employer);
-        when(employer.getDiscipline()).thenReturn(Discipline.COMPUTER_SCIENCE);
-
-        when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(student));
-
-        CV approvedVisibleCv = mock(CV.class);
-        when(approvedVisibleCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
-        when(approvedVisibleCv.getStatus()).thenReturn(CvStatus.APPROVED);
-        when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedVisibleCv));
-
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.NEW_INTERNSHIP_OFFER, 42L, student, NotificationStatus.UNREAD)).thenReturn(true);
-
-        // Act
-        studentService.createNewInternshipNotificationsForStudents(internship);
-
-        // Assert
-        verify(notificationRepository, never()).save(any(Notification.class));
-    }
-
-    @Test
-    void markInternshipsNotificationAsRead_shouldCallRepositoryBulkUpdateForStudent() throws UserNotFoundException {
-        // Arrange
-        String studentEmail = "student@example.com";
-
-        // Act
-        studentService.markInternshipsNotificationAsRead(studentEmail);
-
-        // Assert
-        verify(notificationRepository, times(1))
-                .markAllAsReadByEmailAndNotificationType(studentEmail, NotificationType.NEW_INTERNSHIP_OFFER);
-
-        verify(notificationRepository, never()).save(any(Notification.class));
-    }
-
-    @Test
-    void createNewInternshipNotificationsForStudents_shouldCreateAndSaveNotification_whenStudentMatchesDisciplineHasApprovedCv() {
-        // Arrange
-        Discipline discipline = Discipline.COMPUTER_SCIENCE;
-
-        Employer employer = mock(Employer.class);
-        when(employer.getDiscipline()).thenReturn(discipline);
-
-        Internship internship = mock(Internship.class);
-        when(internship.getId()).thenReturn(100L);
-        when(internship.getPostedBy()).thenReturn(employer);
-
-        Student student = mock(Student.class);
-        when(studentRepository.findByDiscipline(discipline)).thenReturn(List.of(student));
-
-        CV approvedCv = mock(CV.class);
-        when(approvedCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
-        when(approvedCv.getStatus()).thenReturn(CvStatus.APPROVED);
-
-        when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedCv));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student, NotificationStatus.UNREAD)).thenReturn(false);
-
-        // Act
-        studentService.createNewInternshipNotificationsForStudents(internship);
-
-        // Assert
-        verify(notificationRepository, times(1)).save(any(Notification.class));
-    }
-
-    @Test
-    void createNewInternshipNotificationsForStudents_shouldSkipCreation_whenNotificationAlreadyExists() {
-        // Arrange
-        Discipline discipline = Discipline.COMPUTER_SCIENCE;
-
-        Employer employer = mock(Employer.class);
-        when(employer.getDiscipline()).thenReturn(discipline);
-
-        Internship internship = mock(Internship.class);
-        when(internship.getId()).thenReturn(100L);
-        when(internship.getPostedBy()).thenReturn(employer);
-
-        Student student = mock(Student.class);
-        when(studentRepository.findByDiscipline(discipline)).thenReturn(List.of(student));
-
-        CV approvedCv = mock(CV.class);
-        when(approvedCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
-        when(approvedCv.getStatus()).thenReturn(CvStatus.APPROVED);
-
-        when(cvRepository.findByStudent(student)).thenReturn(List.of(approvedCv));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student, NotificationStatus.UNREAD)).thenReturn(true);
-
-        // Act
-        studentService.createNewInternshipNotificationsForStudents(internship);
-
-        // Assert
-        verify(notificationRepository, never()).save(any(Notification.class));
-    }
-
-    @Test
-    void createNewInternshipNotificationsForStudents_shouldSkipCreation_whenStudentHasNoApprovedCv() {
-        // Arrange
-        Discipline discipline = Discipline.COMPUTER_SCIENCE;
-
-        Employer employer = mock(Employer.class);
-        when(employer.getDiscipline()).thenReturn(discipline);
-
-        Internship internship = mock(Internship.class);
-        when(internship.getId()).thenReturn(100L);
-        when(internship.getPostedBy()).thenReturn(employer);
-
-        Student student = mock(Student.class);
-        when(studentRepository.findByDiscipline(discipline)).thenReturn(List.of(student));
-
-        CV pendingCv = mock(CV.class);
-        when(pendingCv.getVisibility()).thenReturn(CvVisibility.VISIBLE);
-        when(pendingCv.getStatus()).thenReturn(CvStatus.PENDING);
-
-        when(cvRepository.findByStudent(student)).thenReturn(List.of(pendingCv));
-        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                NotificationType.NEW_INTERNSHIP_OFFER, 100L, student, NotificationStatus.UNREAD)).thenReturn(false);
-
-        // Act
-        studentService.createNewInternshipNotificationsForStudents(internship);
-
-        // Assert
-        verify(notificationRepository, never()).save(any(Notification.class));
+        verify(notificationService).closeNotificationsOfTarget(TargetType.CV, 10L);
+        verify(notificationService, times(2)).notifyIfAbsent(NotificationType.CV_SUBMITTED_FOR_REVIEW, 10L, manager);
     }
 }

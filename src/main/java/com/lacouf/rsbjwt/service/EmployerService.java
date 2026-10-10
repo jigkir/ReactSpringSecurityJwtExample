@@ -11,7 +11,6 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.UserApp;
-import com.lacouf.rsbjwt.repository.NotificationRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
@@ -21,6 +20,7 @@ import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,14 +33,14 @@ public class EmployerService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final InternshipRepository internshipRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
-    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository, NotificationRepository notificationRepository) {
+    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository, NotificationService notificationService) {
         this.employerRepository = employerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.internshipRepository = internshipRepository;
-        this.notificationRepository = notificationRepository;
+        this.notificationService = notificationService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -97,6 +97,7 @@ public class EmployerService {
         return InternshipResponseDto.of(internship);
     }
 
+    @Transactional
     public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
         Internship internship = internshipRepository
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
@@ -124,20 +125,21 @@ public class EmployerService {
                 dto.compensationNegotiable()
         );
 
-        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, id);
+        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
 
         internshipRepository.save(internship);
 
         return InternshipResponseDto.of(internship);
     }
 
+    @Transactional
     public void deleteInternship(long id, String employerEmail) throws InternshipNotFoundException {
         Internship internship = internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
         internship.markAsDeleted();
 
-        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, id);
+        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
 
         internshipRepository.save(internship);
     }

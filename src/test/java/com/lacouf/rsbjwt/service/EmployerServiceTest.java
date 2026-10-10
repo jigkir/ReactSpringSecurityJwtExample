@@ -3,12 +3,12 @@ package com.lacouf.rsbjwt.service;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.repository.NotificationRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
@@ -46,13 +46,15 @@ public class EmployerServiceTest {
     private EmployerService employerService;
 
     @Mock
+    private NotificationService notificationService;
+
+    @Mock
     private EmployerRepository employerRepository;
     @Mock
     private UserAppRepository userAppRepository;
     @Mock
     private InternshipRepository internshipRepository;
-    @Mock
-    private NotificationRepository notificationRepository;
+
     @Mock
     private PasswordEncoder passwordEncoder;
 
@@ -108,13 +110,13 @@ public class EmployerServiceTest {
         verify(employerRepository).save(employerArgumentCaptor.capture());
 
         Employer savedEmployer = employerArgumentCaptor.getValue();
-        assert(savedEmployer.getFirstName()).equals("First Name");
-        assert(savedEmployer.getLastName()).equals("Last Name");
-        assert(savedEmployer.getEmail()).equals(EMPLOYER_EMAIL);
-        assert(savedEmployer.getPassword()).equals("Test123@-encoded");
-        assert(savedEmployer.getCompanyName()).equals("Company Name");
-        assert(savedEmployer.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
-        assert(savedEmployer.getPhoneNumber()).equals("514-123-4567");
+        assert (savedEmployer.getFirstName()).equals("First Name");
+        assert (savedEmployer.getLastName()).equals("Last Name");
+        assert (savedEmployer.getEmail()).equals(EMPLOYER_EMAIL);
+        assert (savedEmployer.getPassword()).equals("Test123@-encoded");
+        assert (savedEmployer.getCompanyName()).equals("Company Name");
+        assert (savedEmployer.getDiscipline()).equals(Discipline.COMPUTER_SCIENCE);
+        assert (savedEmployer.getPhoneNumber()).equals("514-123-4567");
     }
 
     @Test
@@ -129,8 +131,8 @@ public class EmployerServiceTest {
         );
 
         // Assert
-        assert("email").equals(exception.getField());
-        assert("user already exists").equals(exception.getMessage());
+        assert ("email").equals(exception.getField());
+        assert ("user already exists").equals(exception.getMessage());
 
         verify(employerRepository, never()).save(any(Employer.class));
     }
@@ -155,22 +157,22 @@ public class EmployerServiceTest {
 
         Internship savedInternship = internshipArgumentCaptor.getValue();
 
-        assert(InternshipStatus.PENDING).equals(savedInternship.getStatus());
+        assert (InternshipStatus.PENDING).equals(savedInternship.getStatus());
         assert !savedInternship.isDeleted();
-        assert(employer).equals(savedInternship.getPostedBy());
+        assert (employer).equals(savedInternship.getPostedBy());
 
-        assert(Long.valueOf(10L)).equals(response.id());
-        assert("Software Developer").equals(response.title());
-        assert("Develop applications").equals(response.description());
-        assert("Java, Spring").equals(response.requiredSkills());
-        assert(Integer.valueOf(16)).equals(response.durationInWeeks());
-        assert("Montreal").equals(response.location());
-        assert(START_DATE).equals(response.startDate());
-        assert(APPLICATION_DEADLINE).equals(response.applicationDeadline());
-        assert(new BigDecimal("25.00")).equals(response.compensationAmount());
+        assert (Long.valueOf(10L)).equals(response.id());
+        assert ("Software Developer").equals(response.title());
+        assert ("Develop applications").equals(response.description());
+        assert ("Java, Spring").equals(response.requiredSkills());
+        assert (Integer.valueOf(16)).equals(response.durationInWeeks());
+        assert ("Montreal").equals(response.location());
+        assert (START_DATE).equals(response.startDate());
+        assert (APPLICATION_DEADLINE).equals(response.applicationDeadline());
+        assert (new BigDecimal("25.00")).equals(response.compensationAmount());
         assert !response.compensationNegotiable();
-        assert(InternshipStatus.PENDING).equals(response.status());
-        assert(Long.valueOf(1L)).equals(response.employerId());
+        assert (InternshipStatus.PENDING).equals(response.status());
+        assert (Long.valueOf(1L)).equals(response.employerId());
     }
 
     @Test
@@ -182,7 +184,7 @@ public class EmployerServiceTest {
         InvalidInternshipDateException exception = assertThrows(InvalidInternshipDateException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
 
         // Assert
-        assert("Invalid start date. Should be in the future.").equals(exception.getMessage());
+        assert ("Invalid start date. Should be in the future.").equals(exception.getMessage());
 
         verifyNoInteractions(employerRepository, internshipRepository);
     }
@@ -196,7 +198,7 @@ public class EmployerServiceTest {
         InvalidInternshipDateException exception = assertThrows(InvalidInternshipDateException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
 
         // Assert
-        assert("Invalid application deadline. Should be in the future.").equals(exception.getMessage());
+        assert ("Invalid application deadline. Should be in the future.").equals(exception.getMessage());
 
         verifyNoInteractions(employerRepository, internshipRepository);
     }
@@ -213,6 +215,7 @@ public class EmployerServiceTest {
         assert internship.isDeleted();
 
         verify(internshipRepository).save(internship);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
     }
 
     @Test
@@ -224,10 +227,10 @@ public class EmployerServiceTest {
         List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL);
 
         // Assert
-        assert(Integer.valueOf(1)).equals(response.size());
-        assert(Long.valueOf(10L)).equals(response.getFirst().id());
-        assert("Software Developer").equals(response.getFirst().title());
-        assert(Long.valueOf(1L)).equals(response.getFirst().employerId());
+        assert (Integer.valueOf(1)).equals(response.size());
+        assert (Long.valueOf(10L)).equals(response.getFirst().id());
+        assert ("Software Developer").equals(response.getFirst().title());
+        assert (Long.valueOf(1L)).equals(response.getFirst().employerId());
     }
 
     @Test
@@ -247,13 +250,17 @@ public class EmployerServiceTest {
         InternshipRequestDto negotiableDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, null, true);
 
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
-        when(internshipRepository.save(any(Internship.class))).thenAnswer(invocation -> { Internship saved = invocation.getArgument(0); saved.setId(10L); return saved; });
+        when(internshipRepository.save(any(Internship.class))).thenAnswer(invocation -> {
+            Internship saved = invocation.getArgument(0);
+            saved.setId(10L);
+            return saved;
+        });
 
         // Act
         InternshipResponseDto response = employerService.saveInternship(negotiableDto, EMPLOYER_EMAIL);
 
         // Assert
-        assert(response.compensationAmount() == null);
+        assert (response.compensationAmount() == null);
         assert response.compensationNegotiable();
 
         verify(internshipRepository).save(any(Internship.class));

@@ -3,14 +3,12 @@ package com.lacouf.rsbjwt.model.notification;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Notification {
 
     @Id
@@ -37,19 +35,20 @@ public class Notification {
     private Long targetId;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserApp user;
 
-    public Notification(String title, String message, NotificationType notificationType, Long targetId, UserApp user) {
-        this.title = title;
+    public Notification(NotificationType notificationType, String message, Long targetId, UserApp user) {
+        this.title = notificationType.getTitle();
         this.message = message;
         this.status = NotificationStatus.UNREAD;
         this.notificationType = notificationType;
         this.targetType = notificationType.getTargetType();
         this.targetId = targetId;
         this.user = user;
+        this.createdAt = LocalDateTime.now();
     }
 }

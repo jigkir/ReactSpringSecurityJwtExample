@@ -1,19 +1,13 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
-import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.notification.Notification;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
-import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.*;
@@ -24,7 +18,6 @@ import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -45,26 +38,20 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final CVRepository cvRepository;
-    private final NotificationRepository notificationRepository;
     private final ManagerRepository managerRepository;
+    private final NotificationService notificationService;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
     private final Tika tika = new Tika();
 
-    private static final String CV_SUBMITTED_TITLE = "New CV Pending Review";
-    private static final String CV_SUBMITTED_MESSAGE = "A new CV has been submitted for review.";
-
-    private static final String INTERNSHIP_TITLE = "New Internship Offer";
-    private static final String INTERNSHIP_MESSAGE = "A new internship offer has been posted that matches your discipline.";
-
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, NotificationRepository notificationRepository, ManagerRepository managerRepository) {
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
-        this.notificationRepository = notificationRepository;
         this.managerRepository = managerRepository;
+        this.notificationService = notificationService;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -226,68 +213,6 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<NotificationDto> getStudentNotifications(String email) {
-        return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD).stream()
-                .map(NotificationDto::of)
-                .toList();
-    }
-
-    @Transactional
-    public void markNotificationAsRead(long notificationId, String email) throws NotificationNotFoundException {
-        Notification notification = notificationRepository.findByIdAndUser_Credentials_Email(notificationId, email)
-                .orElseThrow(() -> new NotificationNotFoundException(notificationId));
-
-        notification.setStatus(NotificationStatus.READ);
-    }
-
-    @Transactional
-    public void markCvNotificationsAsRead(String email) {
-        notificationRepository.markAllAsReadByEmailAndTargetType(email, TargetType.CV);
-    }
-
-    @Transactional
-    public void markInternshipsNotificationAsRead(String email) {
-        notificationRepository.markAllAsReadByEmailAndNotificationType(email, NotificationType.NEW_INTERNSHIP_OFFER);
-    }
-
-    public int getUnreadNotificationCountForInternships(String email) {
-        return notificationRepository.countByUser_Credentials_EmailAndStatusAndNotificationType(email, NotificationStatus.UNREAD, NotificationType.NEW_INTERNSHIP_OFFER);
-    }
-
-    @Transactional
-    public void createNewInternshipNotificationsForStudents(Internship internship) {
-        List<Student> students = studentRepository.findByDiscipline(getEmployerDisciplineByInternship(internship));
-
-        for (Student student : students) {
-            List<CV> studentCvs = cvRepository.findByStudent(student);
-            boolean hasApprovedCv = studentCvs.stream().anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
-            boolean notificationExists = notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                    NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student, NotificationStatus.UNREAD);
-            if (!notificationExists && hasApprovedCv) {
-                createNewInternshipNotificationForStudent(
-                        internship.getId(),
-                        student
-                );
-            }
-        }
-    }
-
-    private Discipline getEmployerDisciplineByInternship(Internship internship) {
-        Employer employer = internship.getPostedBy();
-        return employer.getDiscipline();
-    }
-
-    private void createNewInternshipNotificationForStudent(long internshipId, Student student) {
-        Notification notification = new Notification(
-                INTERNSHIP_TITLE,
-                INTERNSHIP_MESSAGE,
-                NotificationType.NEW_INTERNSHIP_OFFER,
-                internshipId,
-                student
-        );
-        notificationRepository.save(notification);
-    }
-
     private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
         Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
         Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
@@ -311,15 +236,12 @@ public class StudentService {
     }
 
     private void notifyManagersOfSubmittedCv(CV cv) {
-        managerRepository.findAll().stream()
-                .filter(manager -> !notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
-                        NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager, NotificationStatus.UNREAD))
-                .forEach(manager -> notificationRepository.save(
-                        new Notification(CV_SUBMITTED_TITLE, CV_SUBMITTED_MESSAGE, NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager)));
+        managerRepository.findAll()
+                .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager));
     }
 
     private void closeCvNotifications(long cvId) {
-        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.CV, cvId);
+        notificationService.closeNotificationsOfTarget(TargetType.CV, cvId);
     }
 
     private String calculateFileHash(byte[] content) throws NoSuchAlgorithmException {

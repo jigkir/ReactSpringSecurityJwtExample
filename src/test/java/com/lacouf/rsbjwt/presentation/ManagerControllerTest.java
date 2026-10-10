@@ -8,15 +8,11 @@ import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
-import com.lacouf.rsbjwt.model.notification.NotificationType;
-import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -182,33 +178,6 @@ public class ManagerControllerTest {
     }
 
     @Test
-    void shouldReturnNotificationsOfConnectedManager() throws Exception {
-        // Arrange
-        when(managerService.getNotificationsForManager("manager@example.com")).thenReturn(List.of(new NotificationDto(5L, "New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.UNREAD, TargetType.CV, NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, LocalDateTime.now())));
-
-        // Act + Assert
-        mockMvc.perform(get("/api/manager/notifications").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(5))
-                .andExpect(jsonPath("$[0].notificationType").value("CV_SUBMITTED_FOR_REVIEW"))
-                .andExpect(jsonPath("$[0].targetId").value(1));
-
-        verify(managerService).getNotificationsForManager("manager@example.com");
-    }
-
-    @Test
-    void shouldMarkManagerNotificationAsRead() throws Exception {
-        // Arrange
-        when(managerService.markNotificationAsRead(5L, "manager@example.com")).thenReturn(new NotificationDto(5L, "New CV Pending Review", "A new CV has been submitted for review.", NotificationStatus.READ, TargetType.CV, NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, LocalDateTime.now()));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/manager/notifications/5/read").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("READ"));
-    }
-
-    //get offer by id
-    @Test
     void shouldReturnInternshipById() throws Exception {
         // Arrange
         when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING, null));
@@ -223,7 +192,6 @@ public class ManagerControllerTest {
         verify(managerService).getInternshipById(1L);
     }
 
-    //approve internship
     @Test
     void shouldReturnOkWhenInternshipIsApproved() throws Exception {
         // Arrange
@@ -237,7 +205,6 @@ public class ManagerControllerTest {
         verify(managerService).approveInternship(1L);
     }
 
-    //reject internship
     @Test
     void shouldReturnOkWhenInternshipIsRejected() throws Exception {
         // Arrange
@@ -254,7 +221,6 @@ public class ManagerControllerTest {
         verify(managerService).rejectInternship(1L, "Offer = bad.");
     }
 
-    //404 approve internship inexistant
     @Test
     void shouldReturnNotFoundWhenApprovingUnknownInternship() throws Exception {
         // Arrange
@@ -264,7 +230,6 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/internships/99/approve")).andExpect(status().isNotFound());
     }
 
-    //404 reject internship inexistant
     @Test
     void shouldReturnNotFoundWhenRejectingUnknownInternship() throws Exception {
         // Arrange

@@ -1,10 +1,9 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -13,19 +12,18 @@ import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
-import com.lacouf.rsbjwt.model.notification.Notification;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
+import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,23 +37,19 @@ public class ManagerService {
     private final ManagerRepository managerRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
-    private final NotificationRepository notificationRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
-    private final StudentService studentService;
+    private final StudentRepository studentRepository;
+    private final NotificationService notificationService;
 
-    private static final String CV_APPROVED_TITLE = "CV Approved";
-    private static final String CV_APPROVED_MESSAGE = "Your CV has been approved.";
-    private static final String CV_REJECTED_TITLE = "CV Rejected";
-
-    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, NotificationRepository notificationRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentService studentService) {
+    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService) {
         this.managerRepository = managerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
-        this.notificationRepository = notificationRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
-        this.studentService = studentService;
+        this.studentRepository = studentRepository;
+        this.notificationService = notificationService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -74,20 +68,6 @@ public class ManagerService {
         managerRepository.save(manager);
 
         return UserResponseDto.of(manager);
-    }
-
-    public List<NotificationDto> getNotificationsForManager(String email) throws UserNotFoundException {
-        return notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(email, NotificationStatus.UNREAD)
-                .stream()
-                .map(NotificationDto::of)
-                .toList();
-    }
-
-    public NotificationDto markNotificationAsRead(long notificationId, String email) throws NotificationNotFoundException {
-        Notification notification = notificationRepository.findByIdAndUser_Credentials_Email(notificationId, email).orElseThrow(() -> new NotificationNotFoundException(notificationId));
-        notification.setStatus(NotificationStatus.READ);
-        notificationRepository.save(notification);
-        return NotificationDto.of(notification);
     }
 
     public List<ManagerCvResponseDto> getAllPublicCvs() {
@@ -114,7 +94,7 @@ public class ManagerService {
         cv.setStatus(CvStatus.APPROVED);
         cv.setRejectionComment(null);
 
-        notifyStudentOfCvReviewDecision(cv, NotificationType.CV_APPROVED, CV_APPROVED_TITLE, CV_APPROVED_MESSAGE);
+        notifyStudentOfCvReviewDecision(cv, NotificationType.CV_APPROVED, NotificationType.CV_APPROVED.getMessage());
 
         return saveAndConvert(cv);
     }
@@ -130,7 +110,7 @@ public class ManagerService {
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment(comment);
 
-        notifyStudentOfCvReviewDecision(cv, NotificationType.CV_REJECTED, CV_REJECTED_TITLE, comment);
+        notifyStudentOfCvReviewDecision(cv, NotificationType.CV_REJECTED, comment);
 
         return saveAndConvert(cv);
     }
@@ -158,7 +138,7 @@ public class ManagerService {
         internship.approve();
         internshipRepository.save(internship);
 
-        studentService.createNewInternshipNotificationsForStudents(internship);
+        notifyMatchingStudentsOfInternship(internship);
 
         return InternshipResponseDto.of(internship);
     }
@@ -170,7 +150,7 @@ public class ManagerService {
         internship.reject(comment);
         internshipRepository.save(internship);
 
-        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, internshipId);
+        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, internshipId);
 
         return InternshipResponseDto.of(internship);
     }
@@ -197,9 +177,21 @@ public class ManagerService {
         }
     }
 
-    private void notifyStudentOfCvReviewDecision(CV cv, NotificationType type, String title, String message) {
-        notificationRepository.markAllAsReadByTargetTypeAndTargetId(TargetType.CV, cv.getId());
+    private void notifyStudentOfCvReviewDecision(CV cv, NotificationType notificationType, String message) {
+        notificationService.closeNotificationsOfTarget(TargetType.CV, cv.getId());
+        notificationService.notifyIfAbsent(notificationType, message, cv.getId(), cv.getStudent());
+    }
 
-        notificationRepository.save(new Notification(title, message, type, cv.getId(), cv.getStudent()));
+    private void notifyMatchingStudentsOfInternship(Internship internship) {
+        Discipline discipline = internship.getPostedBy().getDiscipline();
+
+        studentRepository.findByDiscipline(discipline).stream()
+                .filter(this::hasVisibleApprovedCv)
+                .forEach(student -> notificationService.notifyIfAbsent(NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student));
+    }
+
+    private boolean hasVisibleApprovedCv(Student student) {
+        return cvRepository.findByStudent(student).stream()
+                .anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
     }
 }

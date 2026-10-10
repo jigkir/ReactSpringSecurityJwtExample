@@ -2,11 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.model.*;
-import com.lacouf.rsbjwt.model.notification.NotificationType;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
-import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.cv.CVSharingScope;
 import com.lacouf.rsbjwt.model.cv.CvPriority;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
@@ -19,7 +15,6 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
-import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -90,15 +85,15 @@ public class StudentControllerTest {
         mockMvc.perform(post("/api/student/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "firstName": "First Name",
-                                "lastName": "Last Name",
-                                "studentId": "1234567",
-                                "email": "test@claurendeau.qc.ca",
-                                "password": "Test123@",
-                                "discipline": "COMPUTER_SCIENCE"
-                            }
-                            """))
+                                {
+                                    "firstName": "First Name",
+                                    "lastName": "Last Name",
+                                    "studentId": "1234567",
+                                    "email": "test@claurendeau.qc.ca",
+                                    "password": "Test123@",
+                                    "discipline": "COMPUTER_SCIENCE"
+                                }
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("First Name"))
@@ -117,15 +112,15 @@ public class StudentControllerTest {
         mockMvc.perform(post("/api/student/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "firstName": "First Name",
-                            "lastName": "Last Name",
-                            "studentId": "1234567",
-                            "email": "test@claurendeau.qc.ca",
-                            "password": "Test123@",
-                            "discipline": "COMPUTER_SCIENCE"
-                        }
-                        """))
+                                {
+                                    "firstName": "First Name",
+                                    "lastName": "Last Name",
+                                    "studentId": "1234567",
+                                    "email": "test@claurendeau.qc.ca",
+                                    "password": "Test123@",
+                                    "discipline": "COMPUTER_SCIENCE"
+                                }
+                                """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("user already exists"))
                 .andExpect(jsonPath("$.field").value(conflictField));
@@ -336,96 +331,5 @@ public class StudentControllerTest {
 
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
                 .andExpect(status().isNotFound());
-    }
-
-    // Notification Tests
-
-    @Test
-    void shouldGetStudentNotificationsSuccessfully() throws Exception {
-        NotificationDto notificationDto = new NotificationDto(
-                100L,
-                "New Internship Offer",
-                "A new internship offer has been posted that matches your discipline.",
-                NotificationStatus.UNREAD,
-                TargetType.INTERNSHIP_OFFER,
-                NotificationType.NEW_INTERNSHIP_OFFER,
-                50L,
-                LocalDateTime.now()
-        );
-
-        when(studentService.getStudentNotifications("test@claurendeau.qc.ca"))
-                .thenReturn(List.of(notificationDto));
-
-        mockMvc.perform(get("/api/student/notifications").principal(authentication)
-                        .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(100))
-                .andExpect(jsonPath("$[0].title").value("New Internship Offer"))
-                .andExpect(jsonPath("$[0].message").value("A new internship offer has been posted that matches your discipline."))
-                .andExpect(jsonPath("$[0].status").value("UNREAD"))
-                .andExpect(jsonPath("$[0].notificationType").value("NEW_INTERNSHIP_OFFER"))
-                .andExpect(jsonPath("$[0].targetType").value("INTERNSHIP_OFFER"))
-                .andExpect(jsonPath("$[0].targetId").value(50));
-
-        verify(studentService).getStudentNotifications("test@claurendeau.qc.ca");
-    }
-
-    @Test
-    void shouldMarkNotificationAsReadSuccessfully() throws Exception {
-        doNothing().when(studentService).markNotificationAsRead(100L, "test@claurendeau.qc.ca");
-
-        mockMvc.perform(put("/api/student/notifications/100/read").principal(authentication)
-                        .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Notification marked as read successfully"));
-
-        verify(studentService).markNotificationAsRead(100L, "test@claurendeau.qc.ca");
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenMarkingNonExistentNotificationAsRead() throws Exception {
-        doThrow(new NotificationNotFoundException(999L)).when(studentService).markNotificationAsRead(999L, "test@claurendeau.qc.ca");
-
-        mockMvc.perform(put("/api/student/notifications/999/read")
-                        .principal(authentication)
-                        .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldMarkInternshipsNotificationsAsReadSuccessfully() throws Exception {
-        doNothing().when(studentService).markInternshipsNotificationAsRead("test@claurendeau.qc.ca");
-
-        mockMvc.perform(put("/api/student/notifications/internship/read").principal(authentication)
-                        .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Notifications marked as read successfully"));
-
-        verify(studentService).markInternshipsNotificationAsRead("test@claurendeau.qc.ca");
-    }
-
-    @Test
-    void shouldGetUnreadInternshipNotificationsCountSuccessfully() throws Exception {
-        when(studentService.getUnreadNotificationCountForInternships("test@claurendeau.qc.ca"))
-                .thenReturn(Math.toIntExact(5L));
-
-        mockMvc.perform(get("/api/student/notifications/internship/unread/count").principal(authentication)
-                        .with(user("test@claurendeau.qc.ca").roles("STUDENT")))
-                .andExpect(status().isOk())
-                .andExpect(content().string("5"));
-
-        verify(studentService).getUnreadNotificationCountForInternships("test@claurendeau.qc.ca");
-    }
-
-    @Test
-    void shouldMarkCvNotificationsAsReadSuccessfully() throws Exception {
-        doNothing().when(studentService).markCvNotificationsAsRead("test@claurendeau.qc.ca");
-
-        mockMvc.perform(put("/api/student/notifications/cv/read").principal(authentication).with(user("test@claurendeau.qc.ca").roles("STUDENT")))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Notifications marked as read successfully"));
-
-        verify(studentService).markCvNotificationsAsRead("test@claurendeau.qc.ca");
     }
 }

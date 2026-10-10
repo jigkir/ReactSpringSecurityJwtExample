@@ -1,19 +1,15 @@
 package com.lacouf.rsbjwt.presentation;
 
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.service.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,18 +21,6 @@ public class ManagerController {
 
     public ManagerController(ManagerService managerService) {
         this.managerService = managerService;
-    }
-
-    @GetMapping("/notifications")
-    public ResponseEntity<List<NotificationDto>> getManagerNotifications(Authentication authentication) throws UserNotFoundException {
-        List<NotificationDto> notifications = managerService.getNotificationsForManager(authentication.getName());
-        return ResponseEntity.ok(notifications);
-    }
-
-    @PutMapping("/notifications/{notificationId}/read")
-    public ResponseEntity<NotificationDto> markNotificationAsRead(@PathVariable long notificationId, Authentication authentication) throws NotificationNotFoundException {
-        NotificationDto updatedNotification = managerService.markNotificationAsRead(notificationId, authentication.getName());
-        return ResponseEntity.ok(updatedNotification);
     }
 
     @GetMapping("/cvs")

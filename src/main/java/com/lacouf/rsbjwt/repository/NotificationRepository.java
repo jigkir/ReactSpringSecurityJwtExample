@@ -12,24 +12,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-
-    boolean existsByNotificationTypeAndTargetIdAndUser(NotificationType notificationType, Long targetId, UserApp user);
 
     boolean existsByNotificationTypeAndTargetIdAndUserAndStatus(NotificationType notificationType, Long targetId, UserApp user, NotificationStatus status);
 
     List<Notification> findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(String email, NotificationStatus status);
 
-    int countByUser_Credentials_EmailAndStatusAndNotificationType(String email, NotificationStatus status, NotificationType notificationType);
-
-    Optional<Notification> findByIdAndUser_Credentials_Email(long id, String email);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user.credentials.email = :email AND n.notificationType = :notificationType AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
-    void markAllAsReadByEmailAndNotificationType(@Param("email") String email, @Param("notificationType") NotificationType notificationType);
+    long countByUser_Credentials_EmailAndStatusAndNotificationType(String email, NotificationStatus status, NotificationType notificationType);
 
     @Transactional
     @Modifying

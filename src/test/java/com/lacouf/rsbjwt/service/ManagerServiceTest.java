@@ -2,7 +2,6 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.notification.NotificationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -11,8 +10,6 @@ import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.model.notification.Notification;
-import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -20,11 +17,11 @@ import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.*;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
+import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,24 +48,24 @@ public class ManagerServiceTest {
     private ManagerService managerService;
 
     @Mock
-    private StudentService studentService;
+    private NotificationService notificationService;
+
     @Mock
     private ManagerRepository managerRepository;
+    @Mock
+    private StudentRepository studentRepository;
     @Mock
     private UserAppRepository userAppRepository;
     @Mock
     private CVRepository cvRepository;
     @Mock
-    private NotificationRepository notificationRepository;
+    private InternshipRepository internshipRepository;
+
     @Mock
     private PasswordEncoder passwordEncoder;
-    @Mock
-    private InternshipRepository internshipRepository;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
-    @Captor
-    private ArgumentCaptor<Notification> notificationArgumentCaptor;
 
     private CV cv;
     private Internship internship;
@@ -116,12 +113,12 @@ public class ManagerServiceTest {
         verify(managerRepository).save(managerArgumentCaptor.capture());
 
         Manager savedManager = managerArgumentCaptor.getValue();
-        assert(savedManager.getFirstName()).equals("First Name");
-        assert(savedManager.getLastName()).equals("Last Name");
-        assert(savedManager.getEmail()).equals("manager@example.com");
-        assert(savedManager.getPassword()).equals("Test123@-encoded");
-        assert(savedManager.getRole()).equals(Role.MANAGER);
-        assert(savedManager.getPhoneNumber()).equals("514-123-4567");
+        assert (savedManager.getFirstName()).equals("First Name");
+        assert (savedManager.getLastName()).equals("Last Name");
+        assert (savedManager.getEmail()).equals("manager@example.com");
+        assert (savedManager.getPassword()).equals("Test123@-encoded");
+        assert (savedManager.getRole()).equals(Role.MANAGER);
+        assert (savedManager.getPhoneNumber()).equals("514-123-4567");
     }
 
     @Test
@@ -136,8 +133,8 @@ public class ManagerServiceTest {
         );
 
         // Assert
-        assert("email").equals(exception.getField());
-        assert("user already exists").equals(exception.getMessage());
+        assert ("email").equals(exception.getField());
+        assert ("user already exists").equals(exception.getMessage());
 
         verify(managerRepository, never()).save(any(Manager.class));
     }
@@ -151,8 +148,8 @@ public class ManagerServiceTest {
         List<ManagerCvResponseDto> result = managerService.getAllPublicCvs();
 
         // Assert
-        assert(Integer.valueOf(1)).equals(result.size());
-        assert("Marie").equals(result.getFirst().student().firstName());
+        assert (Integer.valueOf(1)).equals(result.size());
+        assert ("Marie").equals(result.getFirst().student().firstName());
     }
 
     @Test
@@ -164,8 +161,8 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.getCv(1L);
 
         // Assert
-        assert(Long.valueOf(1L)).equals(result.id());
-        assert("2234567").equals(result.student().studentId());
+        assert (Long.valueOf(1L)).equals(result.id());
+        assert ("2234567").equals(result.student().studentId());
     }
 
     @Test
@@ -186,7 +183,7 @@ public class ManagerServiceTest {
         CvFileResponseDto result = managerService.getCvFile(1L);
 
         // Assert
-        assert("cv.pdf").equals(result.fileName());
+        assert ("cv.pdf").equals(result.fileName());
         assert Arrays.equals("pdf".getBytes(), result.content());
     }
 
@@ -199,13 +196,11 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.approveCv(1L);
 
         // Assert
-        assert(CvStatus.APPROVED).equals(cv.getStatus());
+        assert (CvStatus.APPROVED).equals(cv.getStatus());
         assert (CvStatus.APPROVED).equals(result.status());
         assert result.rejectionComment() == null;
 
         verify(cvRepository).save(cv);
-        verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 1L);
     }
 
     @Test
@@ -241,7 +236,7 @@ public class ManagerServiceTest {
         assert (CvStatus.APPROVED).equals(cv.getStatus());
 
         verify(cvRepository, never()).save(any(CV.class));
-        verifyNoInteractions(notificationRepository);
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -264,14 +259,12 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
 
         // Assert
-        assert(CvStatus.REJECTED).equals(cv.getStatus());
-        assert("CV too detailed").equals(cv.getRejectionComment());
-        assert(CvStatus.REJECTED).equals(result.status());
-        assert("CV too detailed").equals(result.rejectionComment());
+        assert (CvStatus.REJECTED).equals(cv.getStatus());
+        assert ("CV too detailed").equals(cv.getRejectionComment());
+        assert (CvStatus.REJECTED).equals(result.status());
+        assert ("CV too detailed").equals(result.rejectionComment());
 
         verify(cvRepository).save(cv);
-        verify(notificationRepository).save(any(Notification.class));
-        verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 1L);
     }
 
     @Test
@@ -320,7 +313,6 @@ public class ManagerServiceTest {
         verify(cvRepository).save(cv);
     }
 
-    //recup un stage par ID
     @Test
     void shouldReturnInternshipById() throws InternshipNotFoundException {
         //Arrange
@@ -330,12 +322,11 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.getInternshipById(1L);
 
         //Assert
-        assert(Long.valueOf(1L)).equals(result.id());
-        assert("Développeur logiciel").equals(result.title());
-        assert(InternshipStatus.PENDING).equals(result.status());
+        assert (Long.valueOf(1L)).equals(result.id());
+        assert ("Développeur logiciel").equals(result.title());
+        assert (InternshipStatus.PENDING).equals(result.status());
     }
 
-    //stage inexistant
     @Test
     void shouldThrowInternshipNotFoundExceptionWhenInternshipDoesNotExist() {
         //Arrange
@@ -345,7 +336,6 @@ public class ManagerServiceTest {
         assertThrows(InternshipNotFoundException.class, () -> managerService.getInternshipById(99L));
     }
 
-    //accepter un stage
     @Test
     void shouldApproveInternship() throws InternshipNotFoundException {
         //Arrange
@@ -355,14 +345,13 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.approveInternship(1L);
 
         //Assert
-        assert(InternshipStatus.APPROVED).equals(internship.getStatus());
-        assert(InternshipStatus.APPROVED).equals(result.status());
+        assert (InternshipStatus.APPROVED).equals(internship.getStatus());
+        assert (InternshipStatus.APPROVED).equals(result.status());
         assert internship.getRejectionComment() == null;
 
         verify(internshipRepository).save(internship);
     }
 
-    //refuser un stage
     @Test
     void shouldRejectInternship() throws InternshipNotFoundException {
         //Arrange
@@ -372,15 +361,14 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.rejectInternship(1L, "Ur offer sucks.");
 
         //Assert
-        assert(InternshipStatus.REJECTED).equals(internship.getStatus());
-        assert(InternshipStatus.REJECTED).equals(result.status());
-        assert("Ur offer sucks.").equals(internship.getRejectionComment());
-        assert("Ur offer sucks.").equals(result.rejectionComment());
+        assert (InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert (InternshipStatus.REJECTED).equals(result.status());
+        assert ("Ur offer sucks.").equals(internship.getRejectionComment());
+        assert ("Ur offer sucks.").equals(result.rejectionComment());
 
         verify(internshipRepository).save(internship);
     }
 
-    //approve inexistant internship
     @Test
     void shouldThrowInternshipNotFoundWhenApprovingUnknownInternship() {
         //Arrange
@@ -392,7 +380,6 @@ public class ManagerServiceTest {
         verify(internshipRepository, never()).save(any(Internship.class));
     }
 
-    //reject inexistant internship
     @Test
     void shouldThrowInternshipNotFoundWhenRejectingUnknownInternship() {
         //Arrange
@@ -402,42 +389,6 @@ public class ManagerServiceTest {
         assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L, "Who's there?"));
 
         verify(internshipRepository, never()).save(any(Internship.class));
-    }
-
-    @Test
-    void shouldReturnOnlyUnreadNotificationsOfConnectedManager() throws Exception {
-        // Arrange
-        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, new Manager());
-        notification.setId(5L);
-
-        when(notificationRepository.findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc("manager@example.com", NotificationStatus.UNREAD)).thenReturn(List.of(notification));
-
-        // Act
-        List<NotificationDto> result = managerService.getNotificationsForManager("manager@example.com");
-
-        // Assert
-        assert(Integer.valueOf(1)).equals(result.size());
-        assert(Long.valueOf(5L)).equals(result.getFirst().id());
-        assert(NotificationStatus.UNREAD).equals(result.getFirst().status());
-        assert(NotificationType.CV_SUBMITTED_FOR_REVIEW).equals(result.getFirst().notificationType());
-    }
-
-    @Test
-    void shouldMarkNotificationAsRead() throws NotificationNotFoundException {
-        // Arrange
-        Notification notification = new Notification("New CV Pending Review", "A new CV has been submitted for review.", NotificationType.CV_SUBMITTED_FOR_REVIEW, 1L, new Manager());
-        notification.setId(5L);
-
-        when(notificationRepository.findByIdAndUser_Credentials_Email(5L, "manager@example.com")).thenReturn(Optional.of(notification));
-
-        // Act
-        NotificationDto result = managerService.markNotificationAsRead(5L, "manager@example.com");
-
-        // Assert
-        assert(NotificationStatus.READ).equals(notification.getStatus());
-        assert(NotificationStatus.READ).equals(result.status());
-
-        verify(notificationRepository).save(notification);
     }
 
     @Test
@@ -451,13 +402,13 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.approveInternship(1L);
 
         // Assert
-        assert(InternshipStatus.APPROVED).equals(internship.getStatus());
+        assert (InternshipStatus.APPROVED).equals(internship.getStatus());
         assert internship.getRejectionComment() == null;
-        assert(InternshipStatus.APPROVED).equals(result.status());
+        assert (InternshipStatus.APPROVED).equals(result.status());
         assert result.rejectionComment() == null;
 
         verify(internshipRepository).save(internship);
-        verify(studentService).createNewInternshipNotificationsForStudents(internship);
+        verify(studentRepository).findByDiscipline(Discipline.COMPUTER_SCIENCE);
     }
 
     @Test
@@ -471,9 +422,9 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.rejectInternship(1L, "Offer does not meet requirements.");
 
         // Assert
-        assert(InternshipStatus.REJECTED).equals(internship.getStatus());
-        assert("Offer does not meet requirements.").equals(internship.getRejectionComment());
-        assert(InternshipStatus.REJECTED).equals(result.status());
+        assert (InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert ("Offer does not meet requirements.").equals(internship.getRejectionComment());
+        assert (InternshipStatus.REJECTED).equals(result.status());
 
         verify(internshipRepository).save(internship);
     }
@@ -489,9 +440,9 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.rejectInternship(1L, "New comment.");
 
         // Assert
-        assert(InternshipStatus.REJECTED).equals(internship.getStatus());
-        assert("New comment.").equals(internship.getRejectionComment());
-        assert("New comment.").equals(result.rejectionComment());
+        assert (InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert ("New comment.").equals(internship.getRejectionComment());
+        assert ("New comment.").equals(result.rejectionComment());
 
         verify(internshipRepository).save(internship);
     }
@@ -505,16 +456,7 @@ public class ManagerServiceTest {
         managerService.approveCv(1L);
 
         // Assert
-        verify(notificationRepository).save(notificationArgumentCaptor.capture());
-
-        Notification notification = notificationArgumentCaptor.getValue();
-
-        assert(NotificationType.CV_APPROVED).equals(notification.getNotificationType());
-        assert(TargetType.CV).equals(notification.getTargetType());
-        assert(NotificationStatus.UNREAD).equals(notification.getStatus());
-        assert Long.valueOf(1L).equals(notification.getTargetId());
-        assert(cv.getStudent()).equals(notification.getUser());
-        assert("Your CV has been approved.").equals(notification.getMessage());
+        verify(notificationService).notifyIfAbsent(NotificationType.CV_APPROVED, "Your CV has been approved.", 1L, cv.getStudent());
     }
 
     @Test
@@ -526,16 +468,7 @@ public class ManagerServiceTest {
         managerService.rejectCv(1L, "CV too detailed");
 
         // Assert
-        verify(notificationRepository).save(notificationArgumentCaptor.capture());
-
-        Notification notification = notificationArgumentCaptor.getValue();
-
-        assert(NotificationType.CV_REJECTED).equals(notification.getNotificationType());
-        assert(TargetType.CV).equals(notification.getTargetType());
-        assert(NotificationStatus.UNREAD).equals(notification.getStatus());
-        assert Long.valueOf(1L).equals(notification.getTargetId());
-        assert(cv.getStudent()).equals(notification.getUser());
-        assert("CV too detailed").equals(notification.getMessage());
+        verify(notificationService).notifyIfAbsent(NotificationType.CV_REJECTED, "CV too detailed", 1L, cv.getStudent());
     }
 
     @Test
@@ -550,10 +483,10 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
 
         // Assert
-        assert("CV too detailed").equals(result.rejectionComment());
+        assert ("CV too detailed").equals(result.rejectionComment());
 
         verify(cvRepository, never()).save(any(CV.class));
-        verifyNoInteractions(notificationRepository);
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -567,8 +500,42 @@ public class ManagerServiceTest {
         managerService.rejectCv(1L, "Changed my mind");
 
         // Assert
-        InOrder inOrder = inOrder(notificationRepository);
-        inOrder.verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.CV, 1L);
-        inOrder.verify(notificationRepository).save(any(Notification.class));
+        InOrder inOrder = inOrder(notificationService);
+        inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.CV, 1L);
+        inOrder.verify(notificationService).notifyIfAbsent(NotificationType.CV_REJECTED, "Changed my mind", 1L, cv.getStudent());
+    }
+
+    @Test
+    void shouldNotifyStudentsWithApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
+        // Arrange
+        Student student = cv.getStudent();
+
+        cv.setStatus(CvStatus.APPROVED);
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+        when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(student));
+        when(cvRepository.findByStudent(student)).thenReturn(List.of(cv));
+
+        // Act
+        managerService.approveInternship(1L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.NEW_INTERNSHIP_OFFER, 1L, student);
+    }
+
+    @Test
+    void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
+        // Arrange
+        Student student = cv.getStudent();
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+        when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(student));
+        when(cvRepository.findByStudent(student)).thenReturn(List.of(cv));
+
+        // Act
+        managerService.approveInternship(1L);
+
+        // Assert
+        verifyNoInteractions(notificationService);
     }
 }

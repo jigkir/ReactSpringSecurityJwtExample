@@ -55,6 +55,9 @@ public class SecurityConfiguration {
     private static final String EMPLOYER_PATH = "/api/employer/**";
     private static final String MANAGER_PATH = "/api/manager/**";
 
+    // NOTIFICATIONS PATH
+    private static final String NOTIFICATIONS_PATH = "/api/notifications/**";
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -76,7 +79,10 @@ public class SecurityConfiguration {
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
 
-                        // STUDENT : NOTIFICATIONS
+                        // NOTIFICATIONS
+                        .requestMatchers(NOTIFICATIONS_PATH).hasAnyAuthority(Role.STUDENT.name(), Role.MANAGER.name())
+
+                        // ROLES
                         .requestMatchers(STUDENT_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(EMPLOYER_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
@@ -151,7 +157,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
