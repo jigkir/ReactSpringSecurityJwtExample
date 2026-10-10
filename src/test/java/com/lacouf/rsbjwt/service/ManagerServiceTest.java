@@ -77,7 +77,7 @@ public class ManagerServiceTest {
     void setUp() {
         Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE);
         student.setId(2L);
-        cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, CVSharingScope.PUBLIC, CvPriority.MAIN, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
+        cv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
         student.addCv(cv);
         Employer employer = new Employer("Jean", "Dupont", Credentials.builder().email("employer@example.com").role(Role.EMPLOYER).build(), "Tech Corp", Discipline.COMPUTER_SCIENCE, "514-123-4567");
@@ -143,12 +143,12 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnAllPublicCvs() {
+    void shouldReturnAllVisibleCvs() {
         // Arrange
-        when(cvRepository.findBySharingScopeAndVisibility(CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(List.of(cv));
+        when(cvRepository.findByVisibility(CvVisibility.VISIBLE)).thenReturn(List.of(cv));
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getAllPublicCvs();
+        List<ManagerCvResponseDto> result = managerService.getAllVisibleCvs();
 
         // Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -156,9 +156,21 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnPublicCv() throws CvNotFoundException {
+    void shouldReturnEmptyListWhenNoVisibleCvs() {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByVisibility(CvVisibility.VISIBLE)).thenReturn(List.of());
+
+        // Act
+        List<ManagerCvResponseDto> result = managerService.getAllVisibleCvs();
+
+        // Assert
+        assert result.isEmpty();
+    }
+
+    @Test
+    void shouldReturnVisibleCv() throws CvNotFoundException {
+        // Arrange
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.getCv(1L);
@@ -169,9 +181,9 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldThrowCvNotFoundWhenCvIsNotPublicOrDoesNotExist() {
+    void shouldThrowCvNotFoundWhenCvIsHiddenOrDoesNotExist() {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(99L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndVisibility(99L, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(CvNotFoundException.class, () -> managerService.getCv(99L));
@@ -180,7 +192,7 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnCvFile() throws CvNotFoundException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         CvFileResponseDto result = managerService.getCvFile(1L);
@@ -191,9 +203,18 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldThrowCvNotFoundWhenGettingFileOfUnknownCv() {
+        // Arrange
+        when(cvRepository.findByIdAndVisibility(99L, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(CvNotFoundException.class, () -> managerService.getCvFile(99L));
+    }
+
+    @Test
     void shouldApproveCv() throws CvNotFoundException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.approveCv(1L);
@@ -211,7 +232,7 @@ public class ManagerServiceTest {
         // Arrange
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.approveCv(1L);
@@ -229,7 +250,7 @@ public class ManagerServiceTest {
     void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws CvNotFoundException {
         // Arrange
         cv.setStatus(CvStatus.APPROVED);
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.approveCv(1L);
@@ -245,7 +266,7 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowCvNotFoundWhenApprovingUnknownCv() {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(99L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndVisibility(99L, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(CvNotFoundException.class, () -> managerService.approveCv(99L));
@@ -256,7 +277,7 @@ public class ManagerServiceTest {
     @Test
     void shouldRejectCvWithComment() throws Exception {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
@@ -273,7 +294,7 @@ public class ManagerServiceTest {
     @Test
     void shouldThrowCvNotFoundWhenRejectingUnknownCv() {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(99L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndVisibility(99L, CvVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(CvNotFoundException.class, () -> managerService.rejectCv(99L, "CV too detailed"));
@@ -285,7 +306,7 @@ public class ManagerServiceTest {
     void shouldAllowRejectingPreviouslyApprovedCv() throws Exception {
         // Arrange
         cv.setStatus(CvStatus.APPROVED);
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.rejectCv(1L, "Changed my mind");
@@ -303,7 +324,7 @@ public class ManagerServiceTest {
         // Arrange
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment("Old comment");
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.rejectCv(1L, "New comment");
@@ -314,6 +335,32 @@ public class ManagerServiceTest {
         assert ("New comment").equals(result.rejectionComment());
 
         verify(cvRepository).save(cv);
+    }
+
+    @Test
+    void shouldReturnPendingInternships() {
+        //Arrange
+        when(internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)).thenReturn(List.of(internship));
+
+        //Act
+        List<InternshipResponseDto> result = managerService.getPendingInternships();
+
+        //Assert
+        assert (Integer.valueOf(1)).equals(result.size());
+        assert (InternshipStatus.PENDING).equals(result.getFirst().status());
+    }
+
+    @Test
+    void shouldReturnAllInternships() {
+        //Arrange
+        when(internshipRepository.findByDeletedFalse()).thenReturn(List.of(internship));
+
+        //Act
+        List<InternshipResponseDto> result = managerService.getAllInternships();
+
+        //Assert
+        assert (Integer.valueOf(1)).equals(result.size());
+        assert ("Développeur logiciel").equals(result.getFirst().title());
     }
 
     @Test
@@ -356,6 +403,23 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldReturnInternshipWithoutSavingWhenApprovingAlreadyApprovedInternship() throws InternshipNotFoundException {
+        //Arrange
+        internship.approve();
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto result = managerService.approveInternship(1L);
+
+        //Assert
+        assert (InternshipStatus.APPROVED).equals(result.status());
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(studentRepository, notificationService);
+    }
+
+    @Test
     void shouldRejectInternship() throws InternshipNotFoundException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
@@ -370,6 +434,18 @@ public class ManagerServiceTest {
         assert ("Ur offer sucks.").equals(result.rejectionComment());
 
         verify(internshipRepository).save(internship);
+    }
+
+    @Test
+    void shouldCloseInternshipNotificationsWhenRejectingInternship() throws InternshipNotFoundException {
+        //Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        managerService.rejectInternship(1L, "Not good enough.");
+
+        //Assert
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
     }
 
     @Test
@@ -453,7 +529,7 @@ public class ManagerServiceTest {
     @Test
     void shouldNotifyStudentWhenApprovingCv() throws CvNotFoundException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         managerService.approveCv(1L);
@@ -465,7 +541,7 @@ public class ManagerServiceTest {
     @Test
     void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws CvNotFoundException {
         // Arrange
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         managerService.rejectCv(1L, "CV too detailed");
@@ -480,7 +556,7 @@ public class ManagerServiceTest {
         cv.setStatus(CvStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
 
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
@@ -497,7 +573,7 @@ public class ManagerServiceTest {
         // Arrange
         cv.setStatus(CvStatus.APPROVED);
 
-        when(cvRepository.findByIdAndSharingScopeAndVisibility(1L, CVSharingScope.PUBLIC, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         managerService.rejectCv(1L, "Changed my mind");
@@ -530,6 +606,25 @@ public class ManagerServiceTest {
     void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
         // Arrange
         Student student = cv.getStudent();
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+        when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(student));
+        when(cvRepository.findByStudent(student)).thenReturn(List.of(cv));
+
+        // Act
+        managerService.approveInternship(1L);
+
+        // Assert
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldNotNotifyStudentsWhoseApprovedCvIsHiddenWhenApprovingInternship() throws InternshipNotFoundException {
+        // Arrange
+        Student student = cv.getStudent();
+
+        cv.setStatus(CvStatus.APPROVED);
+        cv.setVisibility(CvVisibility.HIDDEN);
 
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
         when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(student));

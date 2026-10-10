@@ -2,13 +2,12 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.model.cv.CVSharingScope;
-import com.lacouf.rsbjwt.model.cv.CvPriority;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
-import com.lacouf.rsbjwt.exception.cv.CVAlreadyPublicException;
-import com.lacouf.rsbjwt.exception.cv.CVAlreadyPrivateException;
+import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
@@ -43,7 +42,6 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.*;
@@ -180,31 +178,47 @@ public class StudentControllerTest {
 
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
-        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, CVSharingScope.PRIVATE, "my_cv.pdf", 11L, LocalDateTime.now(), CvPriority.SECONDARY, CvVisibility.VISIBLE, CvStatus.PENDING, null);
+        // Arrange
+        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, "my_cv.pdf", 11L, LocalDateTime.now(), CvVisibility.VISIBLE, CvStatus.PENDING, null);
         when(studentService.getCVs(STUDENT_EMAIL)).thenReturn(List.of(studentCvResponseDto));
 
+        // Act + Assert
         mockMvc.perform(get("/api/student/cvs").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].fileName").value("my_cv.pdf"))
-                .andExpect(jsonPath("$[0].sharingScope").value("PRIVATE"))
+                .andExpect(jsonPath("$[0].sizeBytes").value(11))
                 .andExpect(jsonPath("$[0].visibility").value(CvVisibility.VISIBLE.name()))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
     }
 
     @Test
     void shouldReturnNotFoundWhenGettingCVsForNonExistentStudent() throws Exception {
+        // Arrange
         when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new UserNotFoundException());
 
+        // Act + Assert
         mockMvc.perform(get("/api/student/cvs").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    void shouldReturnUnprocessableWhenGettingCVsWithCorruptedFile() throws Exception {
+        // Arrange
+        when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new CorruptedFileException("The CV with ID 1 is corrupted or unreadable."));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cvs").principal(authentication))
+                .andExpect(status().is(422));
+    }
+
+    @Test
     void shouldGetCVCountSuccessfully() throws Exception {
+        // Arrange
         when(studentService.getCVCount(STUDENT_EMAIL)).thenReturn(3L);
 
+        // Act + Assert
         mockMvc.perform(get("/api/student/cvs/count").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
@@ -212,16 +226,19 @@ public class StudentControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingCVCountForNonExistentStudent() throws Exception {
+        // Arrange
         when(studentService.getCVCount(STUDENT_EMAIL)).thenThrow(new UserNotFoundException());
 
+        // Act + Assert
         mockMvc.perform(get("/api/student/cvs/count").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
-    // Hide, Make Public & Make Private CV Tests
+    // Hide CV Tests
 
     @Test
     void shouldHideCVSuccessfully() throws Exception {
+        // Act + Assert
         mockMvc.perform(put("/api/student/cvs/10/hide").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CV hidden successfully"));
@@ -231,94 +248,86 @@ public class StudentControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenHidingCvNotOwnedByStudent() throws Exception {
+        // Arrange
         doThrow(new CvNotFoundException("CV not found")).when(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
 
+        // Act + Assert
         mockMvc.perform(put("/api/student/cvs/10/hide").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void shouldMakeCVPublicSuccessfully() throws Exception {
-        mockMvc.perform(put("/api/student/cvs/10/public").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string("CV made public successfully"));
-
-        verify(studentService).setCvAsPublic(STUDENT_EMAIL, 10L);
-    }
-
-    @Test
-    void shouldReturnConflictWhenCVAlreadyPublic() throws Exception {
-        doThrow(new CVAlreadyPublicException("CV is already public")).when(studentService).setCvAsPublic(STUDENT_EMAIL, 10L);
-
-        mockMvc.perform(put("/api/student/cvs/10/public").principal(authentication))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
-    void shouldMakeCVPrivateSuccessfully() throws Exception {
-        mockMvc.perform(put("/api/student/cvs/10/private").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string("CV made private successfully"));
-
-        verify(studentService).setCvAsPrivate(STUDENT_EMAIL, 10L);
-    }
-
-    @Test
-    void shouldReturnConflictWhenCVAlreadyPrivate() throws Exception {
-        doThrow(new CVAlreadyPrivateException("CV is already private")).when(studentService).setCvAsPrivate(STUDENT_EMAIL, 10L);
-
-        mockMvc.perform(put("/api/student/cvs/10/private").principal(authentication))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
-    void shouldMakeCVSecondarySuccessfully() throws Exception {
-        mockMvc.perform(put("/api/student/cvs/10/secondary").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string("CV made secondary successfully"));
-
-        verify(studentService).setCVAsSecondary(STUDENT_EMAIL, 10L);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenMakingSecondaryForCvNotOwnedByStudent() throws Exception {
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsSecondary(STUDENT_EMAIL, 999L);
-
-        mockMvc.perform(put("/api/student/cvs/999/secondary").principal(authentication))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldMakeCVMainSuccessfully() throws Exception {
-        mockMvc.perform(put("/api/student/cvs/10/main").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string("CV made main successfully"));
-
-        verify(studentService).setCVAsMain(STUDENT_EMAIL, 10L);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenMakingMainForCvNotOwnedByStudent() throws Exception {
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCVAsMain(STUDENT_EMAIL, 999L);
-
-        mockMvc.perform(put("/api/student/cvs/999/main").principal(authentication))
-                .andExpect(status().isNotFound());
-    }
+    // Upload CV Tests
 
     @Test
     void shouldUploadCvSuccessfully() throws Exception {
+        // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
+        // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(content().string("CV uploaded successfully"));
 
         verify(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
     }
 
     @Test
+    void shouldReturnBadRequestWhenUploadingInvalidFileType() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "cv.txt", "text/plain", "text".getBytes());
+
+        doThrow(new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.")).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid file type. Only PDF files are allowed."));
+    }
+
+    @Test
+    void shouldReturnContentTooLargeWhenUploadingTooLargeFile() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
+
+        doThrow(new InvalidFileSizeException("File size exceeds the maximum allowed size.")).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
+                .andExpect(status().is(413));
+    }
+
+    @Test
+    void shouldReturnUnprocessableWhenUploadingCorruptedFile() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
+
+        doThrow(new CorruptedFileException("The PDF file is corrupted or unreadable.")).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
+                .andExpect(status().is(422));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUploadingCvForNonExistentStudent() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
+
+        doThrow(new UserNotFoundException()).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    // Get CV File & Status Tests
+
+    @Test
     void shouldReturnCvFileSuccessfully() throws Exception {
+        // Arrange
         when(studentService.getCV(STUDENT_EMAIL, 10L)).thenReturn(new CvFileResponseDto(10L, "my_cv.pdf", "pdf".getBytes()));
 
+        // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileName").value("my_cv.pdf"))
@@ -327,9 +336,42 @@ public class StudentControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingCvNotOwnedByStudent() throws Exception {
+        // Arrange
         when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException("CV not found"));
 
+        // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnUnprocessableWhenGettingCorruptedCv() throws Exception {
+        // Arrange
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CorruptedFileException("The CV with ID 10 is corrupted or unreadable."));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
+                .andExpect(status().is(422));
+    }
+
+    @Test
+    void shouldReturnCvStatusSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getCVStatus(STUDENT_EMAIL, 10L)).thenReturn("APPROVED");
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cvs/10/status").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string("APPROVED"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingStatusOfCvNotOwnedByStudent() throws Exception {
+        // Arrange
+        when(studentService.getCVStatus(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException("CV not found"));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cvs/10/status").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 }
