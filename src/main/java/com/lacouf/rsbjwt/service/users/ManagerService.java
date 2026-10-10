@@ -139,7 +139,7 @@ public class ManagerService {
         internship.approve();
         internshipRepository.save(internship);
 
-        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_APPROVED, NotificationType.INTERNSHIP_APPROVED.getMessage());
+        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_APPROVED, NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage());
         notifyMatchingStudentsOfInternship(internship);
 
         return InternshipResponseDto.of(internship);
@@ -152,7 +152,7 @@ public class ManagerService {
         internship.reject(comment);
         internshipRepository.save(internship);
 
-        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_REJECTED, comment);
+        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_REJECTED, comment);
 
         return InternshipResponseDto.of(internship);
     }
