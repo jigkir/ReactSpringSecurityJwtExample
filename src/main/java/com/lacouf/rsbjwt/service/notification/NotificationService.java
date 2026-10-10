@@ -42,8 +42,6 @@ public class NotificationService {
         boolean alreadyNotified = notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
                 notificationType, targetId, recipient, NotificationStatus.UNREAD);
 
-        IO.println(alreadyNotified ? "true" : "false");
-
         if (!alreadyNotified) {
             notificationRepository.save(new Notification(notificationType, message, targetId, recipient));
         }
