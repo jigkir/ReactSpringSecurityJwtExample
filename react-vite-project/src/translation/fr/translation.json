@@ -70,7 +70,9 @@
     "cvNotification": "{{amount}} nouveau(x) CV publié(s)",
     "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
     "cvRejectedNotification": "{{amount}} de vos CV ont été refusés",
-    "internshipNotification": "{{amount}} stage(s) disponible(s)"
+    "internshipNotification": "{{amount}} stage(s) disponible(s)",
+    "notificationLoadError": "Impossible de charger les notifications.",
+    "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues."
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",

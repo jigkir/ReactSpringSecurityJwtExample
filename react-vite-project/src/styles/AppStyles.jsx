@@ -158,6 +158,7 @@ export function getNotificationMenuClasses(dark) {
         item: `flex items-center gap-3 px-4 py-3 text-sm ${TRANSITION_150} ${dark ? "text-slate-200 hover:bg-slate-700/60" : "text-gray-700 hover:bg-gray-50"}`,
         empty: `px-4 py-6 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
         redDot: `absolute -top-2 -right-2 h-4 w-4 rounded-full bg-red-500 text-xs text-white`,
+        error: `px-4 py-3 text-sm ${dark ? "bg-red-900/30 text-red-300" : "bg-red-50 text-red-600"}`,
     };
 }
 

@@ -7,7 +7,7 @@ import {useNotifications} from './NotificationsProvider.jsx';
 
 export default function NotificationMenu({dark}) {
     const {t} = useTranslation();
-    const {items} = useNotifications();
+    const {items, errorKey} = useNotifications();
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef(null);
 
@@ -52,6 +52,7 @@ export default function NotificationMenu({dark}) {
 
             {open && (
                 <div role="menu" className={menuClasses.panel}>
+                    {errorKey && <p role="alert" className={menuClasses.error}>{t(errorKey)}</p>}
                     {active.length === 0 ? (
                         <p className={menuClasses.empty}>{t("navbar.noNotifications")}</p>
                     ) : (

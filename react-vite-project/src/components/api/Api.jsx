@@ -227,18 +227,6 @@ export async function deleteInternship(internshipId) {
     return handleEmpty(response);
 }
 
-export async function markInternshipNotificationAsRead() {
-    const response = await fetcher(`student/notifications/internship/read`, {
-        method: "PUT"
-    });
-    return handleEmpty(response);
-}
-
-export async function getUnreadNotificationCount() {
-    const response = await fetcher(`student/notifications/internship/unread/count`, { method: "GET" });
-    return handleResponse(response);
-}
-
 // endregion
 
 // region Manager internships
@@ -267,18 +255,19 @@ export async function rejectInternship(internshipId, comment) {
 // endregion
 
 //region Notifications
-export async function getManagerNotifications() {
-    const response = await fetcher(`manager/notifications`, {method: "GET"});
+export async function getNotifications() {
+    const response = await fetcher("notifications", {method: "GET"});
     return handleResponse(response);
 }
 
-export async function getStudentNotifications() {
-    const response = await fetcher(`student/notifications`, {method: "GET"});
+export async function getUnreadNotificationCount(notificationType) {
+    const response = await fetcher(`notifications/unread/count/${notificationType}`, {method: "GET"});
     return handleResponse(response);
 }
 
-export async function markCvNotificationsAsRead() {
-    const response = await fetcher(`student/notifications/cv/read`, {method: "PUT"});
+export async function markNotificationsAsRead(targetType) {
+    const response = await fetcher(`notifications/read/${targetType}`, {method: "PUT"});
     return handleEmpty(response);
 }
+
 //endregion

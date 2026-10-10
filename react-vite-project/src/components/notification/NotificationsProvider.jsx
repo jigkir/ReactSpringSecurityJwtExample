@@ -1,12 +1,18 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {useLocation} from 'react-router-dom';
-import {
-    getManagerNotifications,
-    getStudentNotifications,
-    getUnreadNotificationCount,
-    markCvNotificationsAsRead,
-    markInternshipNotificationAsRead,
-} from '../api/Api.jsx';
+import {getNotifications, getUnreadNotificationCount, markNotificationsAsRead} from '../api/Api.jsx';
+
+const NOTIFICATION_TYPE = {
+    CV_APPROVED: "CV_APPROVED",
+    CV_REJECTED: "CV_REJECTED",
+    CV_SUBMITTED_FOR_REVIEW: "CV_SUBMITTED_FOR_REVIEW",
+    NEW_INTERNSHIP_OFFER: "NEW_INTERNSHIP_OFFER",
+};
+
+const TARGET_TYPE = {
+    CV: "CV",
+    INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
+};
 
 /**
  * Owns all notification data (fetching, counts, mark-as-read).
@@ -22,8 +28,14 @@ const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", 
 
 const hasToken = () => Boolean(localStorage.getItem("token"));
 
+const NOTIFICATION_ERROR = {
+    LOAD: "navbar.notificationLoadError",
+    MARK_AS_READ: "navbar.notificationMarkAsReadError",
+};
+
 const NotificationsContext = createContext({
     items: [],
+    errorKey: null,
     refresh: () => {
     },
     clearInternships: () => {
@@ -36,6 +48,7 @@ export function NotificationsProvider({user, children}) {
     const userId = user?.id;
 
     const [counts, setCounts] = useState(EMPTY_COUNTS);
+    const [errorKey, setErrorKey] = useState(null);
     const requestId = useRef(0); // ignore responses from outdated requests
 
     const refresh = useCallback(async () => {
@@ -43,41 +56,42 @@ export function NotificationsProvider({user, children}) {
 
         if (!userId || !hasToken()) {
             setCounts(EMPTY_COUNTS);
+            setErrorKey(null);
             return;
         }
 
         if (role === "MANAGER") {
             const [list] = await Promise.allSettled([
-                getManagerNotifications(),
+                getNotifications(),
             ]);
             if (id !== requestId.current) return;
 
-            if (list.status === "rejected") console.error("Manager notification error:", list.reason);
+            setErrorKey(list.status === "rejected" ? NOTIFICATION_ERROR.LOAD : null);
 
             const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
             setCounts({
                 ...EMPTY_COUNTS,
-                manager: notifications.filter((n) => n.notificationType === "CV_SUBMITTED_FOR_REVIEW").length,
+                manager: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW).length,
             });
             return;
         }
 
         if (role === "STUDENT") {
             const [unread, list] = await Promise.allSettled([
-                getUnreadNotificationCount(),
-                getStudentNotifications(),
+                getUnreadNotificationCount(NOTIFICATION_TYPE.NEW_INTERNSHIP_OFFER),
+                getNotifications(),
             ]);
             if (id !== requestId.current) return;
 
-            if (unread.status === "rejected") console.error("Student notification error:", unread.reason);
-            if (list.status === "rejected") console.error("Student notification error:", list.reason);
+            const loadFailed = unread.status === "rejected" || list.status === "rejected";
+            setErrorKey(loadFailed ? NOTIFICATION_ERROR.LOAD : null);
 
             const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
             setCounts({
                 ...EMPTY_COUNTS,
                 internship: unread.status === "fulfilled" && typeof unread.value === "number" ? unread.value : 0,
-                cvApproved: notifications.filter((n) => n.notificationType === "CV_APPROVED").length,
-                cvRejected: notifications.filter((n) => n.notificationType === "CV_REJECTED").length,
+                cvApproved: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_APPROVED).length,
+                cvRejected: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_REJECTED).length,
             });
             return;
         }
@@ -96,11 +110,13 @@ export function NotificationsProvider({user, children}) {
         if (counts.cvApproved + counts.cvRejected === 0) return;
 
         let cancelled = false;
-        markCvNotificationsAsRead()
+        markNotificationsAsRead(TARGET_TYPE.CV)
             .then(() => {
                 if (!cancelled) setCounts((c) => ({...c, cvApproved: 0, cvRejected: 0}));
             })
-            .catch((error) => console.error("Mark CV notifications failed:", error));
+            .catch(() => {
+                if (!cancelled) setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ);
+            });
 
         return () => {
             cancelled = true;
@@ -108,9 +124,9 @@ export function NotificationsProvider({user, children}) {
     }, [role, pathname, counts.cvApproved, counts.cvRejected]);
 
     const clearInternships = useCallback(() => {
-        markInternshipNotificationAsRead()
+        markNotificationsAsRead(TARGET_TYPE.INTERNSHIP_OFFER)
             .then(() => setCounts((c) => ({...c, internship: 0})))
-            .catch((error) => console.error("Mark internship notifications failed:", error));
+            .catch(() => setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ));
     }, []);
 
     const items = useMemo(() => {
@@ -148,7 +164,12 @@ export function NotificationsProvider({user, children}) {
         return [];
     }, [role, counts, clearInternships]);
 
-    const value = useMemo(() => ({items, refresh, clearInternships}), [items, refresh, clearInternships]);
+    const value = useMemo(() => ({
+        items,
+        errorKey,
+        refresh,
+        clearInternships
+    }), [items, errorKey, refresh, clearInternships]);
 
     return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }

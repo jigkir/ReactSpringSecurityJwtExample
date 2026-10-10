@@ -70,7 +70,9 @@
     "cvNotification": "{{amount}} new CV(s) posted",
     "cvApprovedNotification": "{{amount}} of your CVs have been approved",
     "cvRejectedNotification": "{{amount}} of your CVs have been rejected",
-    "internshipNotification": "{{amount}} internship(s) available"
+    "internshipNotification": "{{amount}} internship(s) available",
+    "notificationLoadError": "Unable to load notifications.",
+    "notificationMarkAsReadError": "Unable to mark notifications as read."
   },
   "managerPage": {
     "pageInfo": "Manager home page",
