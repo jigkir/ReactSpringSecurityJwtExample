@@ -98,20 +98,17 @@ function Navbar({user, dark, toggleDark}) {
                 ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700")
                 : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")
         }`;
-    const mobileAuthLink = `block px-4 py-2 text-sm ${
-        dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100"
-    }`;
 
     const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
     return (
         <>
             <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
-                <div className="w-full mx-auto px-3 sm:px-6 lg:px-8">
+                <div className="w-full mx-auto px-2 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-3 lg:gap-6">
+                        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6 min-w-0">
                             {/* Desktop brand */}
                             <Link to={homePath}
                                   className={`hidden lg:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -146,7 +143,7 @@ function Navbar({user, dark, toggleDark}) {
                             {/* Mobile: app name doubles as the pages dropdown button */}
                             <div ref={menuRef} className="lg:hidden">
                                 <div
-                                    className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-2 ${theme.brand}`}>
+                                    className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-1 sm:gap-2 ${theme.brand}`}>
                                     {/* Burger Button - added flex items-center */}
                                     <button
                                         onClick={() => {
@@ -160,16 +157,16 @@ function Navbar({user, dark, toggleDark}) {
                                         <Icon name="menu" size={24}/>
                                     </button>
 
-                                    <Link to={homePath} className="text-2xl leading-none tracking-tight">
+                                    <Link to={homePath} className="text-xl sm:text-2xl leading-none tracking-tight">
                                         <div
-                                            className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
+                                            className="flex items-center font-extrabold text-xl sm:text-2xl tracking-tight select-none group cursor-pointer">
                                             {/* Always light text for dark-colored navbars */}
                                             <span className="text-white transition-colors duration-150">
                                             Intern
                                         </span>
                                             {/* TLD Badge adapted for dark backgrounds */}
                                             <span
-                                                className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
+                                                className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
                                                     dark
                                                         ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
                                                         : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
@@ -188,7 +185,7 @@ function Navbar({user, dark, toggleDark}) {
                         </div>
 
                         {/* ───────── Right side ───────── */}
-                        <div className="flex items-center gap-2 lg:gap-3 ml-auto">
+                        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 ml-auto shrink-0">
 
                             <button onClick={toggleLang}
                                     className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
@@ -263,7 +260,8 @@ function Navbar({user, dark, toggleDark}) {
                                         className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
                                         aria-label={t("navbar.login")}
                                     >
-                                <span className="max-w-[6rem] truncate text-md">
+                                        <Icon name="person" size={20} className="min-[420px]:hidden"/>
+                                        <span className="hidden min-[420px]:inline max-w-[6rem] truncate text-md">
                                   {t("navbar.login")}
                                 </span>
                                     </Link>

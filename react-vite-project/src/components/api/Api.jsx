@@ -148,26 +148,16 @@ export async function getStudentCvFile(cvId) {
     return handleResponse(response);
 }
 
-// scope: "public" | "private"
-export async function setCvScope(cvId, scope) {
-    const response = await fetcher(`student/cvs/${cvId}/${scope}`, {method: "PUT"});
-    return handleEmpty(response);
-}
-
+// Soft-delete: the backend sets the CV to invisible
 export async function hideCv(cvId) {
     const response = await fetcher(`student/cvs/${cvId}/hide`, {method: "PUT"});
-    return handleEmpty(response);
-}
-
-export async function setMainCv(cvId) {
-    const response = await fetcher(`student/cvs/${cvId}/main`, {method: "PUT"});
     return handleEmpty(response);
 }
 
 //endregion
 
 // region Manager CVs
-// Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
+// All VISIBLE CVs (visible as soon as a student uploads). Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
 export async function getPublicCvs() {
     const response = await fetcher("manager/cvs", {method: "GET"});
     return handleResponse(response);
