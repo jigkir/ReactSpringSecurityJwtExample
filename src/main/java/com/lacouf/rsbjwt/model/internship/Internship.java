@@ -117,4 +117,6 @@ public class Internship {
     public void setId(long id) {
         this.id = id;
     }
+    public void setStatus(InternshipStatus status){this.status = status;}
+    public void setApplicationDeadline(LocalDate deadline){this.applicationDeadline = deadline;}
 }
