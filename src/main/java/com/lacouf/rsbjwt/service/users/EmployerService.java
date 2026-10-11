@@ -137,6 +137,8 @@ public class EmployerService {
 
         internshipRepository.save(internship);
 
+        notifyManagersOfSubmittedInternship(internship);
+
         return InternshipResponseDto.of(internship);
     }
 
