@@ -68,9 +68,11 @@
     "notifications": "{{amount}} new notification(s)",
     "noNotifications": "You have no new notifications",
     "cvNotification": "{{amount}} new CV(s) posted",
-    "cvApprovedNotification": "{{amount}} of your CVs have been approved",
-    "cvRejectedNotification": "{{amount}} of your CVs have been rejected",
+    "cvApprovedNotification": "{{amount}} CV(s) approved",
+    "cvRejectedNotification": "{{amount}} CV(s) rejected",
     "internshipNotification": "{{amount}} internship(s) available",
+    "internshipApprovedNotification": "{{amount}} internship offer(s) approved",
+    "internshipRejectedNotification": "{{amount}} internship offer(s) rejected",
     "notificationLoadError": "Unable to load notifications.",
     "notificationMarkAsReadError": "Unable to mark notifications as read."
   },

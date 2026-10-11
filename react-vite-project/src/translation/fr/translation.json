@@ -68,9 +68,11 @@
     "notifications": "{{amount}} nouvelle(s) notification(s)",
     "noNotifications": "Vous n'avez pas de nouvelles notifications",
     "cvNotification": "{{amount}} nouveau(x) CV publié(s)",
-    "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
-    "cvRejectedNotification": "{{amount}} de vos CV ont été refusés",
+    "cvApprovedNotification": "{{amount}} CV(s) approuvé(s)",
+    "cvRejectedNotification": "{{amount}} CV(s) refusé(s)",
     "internshipNotification": "{{amount}} stage(s) disponible(s)",
+    "internshipApprovedNotification": "{{amount}} offre(s) de stage approuvée(s)",
+    "internshipRejectedNotification": "{{amount}} offre(s) de stage refusée(s)",
     "notificationLoadError": "Impossible de charger les notifications.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues."
   },
