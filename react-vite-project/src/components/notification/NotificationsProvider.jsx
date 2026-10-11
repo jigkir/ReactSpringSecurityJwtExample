@@ -39,6 +39,9 @@ const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", 
 
 const hasToken = () => Boolean(localStorage.getItem("token"));
 
+const countNotificationsByType = (notifications, notificationType) =>
+    notifications.filter((notification) => notification.notificationType === notificationType).length;
+
 const NOTIFICATION_ERROR = {
     LOAD: "navbar.notificationLoadError",
     MARK_AS_READ: "navbar.notificationMarkAsReadError",
@@ -82,8 +85,8 @@ export function NotificationsProvider({user, children}) {
             const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
             setCounts({
                 ...EMPTY_COUNTS,
-                manager: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW).length,
-                internship: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW).length,
+                manager: countNotificationsByType(notifications, NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW),
+                internship: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW),
             });
             return;
         }
@@ -102,8 +105,8 @@ export function NotificationsProvider({user, children}) {
             setCounts({
                 ...EMPTY_COUNTS,
                 internship: unread.status === "fulfilled" && typeof unread.value === "number" ? unread.value : 0,
-                cvApproved: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_APPROVED).length,
-                cvRejected: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_REJECTED).length,
+                cvApproved: countNotificationsByType(notifications, NOTIFICATION_TYPE.CV_APPROVED),
+                cvRejected: countNotificationsByType(notifications, NOTIFICATION_TYPE.CV_REJECTED),
             });
             return;
         }
@@ -119,8 +122,8 @@ export function NotificationsProvider({user, children}) {
             const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
             setCounts({
                 ...EMPTY_COUNTS,
-                internshipApproved: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED).length,
-                internshipRejected: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED).length,
+                internshipApproved: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED),
+                internshipRejected: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED),
             });
             return;
         }
