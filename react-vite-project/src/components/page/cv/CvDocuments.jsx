@@ -1,28 +1,27 @@
 /**
  * CvDocuments.jsx — CV list, shared by students and managers.
  *
- * mode="student" (default): list own CVs, share/unshare, delete, choose main CV.
- * mode="manager":           list all public CVs, filter/sort (status, discipline, search, date, student),
+ * mode="student" (default): list own visible CVs, preview, delete (hide).
+ * mode="manager":           list all visible CVs, filter/sort (status, discipline, search, date, student),
  *                           preview, approve, refuse (with comment).
+ *
+ * A CV uploaded by a student is immediately visible to the manager for review
+ * (there is no public/private or main CV concept anymore).
  *
  * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters, sortCvsNewest).
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
  *
  * Row layout (md and up): 3 columns
- *   [ identity (name + meta) ] [ status pills, stacked ] [ actions ]
- * Student actions are a 2x2 grid:
- *   Preview            | Share / Make private
- *   Set as main CV     | Delete   (Delete is always last)
- * Below md everything stacks vertically.
+ *   [ identity (name + meta) ] [ status pill ] [ actions ]
+ * Student actions: Preview | Delete. Below md everything stacks vertically.
  *
  * List fields
- *   student : id, sharingScope, fileName, sizeBytes, uploadedAt, priority,
- *             visibility, status, rejectionComment
+ *   student : id, fileName, sizeBytes, uploadedAt, visibility, status, rejectionComment
  *   manager : id, fileName, uploadedAt, status, rejectionComment,
  *             student {id, firstName, lastName, email, studentId, discipline}
  * The PDF itself (Base64 `content`) is fetched on demand:
- *   GET student/{id}/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
+ *   GET student/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
  *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live. `getUrl` does not depend on `t`,
@@ -50,8 +49,6 @@ import {
     getStudentCvs,
     hideCv,
     rejectCv,
-    setCvScope,
-    setMainCv,
 } from '../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
@@ -61,9 +58,7 @@ import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 const studentApi = {
     list: getStudentCvs,
     file: getStudentCvFile,
-    setScope: setCvScope,
     hide: hideCv,
-    makeMain: setMainCv,
 };
 
 const managerApi = {
@@ -121,13 +116,12 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
-    // Row = 3 columns on md+: identity (flexible) | pills (auto) | actions (auto).
-    // Defined here (instead of th.row) so the grid and the old flex classes can't conflict.
+    // Row = 3 columns on md+: identity (flexible) | pill (auto) | actions (auto).
     const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 md:grid-cols-[minmax(12rem,1fr)_auto_auto] md:items-center md:gap-6 transition-colors duration-150 ${
         dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
     }`;
 
-    // Full-width, centered text inside the 2x2 grid cells.
+    // Full-width, centered text inside the student action cells.
     const cellBtn = "w-full justify-center text-center";
 
     // ── Data loading ──────────────────────────────────────────────────────────
@@ -150,7 +144,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
     // Student: list as loaded. Manager: filtered + sorted list from the hook.
     const visibleDocs = docs === null ? null : isManager ? filters.visible : docs;
 
-    // ── Student mutations ─────────────────────────────────────────────────────
+    // ── Student mutation ──────────────────────────────────────────────────────
 
     const runAction = async (id, fn) => {
         setBusyId(id);
@@ -166,12 +160,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
         }
     };
 
-    const toggleScope = (doc) =>
-        runAction(doc.id, () => api.setScope(doc.id, doc.sharingScope === "PUBLIC" ? "private" : "public"));
-
     const hideDoc = (doc) => runAction(doc.id, () => api.hide(doc.id));
-
-    const makeMain = (doc) => runAction(doc.id, () => api.makeMain(doc.id));
 
     // ── Manager decision ──────────────────────────────────────────────────────
     // The backend returns the updated DTO. We patch it into the list instead of
@@ -221,7 +210,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
 
     /**
      * CvPreview calls getUrl(cvId) when it mounts.
-     * The list endpoints no longer carry the PDF, so we fetch it on demand
+     * The list endpoints don't carry the PDF, so we fetch it on demand
      * and convert the Base64 content to a blob URL.
      */
     const getUrl = useCallback(async (cvId) => {
@@ -235,7 +224,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
     const toolbar = isManager && docs !== null && !loadFailed && (
         <div
             className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
-            {/* Search: native (blue) clear button hidden, replaced by a red Google "close" icon */}
+            {/* Search: native (blue) clear button hidden, replaced by a red "close" icon */}
             <div className="relative w-full md:w-64">
                 <input
                     type="search"
@@ -278,7 +267,6 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                     <option key={value} value={value}>{t(key)}</option>
                 ))}
             </select>
-
         </div>
     );
 
@@ -318,18 +306,15 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                 {visibleDocs.map((doc) => {
                     const busy = busyId === doc.id;
                     const confirming = confirmId === doc.id;
-                    const isPublic = doc.sharingScope === "PUBLIC";
                     const isPreviewOpen = openPreviewIds.includes(doc.id);
-                    const isMain = doc.priority === "MAIN";
                     const status = doc.status ?? "PENDING";
                     const isApproved = status === "APPROVED";
                     const isRejected = status === "REJECTED" || status === "REFUSED";
                     const statusKey = STATUS_KEY[status] ?? STATUS_KEY.PENDING;
                     const statusIcon = STATUS_ICON[status] ?? STATUS_ICON.PENDING;
                     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
-                    const mainLabel = isMain ? t("cvDocuments.mainCv") : t("cvDocuments.makeMainBtn");
 
-                    // Student normal state → 2x2 grid. Manager / confirm state → wrapping flex row.
+                    // Student normal state → 2 cells (Preview | Delete). Manager / confirm state → wrapping flex row.
                     const actionsClass = (!isManager && !confirming)
                         ? "grid grid-cols-1 sm:grid-cols-2 gap-2"
                         : "flex flex-wrap items-center gap-2 md:justify-end";
@@ -360,19 +345,12 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                                     )}
                                 </div>
 
-                                {/* Column 2 — Pills */}
+                                {/* Column 2 — Status pill */}
                                 <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
                                     <span className={`${th.pillBase} ${th.statusPill(status)} gap-1`}>
                                         <Icon name={statusIcon} size={14}/>
                                         {t(statusKey)}
                                     </span>
-                                    {!isManager && (
-                                        <span
-                                            className={`${th.pillBase} ${isPublic ? th.pillPublic : th.pillPrivate} gap-1`}>
-                                            <Icon name={isPublic ? "share_reviews" : "lock"} size={14}/>
-                                            {isPublic ? t("cvDocuments.scopePublic") : t("cvDocuments.scopePrivate")}
-                                        </span>
-                                    )}
                                 </div>
 
                                 {/* Column 3 — Actions */}
@@ -440,27 +418,12 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                                             )}
                                         </>
                                     ) : (
-                                        <>
-                                            {/* Order matters for the 2x2 grid: Delete must be last (bottom-right). */}
-                                            <Button tone="neutral" dark={dark}
-                                                    icon={isPublic ? "lock" : "share_reviews"}
-                                                    onClick={() => toggleScope(doc)}
-                                                    disabled={busy} className={cellBtn}
-                                                    aria-label={`${isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")} : ${doc.fileName}`}>
-                                                {isPublic ? t("cvDocuments.makePrivate") : t("cvDocuments.makePublic")}
-                                            </Button>
-                                            <Button tone="neutral" dark={dark} icon="star" onClick={() => makeMain(doc)}
-                                                    disabled={busy || isMain} className={cellBtn}
-                                                    aria-label={`${mainLabel} : ${doc.fileName}`}>
-                                                {mainLabel}
-                                            </Button>
-                                            <Button tone="danger" dark={dark} icon="delete"
-                                                    onClick={() => setConfirmId(doc.id)}
-                                                    disabled={busy} className={cellBtn}
-                                                    aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
-                                                {t("cvDocuments.hideBtn")}
-                                            </Button>
-                                        </>
+                                        <Button tone="danger" dark={dark} icon="delete"
+                                                onClick={() => setConfirmId(doc.id)}
+                                                disabled={busy} className={cellBtn}
+                                                aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
+                                            {t("cvDocuments.hideBtn")}
+                                        </Button>
                                     )}
                                 </div>
                             </div>

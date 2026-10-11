@@ -1,6 +1,9 @@
 import {Link, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getHomeClasses, getMainContainerClasses} from '../styles/AppStyles.jsx';
+import Icon from '../styles/Icon.jsx';
+import CardPreview from './home/CardPreview.jsx';
+import {CARDS_BY_ROLE} from './home/homeCards.js';
 
 const Home = () => {
     const {dark, user} = useOutletContext();
@@ -13,7 +16,7 @@ const Home = () => {
         return <div aria-busy="true"/>;
     }
 
-    // ── Not logged in: landing page (former MainContainer) ────────────────────
+    // region Not logged in: landing page
     if (!user?.isLoggedIn) {
         return (
             <main className={landing.page}>
@@ -35,43 +38,11 @@ const Home = () => {
         );
     }
 
-    // ── Logged in: role home ──────────────────────────────────────────────────
+    // endregion
+
+    // region Logged in: main feature pages for the role
     const role = (user?.role ?? "").toString().replace("ROLE_", "");
-
-    const homeByRole = () => {
-        switch (role) {
-            case "STUDENT":
-                return (
-                    <div>
-                        <h2 className={classes.subhead}>{t("home.roleStudent")}</h2>
-                    </div>
-                );
-
-            case "TEACHER":
-                return (
-                    <div>
-                        <h2 className={classes.subhead}>{t("home.roleTeacher")}</h2>
-                    </div>
-                );
-
-            case "EMPLOYER":
-                return (
-                    <div>
-                        <h2 className={classes.subhead}>{t("home.roleEmployer")}</h2>
-                    </div>
-                );
-
-            case "MANAGER":
-                return (
-                    <div>
-                        <h2 className={classes.subhead}>{t("home.roleManager")}</h2>
-                    </div>
-                );
-
-            default:
-                return null;
-        }
-    };
+    const cards = CARDS_BY_ROLE[role] ?? [];
 
     return (
         <div className={classes.page}>
@@ -79,9 +50,31 @@ const Home = () => {
                 {t("home.welcome")} {user?.firstName || ""}
             </h1>
 
-            {homeByRole()}
+            {cards.length > 0 && (
+                <ul className={classes.grid}>
+                    {cards.map(({to, icon, titleKey, descKey, load, itemsKey}) => (
+                        <li key={to}>
+                            <Link to={to} className={`${classes.card} h-full`}>
+                                <span className={classes.cardIcon}>
+                                    <Icon name={icon} size={36} filled/>
+                                </span>
+                                <h2 className={classes.cardTitle}>{t(titleKey)}</h2>
+                                <p className={classes.cardDesc}>{t(descKey)}</p>
+
+                                {load && <CardPreview load={load} itemsKey={itemsKey} classes={classes}/>}
+
+                                <span className={classes.cardLink}>
+                                    {t("home.preview.viewAll")}
+                                    <Icon name="arrow_back" size={16} className="rotate-180"/>
+                                </span>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
+    // endregion
 };
 
 export default Home;
