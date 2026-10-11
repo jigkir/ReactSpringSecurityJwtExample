@@ -6,6 +6,7 @@ const NOTIFICATION_TYPE = {
     CV_APPROVED: "CV_APPROVED",
     CV_REJECTED: "CV_REJECTED",
     CV_SUBMITTED_FOR_REVIEW: "CV_SUBMITTED_FOR_REVIEW",
+    INTERNSHIP_SUBMITTED_FOR_REVIEW: "INTERNSHIP_SUBMITTED_FOR_REVIEW",
     NEW_INTERNSHIP_OFFER: "NEW_INTERNSHIP_OFFER",
 };
 
@@ -72,6 +73,7 @@ export function NotificationsProvider({user, children}) {
             setCounts({
                 ...EMPTY_COUNTS,
                 manager: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW).length,
+                internship: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW).length,
             });
             return;
         }
@@ -136,7 +138,15 @@ export function NotificationsProvider({user, children}) {
                 count: counts.manager,
                 labelKey: "navbar.cvNotification",
                 to: "/manager/cvs",
-            }];
+            },
+                {
+                    id: "internshipPosted",
+                    count: counts.internship,
+                    labelKey: "navbar.internshipNotification",
+                    to: "/manager/internships",
+                    onClick: clearInternships,
+                }
+            ];
         }
         if (role === "STUDENT") {
             return [
