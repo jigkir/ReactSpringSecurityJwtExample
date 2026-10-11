@@ -178,7 +178,7 @@ export function NotificationsProvider({user, children}) {
                 {
                     id: "internshipPosted",
                     count: counts.internship,
-                    labelKey: "navbar.internshipNotification",
+                    labelKey: "navbar.internshipSubmittedForReviewNotification",
                     to: "/manager/internships",
                     onClick: clearInternships,
                 }
