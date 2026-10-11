@@ -3,7 +3,7 @@
  * Location: src/utils/Sort.jsx
  *
  * Layout
- *   1. Generic helpers          (toNum, compareText, compareDate, matchesSearch)
+ *   1. Generic helpers          (toNum, compareText, compareDate, matchesSearch, countByStatus)
  *   2. Internships              (sorters, options, filter, hooks)
  *   3. CVs                      (sorters, filter, disciplines, hook)
  *
@@ -46,6 +46,17 @@ export const matchesSearch = (values, search) => {
     if (!q) return true;
     return values.filter(Boolean).join(" ").toLowerCase().includes(q);
 };
+
+/**
+ * Counts items per status for CVs and internships.
+ * REFUSED is treated as REJECTED; a missing status counts as PENDING.
+ * Returns {PENDING, APPROVED, REJECTED}.
+ */
+export const countByStatus = (list) => (list ?? []).reduce((acc, d) => {
+    const key = d.status === "REFUSED" ? "REJECTED" : (d.status ?? "PENDING");
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+}, {PENDING: 0, APPROVED: 0, REJECTED: 0});
 
 // ─── 2. Internships ───────────────────────────────────────────────────────────
 

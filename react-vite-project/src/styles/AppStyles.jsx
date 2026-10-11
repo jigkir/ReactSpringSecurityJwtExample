@@ -169,8 +169,29 @@ export function getNotificationMenuClasses(dark) {
 export function getHomeClasses(dark) {
     return {
         page: `flex-1 p-6 ${dark ? "text-white" : "text-gray-900"}`,
-        heading: "text-2xl font-bold mb-4",
-        subhead: "text-xl font-semibold mb-2"
+        heading: "text-2xl font-bold mb-6",
+        subhead: "text-xl font-semibold mb-2",
+        grid: "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl",
+        card: `group flex flex-col gap-3 p-6 rounded-xl border shadow-sm transition-colors duration-150 ${FOCUS_RING_OFFSET} ${dark ? "bg-slate-800 border-slate-700 hover:bg-slate-700" : "bg-white border-gray-200 hover:bg-indigo-50"}`,
+        cardIcon: dark ? "text-indigo-300" : "text-indigo-600",
+        cardTitle: "text-lg font-bold",
+        cardDesc: `text-sm ${dark ? "text-slate-400" : "text-gray-600"}`,
+
+        // Preview inside each card
+        skel: dark ? "bg-slate-700" : "bg-gray-200",
+        preview: `flex flex-col gap-3 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-200"}`,
+        previewLabel: `text-xs font-bold uppercase tracking-wide mb-1 ${dark ? "text-slate-400" : "text-gray-500"}`,
+        previewList: "flex flex-col gap-1",
+        previewItem: `flex flex-col rounded-lg px-3 py-2 text-sm min-w-0 ${dark ? "bg-slate-900/50 text-slate-200" : "bg-gray-50 text-gray-800"}`,
+        previewSub: `text-xs truncate ${dark ? "text-slate-400" : "text-gray-500"}`,
+        previewEmpty: `text-sm italic ${dark ? "text-slate-400" : "text-gray-500"}`,
+        cardLink: `mt-auto pt-2 inline-flex items-center gap-1 text-sm font-semibold ${dark ? "text-indigo-300" : "text-indigo-600"}`,
+        statPill: (status) => {
+            const base = "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap";
+            if (status === "APPROVED") return `${base} ${dark ? "bg-green-500/20 text-green-300" : "bg-green-100 text-green-800"}`;
+            if (status === "REJECTED") return `${base} ${dark ? "bg-red-500/20 text-red-300" : "bg-red-100 text-red-800"}`;
+            return `${base} ${dark ? "bg-yellow-500/20 text-yellow-200" : "bg-yellow-100 text-yellow-800"}`;
+        },
     };
 }
 
@@ -227,7 +248,7 @@ export function getMainContainerClasses(dark) {
 // region PostInternship
 export function getPostInternshipClasses(dark) {
     return {
-        page: `min-h-screen p-4 md:p-10 flex flex-col`,
+        page: `p-4 md:p-10 flex flex-col flex-1`,
         headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-3xl font-bold ${dark ? "text-white" : "text-gray-900"}`,
         subtitle: `mt-1 ${dark ? "text-slate-400" : "text-gray-600"}`,
@@ -272,14 +293,12 @@ export function getInternshipCardClasses(dark) {
 
 // endregion
 
-// region InternshipModal
-export function getInternshipModalClasses(dark) {
+// region InternshipForm (inline, no modal, no inner scroll)
+export function getInternshipFormClasses(dark) {
     return {
-        overlay: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto",
-        panel: `rounded-2xl shadow-2xl w-full max-w-2xl p-6 md:p-8 my-8 max-h-[90vh] overflow-y-auto ${dark ? "bg-slate-800" : "bg-white"}`,
-        header: `flex justify-between items-center border-b pb-4 mb-6 ${dark ? "border-slate-700" : "border-gray-200"}`,
+        wrapper: `max-w-5xl w-full mx-auto mb-6 rounded-xl border shadow-sm p-6 md:p-8 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        header: `border-b pb-4 mb-6 ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-2xl font-bold ${dark ? "text-white" : "text-gray-800"}`,
-        closeBtn: `font-bold text-2xl transition-colors ${dark ? "text-slate-400 hover:text-slate-200" : "text-gray-400 hover:text-gray-600"}`,
         errorBanner: `p-3 border rounded-lg flex items-center space-x-2 text-sm font-medium ${dark ? "bg-red-900/30 border-red-700 text-red-300" : "bg-red-50 border-red-200 text-red-600"}`,
         label: `block text-sm font-semibold mb-1 ${dark ? "text-slate-300" : "text-gray-700"}`,
         input: `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-gray-300 text-gray-900"}`,

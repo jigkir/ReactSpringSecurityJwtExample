@@ -1,7 +1,7 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import InternshipModal from './InternshipModal.jsx';
+import InternshipForm from './InternshipForm.jsx';
 import InternshipCard from './InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
@@ -11,12 +11,13 @@ import {createInternship, deleteInternship, getEmployerInternships, updateIntern
 function PostInternship({user}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState("");
     const [actionError, setActionError] = useState("");
     const [loading, setLoading] = useState(true);
+    const formRef = useRef(null);
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -30,18 +31,23 @@ function PostInternship({user}) {
             .finally(() => setLoading(false));
     }, [user?.isLoggedIn]);
 
+    // Bring the inline form into view (page scroll only) when it opens
+    useEffect(() => {
+        if (formOpen) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
+    }, [formOpen, editing]);
+
     const openCreate = () => {
         setEditing(null);
-        setIsModalOpen(true);
+        setFormOpen(true);
     };
 
     const openEdit = (internship) => {
         setEditing(internship);
-        setIsModalOpen(true);
+        setFormOpen(true);
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
+    const closeForm = () => {
+        setFormOpen(false);
         setEditing(null);
     };
 
@@ -66,6 +72,7 @@ function PostInternship({user}) {
         try {
             await deleteInternship(id);
             setInternships((prev) => prev.filter((i) => i.id !== id));
+            if (editing?.id === id) closeForm();
         } catch {
             setActionError({key: "postInternship.deleteGenericError"});
         }
@@ -74,26 +81,39 @@ function PostInternship({user}) {
     const hasItems = !loading && !error && internships.length > 0;
 
     return (
-        // 1. Outer page locks to the screen height with no page scrolling
+        // No fixed height and no inner scroll: the page scroll bar is the only one
         <div className={s.page}>
-            {/* Top Header & Button Section */}
+            {/* Title + button */}
             <div className={s.headerSection}>
                 <div>
                     <h1 className={s.title}>{t("postInternship.pageTitle")}</h1>
                     <p className={s.subtitle}>{t("postInternship.pageSubtitle")}</p>
                 </div>
-                <button onClick={openCreate} className={s.addBtn}>
-                    {t("postInternship.addBtn")}
-                </button>
+                {!formOpen && (
+                    <button onClick={openCreate} className={s.addBtn}>
+                        {t("postInternship.addBtn")}
+                    </button>
+                )}
             </div>
 
-            {/* Internship List Section */}
+            {/* Inline create / edit form: between the title and the sort bar */}
+            {formOpen && (
+                <div ref={formRef} className="scroll-mt-20">
+                    <InternshipForm
+                        key={editing ? editing.id : "new"}
+                        onClose={closeForm}
+                        onSubmitInternship={handleSaveInternship}
+                        internship={editing}
+                        dark={dark}
+                    />
+                </div>
+            )}
+
+            {/* Internship list */}
             <div className={s.listSection}>
                 <h2 className={s.listHeading}>{t("postInternship.listTitle")}</h2>
 
                 {hasItems && <InternshipFilters dark={dark} filters={filters}/>}
-
-                {/* 2. Scrollable container for the cards */}
 
                 <div className={s.scrollArea}>
                     {loading && <p className={s.loadingText}>{t("postInternship.loading")}</p>}
@@ -114,15 +134,6 @@ function PostInternship({user}) {
                     ))}
                 </div>
             </div>
-
-            {/* Create / edit modal */}
-            <InternshipModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onSubmitInternship={handleSaveInternship}
-                internship={editing}
-                dark={dark}
-            />
         </div>
     );
 }

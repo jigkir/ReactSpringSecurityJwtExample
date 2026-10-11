@@ -216,12 +216,6 @@
     "addBtn": "Ajouter un CV",
     "docType": "Curriculum vitae",
     "uploadedOn": "déposé le",
-    "scopePublic": "Partagé avec les superviseurs",
-    "scopePrivate": "Visible par vous uniquement",
-    "makePublic": "Rendre public",
-    "makePrivate": "Rendre privé",
-    "mainCv": "CV principal",
-    "makeMainBtn": "Choisir comme CV principal",
     "viewBtn": "Aperçu",
     "hideBtn": "Supprimer",
     "hideAsk": "Supprimer ce CV ? Il n'apparaîtra plus dans cette liste.",
@@ -299,11 +293,23 @@
   },
   "home": {
     "welcome": "Bienvenue",
-    "roleStudent": "Étudiant",
-    "roleTeacher": "Professeur",
-    "roleEmployer": "Employeur",
-    "roleManager": "Gestionnaire",
-    "apiError": "Erreur API ({{status}})"
+    "apiError": "Erreur API ({{status}})",
+    "cvTitle": "CV",
+    "cvDesc": "Téléversez vos CV et suivez leur état de validation.",
+    "cvManagerDesc": "Révisez les CV soumis par les étudiants.",
+    "internshipsTitle": "Stages",
+    "internshipsStudentDesc": "Consultez les offres de stage disponibles.",
+    "internshipsEmployerDesc": "Publiez et gérez vos offres de stage.",
+    "internshipsManagerDesc": "Révisez et approuvez les offres de stage.",
+    "preview": {
+      "pending": "En attente",
+      "approved": "Approuvés",
+      "rejected": "Refusés",
+      "latest": "Les plus récents",
+      "toReview": "À réviser",
+      "empty": "Rien pour l'instant.",
+      "viewAll": "Ouvrir"
+    }
   },
   "postInternship": {
     "pageTitle": "Gestion des offres",
@@ -342,7 +348,7 @@
   },
   "studentInternship": {
     "title": "Stages disponibles",
-    "comingSoon": "Cette page serait bientôt disponible !"
+    "comingSoon": "Cette page sera bientôt disponible !"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",
