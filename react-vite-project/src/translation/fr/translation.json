@@ -71,6 +71,8 @@
     "cvApprovedNotification": "{{amount}} de vos CV ont été approuvés",
     "cvRejectedNotification": "{{amount}} de vos CV ont été refusés",
     "internshipNotification": "{{amount}} stage(s) disponible(s)",
+    "internshipApprovedNotification": "{{amount}} de vos offres de stage ont été approuvées",
+    "internshipRejectedNotification": "{{amount}} de vos offres de stage ont été refusées",
     "notificationLoadError": "Impossible de charger les notifications.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues."
   },

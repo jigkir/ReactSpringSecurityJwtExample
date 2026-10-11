@@ -63,7 +63,7 @@ export default function NotificationMenu({dark}) {
                                          className={`${menuClasses.item} flex items-center justify-between`}>
                                         <Link
                                             to={notif.to}
-                                            className="min-w-0 flex-1 truncate"
+                                            className={menuClasses.link}
                                             onClick={() => {
                                                 setOpen(false);
                                                 notif.onClick?.();

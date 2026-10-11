@@ -6,7 +6,10 @@ const NOTIFICATION_TYPE = {
     CV_APPROVED: "CV_APPROVED",
     CV_REJECTED: "CV_REJECTED",
     CV_SUBMITTED_FOR_REVIEW: "CV_SUBMITTED_FOR_REVIEW",
+
     INTERNSHIP_SUBMITTED_FOR_REVIEW: "INTERNSHIP_SUBMITTED_FOR_REVIEW",
+    INTERNSHIP_OFFER_APPROVED: "INTERNSHIP_OFFER_APPROVED",
+    INTERNSHIP_OFFER_REJECTED: "INTERNSHIP_OFFER_REJECTED",
     NEW_INTERNSHIP_OFFER: "NEW_INTERNSHIP_OFFER",
 };
 
@@ -23,7 +26,14 @@ const TARGET_TYPE = {
  * so they follow the language switch without refetching.
  */
 
-const EMPTY_COUNTS = {manager: 0, internship: 0, cvApproved: 0, cvRejected: 0};
+const EMPTY_COUNTS = {
+    manager: 0,
+    internship: 0,
+    cvApproved: 0,
+    cvRejected: 0,
+    internshipApproved: 0,
+    internshipRejected: 0
+};
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
@@ -98,6 +108,23 @@ export function NotificationsProvider({user, children}) {
             return;
         }
 
+        if (role === "EMPLOYER") {
+            const [list] = await Promise.allSettled([
+                getNotifications(),
+            ]);
+            if (id !== requestId.current) return;
+
+            setErrorKey(list.status === "rejected" ? NOTIFICATION_ERROR.LOAD : null);
+
+            const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
+            setCounts({
+                ...EMPTY_COUNTS,
+                internshipApproved: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED).length,
+                internshipRejected: notifications.filter((n) => n.notificationType === NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED).length,
+            });
+            return;
+        }
+
         setCounts(EMPTY_COUNTS);
     }, [role, userId]);
 
@@ -130,6 +157,12 @@ export function NotificationsProvider({user, children}) {
             .then(() => setCounts((c) => ({...c, internship: 0})))
             .catch(() => setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ));
     }, []);
+
+    const markAsReadAndRefresh = useCallback((targetType) => {
+        markNotificationsAsRead(targetType)
+            .then(refresh)
+            .catch(() => setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ));
+    }, [refresh]);
 
     const items = useMemo(() => {
         if (role === "MANAGER") {
@@ -171,8 +204,27 @@ export function NotificationsProvider({user, children}) {
                 },
             ];
         }
+        if (role === "EMPLOYER") {
+            const markInternshipReviewsAsRead = () => markAsReadAndRefresh(TARGET_TYPE.INTERNSHIP_OFFER);
+            return [
+                {
+                    id: "internshipApproved",
+                    count: counts.internshipApproved,
+                    labelKey: "navbar.internshipApprovedNotification",
+                    to: "/internships",
+                    onClick: markInternshipReviewsAsRead,
+                },
+                {
+                    id: "internshipRejected",
+                    count: counts.internshipRejected,
+                    labelKey: "navbar.internshipRejectedNotification",
+                    to: "/internships",
+                    onClick: markInternshipReviewsAsRead,
+                },
+            ];
+        }
         return [];
-    }, [role, counts, clearInternships]);
+    }, [role, counts, clearInternships, markAsReadAndRefresh]);
 
     const value = useMemo(() => ({
         items,
