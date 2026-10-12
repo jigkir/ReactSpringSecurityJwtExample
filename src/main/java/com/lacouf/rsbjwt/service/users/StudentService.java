@@ -1,9 +1,8 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
+import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -201,21 +200,21 @@ public class StudentService {
         return approvedCvResponseDtos;
     }
 
-    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException {
+    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException {
         Student student = findByEmail(email);
         CV cv = findStudentCv(email, cvId);
         Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
 
         if (!cv.getStatus().equals(ReviewStatus.APPROVED)) {
-            throw new RuntimeException("CV is not approved for application"); // to change
+            throw new CVNotApprovedException("CV is not approved for application");
         }
 
         if (hasStudentAlreadyAppliedToInternship(student, internship)) {
-            throw new RuntimeException("Student has already applied to this internship");
+            throw new ApplicationAlreadyExistsException("Student has already applied to this internship");
         }
 
         if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
-            throw new RuntimeException("Application deadline has passed");
+            throw new DeadlineAlreadyPassedException("Application deadline has passed");
         }
 
         Application application = new Application(internship, cv, student);
