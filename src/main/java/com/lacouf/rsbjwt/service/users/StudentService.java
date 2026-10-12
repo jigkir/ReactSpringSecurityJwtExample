@@ -4,8 +4,10 @@ import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.application.Application;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -16,6 +18,7 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.repository.application.ApplicationRepository;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -23,6 +26,7 @@ import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.application.ApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
@@ -54,12 +58,13 @@ public class StudentService {
     private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
     private final InternshipRepository internshipRepository;
+    private final ApplicationRepository applicationRepository;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
     private final Tika tika = new Tika();
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository) {
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, ApplicationRepository applicationRepository) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
@@ -67,6 +72,7 @@ public class StudentService {
         this.managerRepository = managerRepository;
         this.notificationService = notificationService;
         this.internshipRepository = internshipRepository;
+        this.applicationRepository = applicationRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -184,6 +190,51 @@ public class StudentService {
     public String getCVStatus(String email, long cvId) throws CvNotFoundException {
         CV cv = findStudentCv(email, cvId);
         return cv.getStatus().name();
+    }
+
+    public List<StudentCvResponseDto> getApprovedCVs(String email){
+        List<CV> cvs = cvRepository.findByStudentEmailAndStatus(email, ReviewStatus.APPROVED.name());
+        List<StudentCvResponseDto> approvedCvResponseDtos = new ArrayList<>();
+        for (CV cv : cvs) {
+            approvedCvResponseDtos.add(StudentCvResponseDto.of(cv));
+        }
+        return approvedCvResponseDtos;
+    }
+
+    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException {
+        Student student = findByEmail(email);
+        CV cv = findStudentCv(email, cvId);
+        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        if (!cv.getStatus().equals(ReviewStatus.APPROVED)) {
+            throw new RuntimeException("CV is not approved for application"); // to change
+        }
+
+        if (hasStudentAlreadyAppliedToInternship(student, internship)) {
+            throw new RuntimeException("Student has already applied to this internship");
+        }
+
+        if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
+            throw new RuntimeException("Application deadline has passed");
+        }
+
+        Application application = new Application(internship, cv, student);
+        applicationRepository.save(application);
+    }
+
+    public List<ApplicationResponseDto> getApplications(String email) throws UserNotFoundException {
+        Student student = findByEmail(email);
+        List<Application> applications = applicationRepository.findByStudent(student);
+        List<ApplicationResponseDto> applicationResponses = new ArrayList<>();
+        for (Application application : applications) {
+            applicationResponses.add(ApplicationResponseDto.of(application.getId(), CvFileResponseDto.of(application.getCv()), application.getApplicationDate()));
+        }
+        return applicationResponses;
+    }
+
+    private boolean hasStudentAlreadyAppliedToInternship(Student student, Internship internship) {
+        return applicationRepository.findByStudent(student).stream()
+                .anyMatch(application -> application.getInternship().equals(internship));
     }
 
     private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
