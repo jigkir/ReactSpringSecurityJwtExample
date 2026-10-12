@@ -1,16 +1,22 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.users.StudentService;
 import jakarta.validation.Valid;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,5 +81,14 @@ public class StudentController {
     public ResponseEntity<String> getCVStatus(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
         String status = studentService.getCVStatus(authentication.getName(), cvId);
         return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @GetMapping("/internship")
+    public ResponseEntity<List<InternshipResponseDto>> getInternships(Authentication authentication) throws UserNotFoundException {
+        List<InternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(internshipResponseDtos);
     }
 }

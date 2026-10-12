@@ -1,41 +1,37 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.cv.*;
-import com.lacouf.rsbjwt.model.*;
-import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.*;
-import com.lacouf.rsbjwt.model.notification.TargetType;
-import com.lacouf.rsbjwt.model.notification.NotificationType;
-import com.lacouf.rsbjwt.model.user.Manager;
-import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.auth.Credentials;
+import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
+import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.AdditionalAnswers.answer;
-import static org.mockito.Mockito.*;
-
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +42,21 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.AdditionalAnswers.answer;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class StudentServiceTest {
@@ -64,6 +75,8 @@ public class StudentServiceTest {
     private CVRepository cvRepository;
     @Mock
     private ManagerRepository managerRepository;
+    @Mock
+    private InternshipRepository internshipRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -79,6 +92,14 @@ public class StudentServiceTest {
 
     private static final String STUDENT_EMAIL = "test@claurendeau.qc.ca";
 
+    private static Employer employer;
+    private static Internship internship;
+
+    private static final String EMPLOYER_EMAIL = "email@example.com";
+    private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
+    private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
+
+
     @BeforeAll
     static void createStudentSignUpDto() throws IOException {
         studentSignUpDto = new StudentSignUpDto("First Name", "Last Name", "1234567", "test@claurendeau.qc.ca", "Test123@", Discipline.COMPUTER_SCIENCE);
@@ -89,6 +110,16 @@ public class StudentServiceTest {
             doc.save(baos);
             validPdfBytes = baos.toByteArray();
         }
+
+
+        Credentials credentials = Credentials.builder()
+                .email(EMPLOYER_EMAIL)
+                .password("Test123@-encoded")
+                .role(Role.EMPLOYER)
+                .build();
+
+        employer = new Employer("First Name", "Last Name", credentials, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
+        employer.setId(1L);
     }
 
     @BeforeEach
@@ -99,7 +130,10 @@ public class StudentServiceTest {
                 Discipline.COMPUTER_SCIENCE
         );
         dummyStudent.setId(1L);
+        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer);
+        internship.setId(10L);
     }
+
 
     private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -595,5 +629,38 @@ public class StudentServiceTest {
 
         verify(cvRepository, never()).save(any(CV.class));
         verifyNoInteractions(notificationService);
+    }
+
+    // ==========================================
+    // Student Internship Test
+    // ==========================================
+
+    @Test
+    void shouldGetAInternshipsSuccessfully() throws UserNotFoundException {
+        //Assert
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        internship.setStatus(InternshipStatus.APPROVED);
+        //Act + Assert
+        assert !studentService.getInternships(dummyStudent.getEmail()).isEmpty();
+    }
+
+    @Test
+    void shouldNotGetAInternshipsWhenStatusIsNotApproved() throws UserNotFoundException {
+        //Assert
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        //Act + Assert
+        assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
+    }
+
+    @Test
+    void shouldNotGetAInternshipsWhenAfterDeadline() throws UserNotFoundException {
+        //Assert
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
+        //Act + Assert
+        assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
     }
 }

@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.repository.internship;
 
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,6 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     List<Internship> findByDeletedFalse();
 
     List<Internship> findByPostedBy_Credentials_EmailAndDeletedIsFalse(String email);
+
+    List<Internship> findByPostedBy_DisciplineAndDeletedIsFalse(Discipline postedByDiscipline);
 }

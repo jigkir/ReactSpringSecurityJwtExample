@@ -2,21 +2,27 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.model.cv.CvStatus;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
-import com.lacouf.rsbjwt.service.users.ManagerService;
-import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.users.ManagerService;
+import com.lacouf.rsbjwt.service.users.StudentService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,22 +35,20 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.test.web.servlet.MockMvc;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.Mockito.*;
 
 @WebMvcTest(StudentController.class)
 @AutoConfigureMockMvc
@@ -373,5 +377,29 @@ public class StudentControllerTest {
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10/status").principal(authentication))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnListofAvailableInternships() throws Exception {
+        //Arrange
+        when(studentService.getInternships(STUDENT_EMAIL))
+                .thenReturn(List.of(new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, InternshipStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now())));
+
+        //Act + Assert
+
+        mockMvc.perform(get("/api/student/internship")
+                        .principal(authentication))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size()").value(1));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhen() throws Exception {
+        //Arrange
+        when(studentService.getInternships(STUDENT_EMAIL))
+                .thenThrow(new UserNotFoundException());
+
+        //Act + Assert
+
+        mockMvc.perform(get("/api/student/internship").principal(authentication)).andExpect(status().isNotFound());
     }
 }

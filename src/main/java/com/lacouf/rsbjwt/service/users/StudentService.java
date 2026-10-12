@@ -10,11 +10,14 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
+import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
@@ -22,6 +25,7 @@ import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import org.apache.pdfbox.Loader;
@@ -34,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -48,18 +53,20 @@ public class StudentService {
     private final CVRepository cvRepository;
     private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
+    private final InternshipRepository internshipRepository;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
     private final Tika tika = new Tika();
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService) {
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository) {
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.managerRepository = managerRepository;
         this.notificationService = notificationService;
+        this.internshipRepository = internshipRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -222,5 +229,25 @@ public class StudentService {
 
     private CV findStudentCv(String email, long cvId) throws CvNotFoundException {
         return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+    }
+
+    private List<Internship> findInternships(Student student) {
+        return internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(student.getDiscipline());
+    }
+
+    public List<InternshipResponseDto> getInternships(String email) throws UserNotFoundException {
+        Student student = findByEmail(email);
+        List<Internship> internships = findInternships(student);
+        List<InternshipResponseDto> internshipResponses = new ArrayList<>();
+        for (Internship internship : internships) {
+            if (!internship.getStatus().equals(InternshipStatus.APPROVED)) {
+                continue;
+            }
+            if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
+                continue;
+            }
+            internshipResponses.add(InternshipResponseDto.of(internship));
+        }
+        return internshipResponses;
     }
 }
