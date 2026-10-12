@@ -8,11 +8,13 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
+import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
@@ -34,13 +36,15 @@ public class EmployerService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppRepository userAppRepository;
     private final InternshipRepository internshipRepository;
+    private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
 
-    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository, NotificationService notificationService) {
+    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService) {
         this.employerRepository = employerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppRepository = userAppRepository;
         this.internshipRepository = internshipRepository;
+        this.managerRepository = managerRepository;
         this.notificationService = notificationService;
     }
 
@@ -95,6 +99,8 @@ public class EmployerService {
 
         internshipRepository.save(internship);
 
+        notifyManagersOfSubmittedInternship(internship);
+
         return InternshipResponseDto.of(internship);
     }
 
@@ -129,6 +135,8 @@ public class EmployerService {
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
 
         internshipRepository.save(internship);
+
+        notifyManagersOfSubmittedInternship(internship);
 
         return InternshipResponseDto.of(internship);
     }
@@ -170,5 +178,10 @@ public class EmployerService {
         if (amount == null && !negotiable) {
             throw new InvalidCompensationException();
         }
+    }
+
+    private void notifyManagersOfSubmittedInternship(Internship internship) {
+        managerRepository.findAll()
+                .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, internship.getId(), manager));
     }
 }
