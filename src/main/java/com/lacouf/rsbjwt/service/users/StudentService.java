@@ -6,7 +6,7 @@ import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.application.Application;
+import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -16,14 +16,14 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.repository.application.ApplicationRepository;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.application.ApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
@@ -55,13 +55,13 @@ public class StudentService {
     private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
     private final InternshipRepository internshipRepository;
-    private final ApplicationRepository applicationRepository;
+    private final InternshipApplicationRepository applicationRepository;
 
     private final int MAX_FILE_SIZE = 2 * 1024 * 1024; //2MB
 
     private final Tika tika = new Tika();
 
-    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, ApplicationRepository applicationRepository) {
+    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository) {
         this.userAppService = userAppService;
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
@@ -210,16 +210,16 @@ public class StudentService {
             throw new DeadlineAlreadyPassedException("Application deadline has passed");
         }
 
-        Application application = new Application(internship, cv, student);
+        InternshipApplication application = new InternshipApplication(internship, cv, student);
         applicationRepository.save(application);
     }
 
-    public List<ApplicationResponseDto> getApplications(String email) throws UserNotFoundException {
+    public List<InternshipApplicationResponseDto> getInternshipApplications(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        List<Application> applications = applicationRepository.findByStudent(student);
-        List<ApplicationResponseDto> applicationResponses = new ArrayList<>();
-        for (Application application : applications) {
-            applicationResponses.add(ApplicationResponseDto.of(application.getId(), CvFileResponseDto.of(application.getCv()), application.getApplicationDate()));
+        List<InternshipApplication> applications = applicationRepository.findByStudent(student);
+        List<InternshipApplicationResponseDto> applicationResponses = new ArrayList<>();
+        for (InternshipApplication application : applications) {
+            applicationResponses.add(InternshipApplicationResponseDto.of(application.getId(), CvFileResponseDto.of(application.getCv()), application.getApplicationDate()));
         }
         return applicationResponses;
     }

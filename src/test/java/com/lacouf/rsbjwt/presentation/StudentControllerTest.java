@@ -453,7 +453,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetAppliedApplicationsSuccessfully() throws Exception {
         // Arrange
-        when(studentService.getApplications(STUDENT_EMAIL))
+        when(studentService.getInternshipApplications(STUDENT_EMAIL))
                 .thenReturn(List.of());
 
         // Act & Assert

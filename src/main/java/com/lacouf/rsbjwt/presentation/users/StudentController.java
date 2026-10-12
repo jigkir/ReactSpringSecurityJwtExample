@@ -6,10 +6,9 @@ import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.application.Application;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.application.ApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
@@ -109,8 +108,8 @@ public class StudentController {
     }
 
     @GetMapping("/applications")
-    public ResponseEntity<List<ApplicationResponseDto>> getAppliedInternships(Authentication authentication) throws UserNotFoundException {
-        List<ApplicationResponseDto> appliedInternships = studentService.getApplications(authentication.getName());
+    public ResponseEntity<List<InternshipApplicationResponseDto>> getAppliedInternships(Authentication authentication) throws UserNotFoundException {
+        List<InternshipApplicationResponseDto> appliedInternships = studentService.getInternshipApplications(authentication.getName());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(appliedInternships);
