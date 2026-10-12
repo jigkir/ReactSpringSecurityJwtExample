@@ -29,7 +29,7 @@ const COMPENSATION = {
 const TITLE_MIN = 2;
 const TITLE_MAX = 50;
 const TEXT_MIN = 2;
-const AMOUNT_REGEX = /^\d{1,2}(\.\d{1,2})?$/;
+const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
 
 // en-CA renders YYYY-MM-DD, which is what <input type="date"> expects
 const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
