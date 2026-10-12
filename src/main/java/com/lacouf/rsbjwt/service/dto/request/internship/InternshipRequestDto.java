@@ -37,7 +37,7 @@ public record InternshipRequestDto(
         LocalDate applicationDeadline,
 
         @PositiveOrZero
-        @Digits(integer = 2, fraction = 2)
+        @Digits(integer = 36, fraction = 2)
         BigDecimal compensationAmount,
 
         boolean compensationNegotiable

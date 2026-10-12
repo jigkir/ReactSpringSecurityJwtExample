@@ -2,18 +2,18 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.EmployerController;
-import com.lacouf.rsbjwt.service.users.EmployerService;
-import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.users.EmployerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,9 +38,7 @@ import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,25 +46,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(GlobalExceptionHandler.class)
 public class EmployerControllerTest {
 
+    private static final String EMPLOYER_EMAIL = "employer@example.com";
+    private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
+    private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
     @Autowired
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private Authentication authentication;
-
-    @BeforeEach
-    void setUp() {
-        objectMapper = new ObjectMapper();
-        authentication = new UsernamePasswordAuthenticationToken(EMPLOYER_EMAIL, null);
-    }
-
     @MockitoBean
     private EmployerService employerService;
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
-
-    private static final String EMPLOYER_EMAIL = "employer@example.com";
-    private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
-    private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
 
     private static Map<String, Object> validInternship() {
         return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "workMode", "HYBRID", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
@@ -74,6 +64,91 @@ public class EmployerControllerTest {
 
     private static InternshipResponseDto internshipResponse() {
         return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
+    }
+
+    static Stream<Arguments> invalidFields() {
+        return Stream.of(
+                Arguments.of("firstName", null),
+                Arguments.of("firstName", ""),
+                Arguments.of("firstName", "   "),
+                Arguments.of("firstName", "a"),
+                Arguments.of("firstName", "a".repeat(51)),
+
+                Arguments.of("lastName", null),
+                Arguments.of("lastName", ""),
+                Arguments.of("lastName", "   "),
+                Arguments.of("lastName", "a"),
+                Arguments.of("lastName", "a".repeat(51)),
+
+                Arguments.of("email", null),
+                Arguments.of("email", ""),
+                Arguments.of("email", "   "),
+                Arguments.of("email", "invalid-email"),
+                Arguments.of("email", "email@"),
+
+                Arguments.of("password", null),
+                Arguments.of("password", ""),
+                Arguments.of("password", "   "),
+                Arguments.of("password", "password"),
+                Arguments.of("password", "Password123"),
+                Arguments.of("password", "Password@"),
+
+                Arguments.of("companyName", null),
+                Arguments.of("companyName", ""),
+                Arguments.of("companyName", "   "),
+                Arguments.of("companyName", "a"),
+                Arguments.of("companyName", "a".repeat(101)),
+
+                Arguments.of("phoneNumber", null),
+                Arguments.of("phoneNumber", ""),
+                Arguments.of("phoneNumber", "   "),
+                Arguments.of("phoneNumber", "123456789"),
+                Arguments.of("phoneNumber", "1".repeat(21))
+        );
+    }
+
+    static Stream<Arguments> invalidInternshipFields() {
+        return Stream.of(
+                Arguments.of("title", null),
+                Arguments.of("title", ""),
+                Arguments.of("title", "   "),
+                Arguments.of("title", "a"),
+                Arguments.of("title", "a".repeat(51)),
+
+                Arguments.of("description", null),
+                Arguments.of("description", ""),
+                Arguments.of("description", "   "),
+                Arguments.of("description", "a"),
+
+                Arguments.of("requiredSkills", null),
+                Arguments.of("requiredSkills", ""),
+                Arguments.of("requiredSkills", "   "),
+                Arguments.of("requiredSkills", "a"),
+
+                Arguments.of("durationInWeeks", 0),
+                Arguments.of("durationInWeeks", -3),
+
+                Arguments.of("location", null),
+                Arguments.of("location", ""),
+                Arguments.of("location", "   "),
+                Arguments.of("location", "a"),
+
+                Arguments.of("startDate", null),
+                Arguments.of("startDate", "not-a-date"),
+
+                Arguments.of("applicationDeadline", null),
+                Arguments.of("applicationDeadline", "not-a-date"),
+
+                Arguments.of("compensationAmount", -5),
+                Arguments.of("compensationAmount", 12.345),
+                Arguments.of("compensationAmount", "abc")
+        );
+    }
+
+    @BeforeEach
+    void setUp() {
+        objectMapper = new ObjectMapper();
+        authentication = new UsernamePasswordAuthenticationToken(EMPLOYER_EMAIL, null);
     }
 
     @Test
@@ -156,47 +231,6 @@ public class EmployerControllerTest {
         verifyNoInteractions(employerService);
     }
 
-    static Stream<Arguments> invalidFields() {
-        return Stream.of(
-                Arguments.of("firstName", null),
-                Arguments.of("firstName", ""),
-                Arguments.of("firstName", "   "),
-                Arguments.of("firstName", "a"),
-                Arguments.of("firstName", "a".repeat(51)),
-
-                Arguments.of("lastName", null),
-                Arguments.of("lastName", ""),
-                Arguments.of("lastName", "   "),
-                Arguments.of("lastName", "a"),
-                Arguments.of("lastName", "a".repeat(51)),
-
-                Arguments.of("email", null),
-                Arguments.of("email", ""),
-                Arguments.of("email", "   "),
-                Arguments.of("email", "invalid-email"),
-                Arguments.of("email", "email@"),
-
-                Arguments.of("password", null),
-                Arguments.of("password", ""),
-                Arguments.of("password", "   "),
-                Arguments.of("password", "password"),
-                Arguments.of("password", "Password123"),
-                Arguments.of("password", "Password@"),
-
-                Arguments.of("companyName", null),
-                Arguments.of("companyName", ""),
-                Arguments.of("companyName", "   "),
-                Arguments.of("companyName", "a"),
-                Arguments.of("companyName", "a".repeat(101)),
-
-                Arguments.of("phoneNumber", null),
-                Arguments.of("phoneNumber", ""),
-                Arguments.of("phoneNumber", "   "),
-                Arguments.of("phoneNumber", "123456789"),
-                Arguments.of("phoneNumber", "1".repeat(21))
-        );
-    }
-
     @Test
     void shouldReturnCreatedWhenInternshipIsCreated() throws Exception {
         // Arrange
@@ -213,6 +247,23 @@ public class EmployerControllerTest {
                 .andExpect(jsonPath("$.compensationNegotiable").value(false))
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.employerId").value(1));
+
+        verify(employerService).saveInternship(any(InternshipRequestDto.class), eq(EMPLOYER_EMAIL));
+    }
+
+    @Test
+    void shouldReturnCreatedWhenCompensationAmountIsAbove100() throws Exception {
+        // Arrange: there is no maximum compensation anymore
+        Map<String, Object> internship = validInternship();
+        internship.put("compensationAmount", 12345.67);
+
+        when(employerService.saveInternship(any(InternshipRequestDto.class), eq(EMPLOYER_EMAIL))).thenReturn(internshipResponse());
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/internship").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(internship)))
+                .andExpect(status().isCreated());
 
         verify(employerService).saveInternship(any(InternshipRequestDto.class), eq(EMPLOYER_EMAIL));
     }
@@ -243,45 +294,6 @@ public class EmployerControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(employerService);
-    }
-
-    static Stream<Arguments> invalidInternshipFields() {
-        return Stream.of(
-                Arguments.of("title", null),
-                Arguments.of("title", ""),
-                Arguments.of("title", "   "),
-                Arguments.of("title", "a"),
-                Arguments.of("title", "a".repeat(51)),
-
-                Arguments.of("description", null),
-                Arguments.of("description", ""),
-                Arguments.of("description", "   "),
-                Arguments.of("description", "a"),
-
-                Arguments.of("requiredSkills", null),
-                Arguments.of("requiredSkills", ""),
-                Arguments.of("requiredSkills", "   "),
-                Arguments.of("requiredSkills", "a"),
-
-                Arguments.of("durationInWeeks", 0),
-                Arguments.of("durationInWeeks", -3),
-
-                Arguments.of("location", null),
-                Arguments.of("location", ""),
-                Arguments.of("location", "   "),
-                Arguments.of("location", "a"),
-
-                Arguments.of("startDate", null),
-                Arguments.of("startDate", "not-a-date"),
-
-                Arguments.of("applicationDeadline", null),
-                Arguments.of("applicationDeadline", "not-a-date"),
-
-                Arguments.of("compensationAmount", -5),
-                Arguments.of("compensationAmount", 123.45),
-                Arguments.of("compensationAmount", 12.345),
-                Arguments.of("compensationAmount", "abc")
-        );
     }
 
     @Test

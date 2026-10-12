@@ -401,7 +401,7 @@
     "cancelBtn": "Annuler",
     "submitBtn": "Soumettre",
     "errorSkills": "Veuillez entrer au moins une compétence valide.",
-    "errorCompensation": "Veuillez entrer un montant valide entre 0 et 99,99 (max. 2 décimales).",
+    "errorCompensation": "Le montant doit être supérieur ou égal à 0 $ (max. 2 décimales).",
     "errorDuration": "La durée doit être un nombre entier de semaines (minimum 1).",
     "errorTooShort": "La description, les compétences et le lieu doivent contenir au moins 2 caractères.",
     "errorWorkMode": "Veuillez choisir un mode de travail.",
