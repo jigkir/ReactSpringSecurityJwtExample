@@ -231,19 +231,19 @@ public class StudentService {
         return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
     }
 
-    private List<Internship> findInternships (Student student){
+    private List<Internship> findInternships(Student student) {
         return internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(student.getDiscipline());
     }
 
-    public List<InternshipResponseDto> getInternships (String email) throws UserNotFoundException {
+    public List<InternshipResponseDto> getInternships(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
         List<Internship> internships = findInternships(student);
         List<InternshipResponseDto> internshipResponses = new ArrayList<>();
-        for (Internship internship : internships){
-            if (!internship.getStatus().equals(InternshipStatus.APPROVED)){
+        for (Internship internship : internships) {
+            if (!internship.getStatus().equals(InternshipStatus.APPROVED)) {
                 continue;
             }
-            if (LocalDate.now().isAfter(internship.getApplicationDeadline())){
+            if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
                 continue;
             }
             internshipResponses.add(InternshipResponseDto.of(internship));
