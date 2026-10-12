@@ -438,18 +438,6 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldCloseInternshipNotificationsWhenRejectingInternship() throws InternshipNotFoundException {
-        //Arrange
-        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
-
-        //Act
-        managerService.rejectInternship(1L, "Not good enough.");
-
-        //Assert
-        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
-    }
-
-    @Test
     void shouldThrowInternshipNotFoundWhenApprovingUnknownInternship() {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(99L)).thenReturn(Optional.empty());

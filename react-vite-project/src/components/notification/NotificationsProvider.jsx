@@ -2,6 +2,12 @@ import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useS
 import {useLocation} from 'react-router-dom';
 import {getNotifications, getUnreadNotificationCount, markNotificationsAsRead} from '../api/Api.jsx';
 
+const ROLE = {
+    MANAGER: "MANAGER",
+    STUDENT: "STUDENT",
+    EMPLOYER: "EMPLOYER",
+};
+
 const NOTIFICATION_TYPE = {
     CV_APPROVED: "CV_APPROVED",
     CV_REJECTED: "CV_REJECTED",
@@ -50,8 +56,6 @@ const NOTIFICATION_ERROR = {
 const NotificationsContext = createContext({
     items: [],
     errorKey: null,
-    refresh: () => {
-    },
     clearInternships: () => {
     },
 });
@@ -74,7 +78,7 @@ export function NotificationsProvider({user, children}) {
             return;
         }
 
-        if (role === "MANAGER") {
+        if (role === ROLE.MANAGER) {
             const [list] = await Promise.allSettled([
                 getNotifications(),
             ]);
@@ -91,7 +95,7 @@ export function NotificationsProvider({user, children}) {
             return;
         }
 
-        if (role === "STUDENT") {
+        if (role === ROLE.STUDENT) {
             const [unread, list] = await Promise.allSettled([
                 getUnreadNotificationCount(NOTIFICATION_TYPE.NEW_INTERNSHIP_OFFER),
                 getNotifications(),
@@ -111,7 +115,7 @@ export function NotificationsProvider({user, children}) {
             return;
         }
 
-        if (role === "EMPLOYER") {
+        if (role === ROLE.EMPLOYER) {
             const [list] = await Promise.allSettled([
                 getNotifications(),
             ]);
@@ -138,7 +142,7 @@ export function NotificationsProvider({user, children}) {
 
     // Students: opening /cv marks CV approved/rejected notifications as read
     useEffect(() => {
-        if (role !== "STUDENT" || pathname !== "/cv") return;
+        if (role !== ROLE.STUDENT || pathname !== "/cv") return;
         if (counts.cvApproved + counts.cvRejected === 0) return;
 
         let cancelled = false;
@@ -168,7 +172,7 @@ export function NotificationsProvider({user, children}) {
     }, [refresh]);
 
     const items = useMemo(() => {
-        if (role === "MANAGER") {
+        if (role === ROLE.MANAGER) {
             return [{
                 id: "cvPosted",
                 count: counts.manager,
@@ -184,7 +188,7 @@ export function NotificationsProvider({user, children}) {
                 }
             ];
         }
-        if (role === "STUDENT") {
+        if (role === ROLE.STUDENT) {
             return [
                 {
                     id: "internship",
@@ -207,7 +211,7 @@ export function NotificationsProvider({user, children}) {
                 },
             ];
         }
-        if (role === "EMPLOYER") {
+        if (role === ROLE.EMPLOYER) {
             const markInternshipReviewsAsRead = () => markAsReadAndRefresh(TARGET_TYPE.INTERNSHIP_OFFER);
             return [
                 {
@@ -232,9 +236,8 @@ export function NotificationsProvider({user, children}) {
     const value = useMemo(() => ({
         items,
         errorKey,
-        refresh,
         clearInternships
-    }), [items, errorKey, refresh, clearInternships]);
+    }), [items, errorKey, clearInternships]);
 
     return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }
