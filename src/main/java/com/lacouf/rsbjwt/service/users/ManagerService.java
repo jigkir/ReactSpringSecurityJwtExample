@@ -7,10 +7,9 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
-import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Manager;
@@ -89,10 +88,10 @@ public class ManagerService {
     public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException {
         CV cv = findVisibleCv(cvId);
 
-        if (cv.getStatus() == CvStatus.APPROVED) {
+        if (cv.getStatus() == ReviewStatus.APPROVED) {
             return ManagerCvResponseDto.of(cv);
         }
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
         cv.setRejectionComment(null);
 
         notifyStudentOfCvReviewDecision(cv, NotificationType.CV_APPROVED, NotificationType.CV_APPROVED.getMessage());
@@ -104,11 +103,11 @@ public class ManagerService {
     public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException {
         CV cv = findVisibleCv(cvId);
 
-        if (cv.getStatus() == CvStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
+        if (cv.getStatus() == ReviewStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
             return ManagerCvResponseDto.of(cv);
         }
 
-        cv.setStatus(CvStatus.REJECTED);
+        cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment(comment);
 
         notifyStudentOfCvReviewDecision(cv, NotificationType.CV_REJECTED, comment);
@@ -117,7 +116,7 @@ public class ManagerService {
     }
 
     public List<InternshipResponseDto> getPendingInternships() {
-        return internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
+        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
     }
 
     public List<InternshipResponseDto> getAllInternships() {
@@ -132,7 +131,7 @@ public class ManagerService {
     public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
         Internship internship = findInternship(internshipId);
 
-        if (internship.getStatus() == InternshipStatus.APPROVED) {
+        if (internship.getStatus() == ReviewStatus.APPROVED) {
             return InternshipResponseDto.of(internship);
         }
 
@@ -199,6 +198,6 @@ public class ManagerService {
 
     private boolean hasVisibleApprovedCv(Student student) {
         return cvRepository.findByStudent(student).stream()
-                .anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == CvStatus.APPROVED);
+                .anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == ReviewStatus.APPROVED);
     }
 }

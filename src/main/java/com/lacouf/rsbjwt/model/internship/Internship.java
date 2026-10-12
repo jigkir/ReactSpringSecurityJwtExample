@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.model.internship;
 
 
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.user.Employer;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -53,7 +54,7 @@ public class Internship {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private InternshipStatus status;
+    private ReviewStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String rejectionComment;
@@ -77,7 +78,7 @@ public class Internship {
         this.applicationDeadline = applicationDeadline;
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
-        this.status = InternshipStatus.PENDING;
+        this.status = ReviewStatus.PENDING;
         this.postedBy = employer;
         this.deleted = false;
         this.uploadDate = LocalDateTime.now();
@@ -96,7 +97,7 @@ public class Internship {
         this.applicationDeadline = applicationDeadline;
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
-        this.status = InternshipStatus.PENDING;
+        this.status = ReviewStatus.PENDING;
         this.rejectionComment = null;
     }
 
@@ -105,18 +106,24 @@ public class Internship {
     }
 
     public void approve() {
-        this.status = InternshipStatus.APPROVED;
+        this.status = ReviewStatus.APPROVED;
         this.rejectionComment = null;
     }
 
     public void reject(String comment) {
-        this.status = InternshipStatus.REJECTED;
+        this.status = ReviewStatus.REJECTED;
         this.rejectionComment = comment;
     }
 
     public void setId(long id) {
         this.id = id;
     }
-    public void setStatus(InternshipStatus status){this.status = status;}
-    public void setApplicationDeadline(LocalDate deadline){this.applicationDeadline = deadline;}
+
+    public void setStatus(ReviewStatus status) {
+        this.status = status;
+    }
+
+    public void setApplicationDeadline(LocalDate deadline) {
+        this.applicationDeadline = deadline;
+    }
 }
