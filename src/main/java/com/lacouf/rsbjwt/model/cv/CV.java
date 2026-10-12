@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.model.cv;
 
 
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.user.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public class CV {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CvStatus status;
+    private ReviewStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String rejectionComment;
@@ -52,7 +53,7 @@ public class CV {
         this.visibility = visibility;
         this.fileName = fileName;
         this.uploadDate = uploadDate;
-        this.status = CvStatus.PENDING;
+        this.status = ReviewStatus.PENDING;
     }
 
 }

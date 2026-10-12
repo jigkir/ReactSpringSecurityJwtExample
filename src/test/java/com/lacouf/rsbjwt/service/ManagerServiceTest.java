@@ -8,7 +8,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.*;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -221,8 +221,8 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.approveCv(1L);
 
         // Assert
-        assert (CvStatus.APPROVED).equals(cv.getStatus());
-        assert (CvStatus.APPROVED).equals(result.status());
+        assert (ReviewStatus.APPROVED).equals(cv.getStatus());
+        assert (ReviewStatus.APPROVED).equals(result.status());
         assert result.rejectionComment() == null;
 
         verify(cvRepository).save(cv);
@@ -231,7 +231,7 @@ public class ManagerServiceTest {
     @Test
     void shouldClearRejectionCommentWhenApprovingPreviouslyRejectedCv() throws CvNotFoundException {
         // Arrange
-        cv.setStatus(CvStatus.REJECTED);
+        cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
         when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -239,9 +239,9 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.approveCv(1L);
 
         // Assert
-        assert (CvStatus.APPROVED).equals(cv.getStatus());
+        assert (ReviewStatus.APPROVED).equals(cv.getStatus());
         assert cv.getRejectionComment() == null;
-        assert (CvStatus.APPROVED).equals(result.status());
+        assert (ReviewStatus.APPROVED).equals(result.status());
         assert result.rejectionComment() == null;
 
         verify(cvRepository).save(cv);
@@ -250,15 +250,15 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws CvNotFoundException {
         // Arrange
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
         when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.approveCv(1L);
 
         // Assert
-        assert (CvStatus.APPROVED).equals(result.status());
-        assert (CvStatus.APPROVED).equals(cv.getStatus());
+        assert (ReviewStatus.APPROVED).equals(result.status());
+        assert (ReviewStatus.APPROVED).equals(cv.getStatus());
 
         verify(cvRepository, never()).save(any(CV.class));
         verifyNoInteractions(notificationService);
@@ -284,9 +284,9 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.rejectCv(1L, "CV too detailed");
 
         // Assert
-        assert (CvStatus.REJECTED).equals(cv.getStatus());
+        assert (ReviewStatus.REJECTED).equals(cv.getStatus());
         assert ("CV too detailed").equals(cv.getRejectionComment());
-        assert (CvStatus.REJECTED).equals(result.status());
+        assert (ReviewStatus.REJECTED).equals(result.status());
         assert ("CV too detailed").equals(result.rejectionComment());
 
         verify(cvRepository).save(cv);
@@ -306,16 +306,16 @@ public class ManagerServiceTest {
     @Test
     void shouldAllowRejectingPreviouslyApprovedCv() throws Exception {
         // Arrange
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
         when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
         // Act
         ManagerCvResponseDto result = managerService.rejectCv(1L, "Changed my mind");
 
         // Assert
-        assert (CvStatus.REJECTED).equals(cv.getStatus());
+        assert (ReviewStatus.REJECTED).equals(cv.getStatus());
         assert ("Changed my mind").equals(cv.getRejectionComment());
-        assert (CvStatus.REJECTED).equals(result.status());
+        assert (ReviewStatus.REJECTED).equals(result.status());
 
         verify(cvRepository).save(cv);
     }
@@ -323,7 +323,7 @@ public class ManagerServiceTest {
     @Test
     void shouldAllowRejectingAlreadyRejectedCvWithNewComment() throws Exception {
         // Arrange
-        cv.setStatus(CvStatus.REJECTED);
+        cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("Old comment");
         when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -331,7 +331,7 @@ public class ManagerServiceTest {
         ManagerCvResponseDto result = managerService.rejectCv(1L, "New comment");
 
         // Assert
-        assert (CvStatus.REJECTED).equals(cv.getStatus());
+        assert (ReviewStatus.REJECTED).equals(cv.getStatus());
         assert ("New comment").equals(cv.getRejectionComment());
         assert ("New comment").equals(result.rejectionComment());
 
@@ -341,14 +341,14 @@ public class ManagerServiceTest {
     @Test
     void shouldReturnPendingInternships() {
         //Arrange
-        when(internshipRepository.findByStatusAndDeletedFalse(InternshipStatus.PENDING)).thenReturn(List.of(internship));
+        when(internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING)).thenReturn(List.of(internship));
 
         //Act
         List<InternshipResponseDto> result = managerService.getPendingInternships();
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
-        assert (InternshipStatus.PENDING).equals(result.getFirst().status());
+        assert (ReviewStatus.PENDING).equals(result.getFirst().status());
     }
 
     @Test
@@ -375,7 +375,7 @@ public class ManagerServiceTest {
         //Assert
         assert (Long.valueOf(1L)).equals(result.id());
         assert ("Développeur logiciel").equals(result.title());
-        assert (InternshipStatus.PENDING).equals(result.status());
+        assert (ReviewStatus.PENDING).equals(result.status());
     }
 
     @Test
@@ -396,8 +396,8 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.approveInternship(1L);
 
         //Assert
-        assert (InternshipStatus.APPROVED).equals(internship.getStatus());
-        assert (InternshipStatus.APPROVED).equals(result.status());
+        assert (ReviewStatus.APPROVED).equals(internship.getStatus());
+        assert (ReviewStatus.APPROVED).equals(result.status());
         assert internship.getRejectionComment() == null;
 
         verify(internshipRepository).save(internship);
@@ -414,7 +414,7 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.approveInternship(1L);
 
         //Assert
-        assert (InternshipStatus.APPROVED).equals(result.status());
+        assert (ReviewStatus.APPROVED).equals(result.status());
 
         verify(internshipRepository, never()).save(any(Internship.class));
         verifyNoInteractions(studentRepository, notificationService);
@@ -429,8 +429,8 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.rejectInternship(1L, "Ur offer sucks.");
 
         //Assert
-        assert (InternshipStatus.REJECTED).equals(internship.getStatus());
-        assert (InternshipStatus.REJECTED).equals(result.status());
+        assert (ReviewStatus.REJECTED).equals(internship.getStatus());
+        assert (ReviewStatus.REJECTED).equals(result.status());
         assert ("Ur offer sucks.").equals(internship.getRejectionComment());
         assert ("Ur offer sucks.").equals(result.rejectionComment());
 
@@ -470,9 +470,9 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.approveInternship(1L);
 
         // Assert
-        assert (InternshipStatus.APPROVED).equals(internship.getStatus());
+        assert (ReviewStatus.APPROVED).equals(internship.getStatus());
         assert internship.getRejectionComment() == null;
-        assert (InternshipStatus.APPROVED).equals(result.status());
+        assert (ReviewStatus.APPROVED).equals(result.status());
         assert result.rejectionComment() == null;
 
         verify(internshipRepository).save(internship);
@@ -490,9 +490,9 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.rejectInternship(1L, "Offer does not meet requirements.");
 
         // Assert
-        assert (InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert (ReviewStatus.REJECTED).equals(internship.getStatus());
         assert ("Offer does not meet requirements.").equals(internship.getRejectionComment());
-        assert (InternshipStatus.REJECTED).equals(result.status());
+        assert (ReviewStatus.REJECTED).equals(result.status());
 
         verify(internshipRepository).save(internship);
     }
@@ -508,7 +508,7 @@ public class ManagerServiceTest {
         InternshipResponseDto result = managerService.rejectInternship(1L, "New comment.");
 
         // Assert
-        assert (InternshipStatus.REJECTED).equals(internship.getStatus());
+        assert (ReviewStatus.REJECTED).equals(internship.getStatus());
         assert ("New comment.").equals(internship.getRejectionComment());
         assert ("New comment.").equals(result.rejectionComment());
 
@@ -542,7 +542,7 @@ public class ManagerServiceTest {
     @Test
     void shouldNotNotifyStudentWhenRejectingWithSameComment() throws CvNotFoundException {
         // Arrange
-        cv.setStatus(CvStatus.REJECTED);
+        cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
 
         when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
@@ -560,7 +560,7 @@ public class ManagerServiceTest {
     @Test
     void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws CvNotFoundException {
         // Arrange
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
 
         when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -578,7 +578,7 @@ public class ManagerServiceTest {
         // Arrange
         Student student = cv.getStudent();
 
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
 
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
         when(studentRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(student));
@@ -612,7 +612,7 @@ public class ManagerServiceTest {
         // Arrange
         Student student = cv.getStudent();
 
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
         cv.setVisibility(CvVisibility.HIDDEN);
 
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));

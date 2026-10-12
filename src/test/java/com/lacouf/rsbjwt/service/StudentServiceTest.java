@@ -10,10 +10,9 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
-import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -258,7 +257,7 @@ public class StudentServiceTest {
         assert savedCv.getUploadDate() != null;
         assert calculateHash(validPdfBytes).equals(savedCv.getFileHash());
         assert CvVisibility.VISIBLE.equals(savedCv.getVisibility());
-        assert CvStatus.PENDING.equals(savedCv.getStatus());
+        assert ReviewStatus.PENDING.equals(savedCv.getStatus());
     }
 
     @Test
@@ -579,7 +578,7 @@ public class StudentServiceTest {
         // Arrange
         CV cv = new CV();
         cv.setId(10L);
-        cv.setStatus(CvStatus.APPROVED);
+        cv.setStatus(ReviewStatus.APPROVED);
 
         when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
 
@@ -640,7 +639,7 @@ public class StudentServiceTest {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
-        internship.setStatus(InternshipStatus.APPROVED);
+        internship.setStatus(ReviewStatus.APPROVED);
         //Act + Assert
         assert !studentService.getInternships(dummyStudent.getEmail()).isEmpty();
     }

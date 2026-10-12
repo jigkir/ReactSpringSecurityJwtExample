@@ -9,9 +9,8 @@ import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.cv.CvStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
@@ -183,7 +182,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
         // Arrange
-        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, "my_cv.pdf", 11L, LocalDateTime.now(), CvVisibility.VISIBLE, CvStatus.PENDING, null);
+        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, "my_cv.pdf", 11L, LocalDateTime.now(), CvVisibility.VISIBLE, ReviewStatus.PENDING, null);
         when(studentService.getCVs(STUDENT_EMAIL)).thenReturn(List.of(studentCvResponseDto));
 
         // Act + Assert
@@ -383,7 +382,7 @@ public class StudentControllerTest {
     void shouldReturnListofAvailableInternships() throws Exception {
         //Arrange
         when(studentService.getInternships(STUDENT_EMAIL))
-                .thenReturn(List.of(new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, InternshipStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now())));
+                .thenReturn(List.of(new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now())));
 
         //Act + Assert
 

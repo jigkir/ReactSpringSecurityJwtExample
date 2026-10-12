@@ -7,7 +7,7 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Manager;
@@ -188,7 +188,7 @@ public class EmployerServiceTest {
 
         Internship savedInternship = internshipArgumentCaptor.getValue();
 
-        assert (InternshipStatus.PENDING).equals(savedInternship.getStatus());
+        assert (ReviewStatus.PENDING).equals(savedInternship.getStatus());
         assert !savedInternship.isDeleted();
         assert (employer).equals(savedInternship.getPostedBy());
 
@@ -202,7 +202,7 @@ public class EmployerServiceTest {
         assert (APPLICATION_DEADLINE).equals(response.applicationDeadline());
         assert (new BigDecimal("25.00")).equals(response.compensationAmount());
         assert !response.compensationNegotiable();
-        assert (InternshipStatus.PENDING).equals(response.status());
+        assert (ReviewStatus.PENDING).equals(response.status());
         assert (Long.valueOf(1L)).equals(response.employerId());
     }
 

@@ -11,7 +11,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -240,7 +240,7 @@ public class StudentService {
         List<Internship> internships = findInternships(student);
         List<InternshipResponseDto> internshipResponses = new ArrayList<>();
         for (Internship internship : internships) {
-            if (!internship.getStatus().equals(InternshipStatus.APPROVED)) {
+            if (!internship.getStatus().equals(ReviewStatus.APPROVED)) {
                 continue;
             }
             if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {

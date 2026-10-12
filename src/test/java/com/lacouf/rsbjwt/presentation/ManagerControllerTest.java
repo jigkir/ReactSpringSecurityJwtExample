@@ -4,9 +4,8 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.ManagerController;
 import com.lacouf.rsbjwt.service.users.ManagerService;
@@ -47,11 +46,11 @@ public class ManagerControllerTest {
     private static final String REJECTION_BODY = "{\"comment\": \"CV too detailed\"}";
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
 
-    private static ManagerCvResponseDto cvWith(CvStatus status, String comment) {
+    private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
         return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
     }
 
-    private static InternshipResponseDto internshipWith(InternshipStatus status, String comment) {
+    private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {
         return new InternshipResponseDto(
                 1L,
                 "Développeur logiciel",
@@ -76,7 +75,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnAllVisibleCvs() throws Exception {
         // Arrange
-        when(managerService.getAllVisibleCvs()).thenReturn(List.of(cvWith(CvStatus.PENDING, null), cvWith(CvStatus.REJECTED, "CV too detailed")));
+        when(managerService.getAllVisibleCvs()).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs"))
@@ -90,7 +89,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnOkWhenCvIsApproved() throws Exception {
         // Arrange
-        when(managerService.approveCv(1L)).thenReturn(cvWith(CvStatus.APPROVED, null));
+        when(managerService.approveCv(1L)).thenReturn(cvWith(ReviewStatus.APPROVED, null));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/1/approve"))
@@ -103,7 +102,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnOkWhenCvIsRejected() throws Exception {
         // Arrange
-        when(managerService.rejectCv(1L, "CV too detailed")).thenReturn(cvWith(CvStatus.REJECTED, "CV too detailed"));
+        when(managerService.rejectCv(1L, "CV too detailed")).thenReturn(cvWith(ReviewStatus.REJECTED, "CV too detailed"));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/1/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
@@ -137,7 +136,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnCvWithStudentInfo() throws Exception {
         // Arrange
-        when(managerService.getCv(1L)).thenReturn(cvWith(CvStatus.PENDING, null));
+        when(managerService.getCv(1L)).thenReturn(cvWith(ReviewStatus.PENDING, null));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/1"))
@@ -197,7 +196,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnAllInternships() throws Exception {
         // Arrange
-        when(managerService.getAllInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING, null), internshipWith(InternshipStatus.APPROVED, null)));
+        when(managerService.getAllInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null), internshipWith(ReviewStatus.APPROVED, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships"))
@@ -211,7 +210,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnPendingInternships() throws Exception {
         // Arrange
-        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(InternshipStatus.PENDING, null)));
+        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/pending"))
@@ -225,7 +224,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnInternshipById() throws Exception {
         // Arrange
-        when(managerService.getInternshipById(1L)).thenReturn(internshipWith(InternshipStatus.PENDING, null));
+        when(managerService.getInternshipById(1L)).thenReturn(internshipWith(ReviewStatus.PENDING, null));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/1"))
@@ -249,7 +248,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnOkWhenInternshipIsApproved() throws Exception {
         // Arrange
-        when(managerService.approveInternship(1L)).thenReturn(internshipWith(InternshipStatus.APPROVED, null));
+        when(managerService.approveInternship(1L)).thenReturn(internshipWith(ReviewStatus.APPROVED, null));
 
         // Act + assert
         mockMvc.perform(put("/api/manager/internships/1/approve"))
@@ -262,7 +261,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnOkWhenInternshipIsRejected() throws Exception {
         // Arrange
-        when(managerService.rejectInternship(1L, "Offer = bad.")).thenReturn(internshipWith(InternshipStatus.REJECTED, "Offer = bad."));
+        when(managerService.rejectInternship(1L, "Offer = bad.")).thenReturn(internshipWith(ReviewStatus.REJECTED, "Offer = bad."));
 
         // Act + assert
         mockMvc.perform(put("/api/manager/internships/1/reject")

@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.repository.internship;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface InternshipRepository extends JpaRepository<Internship, Long> {
     Optional<Internship> findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(long id, String employerEmail);
 
-    List<Internship> findByStatusAndDeletedFalse(InternshipStatus status);
+    List<Internship> findByStatusAndDeletedFalse(ReviewStatus status);
 
     Optional<Internship> findByIdAndDeletedFalse(long id);
 
