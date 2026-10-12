@@ -1,12 +1,15 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -191,8 +194,8 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<StudentCvResponseDto> getApprovedCVs(String email){
-        List<CV> cvs = cvRepository.findByStudentEmailAndStatus(email, ReviewStatus.APPROVED.name());
+    public List<StudentCvResponseDto> getApprovedAndVisibleCVs(String email){
+        List<CV> cvs = cvRepository.findByStudent_Credentials_EmailAndStatusAndVisibility(email, ReviewStatus.APPROVED.name(), CvVisibility.VISIBLE);
         List<StudentCvResponseDto> approvedCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
             approvedCvResponseDtos.add(StudentCvResponseDto.of(cv));
@@ -218,6 +221,29 @@ public class StudentService {
         }
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
+        applicationRepository.save(application);
+    }
+
+    public void updateInternshipApplication(String email, long applicationId, long newCvId) throws UserNotFoundException, CvNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException {
+        Student student = findByEmail(email);
+        InternshipApplication application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new InternshipApplicationNotFoundException("Application with ID " + applicationId + " not found."));
+
+        if (application.getInternshipApplicationStatus().equals(InternshipApplicationStatus.READ)) {
+            throw new ApplicationAlreadyReadException("Cannot update an approved application");
+        }
+
+        if (!application.getStudent().equals(student)) {
+            throw new UserNotFoundException();
+        }
+
+        CV newCv = findStudentCv(email, newCvId);
+
+        if (!newCv.getStatus().equals(ReviewStatus.APPROVED)) {
+            throw new CVNotApprovedException("New CV is not approved for application");
+        }
+
+        application.setCv(newCv);
         applicationRepository.save(application);
     }
 
