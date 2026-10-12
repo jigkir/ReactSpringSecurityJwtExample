@@ -6,7 +6,7 @@ import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.EmployerController;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -63,7 +63,7 @@ public class EmployerControllerTest {
     }
 
     private static InternshipResponseDto internshipResponse() {
-        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, InternshipStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
+        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, ReviewStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
     }
 
     static Stream<Arguments> invalidFields() {

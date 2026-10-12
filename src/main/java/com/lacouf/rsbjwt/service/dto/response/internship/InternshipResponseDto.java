@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.service.dto.response.internship;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 
 import java.math.BigDecimal;
@@ -21,7 +21,7 @@ public record InternshipResponseDto(
         LocalDate applicationDeadline,
         BigDecimal compensationAmount,
         boolean compensationNegotiable,
-        InternshipStatus status,
+        ReviewStatus status,
         String rejectionComment,
         long employerId,
         String employerEmail,
