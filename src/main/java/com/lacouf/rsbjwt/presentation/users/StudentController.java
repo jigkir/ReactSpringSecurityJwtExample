@@ -1,13 +1,15 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
+import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.application.Application;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.application.ApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
@@ -91,4 +93,27 @@ public class StudentController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(internshipResponseDtos);
     }
+
+    @GetMapping("/cvs/approved")
+    public ResponseEntity<List<StudentCvResponseDto>> getApprovedCVs(Authentication authentication) {
+        List<StudentCvResponseDto> approvedCVs = studentService.getApprovedCVs(authentication.getName());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(approvedCVs);
+    }
+
+    @PostMapping("/internship/{internshipId}/apply/{cvId}")
+    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException {
+        studentService.applyToInternship(authentication.getName(), cvId, internshipId);
+        return ResponseEntity.ok("Application submitted successfully");
+    }
+
+    @GetMapping("/applications")
+    public ResponseEntity<List<ApplicationResponseDto>> getAppliedInternships(Authentication authentication) throws UserNotFoundException {
+        List<ApplicationResponseDto> appliedInternships = studentService.getApplications(authentication.getName());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(appliedInternships);
+    }
+
 }
