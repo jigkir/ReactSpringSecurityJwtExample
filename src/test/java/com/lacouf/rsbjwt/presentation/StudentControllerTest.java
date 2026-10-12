@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.cv.CvStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
@@ -10,7 +11,10 @@ import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.internship.InternshipStatus;
+import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
@@ -33,6 +37,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.test.web.servlet.MockMvc;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -373,5 +379,29 @@ public class StudentControllerTest {
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10/status").principal(authentication))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnListofAvailableInternships() throws Exception {
+        //Arrange
+        when(studentService.getInternships(STUDENT_EMAIL))
+                .thenReturn(List.of(new InternshipResponseDto(10L,"Test","This is a Test internship to test that it works","Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2),LocalDate.now().plusWeeks(2),new BigDecimal(12),false, InternshipStatus.APPROVED,"",10L,"employer@test.com", Discipline.COMPUTER_SCIENCE,LocalDateTime.now())));
+
+        //Act + Assert
+
+        mockMvc.perform(get("/api/student/internship")
+                .principal(authentication))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size()").value(1));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhen() throws Exception {
+        //Arrange
+        when(studentService.getInternships(STUDENT_EMAIL))
+                .thenThrow(new UserNotFoundException());
+
+        //Act + Assert
+
+        mockMvc.perform(get("/api/student/internship").principal(authentication)).andExpect(status().isNotFound());
     }
 }

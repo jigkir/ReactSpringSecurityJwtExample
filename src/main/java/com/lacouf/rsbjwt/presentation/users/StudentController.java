@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
@@ -75,5 +76,14 @@ public class StudentController {
     public ResponseEntity<String> getCVStatus(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException {
         String status = studentService.getCVStatus(authentication.getName(), cvId);
         return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @GetMapping("/internship")
+    public ResponseEntity<List<InternshipResponseDto>> getInternships(Authentication authentication) throws UserNotFoundException {
+        List<InternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(internshipResponseDtos);
     }
 }
