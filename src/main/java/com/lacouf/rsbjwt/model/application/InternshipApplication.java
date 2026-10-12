@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
-public class Application {
+public class InternshipApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,10 +29,10 @@ public class Application {
     @Column
     private LocalDate applicationDate = LocalDate.now();
 
-    public Application() {
+    public InternshipApplication() {
     }
 
-    public Application(Internship internship, CV cv, Student student) {
+    public InternshipApplication(Internship internship, CV cv, Student student) {
         this.internship = internship;
         this.cv = cv;
         this.student = student;

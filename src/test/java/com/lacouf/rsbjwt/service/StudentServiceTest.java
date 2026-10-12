@@ -6,7 +6,7 @@ import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.application.Application;
+import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -19,7 +19,7 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.repository.application.ApplicationRepository;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -78,7 +78,7 @@ public class StudentServiceTest {
     @Mock
     private InternshipRepository internshipRepository;
     @Mock
-    private ApplicationRepository applicationRepository;
+    private InternshipApplicationRepository applicationRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -88,7 +88,7 @@ public class StudentServiceTest {
     @Captor
     private ArgumentCaptor<CV> cvArgumentCaptor;
     @Captor
-    private ArgumentCaptor<Application> applicationArgumentCaptor;
+    private ArgumentCaptor<InternshipApplication> applicationArgumentCaptor;
 
     private static StudentSignUpDto studentSignUpDto;
     private Student dummyStudent;
@@ -686,7 +686,7 @@ public class StudentServiceTest {
 
         // Assert
         verify(applicationRepository).save(applicationArgumentCaptor.capture());
-        Application savedApplication = applicationArgumentCaptor.getValue();
+        InternshipApplication savedApplication = applicationArgumentCaptor.getValue();
 
         assert savedApplication.getStudent().equals(dummyStudent);
         assert savedApplication.getCv().equals(approvedCv);
@@ -723,7 +723,7 @@ public class StudentServiceTest {
         approvedCv.setStatus(ReviewStatus.APPROVED);
         approvedCv.setStudent(dummyStudent);
 
-        Application existingApplication = new Application(internship, approvedCv, dummyStudent);
+        InternshipApplication existingApplication = new InternshipApplication(internship, approvedCv, dummyStudent);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
@@ -737,7 +737,7 @@ public class StudentServiceTest {
         );
 
         assert "Student has already applied to this internship".equals(exception.getMessage());
-        verify(applicationRepository, never()).save(any(Application.class));
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
     @Test
@@ -761,6 +761,6 @@ public class StudentServiceTest {
         );
 
         assert "Application deadline has passed".equals(exception.getMessage());
-        verify(applicationRepository, never()).save(any(Application.class));
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 }
