@@ -266,7 +266,7 @@ public class StudentService {
     }
 
     private CV findStudentCv(String email, long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+        return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException(cvId));
     }
 
     private List<Internship> findInternships(Student student) {

@@ -250,7 +250,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenHidingCvNotOwnedByStudent() throws Exception {
         // Arrange
-        doThrow(new CvNotFoundException("CV not found")).when(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
+        doThrow(new CvNotFoundException(10L)).when(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
 
         // Act + Assert
         mockMvc.perform(put("/api/student/cvs/10/hide").principal(authentication))
@@ -338,7 +338,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingCvNotOwnedByStudent() throws Exception {
         // Arrange
-        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException("CV not found"));
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException(10L));
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
@@ -369,7 +369,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingStatusOfCvNotOwnedByStudent() throws Exception {
         // Arrange
-        when(studentService.getCVStatus(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException("CV not found"));
+        when(studentService.getCVStatus(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException(10L));
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10/status").principal(authentication))
@@ -429,7 +429,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenApplyingWithNonExistentCv() throws Exception {
         // Arrange
-        doThrow(new CvNotFoundException("CV not found"))
+        doThrow(new CvNotFoundException(10L))
                 .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
 
         // Act & Assert

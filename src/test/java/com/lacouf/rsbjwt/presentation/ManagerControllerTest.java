@@ -116,7 +116,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenApprovingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.approveCv(99L)).thenThrow(new CvNotFoundException("CV with ID 99 not found."));
+        when(managerService.approveCv(99L)).thenThrow(new CvNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/approve"))
@@ -126,7 +126,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenRejectingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.rejectCv(99L, "CV too detailed")).thenThrow(new CvNotFoundException("CV with ID 99 not found."));
+        when(managerService.rejectCv(99L, "CV too detailed")).thenThrow(new CvNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
@@ -147,7 +147,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.getCv(99L)).thenThrow(new CvNotFoundException("CV with ID 99 not found."));
+        when(managerService.getCv(99L)).thenThrow(new CvNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/99"))
@@ -168,7 +168,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingFileOfUnknownCv() throws Exception {
         // Arrange
-        when(managerService.getCvFile(99L)).thenThrow(new CvNotFoundException("CV with ID 99 not found."));
+        when(managerService.getCvFile(99L)).thenThrow(new CvNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/99/file"))

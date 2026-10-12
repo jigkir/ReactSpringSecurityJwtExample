@@ -147,7 +147,7 @@ public class ManagerService {
     }
 
     private CV findVisibleCv(long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndVisibility(cvId, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException("CV with ID " + cvId + " not found."));
+        return cvRepository.findByIdAndVisibility(cvId, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException(cvId));
     }
 
     private ManagerCvResponseDto saveAndConvert(CV cv) {

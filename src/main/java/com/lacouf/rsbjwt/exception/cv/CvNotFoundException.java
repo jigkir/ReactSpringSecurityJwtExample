@@ -4,7 +4,7 @@ import com.lacouf.rsbjwt.exception.APIException;
 import org.springframework.http.HttpStatus;
 
 public class CvNotFoundException extends APIException {
-    public CvNotFoundException(String message) {
-        super(HttpStatus.NOT_FOUND, message);
+    public CvNotFoundException(long id) {
+        super(HttpStatus.NOT_FOUND, "CV not found with id: " + id);
     }
 }
