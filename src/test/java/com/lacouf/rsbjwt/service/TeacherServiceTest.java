@@ -1,12 +1,14 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.auth.Credentials;
+import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Teacher;
 import com.lacouf.rsbjwt.repository.users.TeacherRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.users.TeacherService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +17,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -29,28 +30,30 @@ import static org.mockito.Mockito.never;
 public class TeacherServiceTest {
     @InjectMocks
     private TeacherService teacherService;
+    @Mock
+    private UserAppService userAppService;
 
     @Mock
     private TeacherRepository teacherRepository;
-    @Mock
-    private UserAppRepository userAppRepository;
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @Captor
     private ArgumentCaptor<Teacher> teacherArgumentCaptor;
 
     private static TeacherSignUpDto teacherSignUpDto;
 
+    private static final String TEACHER_EMAIL = "test@claurendeau.qc.ca";
+
     @BeforeAll
     static void createTeacherSignUpDto() {
-        teacherSignUpDto = new TeacherSignUpDto("First Name", "Last Name", "12345", "test@claurendeau.qc.ca", "Test123@", Discipline.COMPUTER_SCIENCE);
+        teacherSignUpDto = new TeacherSignUpDto("First Name", "Last Name", "12345", TEACHER_EMAIL, "Test123@", Discipline.COMPUTER_SCIENCE);
     }
 
     @Test
     void shouldSaveTeacher() throws UserAlreadyExistsException {
         // Arrange
-        when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
+        Credentials credentials = Credentials.builder().email(TEACHER_EMAIL).password("Test123@-encoded").role(Role.TEACHER).build();
+
+        when(userAppService.createCredentials(TEACHER_EMAIL, "Test123@", Role.TEACHER)).thenReturn(credentials);
 
         when(teacherRepository.save(any(Teacher.class)))
                 .thenAnswer(answer((Teacher teacher) -> {
@@ -87,24 +90,6 @@ public class TeacherServiceTest {
 
         // Assert
         assert ("teacherId").equals(exception.getField());
-        assert ("user already exists").equals(exception.getMessage());
-
-        verify(teacherRepository, never()).save(any(Teacher.class));
-    }
-
-    @Test
-    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyUsed() {
-        // Arrange
-        when(userAppRepository.findByCredentialsEmail(teacherSignUpDto.email())).thenReturn(Optional.of(new Teacher()));
-
-        // Act
-        UserAlreadyExistsException exception = assertThrows(
-                UserAlreadyExistsException.class,
-                () -> teacherService.save(teacherSignUpDto)
-        );
-
-        // Assert
-        assert ("email").equals(exception.getField());
         assert ("user already exists").equals(exception.getMessage());
 
         verify(teacherRepository, never()).save(any(Teacher.class));

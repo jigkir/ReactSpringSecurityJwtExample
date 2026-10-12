@@ -14,56 +14,42 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ManagerService {
     private final ManagerRepository managerRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final UserAppRepository userAppRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
     private final StudentRepository studentRepository;
     private final NotificationService notificationService;
+    private final UserAppService userAppService;
 
-    public ManagerService(ManagerRepository managerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService) {
         this.managerRepository = managerRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userAppRepository = userAppRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
         this.notificationService = notificationService;
+        this.userAppService = userAppService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
-        verifyIfManagerExists(email);
+        Credentials credentials = userAppService.createCredentials(email, password, Role.MANAGER);
 
-        Credentials credentials = Credentials.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .role(Role.MANAGER)
-                .build();
-
-        String formattedPhoneNumber = phoneNumber.replaceFirst("^([0-9]{3})([0-9]{3})([0-9]{4})$", "$1-$2-$3");
-
-        Manager manager = new Manager(firstName, lastName, credentials, formattedPhoneNumber);
+        Manager manager = new Manager(firstName, lastName, credentials, userAppService.formatPhoneNumber(phoneNumber));
 
         managerRepository.save(manager);
 
@@ -168,14 +154,6 @@ public class ManagerService {
         cvRepository.save(cv);
 
         return ManagerCvResponseDto.of(cv);
-    }
-
-    private void verifyIfManagerExists(String email) throws UserAlreadyExistsException {
-        Optional<UserApp> managerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-
-        if (managerFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException("email");
-        }
     }
 
     private void notifyStudentOfCvReviewDecision(CV cv, NotificationType notificationType, String message) {

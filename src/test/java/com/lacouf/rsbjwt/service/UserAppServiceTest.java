@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +34,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserAppServiceTest {
+    private static final String EMAIL = "user@example.com";
+    private static final String RAW_PASSWORD = "Test123@";
+    private static final String ENCODED_PASSWORD = "Test123@-encoded";
 
     @InjectMocks
     private UserAppService userAppService;
@@ -44,6 +49,8 @@ class UserAppServiceTest {
     private UserAppRepository userAppRepository;
     @Mock
     private Authentication authentication;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
     void shouldReturnTokenWhenLoginSucceeds() {
@@ -157,5 +164,47 @@ class UserAppServiceTest {
 
         // Assert
         assert (disciplines).equals(response.disciplines());
+    }
+
+    @Test
+    void shouldCreateEncodedCredentialsWhenEmailIsAvailable() throws UserAlreadyExistsException {
+        // Arrange
+        when(userAppRepository.findByCredentialsEmail(EMAIL)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
+
+        // Act
+        Credentials credentials = userAppService.createCredentials(EMAIL, RAW_PASSWORD, Role.STUDENT);
+
+        // Assert
+        assert (EMAIL).equals(credentials.getEmail());
+        assert (ENCODED_PASSWORD).equals(credentials.getPassword());
+        assert (Role.STUDENT).equals(credentials.getRole());
+    }
+
+    @Test
+    void shouldThrowUserAlreadyExistsWhenEmailIsAlreadyUsed() {
+        // Arrange
+        when(userAppRepository.findByCredentialsEmail(EMAIL)).thenReturn(Optional.of(new Student()));
+
+        // Act
+        UserAlreadyExistsException exception = assertThrows(
+                UserAlreadyExistsException.class,
+                () -> userAppService.createCredentials(EMAIL, RAW_PASSWORD, Role.STUDENT)
+        );
+
+        // Assert
+        assert ("email").equals(exception.getField());
+        assert ("user already exists").equals(exception.getMessage());
+
+        verifyNoInteractions(passwordEncoder);
+    }
+
+    @Test
+    void shouldFormatPhoneNumberWithDashes() {
+        // Act
+        String formattedPhoneNumber = userAppService.formatPhoneNumber("5141234567");
+
+        // Assert
+        assert ("514-123-4567").equals(formattedPhoneNumber);
     }
 }

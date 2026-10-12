@@ -11,55 +11,39 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EmployerService {
     private final EmployerRepository employerRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final UserAppRepository userAppRepository;
     private final InternshipRepository internshipRepository;
     private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
+    private final UserAppService userAppService;
 
-    public EmployerService(EmployerRepository employerRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService) {
         this.employerRepository = employerRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userAppRepository = userAppRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
         this.notificationService = notificationService;
+        this.userAppService = userAppService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
-
-        verifyIfEmployerExists(employerDTO.email());
-
-        Credentials credentials = Credentials.builder()
-                .email(employerDTO.email())
-                .password(passwordEncoder.encode(employerDTO.password()))
-                .role(Role.EMPLOYER)
-                .build();
-
-        String phoneNumber = employerDTO.phoneNumber();
-        String formattedPhoneNumber = phoneNumber.replaceFirst("^([0-9]{3})([0-9]{3})([0-9]{4})$", "$1-$2-$3");
+        Credentials credentials = userAppService.createCredentials(employerDTO.email(), employerDTO.password(), Role.EMPLOYER);
 
         Employer employer = new Employer(
                 employerDTO.firstName(),
@@ -67,7 +51,7 @@ public class EmployerService {
                 credentials,
                 employerDTO.companyName(),
                 employerDTO.discipline(),
-                formattedPhoneNumber
+                userAppService.formatPhoneNumber(employerDTO.phoneNumber())
         );
 
         employerRepository.save(employer);
@@ -159,14 +143,6 @@ public class EmployerService {
         return internships.stream()
                 .map(InternshipResponseDto::of)
                 .toList();
-    }
-
-    private void verifyIfEmployerExists(String email) throws UserAlreadyExistsException {
-        Optional<UserApp> employerFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-
-        if (employerFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException("email");
-        }
     }
 
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {

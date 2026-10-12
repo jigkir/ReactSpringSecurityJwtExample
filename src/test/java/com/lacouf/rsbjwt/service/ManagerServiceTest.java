@@ -20,18 +20,17 @@ import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,20 +52,17 @@ public class ManagerServiceTest {
 
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private UserAppService userAppService;
 
     @Mock
     private ManagerRepository managerRepository;
     @Mock
     private StudentRepository studentRepository;
     @Mock
-    private UserAppRepository userAppRepository;
-    @Mock
     private CVRepository cvRepository;
     @Mock
     private InternshipRepository internshipRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
@@ -102,7 +98,10 @@ public class ManagerServiceTest {
     @Test
     void shouldSaveManager() throws UserAlreadyExistsException {
         // Arrange
-        when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
+        Credentials credentials = Credentials.builder().email("manager@example.com").password("Test123@-encoded").role(Role.MANAGER).build();
+
+        when(userAppService.createCredentials("manager@example.com", "Test123@", Role.MANAGER)).thenReturn(credentials);
+        when(userAppService.formatPhoneNumber("5141234567")).thenReturn("514-123-4567");
 
         when(managerRepository.save(any(Manager.class)))
                 .thenAnswer(answer((Manager manager) -> {
@@ -123,24 +122,6 @@ public class ManagerServiceTest {
         assert (savedManager.getPassword()).equals("Test123@-encoded");
         assert (savedManager.getRole()).equals(Role.MANAGER);
         assert (savedManager.getPhoneNumber()).equals("514-123-4567");
-    }
-
-    @Test
-    void shouldThrowUserAlreadyExistsWhenEmailAlreadyUsed() {
-        // Arrange
-        when(userAppRepository.findByCredentialsEmail("manager@example.com")).thenReturn(Optional.of(new Manager()));
-
-        // Act
-        UserAlreadyExistsException exception = assertThrows(
-                UserAlreadyExistsException.class,
-                () -> managerService.save("First Name", "Last Name", "manager@example.com", "Test123@", "5141234567")
-        );
-
-        // Assert
-        assert ("email").equals(exception.getField());
-        assert ("user already exists").equals(exception.getMessage());
-
-        verify(managerRepository, never()).save(any(Manager.class));
     }
 
     @Test

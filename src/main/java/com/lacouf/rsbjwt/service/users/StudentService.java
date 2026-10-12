@@ -16,13 +16,11 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.application.ApplicationRepository;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ApplicationResponseDto;
@@ -34,7 +32,6 @@ import com.lacouf.rsbjwt.service.notification.NotificationService;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,9 +47,10 @@ import java.util.Optional;
 
 @Service
 public class StudentService {
+    private static final String STUDENT_ID_FIELD = "studentId";
+
     private final StudentRepository studentRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final UserAppRepository userAppRepository;
+    private final UserAppService userAppService;
     private final CVRepository cvRepository;
     private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
@@ -63,11 +61,10 @@ public class StudentService {
 
     private final Tika tika = new Tika();
 
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, ApplicationRepository applicationRepository) {
+    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, ApplicationRepository applicationRepository) {
+        this.userAppService = userAppService;
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userAppRepository = userAppRepository;
         this.managerRepository = managerRepository;
         this.notificationService = notificationService;
         this.internshipRepository = internshipRepository;
@@ -75,13 +72,9 @@ public class StudentService {
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
-        verifyIfStudentExists(studentSignUpDto.email(), studentSignUpDto.studentId());
+        Credentials credentials = userAppService.createCredentials(studentSignUpDto.email(), studentSignUpDto.password(), Role.STUDENT);
 
-        Credentials credentials = Credentials.builder()
-                .email(studentSignUpDto.email())
-                .password(passwordEncoder.encode(studentSignUpDto.password()))
-                .role(Role.STUDENT)
-                .build();
+        verifyIfStudentIdIsAlreadyUsed(studentSignUpDto.studentId());
 
         Student student = new Student(
                 studentSignUpDto.firstName(),
@@ -191,7 +184,7 @@ public class StudentService {
         return cv.getStatus().name();
     }
 
-    public List<StudentCvResponseDto> getApprovedCVs(String email){
+    public List<StudentCvResponseDto> getApprovedCVs(String email) {
         List<CV> cvs = cvRepository.findByStudentEmailAndStatus(email, ReviewStatus.APPROVED.name());
         List<StudentCvResponseDto> approvedCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
@@ -236,16 +229,11 @@ public class StudentService {
                 .anyMatch(application -> application.getInternship().equals(internship));
     }
 
-    private void verifyIfStudentExists(String email, String studentId) throws UserAlreadyExistsException {
-        Optional<UserApp> studentFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-        Optional<Student> studentFoundByStudentId = studentRepository.findByStudentId(studentId);
+    private void verifyIfStudentIdIsAlreadyUsed(String studentId) throws UserAlreadyExistsException {
+        Optional<Student> student = studentRepository.findByStudentId(studentId);
 
-        if (studentFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException("email");
-        }
-
-        if (studentFoundByStudentId.isPresent()) {
-            throw new UserAlreadyExistsException("studentId");
+        if (student.isPresent()) {
+            throw new UserAlreadyExistsException(STUDENT_ID_FIELD);
         }
     }
 

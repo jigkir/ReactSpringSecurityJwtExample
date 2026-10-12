@@ -24,13 +24,13 @@ import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.StudentService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,7 +42,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -66,11 +65,11 @@ public class StudentServiceTest {
 
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private UserAppService userAppService;
 
     @Mock
     private StudentRepository studentRepository;
-    @Mock
-    private UserAppRepository userAppRepository;
     @Mock
     private CVRepository cvRepository;
     @Mock
@@ -79,9 +78,6 @@ public class StudentServiceTest {
     private InternshipRepository internshipRepository;
     @Mock
     private ApplicationRepository applicationRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
@@ -152,7 +148,9 @@ public class StudentServiceTest {
     @Test
     void shouldSaveStudent() throws UserAlreadyExistsException {
         // Arrange
-        when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
+        Credentials credentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
+
+        when(userAppService.createCredentials(STUDENT_EMAIL, "Test123@", Role.STUDENT)).thenReturn(credentials);
 
         when(studentRepository.save(any(Student.class)))
                 .thenAnswer(answer((Student student) -> {
@@ -189,24 +187,6 @@ public class StudentServiceTest {
 
         // Assert
         assert "studentId".equals(exception.getField());
-        assert "user already exists".equals(exception.getMessage());
-
-        verify(studentRepository, never()).save(any(Student.class));
-    }
-
-    @Test
-    void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyUsed() {
-        // Arrange
-        when(userAppRepository.findByCredentialsEmail(studentSignUpDto.email())).thenReturn(Optional.of(new Student()));
-
-        // Act
-        UserAlreadyExistsException exception = assertThrows(
-                UserAlreadyExistsException.class,
-                () -> studentService.save(studentSignUpDto)
-        );
-
-        // Assert
-        assert "email".equals(exception.getField());
         assert "user already exists".equals(exception.getMessage());
 
         verify(studentRepository, never()).save(any(Student.class));

@@ -1,38 +1,32 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.model.user.Teacher;
-import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.users.TeacherRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 public class TeacherService {
-    private final TeacherRepository teacherRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final UserAppRepository userAppRepository;
+    private static final String TEACHER_ID_FIELD = "teacherId";
 
-    public TeacherService(TeacherRepository teacherRepository, PasswordEncoder passwordEncoder, UserAppRepository userAppRepository) {
+    private final TeacherRepository teacherRepository;
+    private final UserAppService userAppService;
+
+    public TeacherService(TeacherRepository teacherRepository, UserAppService userAppService) {
         this.teacherRepository = teacherRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userAppRepository = userAppRepository;
+        this.userAppService = userAppService;
     }
 
     public UserResponseDto save(TeacherSignUpDto teacherSignUpDto) throws UserAlreadyExistsException {
-        verifyIfTeacherExists(teacherSignUpDto.email(), teacherSignUpDto.teacherId());
-        Credentials credentials = Credentials.builder()
-                .email(teacherSignUpDto.email())
-                .password(passwordEncoder.encode(teacherSignUpDto.password()))
-                .role(Role.TEACHER)
-                .build();
+        Credentials credentials = userAppService.createCredentials(teacherSignUpDto.email(), teacherSignUpDto.password(), Role.TEACHER);
+
+        verifyIfTeacherIdIsAlreadyUsed(teacherSignUpDto.teacherId());
 
         Teacher teacher = new Teacher(
                 teacherSignUpDto.firstName(),
@@ -47,16 +41,11 @@ public class TeacherService {
         return UserResponseDto.of(teacher);
     }
 
-    private void verifyIfTeacherExists(String email, String teacherId) throws UserAlreadyExistsException {
-        Optional<UserApp> teacherFoundByEmail = userAppRepository.findByCredentialsEmail(email);
-        Optional<Teacher> teacherFoundByTeacherId = teacherRepository.findByTeacherId(teacherId);
+    private void verifyIfTeacherIdIsAlreadyUsed(String teacherId) throws UserAlreadyExistsException {
+        Optional<Teacher> teacher = teacherRepository.findByTeacherId(teacherId);
 
-        if (teacherFoundByEmail.isPresent()) {
-            throw new UserAlreadyExistsException("email");
-        }
-
-        if (teacherFoundByTeacherId.isPresent()) {
-            throw new UserAlreadyExistsException("teacherId");
+        if (teacher.isPresent()) {
+            throw new UserAlreadyExistsException(TEACHER_ID_FIELD);
         }
     }
 }

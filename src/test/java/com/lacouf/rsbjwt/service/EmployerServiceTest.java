@@ -14,7 +14,6 @@ import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
-import com.lacouf.rsbjwt.repository.users.UserAppRepository;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -24,6 +23,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.EmployerService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +32,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,18 +51,15 @@ public class EmployerServiceTest {
 
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private UserAppService userAppService;
 
     @Mock
     private EmployerRepository employerRepository;
     @Mock
     private ManagerRepository managerRepository;
     @Mock
-    private UserAppRepository userAppRepository;
-    @Mock
     private InternshipRepository internshipRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @Captor
     private ArgumentCaptor<Employer> employerArgumentCaptor;
@@ -102,7 +98,10 @@ public class EmployerServiceTest {
     @Test
     void shouldSaveEmployer() throws UserAlreadyExistsException {
         // Arrange
-        when(passwordEncoder.encode("Test123@")).thenReturn("Test123@-encoded");
+        Credentials credentials = Credentials.builder().email(EMPLOYER_EMAIL).password("Test123@-encoded").role(Role.EMPLOYER).build();
+
+        when(userAppService.createCredentials(EMPLOYER_EMAIL, "Test123@", Role.EMPLOYER)).thenReturn(credentials);
+        when(userAppService.formatPhoneNumber("5141234567")).thenReturn("514-123-4567");
 
         when(employerRepository.save(any(Employer.class)))
                 .thenAnswer(answer((Employer employer) -> {
@@ -148,24 +147,6 @@ public class EmployerServiceTest {
         // Assert
         verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
         verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
-    }
-
-    @Test
-    void shouldThrowUserAlreadyExistsWhenEmailAlreadyUsed() {
-        // Arrange
-        when(userAppRepository.findByCredentialsEmail(employerSignUpDto.email())).thenReturn(Optional.of(new Employer()));
-
-        // Act
-        UserAlreadyExistsException exception = assertThrows(
-                UserAlreadyExistsException.class,
-                () -> employerService.save(employerSignUpDto)
-        );
-
-        // Assert
-        assert ("email").equals(exception.getField());
-        assert ("user already exists").equals(exception.getMessage());
-
-        verify(employerRepository, never()).save(any(Employer.class));
     }
 
     @Test
