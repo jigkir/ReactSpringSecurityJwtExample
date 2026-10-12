@@ -127,7 +127,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldNotifyManagerWhenInternshipIsSubmitted() throws Exception {
+    void shouldNotifyAllManagersWhenInternshipIsSubmitted() throws Exception {
         // Arrange
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
 
