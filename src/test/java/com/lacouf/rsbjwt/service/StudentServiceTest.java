@@ -1,12 +1,12 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
+import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.application.Application;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -19,6 +19,7 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.repository.application.ApplicationRepository;
 import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -76,6 +77,8 @@ public class StudentServiceTest {
     private ManagerRepository managerRepository;
     @Mock
     private InternshipRepository internshipRepository;
+    @Mock
+    private ApplicationRepository applicationRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -84,6 +87,8 @@ public class StudentServiceTest {
     private ArgumentCaptor<Student> studentArgumentCaptor;
     @Captor
     private ArgumentCaptor<CV> cvArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Application> applicationArgumentCaptor;
 
     private static StudentSignUpDto studentSignUpDto;
     private Student dummyStudent;
@@ -661,5 +666,101 @@ public class StudentServiceTest {
         internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
         //Act + Assert
         assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
+    }
+
+    @Test
+    void shouldApplyToInternshipSuccessfully() throws Exception {
+        // Arrange
+        CV approvedCv = new CV();
+        approvedCv.setId(5L);
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+        approvedCv.setStudent(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+        when(applicationRepository.findByStudent(dummyStudent)).thenReturn(List.of());
+
+        // Act
+        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L);
+
+        // Assert
+        verify(applicationRepository).save(applicationArgumentCaptor.capture());
+        Application savedApplication = applicationArgumentCaptor.getValue();
+
+        assert savedApplication.getStudent().equals(dummyStudent);
+        assert savedApplication.getCv().equals(approvedCv);
+        assert savedApplication.getInternship().equals(internship);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenApplyingWithUnapprovedCv() {
+        // Arrange
+        CV pendingCv = new CV();
+        pendingCv.setId(5L);
+        pendingCv.setStatus(ReviewStatus.PENDING);
+        pendingCv.setStudent(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(pendingCv));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+
+        // Act & Assert
+        CVNotApprovedException exception = assertThrows(
+                CVNotApprovedException.class,
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+        );
+
+        assert "CV is not approved for application".equals(exception.getMessage());
+        verifyNoInteractions(applicationRepository);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStudentAlreadyAppliedToInternship() {
+        // Arrange
+        CV approvedCv = new CV();
+        approvedCv.setId(5L);
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+        approvedCv.setStudent(dummyStudent);
+
+        Application existingApplication = new Application(internship, approvedCv, dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+        when(applicationRepository.findByStudent(dummyStudent)).thenReturn(List.of(existingApplication));
+
+        // Act & Assert
+        ApplicationAlreadyExistsException exception = assertThrows(
+                ApplicationAlreadyExistsException.class,
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+        );
+
+        assert "Student has already applied to this internship".equals(exception.getMessage());
+        verify(applicationRepository, never()).save(any(Application.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenApplicationDeadlineHasPassed() {
+        // Arrange
+        CV approvedCv = new CV();
+        approvedCv.setId(5L);
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+        approvedCv.setStudent(dummyStudent);
+
+        internship.setApplicationDeadline(LocalDate.now().minusDays(1)); // Deadline in the past
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+
+        // Act & Assert
+        DeadlineAlreadyPassedException exception = assertThrows(
+                DeadlineAlreadyPassedException.class,
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+        );
+
+        assert "Application deadline has passed".equals(exception.getMessage());
+        verify(applicationRepository, never()).save(any(Application.class));
     }
 }

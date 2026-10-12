@@ -2,12 +2,10 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.exception.cv.CorruptedFileException;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileSizeException;
-import com.lacouf.rsbjwt.exception.cv.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
@@ -400,5 +398,69 @@ public class StudentControllerTest {
         //Act + Assert
 
         mockMvc.perform(get("/api/student/internship").principal(authentication)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldApplyForInternshipSuccessfully() throws Exception {
+        // Arrange
+        // (No return value needed since applyToInternship is void)
+
+        // Act & Assert
+        mockMvc.perform(post("/api/student/internship/10/apply/5")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Application submitted successfully"));
+
+        verify(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenApplyingForNonExistentInternship() throws Exception {
+        // Arrange
+        doThrow(new InternshipNotFoundException(10L))
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/student/internship/10/apply/5")
+                        .principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenApplyingWithNonExistentCv() throws Exception {
+        // Arrange
+        doThrow(new CvNotFoundException("CV not found"))
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/student/internship/10/apply/5")
+                        .principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenApplyingWithUnapprovedCv() throws Exception {
+        // Arrange
+        doThrow(new CVNotApprovedException("CV is not approved for application"))
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/student/internship/10/apply/5")
+                        .principal(authentication))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldGetAppliedApplicationsSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getApplications(STUDENT_EMAIL))
+                .thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/student/applications")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(0));
     }
 }
