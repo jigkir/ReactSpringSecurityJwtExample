@@ -184,7 +184,6 @@ export function NotificationsProvider({user, children}) {
                     count: counts.internship,
                     labelKey: "navbar.internshipSubmittedForReviewNotification",
                     to: "/manager/internships",
-                    onClick: clearInternships,
                 }
             ];
         }
