@@ -296,4 +296,27 @@ public class EmployerServiceTest {
 
         verify(internshipRepository).save(any(Internship.class));
     }
+
+    @Test
+    void shouldUpdateInternship() throws Exception {
+        // Arrange
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internship));
+
+        Manager firstManager = new Manager();
+        Manager secondManager = new Manager();
+        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
+
+        // Act
+        InternshipResponseDto response = employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL);
+
+        // Assert
+        assert (Long.valueOf(10L)).equals(response.id());
+        assert ("Software Developer").equals(response.title());
+
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
+        verify(internshipRepository).save(internship);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
+    }
 }

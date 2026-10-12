@@ -7,7 +7,6 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -136,6 +135,8 @@ public class EmployerService {
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
 
         internshipRepository.save(internship);
+
+        notifyManagersOfSubmittedInternship(internship);
 
         return InternshipResponseDto.of(internship);
     }

@@ -73,6 +73,7 @@
     "internshipNotification": "{{amount}} stage(s) disponible(s)",
     "internshipApprovedNotification": "{{amount}} offre(s) de stage approuvée(s)",
     "internshipRejectedNotification": "{{amount}} offre(s) de stage refusée(s)",
+    "internshipSubmittedForReviewNotification": "{{amount}} nouvelle(s) offre(s) de stage",
     "notificationLoadError": "Impossible de charger les notifications.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues."
   },
