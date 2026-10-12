@@ -217,7 +217,7 @@ public class EmployerServiceTest {
         // Assert
         assert ("Invalid start date. Should be in the future.").equals(exception.getMessage());
 
-        verifyNoInteractions(employerRepository, internshipRepository);
+        verifyNoInteractions(employerRepository, internshipRepository, managerRepository, notificationService);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class EmployerServiceTest {
         // Assert
         assert ("Invalid application deadline. Should be in the future.").equals(exception.getMessage());
 
-        verifyNoInteractions(employerRepository, internshipRepository);
+        verifyNoInteractions(employerRepository, internshipRepository, managerRepository, notificationService);
     }
 
     @Test
@@ -272,7 +272,7 @@ public class EmployerServiceTest {
         // Act + Assert
         assertThrows(InvalidCompensationException.class, () -> employerService.saveInternship(invalidDto, EMPLOYER_EMAIL));
 
-        verifyNoInteractions(employerRepository, internshipRepository);
+        verifyNoInteractions(employerRepository, internshipRepository, managerRepository, notificationService);
     }
 
     @Test
