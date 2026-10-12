@@ -61,7 +61,7 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         expect(screen.queryByRole("link")).not.toBeInTheDocument();
     });
 
-    it("shouldMarkReviewsAsReadWhenEmployerClicksNotification", async () => {
+    it("shouldMarkReviewsAsReadWhenEmployerOpensInternshipsPage", async () => {
         // Arrange
         getNotifications
             .mockResolvedValueOnce([{notificationType: "INTERNSHIP_OFFER_APPROVED"}])
