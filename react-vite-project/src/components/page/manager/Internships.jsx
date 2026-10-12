@@ -20,10 +20,12 @@ import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
 import Button from '../../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {approveInternship, getManagerInternships, rejectInternship} from '../../api/Api.jsx';
+import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 
 const ManagerInternships = () => {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
+    const {refresh: refreshNotifications} = useNotifications();
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -68,6 +70,7 @@ const ManagerInternships = () => {
                 : await rejectInternship(internship.id, rejectComment.trim());
             setInternships((prev) => prev.map((i) => (i.id === internship.id ? {...i, ...updated} : i)));
             closeForm();
+            refreshNotifications();
         } catch (e) {
             if (e.status === 404) {
                 setActionError("managerInternships.notFound");

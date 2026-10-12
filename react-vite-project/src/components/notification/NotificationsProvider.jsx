@@ -24,6 +24,20 @@ const TARGET_TYPE = {
     INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
 };
 
+// Opening this page marks the role's review decisions as read
+const REVIEW_PAGE = {
+    [ROLE.STUDENT]: {
+        path: "/cv",
+        targetType: TARGET_TYPE.CV,
+        countKeys: ["cvApproved", "cvRejected"]
+    },
+    [ROLE.EMPLOYER]: {
+        path: "/internships",
+        targetType: TARGET_TYPE.INTERNSHIP_OFFER,
+        countKeys: ["internshipApproved", "internshipRejected"]
+    },
+};
+
 /**
  * Owns all notification data (fetching, counts, mark-as-read).
  * Consumers (NotificationMenu, any page) call useNotifications().
@@ -56,6 +70,8 @@ const NOTIFICATION_ERROR = {
 const NotificationsContext = createContext({
     items: [],
     errorKey: null,
+    refresh: () => {
+    },
     clearInternships: () => {
     },
 });
@@ -140,15 +156,21 @@ export function NotificationsProvider({user, children}) {
         void refresh();
     }, [refresh, pathname]);
 
-    // Students: opening /cv marks CV approved/rejected notifications as read
+    // Opening the review page marks review decisions as read
     useEffect(() => {
-        if (role !== ROLE.STUDENT || pathname !== "/cv") return;
-        if (counts.cvApproved + counts.cvRejected === 0) return;
+        const reviewPage = REVIEW_PAGE[role];
+        if (!reviewPage || pathname !== reviewPage.path) return;
+
+        const unreadDecisions = reviewPage.countKeys.reduce((sum, key) => sum + counts[key], 0);
+        if (unreadDecisions === 0) return;
 
         let cancelled = false;
-        markNotificationsAsRead(TARGET_TYPE.CV)
+        markNotificationsAsRead(reviewPage.targetType)
             .then(() => {
-                if (!cancelled) setCounts((c) => ({...c, cvApproved: 0, cvRejected: 0}));
+                if (!cancelled) {
+                    const clearedCounts = Object.fromEntries(reviewPage.countKeys.map((key) => [key, 0]));
+                    setCounts((c) => ({...c, ...clearedCounts}));
+                }
             })
             .catch(() => {
                 if (!cancelled) setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ);
@@ -157,19 +179,13 @@ export function NotificationsProvider({user, children}) {
         return () => {
             cancelled = true;
         };
-    }, [role, pathname, counts.cvApproved, counts.cvRejected]);
+    }, [role, pathname, counts]);
 
     const clearInternships = useCallback(() => {
         markNotificationsAsRead(TARGET_TYPE.INTERNSHIP_OFFER)
             .then(() => setCounts((c) => ({...c, internship: 0})))
             .catch(() => setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ));
     }, []);
-
-    const markAsReadAndRefresh = useCallback((targetType) => {
-        markNotificationsAsRead(targetType)
-            .then(refresh)
-            .catch(() => setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ));
-    }, [refresh]);
 
     const items = useMemo(() => {
         if (role === ROLE.MANAGER) {
@@ -211,32 +227,30 @@ export function NotificationsProvider({user, children}) {
             ];
         }
         if (role === ROLE.EMPLOYER) {
-            const markInternshipReviewsAsRead = () => markAsReadAndRefresh(TARGET_TYPE.INTERNSHIP_OFFER);
             return [
                 {
                     id: "internshipApproved",
                     count: counts.internshipApproved,
                     labelKey: "navbar.internshipApprovedNotification",
                     to: "/internships",
-                    onClick: markInternshipReviewsAsRead,
                 },
                 {
                     id: "internshipRejected",
                     count: counts.internshipRejected,
                     labelKey: "navbar.internshipRejectedNotification",
                     to: "/internships",
-                    onClick: markInternshipReviewsAsRead,
                 },
             ];
         }
         return [];
-    }, [role, counts, clearInternships, markAsReadAndRefresh]);
+    }, [role, counts, clearInternships]);
 
     const value = useMemo(() => ({
         items,
         errorKey,
+        refresh,
         clearInternships
-    }), [items, errorKey, clearInternships]);
+    }), [items, errorKey, refresh, clearInternships]);
 
     return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }

@@ -52,6 +52,7 @@ import {
 } from '../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
+import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
@@ -85,6 +86,7 @@ const STATUS_ICON = {
 
 const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
     const {t, i18n} = useTranslation();
+    const {refresh: refreshNotifications} = useNotifications();
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isManager = mode === "manager";
 
@@ -173,6 +175,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
         try {
             const updated = await api[action](doc.id, action === "refuse" ? refuseComment : undefined);
             setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
+            refreshNotifications();
         } catch (e) {
             if (e.status === 409) {
                 setActionError("cvDocuments.alreadyReviewed");
