@@ -75,6 +75,7 @@ public class EmployerService {
         return UserResponseDto.of(employer);
     }
 
+    @Transactional
     public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
         requireFuture(internshipDto.startDate(), "start date");
         requireFuture(internshipDto.applicationDeadline(), "application deadline");
