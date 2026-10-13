@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.repository.cv;
 
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.cv.CvVisibility;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -22,5 +23,5 @@ public interface CVRepository extends JpaRepository<CV, Long> {
 
     Optional<CV> findByIdAndVisibility(long id, CvVisibility visibility);
 
-    List<CV> findByStudent_Credentials_EmailAndStatusAndVisibility(String email, String status, CvVisibility visibility);
+    List<CV> findByStudent_Credentials_EmailAndStatusAndVisibility(String email, ReviewStatus status, CvVisibility visibility);
 }

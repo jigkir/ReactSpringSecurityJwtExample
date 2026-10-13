@@ -188,7 +188,7 @@ public class StudentService {
     }
 
     public List<StudentCvResponseDto> getApprovedAndVisibleCVs(String email) {
-        List<CV> cvs = cvRepository.findByStudent_Credentials_EmailAndStatusAndVisibility(email, ReviewStatus.APPROVED.name(), CvVisibility.VISIBLE);
+        List<CV> cvs = cvRepository.findByStudent_Credentials_EmailAndStatusAndVisibility(email, ReviewStatus.APPROVED, CvVisibility.VISIBLE);
         List<StudentCvResponseDto> approvedCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
             approvedCvResponseDtos.add(StudentCvResponseDto.of(cv));
@@ -226,7 +226,11 @@ public class StudentService {
             throw new ApplicationAlreadyReadException("Cannot update an approved application");
         }
 
-        if (!application.getStudent().equals(student)) {
+        long StudentId = student.getId();
+        long ApplicationStudentId = application.getStudent().getId();
+
+        if (StudentId != ApplicationStudentId) {
+            IO.println("Student with email " + email + " is not the owner of the application with ID " + applicationId);
             throw new UserNotFoundException();
         }
 

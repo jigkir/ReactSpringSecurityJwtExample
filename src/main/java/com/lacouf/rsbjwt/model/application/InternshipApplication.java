@@ -29,7 +29,8 @@ public class InternshipApplication {
     @Column
     private LocalDate applicationDate = LocalDate.now();
 
-    @Column
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private InternshipApplicationStatus internshipApplicationStatus;
 
     public InternshipApplication() {
