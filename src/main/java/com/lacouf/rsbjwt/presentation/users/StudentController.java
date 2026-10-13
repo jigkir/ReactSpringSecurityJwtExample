@@ -1,7 +1,9 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -95,7 +97,7 @@ public class StudentController {
 
     @GetMapping("/cvs/approved")
     public ResponseEntity<List<StudentCvResponseDto>> getApprovedCVs(Authentication authentication) {
-        List<StudentCvResponseDto> approvedCVs = studentService.getApprovedCVs(authentication.getName());
+        List<StudentCvResponseDto> approvedCVs = studentService.getApprovedAndVisibleCVs(authentication.getName());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(approvedCVs);
@@ -113,6 +115,12 @@ public class StudentController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(appliedInternships);
+    }
+
+    @PutMapping("/applications/{applicationId}/{cvId}")
+    public ResponseEntity<String> updateApplicationStatus(Authentication authentication, @PathVariable long applicationId, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException {
+        studentService.updateInternshipApplication(authentication.getName(), applicationId, cvId);
+        return ResponseEntity.ok("Application status updated successfully");
     }
 
 }

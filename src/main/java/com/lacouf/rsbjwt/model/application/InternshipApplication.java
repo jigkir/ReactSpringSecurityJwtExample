@@ -29,6 +29,9 @@ public class InternshipApplication {
     @Column
     private LocalDate applicationDate = LocalDate.now();
 
+    @Column
+    private InternshipApplicationStatus internshipApplicationStatus;
+
     public InternshipApplication() {
     }
 
@@ -36,5 +39,6 @@ public class InternshipApplication {
         this.internship = internship;
         this.cv = cv;
         this.student = student;
+        internshipApplicationStatus = InternshipApplicationStatus.UNREAD;
     }
 }

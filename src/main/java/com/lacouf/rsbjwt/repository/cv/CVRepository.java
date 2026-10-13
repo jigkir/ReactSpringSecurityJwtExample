@@ -22,5 +22,5 @@ public interface CVRepository extends JpaRepository<CV, Long> {
 
     Optional<CV> findByIdAndVisibility(long id, CvVisibility visibility);
 
-    List<CV> findByStudentEmailAndStatus(String email, String status);
+    List<CV> findByStudent_Credentials_EmailAndStatusAndVisibility(String email, String status, CvVisibility visibility);
 }
