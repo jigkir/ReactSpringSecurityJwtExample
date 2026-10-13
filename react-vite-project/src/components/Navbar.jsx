@@ -8,7 +8,10 @@ import NotificationMenu from './notification/NotificationMenu.jsx';
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
-    STUDENT: [{to: "/cv", labelKey: "navbar.cv"}],
+    STUDENT: [
+        {to: "/cv", labelKey: "navbar.cv"},
+        {to: "/internship", labelKey: "navbar.internships"}
+    ],
     MANAGER: [
         {to: "/manager/cvs", labelKey: "navbar.cv"},
         {to: "/manager/internships", labelKey: "navbar.internships"},

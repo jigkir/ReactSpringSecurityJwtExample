@@ -162,6 +162,10 @@ const Login = ({user, setError}) => {
                     <button type="submit" className={submitClass}>
                         {t("login.submit")}
                     </button>
+
+                    <button onClick={() => {setPassword("John123#"); setEmail("gestion.stages@claurendeau.qc.ca")}} className={submitClass}>
+                        manager autolog
+                    </button>
                 </form>
                 <p className={subtextClass}>
                     {t("login.noAccount")}{" "}
