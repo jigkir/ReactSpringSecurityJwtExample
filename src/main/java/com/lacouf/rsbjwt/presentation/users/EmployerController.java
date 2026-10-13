@@ -1,11 +1,14 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -54,5 +57,15 @@ public class EmployerController {
     @GetMapping("/internships")
     public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication) {
         return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName()));
+    }
+
+    @GetMapping("/applications")
+    public ResponseEntity<List<ReceivedInternshipApplicationResponseDto>> getReceivedInternshipApplications(Authentication authentication) {
+        return ResponseEntity.ok(employerService.getReceivedInternshipApplications(authentication.getName()));
+    }
+
+    @GetMapping("/applications/{applicationId}/cv")
+    public ResponseEntity<CvFileResponseDto> openReceivedInternshipApplicationCv(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+        return ResponseEntity.ok(employerService.openReceivedInternshipApplicationCv(applicationId, authentication.getName()));
     }
 }

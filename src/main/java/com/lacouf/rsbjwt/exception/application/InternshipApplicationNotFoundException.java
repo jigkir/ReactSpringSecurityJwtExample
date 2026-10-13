@@ -4,7 +4,7 @@ import com.lacouf.rsbjwt.exception.APIException;
 import org.springframework.http.HttpStatus;
 
 public class InternshipApplicationNotFoundException extends APIException {
-    public InternshipApplicationNotFoundException(String message) {
-        super(HttpStatus.NOT_FOUND, message);
+    public InternshipApplicationNotFoundException(long id) {
+        super(HttpStatus.NOT_FOUND, "Internship application not found with id: " + id);
     }
 }

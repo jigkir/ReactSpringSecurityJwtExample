@@ -1,19 +1,24 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
+import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -33,13 +38,15 @@ public class EmployerService {
     private final ManagerRepository managerRepository;
     private final NotificationService notificationService;
     private final UserAppService userAppService;
+    private final InternshipApplicationRepository internshipApplicationRepository;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
+        this.internshipApplicationRepository = internshipApplicationRepository;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -145,6 +152,23 @@ public class EmployerService {
                 .toList();
     }
 
+    public List<ReceivedInternshipApplicationResponseDto> getReceivedInternshipApplications(String email) {
+        return internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(email)
+                .stream()
+                .map(ReceivedInternshipApplicationResponseDto::of)
+                .toList();
+    }
+
+    public CvFileResponseDto openReceivedInternshipApplicationCv(long applicationId, String email) throws InternshipApplicationNotFoundException {
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        internshipApplication.markAsRead();
+
+        internshipApplicationRepository.save(internshipApplication);
+
+        return CvFileResponseDto.of(internshipApplication.getCv());
+    }
+
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {
         if (!date.isAfter(LocalDate.now())) {
             throw new InvalidInternshipDateException(label);
@@ -160,5 +184,10 @@ public class EmployerService {
     private void notifyManagersOfSubmittedInternship(Internship internship) {
         managerRepository.findAll()
                 .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, internship.getId(), manager));
+    }
+
+    private InternshipApplication findReceivedInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {
+        return internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(applicationId, email)
+                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
     }
 }

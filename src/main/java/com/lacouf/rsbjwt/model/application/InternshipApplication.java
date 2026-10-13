@@ -42,4 +42,8 @@ public class InternshipApplication {
         this.student = student;
         internshipApplicationStatus = InternshipApplicationStatus.UNREAD;
     }
+
+    public void markAsRead() {
+        internshipApplicationStatus = InternshipApplicationStatus.READ;
+    }
 }

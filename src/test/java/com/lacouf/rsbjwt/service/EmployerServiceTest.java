@@ -1,7 +1,11 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -11,6 +15,8 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Manager;
+import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -20,6 +26,8 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.EmployerService;
@@ -60,6 +68,8 @@ public class EmployerServiceTest {
     private ManagerRepository managerRepository;
     @Mock
     private InternshipRepository internshipRepository;
+    @Mock
+    private InternshipApplicationRepository internshipApplicationRepository;
 
     @Captor
     private ArgumentCaptor<Employer> employerArgumentCaptor;
@@ -75,6 +85,8 @@ public class EmployerServiceTest {
     private static final String EMPLOYER_EMAIL = "email@example.com";
     private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
     private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
+    private static final long INTERNSHIP_APPLICATION_ID = 20L;
+    private static final String STUDENT_EMAIL = "student@example.com";
 
     @BeforeAll
     static void setUp() {
@@ -93,6 +105,21 @@ public class EmployerServiceTest {
 
         internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer);
         internship.setId(10L);
+    }
+
+    private static InternshipApplication receivedInternshipApplication() {
+        Credentials studentCredentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
+        Student student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE);
+        student.setId(3L);
+
+        CV cv = new CV();
+        cv.setId(5L);
+        cv.setFileName("cv.pdf");
+
+        InternshipApplication internshipApplication = new InternshipApplication(internship, cv, student);
+        internshipApplication.setId(INTERNSHIP_APPLICATION_ID);
+
+        return internshipApplication;
     }
 
     @Test
@@ -299,5 +326,42 @@ public class EmployerServiceTest {
         verify(internshipRepository).save(internship);
         verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
         verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
+    }
+
+    @Test
+    void shouldReturnReceivedInternshipApplicationsWhenEmployerHasApplications() {
+        // Arrange
+        when(internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(EMPLOYER_EMAIL))
+                .thenReturn(List.of(receivedInternshipApplication()));
+
+        // Act
+        List<ReceivedInternshipApplicationResponseDto> internshipApplications = employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL);
+
+        // Assert
+        ReceivedInternshipApplicationResponseDto internshipApplication = internshipApplications.getFirst();
+
+        assert (Integer.valueOf(1)).equals(internshipApplications.size());
+        assert (Long.valueOf(10L)).equals(internshipApplication.internshipId());
+        assert (STUDENT_EMAIL).equals(internshipApplication.student().email());
+        assert (Discipline.COMPUTER_SCIENCE).equals(internshipApplication.student().discipline());
+        assert (InternshipApplicationStatus.UNREAD).equals(internshipApplication.internshipApplicationStatus());
+    }
+
+    @Test
+    void shouldMarkApplicationAsReadWhenEmployerOpensCv() throws InternshipApplicationNotFoundException {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+
+        // Act
+        CvFileResponseDto cv = employerService.openReceivedInternshipApplicationCv(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assert (InternshipApplicationStatus.READ).equals(internshipApplication.getInternshipApplicationStatus());
+        assert ("cv.pdf").equals(cv.fileName());
+
+        verify(internshipApplicationRepository).save(internshipApplication);
     }
 }

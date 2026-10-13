@@ -7,10 +7,14 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.EmployerController;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.EmployerService;
@@ -49,10 +53,12 @@ public class EmployerControllerTest {
     private static final String EMPLOYER_EMAIL = "employer@example.com";
     private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
     private static final LocalDate APPLICATION_DEADLINE = LocalDate.now().plusMonths(2);
+
     @Autowired
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private Authentication authentication;
+
     @MockitoBean
     private EmployerService employerService;
     @MockitoBean
@@ -319,5 +325,31 @@ public class EmployerControllerTest {
                 .andExpect(jsonPath("$[0].employerId").value(1));
 
         verify(employerService).getInternshipsOfEmployer(EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnReceivedInternshipApplications() throws Exception {
+        // Arrange
+        StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
+        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD);
+
+        when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL)).thenReturn(List.of(receivedInternshipApplication));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/applications").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].student.email").value("student@example.com"))
+                .andExpect(jsonPath("$[0].internshipApplicationStatus").value("UNREAD"));
+    }
+
+    @Test
+    void shouldReturnCvWhenEmployerOpensApplicationCv() throws Exception {
+        // Arrange
+        when(employerService.openReceivedInternshipApplicationCv(20L, EMPLOYER_EMAIL)).thenReturn(new CvFileResponseDto(5L, "cv.pdf", new byte[]{1}));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/applications/20/cv").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("cv.pdf"));
     }
 }

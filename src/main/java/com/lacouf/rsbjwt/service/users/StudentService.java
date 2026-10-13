@@ -220,7 +220,7 @@ public class StudentService {
     public void updateInternshipApplication(String email, long applicationId, long newCvId) throws UserNotFoundException, CvNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException {
         Student student = findByEmail(email);
         InternshipApplication application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new InternshipApplicationNotFoundException("Application with ID " + applicationId + " not found."));
+                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
 
         if (application.getInternshipApplicationStatus().equals(InternshipApplicationStatus.READ)) {
             throw new ApplicationAlreadyReadException("Cannot update an approved application");
