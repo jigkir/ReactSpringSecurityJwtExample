@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -403,8 +404,7 @@ public class StudentControllerTest {
     @Test
     void shouldApplyForInternshipSuccessfully() throws Exception {
         // Arrange
-        // (No return value needed since applyToInternship is void)
-
+        doNothing().when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
         // Act & Assert
         mockMvc.perform(post("/api/student/internship/10/apply/5")
                         .principal(authentication))
@@ -462,5 +462,40 @@ public class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    void shouldUpdateApplicationSuccessfully() throws Exception {
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/1/2")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Application status updated successfully"));
+
+        verify(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUpdatingWithUnapprovedCv() throws Exception {
+        // Arrange
+        doThrow(new CVNotApprovedException("New CV is not approved for application"))
+                .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/1/2")
+                        .principal(authentication))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(99L))
+                .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 99L, 2L);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/99/2")
+                        .principal(authentication))
+                .andExpect(status().isNotFound());
     }
 }
