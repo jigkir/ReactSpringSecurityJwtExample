@@ -1,12 +1,15 @@
 package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -742,5 +745,109 @@ public class StudentServiceTest {
 
         assert "Application deadline has passed".equals(exception.getMessage());
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldUpdateInternshipApplicationSuccessfully() throws UserNotFoundException, CvNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException {
+        // Arrange
+        String email = "test@claurendeau.qc.ca";
+        long applicationId = 1L;
+        long newCvId = 2L;
+
+        Student student = new Student();
+        student.setId(1L);
+        Internship internship = new Internship();
+
+        CV oldCv = new CV();
+        oldCv.setStatus(ReviewStatus.APPROVED);
+
+        CV newCv = new CV();
+        newCv.setId(newCvId);
+        newCv.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication application = new InternshipApplication(internship, oldCv, student);
+        application.setInternshipApplicationStatus(InternshipApplicationStatus.UNREAD);
+
+        when(studentRepository.findByCredentialsEmail(email)).thenReturn(Optional.of(student));
+        when(applicationRepository.findById(applicationId)).thenReturn(Optional.of(application));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(newCvId, email)).thenReturn(Optional.of(newCv));
+
+        // Act
+        studentService.updateInternshipApplication(email, applicationId, newCvId);
+
+        // Assert
+        assert application.getCv().equals(newCv);
+        verify(applicationRepository).save(application);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingWithUnapprovedCv() {
+        // Arrange
+        String email = "test@claurendeau.qc.ca";
+        long applicationId = 1L;
+        long newCvId = 2L;
+
+        Student student = new Student();
+        student.setId(1L);
+        Internship internship = new Internship();
+
+        CV oldCv = new CV();
+        CV newCv = new CV();
+        newCv.setStatus(ReviewStatus.PENDING); // Not approved
+
+        InternshipApplication application = new InternshipApplication(internship, oldCv, student);
+        application.setInternshipApplicationStatus(InternshipApplicationStatus.UNREAD);
+
+        when(studentRepository.findByCredentialsEmail(email)).thenReturn(Optional.of(student));
+        when(applicationRepository.findById(applicationId)).thenReturn(Optional.of(application));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(newCvId, email)).thenReturn(Optional.of(newCv));
+
+        // Act & Assert
+        assertThrows(CVNotApprovedException.class, () ->
+                studentService.updateInternshipApplication(email, applicationId, newCvId)
+        );
+        verify(applicationRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingAlreadyReadApplication() {
+        // Arrange
+        String email = "test@claurendeau.qc.ca";
+        long applicationId = 1L;
+        long newCvId = 2L;
+
+        Student student = new Student();
+        Internship internship = new Internship();
+        CV oldCv = new CV();
+
+        InternshipApplication application = new InternshipApplication(internship, oldCv, student);
+        application.setInternshipApplicationStatus(InternshipApplicationStatus.READ); // Already read by employer
+
+        when(studentRepository.findByCredentialsEmail(email)).thenReturn(Optional.of(student));
+        when(applicationRepository.findById(applicationId)).thenReturn(Optional.of(application));
+
+        // Act & Assert
+        assertThrows(ApplicationAlreadyReadException.class, () ->
+                studentService.updateInternshipApplication(email, applicationId, newCvId)
+        );
+        verify(applicationRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenApplicationNotFound() {
+        // Arrange
+        String email = "test@claurendeau.qc.ca";
+        long applicationId = 99L;
+        long newCvId = 2L;
+
+        Student student = new Student();
+
+        when(studentRepository.findByCredentialsEmail(email)).thenReturn(Optional.of(student));
+        when(applicationRepository.findById(applicationId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(InternshipApplicationNotFoundException.class, () ->
+                studentService.updateInternshipApplication(email, applicationId, newCvId)
+        );
     }
 }
