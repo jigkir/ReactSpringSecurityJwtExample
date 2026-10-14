@@ -573,6 +573,40 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldNotifyStudentOfOpenInternshipsWhenFirstCvIsApproved() throws CvNotFoundException {
+        // Arrange
+        internship.approve();
+
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(internshipRepository.findByPostedBy_DisciplineAndStatusAndDeletedFalseAndApplicationDeadlineGreaterThanEqual(Discipline.COMPUTER_SCIENCE, ReviewStatus.APPROVED, LocalDate.now()))
+                .thenReturn(List.of(internship));
+
+        // Act
+        managerService.approveCv(1L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.NEW_INTERNSHIP_OFFER, 1L, cv.getStudent());
+    }
+
+    @Test
+    void shouldNotNotifyStudentOfOpenInternshipsWhenStudentAlreadyHasApprovedCv() throws CvNotFoundException {
+        // Arrange
+        CV approvedCv = new CV("pdf".getBytes(), CvVisibility.VISIBLE, "old.pdf", LocalDateTime.of(2026, 8, 1, 10, 0));
+
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+
+        when(cvRepository.findByIdAndVisibility(1L, CvVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByStudent(cv.getStudent())).thenReturn(List.of(approvedCv));
+
+        // Act
+        managerService.approveCv(1L);
+
+        // Assert
+        verify(internshipRepository, never()).findByPostedBy_DisciplineAndStatusAndDeletedFalseAndApplicationDeadlineGreaterThanEqual(any(), any(), any());
+        verify(notificationService, never()).notifyIfAbsent(eq(NotificationType.NEW_INTERNSHIP_OFFER), anyLong(), any());
+    }
+
+    @Test
     void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
         // Arrange
         Student student = cv.getStudent();
