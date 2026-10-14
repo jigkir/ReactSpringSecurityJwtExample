@@ -249,7 +249,8 @@ public class StudentService {
         List<InternshipApplication> applications = applicationRepository.findByStudent(student);
         List<InternshipApplicationResponseDto> applicationResponses = new ArrayList<>();
         for (InternshipApplication application : applications) {
-            applicationResponses.add(InternshipApplicationResponseDto.of(application.getId(), CvFileResponseDto.of(application.getCv()), application.getApplicationDate()));
+            Internship internship = application.getInternship();
+            applicationResponses.add(InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(), CvFileResponseDto.of(application.getCv()), application.getApplicationDate()));
         }
         return applicationResponses;
     }
