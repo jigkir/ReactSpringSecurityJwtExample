@@ -272,6 +272,35 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldNotifyEmployerWhenStudentAppliesToInternship() throws Exception {
+        // Arrange
+        CV approvedCv = new CV();
+
+        approvedCv.setId(5L);
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+        approvedCv.setVisibility(CvVisibility.VISIBLE);
+        approvedCv.setStudent(dummyStudent);
+
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+        when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
+        when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
+            InternshipApplication application = invocation.getArgument(0);
+            application.setId(20L);
+            return application;
+        });
+
+        // Act
+        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.NEW_INTERNSHIP_APPLICATION, 20L, internship.getPostedBy());
+    }
+
+    @Test
     void shouldNotNotifyManagersWhenCVIsInvalid() {
         // Arrange
         CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
@@ -668,6 +697,11 @@ public class StudentServiceTest {
         when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
+        when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
+            InternshipApplication application = invocation.getArgument(0);
+            application.setId(20L);
+            return application;
+        });
 
         // Act
         studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L);

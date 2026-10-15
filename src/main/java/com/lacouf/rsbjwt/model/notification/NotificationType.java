@@ -8,7 +8,9 @@ public enum NotificationType {
     INTERNSHIP_OFFER_APPROVED(TargetType.INTERNSHIP_OFFER, "Internship Offer Approved", "Your internship offer has been approved."),
     INTERNSHIP_OFFER_REJECTED(TargetType.INTERNSHIP_OFFER, "Internship Offer Rejected", null),
     INTERNSHIP_SUBMITTED_FOR_REVIEW(TargetType.INTERNSHIP_OFFER, "New Internship Pending Review", "A new internship has been submitted for review."),
-    NEW_INTERNSHIP_OFFER(TargetType.INTERNSHIP_OFFER, "New Internship Offer", "A new internship offer has been posted that matches your discipline.");
+    NEW_INTERNSHIP_OFFER(TargetType.INTERNSHIP_OFFER, "New Internship Offer", "A new internship offer has been posted that matches your discipline."),
+
+    NEW_INTERNSHIP_APPLICATION(TargetType.INTERNSHIP_APPLICATION, "New Internship Application", "A student has applied to one of your internship offers.");
 
     private final TargetType targetType;
     private final String title;

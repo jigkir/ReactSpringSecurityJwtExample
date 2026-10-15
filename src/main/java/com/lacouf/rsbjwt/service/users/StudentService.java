@@ -211,16 +211,18 @@ public class StudentService {
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
         applicationRepository.save(application);
+
+        notifyEmployerOfNewApplication(application);
     }
 
     @Transactional
     public void updateInternshipApplication(String email, long applicationId, long newCvId) throws CvNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
-       InternshipApplication application = validateInternshipApplicationForUpdate(email, applicationId);
+        InternshipApplication application = validateInternshipApplicationForUpdate(email, applicationId);
 
-       CV newCv = validateCVForApplication(email, newCvId);
+        CV newCv = validateCVForApplication(email, newCvId);
 
-       application.setCv(newCv);
-       applicationRepository.save(application);
+        application.setCv(newCv);
+        applicationRepository.save(application);
     }
 
     public List<InternshipApplicationResponseDto> getInternshipApplications(String email) throws UserNotFoundException {
@@ -312,6 +314,12 @@ public class StudentService {
     private void notifyManagersOfSubmittedCv(CV cv) {
         managerRepository.findAll()
                 .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager));
+    }
+
+    private void notifyEmployerOfNewApplication(InternshipApplication internshipApplication) {
+        Internship internship = internshipApplication.getInternship();
+
+        notificationService.notifyIfAbsent(NotificationType.NEW_INTERNSHIP_APPLICATION, internshipApplication.getId(), internship.getPostedBy());
     }
 
     private void closeCvNotifications(long cvId) {

@@ -363,5 +363,6 @@ public class EmployerServiceTest {
         assert ("cv.pdf").equals(cv.fileName());
 
         verify(internshipApplicationRepository).save(internshipApplication);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
     }
 }
