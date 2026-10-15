@@ -1,10 +1,9 @@
-import {useEffect, useState} from 'react';
-import {Link, Route, useOutletContext} from 'react-router-dom';
+import {useEffect, useRef, useState} from 'react';
+import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getHomeClasses, getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import fetcher from "../../../utils/fetcher.js";
-import RequireRole from "../../RequireRole.jsx";
-import StudentCv from "./Cv.jsx";
+import InternshipForm from "./InternshipForm.jsx";
 
 function Internship() {
     const {dark} = useOutletContext();
@@ -15,6 +14,8 @@ function Internship() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
+    const [appliedId, setAppliedId] = useState(null);
+    const formRef = useRef(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -46,12 +47,18 @@ function Internship() {
             }
         }
 
+
+
         loadInternships();
 
         return () => {
             cancelled = true;
         };
     }, []);
+
+    useEffect(() => {
+        if (appliedId != null) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
+    }, [appliedId]);
 
     return (
         <div className={classes.page}>
@@ -70,8 +77,16 @@ function Internship() {
             {!loading && !error && internships.length === 0 && (
                 <p>No internships are currently available.</p>
             )}
-
+            {!loading && !error && appliedId != null && (
+                <div ref={formRef} className="scroll-mt-20">
+                    <InternshipForm
+                        dark={dark}
+                    />
+                </div>
+            )}
             {!loading && !error && (
+
+
                 <div className="space-y-4 max-w-5xl">
                     {internships.map(internship => (
                         <div
@@ -123,10 +138,16 @@ function Internship() {
                                             : 'View details'}
                                     </p>
                                 </button>
-                                <Link
-                                    to="/internship/apply"
+
+                                <button
+                                    type="button"
+                                    onClick={() => setAppliedId(
+                                        appliedId === internship.id
+                                            ? null
+                                            : internship.id
+                                    )}
                                     className={cardClasses.signupBtn}
-                                >Apply</Link>
+                                >Apply</button>
                             </div>
                             {selectedId === internship.id && (
                                 <div className="border-t pt-4 mt-4 space-y-3">

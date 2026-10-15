@@ -2,7 +2,7 @@ import {useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getHomeClasses, getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
 
-function InternshipApply() {
+function InternshipForm() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const classes = getHomeClasses(dark);
@@ -14,3 +14,5 @@ function InternshipApply() {
         </div>
     );
 }
+
+export default InternshipForm;
