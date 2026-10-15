@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -196,68 +197,99 @@ public class StudentService {
         return approvedCvResponseDtos;
     }
 
-    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException {
+    @Transactional
+    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException, CVNotVisibleException {
         Student student = findByEmail(email);
-        CV cv = findStudentCv(email, cvId);
-        Internship internship = internshipRepository.findById(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
 
-        if (!cv.getStatus().equals(ReviewStatus.APPROVED)) {
-            throw new CVNotApprovedException("CV is not approved for application");
-        }
+        CV cv = validateCVForApplication(email, cvId);
 
-        if (hasStudentAlreadyAppliedToInternship(student, internship)) {
+        Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
+
+        if (applicationRepository.existsByStudentAndInternship(student, internship)) {
             throw new ApplicationAlreadyExistsException("Student has already applied to this internship");
-        }
-
-        if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
-            throw new DeadlineAlreadyPassedException("Application deadline has passed");
         }
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
         applicationRepository.save(application);
     }
 
-    public void updateInternshipApplication(String email, long applicationId, long newCvId) throws UserNotFoundException, CvNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException {
-        Student student = findByEmail(email);
-        InternshipApplication application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
+    @Transactional
+    public void updateInternshipApplication(String email, long applicationId, long newCvId) throws CvNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
+       InternshipApplication application = validateInternshipApplicationForUpdate(email, applicationId);
 
-        if (application.getInternshipApplicationStatus().equals(InternshipApplicationStatus.READ)) {
-            throw new ApplicationAlreadyReadException("Cannot update an approved application");
-        }
+       CV newCv = validateCVForApplication(email, newCvId);
 
-        long StudentId = student.getId();
-        long ApplicationStudentId = application.getStudent().getId();
-
-        if (StudentId != ApplicationStudentId) {
-            IO.println("Student with email " + email + " is not the owner of the application with ID " + applicationId);
-            throw new UserNotFoundException();
-        }
-
-        CV newCv = findStudentCv(email, newCvId);
-
-        if (!newCv.getStatus().equals(ReviewStatus.APPROVED)) {
-            throw new CVNotApprovedException("New CV is not approved for application");
-        }
-
-        application.setCv(newCv);
-        applicationRepository.save(application);
+       application.setCv(newCv);
+       applicationRepository.save(application);
     }
 
     public List<InternshipApplicationResponseDto> getInternshipApplications(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        List<InternshipApplication> applications = applicationRepository.findByStudent(student);
-        List<InternshipApplicationResponseDto> applicationResponses = new ArrayList<>();
-        for (InternshipApplication application : applications) {
-            Internship internship = application.getInternship();
-            applicationResponses.add(InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(), CvFileResponseDto.of(application.getCv()), application.getApplicationDate()));
-        }
-        return applicationResponses;
+        return applicationRepository.findByStudent(student).stream()
+                .filter(application -> isVisibleToStudents(application.getInternship()))
+                .map(application -> {
+                    Internship internship = application.getInternship();
+                    return InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(),
+                            CvFileResponseDto.of(application.getCv()), application.getApplicationDate());
+                })
+                .toList();
     }
 
-    private boolean hasStudentAlreadyAppliedToInternship(Student student, Internship internship) {
-        return applicationRepository.findByStudent(student).stream()
-                .anyMatch(application -> application.getInternship().equals(internship));
+    private boolean isVisibleToStudents(Internship internship) {
+        return !internship.isDeleted() && internship.getStatus() == ReviewStatus.APPROVED;
+    }
+
+    private CV validateCVForApplication(String email, long cvId) throws CvNotFoundException, CVNotApprovedException, CVNotVisibleException {
+        CV cv = findStudentCv(email, cvId);
+
+        if (!cv.getStatus().equals(ReviewStatus.APPROVED)) {
+            throw new CVNotApprovedException("CV is not approved for application");
+        }
+
+        if (!cv.getVisibility().equals(CvVisibility.VISIBLE)) {
+            throw new CVNotVisibleException("CV is not visible for application");
+        }
+
+        return cv;
+    }
+
+    private Internship validateInternshipForApplication(long internshipId, Discipline discipline) throws InternshipNotFoundException, DeadlineAlreadyPassedException {
+        Internship internship = internshipRepository.findById(internshipId)
+                .orElseThrow(() -> new InternshipNotFoundException(internshipId));
+
+        if (!isVisibleToStudents(internship)) {
+            throw new InternshipNotFoundException(internshipId);
+        }
+
+        Discipline internshipDiscipline = internship.getPostedBy().getDiscipline();
+        if (!internshipDiscipline.equals(discipline)) {
+            throw new InternshipNotFoundException(internshipId);
+        }
+
+        if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
+            throw new DeadlineAlreadyPassedException("Application deadline has passed");
+        }
+
+        return internship;
+    }
+
+    private InternshipApplication validateInternshipApplicationForUpdate(String email, long applicationId)
+            throws InternshipApplicationNotFoundException, ApplicationAlreadyReadException, DeadlineAlreadyPassedException {
+        InternshipApplication application = applicationRepository
+                .findByIdAndStudent_Credentials_Email(applicationId, email)
+                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
+
+        Internship internship = application.getInternship();
+        if (!isVisibleToStudents(internship)) {
+            throw new InternshipApplicationNotFoundException(applicationId);
+        }
+        if (application.getInternshipApplicationStatus() == InternshipApplicationStatus.READ) {
+            throw new ApplicationAlreadyReadException("Cannot update an application that has already been read");
+        }
+        if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
+            throw new DeadlineAlreadyPassedException("Application deadline has passed");
+        }
+        return application;
     }
 
     private void verifyIfStudentIdIsAlreadyUsed(String studentId) throws UserAlreadyExistsException {
