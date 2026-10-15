@@ -470,7 +470,7 @@ public class StudentControllerTest {
         mockMvc.perform(put("/api/student/applications/1/2")
                         .principal(authentication))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Application status updated successfully"));
+                .andExpect(content().string("Application CV updated successfully"));
 
         verify(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L);
     }

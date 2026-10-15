@@ -104,7 +104,7 @@ public class StudentController {
     }
 
     @PostMapping("/internship/{internshipId}/apply/{cvId}")
-    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException {
+    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException {
         studentService.applyToInternship(authentication.getName(), cvId, internshipId);
         return ResponseEntity.ok("Application submitted successfully");
     }
@@ -118,9 +118,9 @@ public class StudentController {
     }
 
     @PutMapping("/applications/{applicationId}/{cvId}")
-    public ResponseEntity<String> updateApplicationStatus(Authentication authentication, @PathVariable long applicationId, @PathVariable long cvId) throws UserNotFoundException, CvNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException {
+    public ResponseEntity<String> updateApplicationCV(Authentication authentication, @PathVariable long applicationId, @PathVariable long cvId) throws CvNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
         studentService.updateInternshipApplication(authentication.getName(), applicationId, cvId);
-        return ResponseEntity.ok("Application status updated successfully");
+        return ResponseEntity.ok("Application CV updated successfully");
     }
 
 }
