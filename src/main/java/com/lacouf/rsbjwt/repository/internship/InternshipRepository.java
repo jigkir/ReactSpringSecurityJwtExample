@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +23,6 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     List<Internship> findByPostedBy_Credentials_EmailAndDeletedIsFalse(String email);
 
     List<Internship> findByPostedBy_DisciplineAndDeletedIsFalse(Discipline postedByDiscipline);
+
+    List<Internship> findByPostedBy_DisciplineAndStatusAndDeletedFalseAndApplicationDeadlineGreaterThanEqual(Discipline discipline, ReviewStatus status, LocalDate date);
 }

@@ -26,6 +26,7 @@ import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -77,10 +78,17 @@ public class ManagerService {
         if (cv.getStatus() == ReviewStatus.APPROVED) {
             return ManagerCvResponseDto.of(cv);
         }
+
+        boolean isFirstApprovedCv = !hasVisibleApprovedCv(cv.getStudent());
+
         cv.setStatus(ReviewStatus.APPROVED);
         cv.setRejectionComment(null);
 
         notifyStudentOfCvReviewDecision(cv, NotificationType.CV_APPROVED, NotificationType.CV_APPROVED.getMessage());
+
+        if (isFirstApprovedCv) {
+            notifyStudentOfOpenInternships(cv.getStudent());
+        }
 
         return saveAndConvert(cv);
     }
@@ -171,7 +179,16 @@ public class ManagerService {
 
         studentRepository.findByDiscipline(discipline).stream()
                 .filter(this::hasVisibleApprovedCv)
-                .forEach(student -> notificationService.notifyIfAbsent(NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student));
+                .forEach(student -> notifyStudentOfNewInternship(internship, student));
+    }
+
+    private void notifyStudentOfOpenInternships(Student student) {
+        internshipRepository.findByPostedBy_DisciplineAndStatusAndDeletedFalseAndApplicationDeadlineGreaterThanEqual(student.getDiscipline(), ReviewStatus.APPROVED, LocalDate.now())
+                .forEach(internship -> notifyStudentOfNewInternship(internship, student));
+    }
+
+    private void notifyStudentOfNewInternship(Internship internship, Student student) {
+        notificationService.notifyIfAbsent(NotificationType.NEW_INTERNSHIP_OFFER, internship.getId(), student);
     }
 
     private boolean hasVisibleApprovedCv(Student student) {
