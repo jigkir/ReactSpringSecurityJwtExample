@@ -193,3 +193,7 @@ export function useCvFilters(docs) {
         disciplines, visible,
     };
 }
+
+export function sortApplication(applications, id) {
+    return applications.filter(app => app.internshipId === id);
+}

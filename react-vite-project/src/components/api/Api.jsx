@@ -277,5 +277,9 @@ export async function getApplications(){
     return handleResponse(response);
 }
 
+export async function getApplicationCv(id){
+    const response = await fetcher(`/applications/${id}/cv`, {method: "GET"});
+    return handleResponse(response);
+}
 
 //endregion

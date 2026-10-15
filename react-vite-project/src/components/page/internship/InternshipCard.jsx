@@ -159,7 +159,7 @@ export default function InternshipCard({
                 {/* Edit / Delete */}
                 {(OnEdit || OnDelete) && (
                     <div className="ml-auto flex items-center gap-1">
-                        <NavLink to={"/application"}
+                        <NavLink to={`/application/${internship.id}`}
                         >
                             <Icon name="view_list" size={24}/>
                         </NavLink>
