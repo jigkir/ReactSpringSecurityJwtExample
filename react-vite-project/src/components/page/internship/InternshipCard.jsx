@@ -2,6 +2,7 @@ import {useTranslation} from 'react-i18next';
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {formatDate} from '../cv/cvUtils.js';
+import {NavLink} from "react-router-dom";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -150,6 +151,10 @@ export default function InternshipCard({
                 {/* Edit / Delete */}
                 {(OnEdit || OnDelete) && (
                     <div className="ml-auto flex items-center gap-1">
+                        <NavLink to={"/application"}
+                        >
+                            <Icon name="view_list" size={24}/>
+                        </NavLink>
                         {OnEdit && (
                             <button
                                 className={editBtn}
@@ -187,6 +192,7 @@ export default function InternshipCard({
                                 <Icon name="event" size={20}/>
                                 {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
                             </span>
+
                         </div>
                     )}
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}

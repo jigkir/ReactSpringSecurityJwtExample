@@ -270,3 +270,12 @@ export async function markNotificationsAsRead(targetType) {
 }
 
 //endregion
+
+//region Application
+export async function getApplications(){
+    const response = await fetcher("employer/applications", {method: "GET"});
+    return handleResponse(response);
+}
+
+
+//endregion

@@ -16,6 +16,7 @@ import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
+import Applications from "./components/page/Applications.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -92,6 +93,7 @@ function App() {
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace/>}/>
+                    <Route path="/application" element={<Applications user={user}/>}/>
                 </Route>
             </Routes>
         </div>
