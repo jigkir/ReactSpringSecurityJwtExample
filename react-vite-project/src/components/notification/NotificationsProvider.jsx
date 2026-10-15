@@ -17,6 +17,8 @@ const NOTIFICATION_TYPE = {
     INTERNSHIP_OFFER_APPROVED: "INTERNSHIP_OFFER_APPROVED",
     INTERNSHIP_OFFER_REJECTED: "INTERNSHIP_OFFER_REJECTED",
     NEW_INTERNSHIP_OFFER: "NEW_INTERNSHIP_OFFER",
+
+    NEW_INTERNSHIP_APPLICATION: "NEW_INTERNSHIP_APPLICATION",
 };
 
 const TARGET_TYPE = {
@@ -52,7 +54,8 @@ const EMPTY_COUNTS = {
     cvApproved: 0,
     cvRejected: 0,
     internshipApproved: 0,
-    internshipRejected: 0
+    internshipRejected: 0,
+    newInternshipApplication: 0,
 };
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
@@ -144,6 +147,7 @@ export function NotificationsProvider({user, children}) {
                 ...EMPTY_COUNTS,
                 internshipApproved: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED),
                 internshipRejected: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED),
+                newInternshipApplication: countNotificationsByType(notifications, NOTIFICATION_TYPE.NEW_INTERNSHIP_APPLICATION),
             });
             return;
         }
@@ -238,6 +242,12 @@ export function NotificationsProvider({user, children}) {
                     id: "internshipRejected",
                     count: counts.internshipRejected,
                     labelKey: "navbar.internshipRejectedNotification",
+                    to: "/internships",
+                },
+                {
+                    id: "newInternshipApplication",
+                    count: counts.newInternshipApplication,
+                    labelKey: "navbar.newInternshipApplicationNotification",
                     to: "/internships",
                 },
             ];
