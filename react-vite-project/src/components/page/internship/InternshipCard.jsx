@@ -118,6 +118,14 @@ export default function InternshipCard({
                     {internship.location}
                 </span>
 
+                {/* Work mode: in person / hybrid / remote */}
+                {internship.workMode && (
+                    <span className={s.detailBadge}>
+                        <Icon name="work" size={20}/>
+                        {t(`internshipModal.workModes.${internship.workMode}`, {defaultValue: internship.workMode})}
+                    </span>
+                )}
+
                 {/* Duration */}
                 <span className={s.detailBadge}>
                     <Icon name="timer" size={20}/>
