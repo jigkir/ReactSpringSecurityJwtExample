@@ -15,7 +15,7 @@ import ManagerCv from './components/page/manager/Cv.jsx';
 import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
-import Internship from "./components/page/student/Internship.jsx";
+import StudentInternships from "./components/page/student/Internships.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -77,7 +77,7 @@ function App() {
                     {/* Student */}
                     <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
                         <Route path="/cv" element={<StudentCv user={user}/>}/>
-                        <Route path="/internship" element={<Internship/>}/>
+                        <Route path="/internship" element={<StudentInternships/>}/>
                     </Route>
 
                     {/* Manager */}
