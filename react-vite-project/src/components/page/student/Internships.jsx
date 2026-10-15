@@ -12,6 +12,7 @@ function StudentInternships() {
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [selectedId, setSelectedId] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -49,6 +50,10 @@ function StudentInternships() {
             cancelled = true;
         };
     }, []);
+
+    const handlePreview = (id) => {
+        setSelectedId(selectedId === id ? null : id);
+    };
 
     return (
         <div className={s.page}>
@@ -88,6 +93,9 @@ function StudentInternships() {
                             dark={dark}
                             showEmployer
                             hideStatus
+                            showPreview
+                            onPreview={handlePreview}
+                            expanded={selectedId === internship.id}
                         />
                     ))}
                 </div>

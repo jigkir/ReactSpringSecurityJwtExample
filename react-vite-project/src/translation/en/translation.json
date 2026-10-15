@@ -349,7 +349,9 @@
   },
   "studentInternship": {
     "title": "Available Internships",
-    "comingSoon": "This page will be available soon!"
+    "comingSoon": "This page will be available soon!",
+    "preview": "Preview",
+    "hide": "Hide"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",

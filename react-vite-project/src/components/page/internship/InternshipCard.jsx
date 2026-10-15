@@ -28,7 +28,10 @@ export default function InternshipCard({
                                            footer,
                                            dark,
                                            hideStatus = false,
-                                           showEmployer = false
+                                           showEmployer = false,
+                                           showPreview = false,
+                                           onPreview,
+                                           expanded = false
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
@@ -75,7 +78,9 @@ export default function InternshipCard({
             <div className={s.topRow}>
                 <div className="min-w-0 flex-1">
                     <h3 className={s.title}>{internship.title}</h3>
-                    <p className={s.description} style={{whiteSpace: "pre-wrap"}}>{internship.description}</p>
+                    {(!showPreview || expanded) && (
+                        <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>
+                    )}
                 </div>
                 {/* DESKTOP ONLY: Status badge aligned on top-right */}
                 {statusBadge && (
@@ -168,7 +173,7 @@ export default function InternshipCard({
             </div>
 
             {/* Footer */}
-            {(footer || showEmployer) && (
+            {(footer || showEmployer || showPreview) && (
                 <div
                     className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
                     {showEmployer && (
@@ -185,6 +190,16 @@ export default function InternshipCard({
                         </div>
                     )}
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
+
+                    {showPreview && (
+                        <button
+                            type="button"
+                            onClick={() => onPreview(internship.id)}
+                            className="ml-auto rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                        >
+                            {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
+                        </button>
+                    )}
                 </div>
             )}
         </div>
