@@ -349,7 +349,9 @@
   },
   "studentInternship": {
     "title": "Stages disponibles",
-    "comingSoon": "Cette page sera bientôt disponible !"
+    "comingSoon": "Cette page sera bientôt disponible !",
+    "preview": "Consulter",
+    "hide": "Cacher"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",
