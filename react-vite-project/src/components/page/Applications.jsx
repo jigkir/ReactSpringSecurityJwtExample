@@ -19,11 +19,13 @@ function Applications({ user }) {
     console.log("Applications count: " + applications.length);
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div className="text-red-500">{error}</div>;
+    if (error) return <div>{error}</div>;
 
     return (
-        <div className="bg-red-500">
-            <NavLink to="/" />
+        <div>
+            <NavLink to="/" >
+                Back
+            </NavLink>
         </div>
     );
 }
