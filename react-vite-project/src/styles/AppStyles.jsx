@@ -275,6 +275,7 @@ export function getInternshipCardClasses(dark) {
         skillBadge: `px-2 py-0.5 rounded font-medium ${dark ? "bg-blue-900/40 text-blue-300" : "bg-blue-50 text-blue-700"}`,
         detailsRow: `flex flex-wrap gap-2 text-base pt-1 border-t ${dark ? "text-slate-400 border-slate-700" : "text-gray-500 border-gray-100"}`,
         detailBadge: `px-2.5 py-1 rounded flex items-center gap-1.5 ${dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-500"}`,
+        signupBtn: `px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors ${BRAND_BTN}`,
         deleteBtn: `p-1.5 rounded ml-auto transition-colors ${dark ? "text-slate-400 hover:bg-slate-700 hover:text-red-400" : "text-gray-600 hover:bg-gray-200 hover:text-red-600"}`,
         statusBadge: (status) => {
             const base = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-base font-medium shrink-0";

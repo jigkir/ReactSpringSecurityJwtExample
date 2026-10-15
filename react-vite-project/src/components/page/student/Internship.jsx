@@ -1,8 +1,10 @@
 import {useEffect, useState} from 'react';
-import {useOutletContext} from 'react-router-dom';
+import {Link, Route, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getHomeClasses, getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import fetcher from "../../../utils/fetcher.js";
+import RequireRole from "../../RequireRole.jsx";
+import StudentCv from "./Cv.jsx";
 
 function Internship() {
     const {dark} = useOutletContext();
@@ -76,51 +78,56 @@ function Internship() {
                             key={internship.id}
                             className={cardClasses.card}
                         >
-                            <button
-                                type="button"
-                                className="w-full text-left cursor-pointer"
-                                aria-expanded={selectedId === internship.id}
-                                onClick={() => setSelectedId(
-                                    selectedId === internship.id
-                                        ? null
-                                        : internship.id
-                                )}
-                            >
-                                <h2 className={cardClasses.title}>
-                                    {internship.title}
-                                </h2>
+                            <div className="flex items-center justify-between gap-4">
+                                <button
+                                    type="button"
+                                    className="flex-1 min-w-0 text-left cursor-pointer"
+                                    aria-expanded={selectedId === internship.id}
+                                    onClick={() => setSelectedId(
+                                        selectedId === internship.id
+                                            ? null
+                                            : internship.id
+                                    )}
+                                >
+                                    <h2 className={cardClasses.title}>
+                                        {internship.title}
+                                    </h2>
 
-                                <p>{internship.employerEmail}</p>
+                                    <p>{internship.employerEmail}</p>
 
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    <span className={cardClasses.detailBadge}>
-                                        {internship.location}
-                                    </span>
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        <span className={cardClasses.detailBadge}>
+                                            {internship.location}
+                                        </span>
 
-                                    <span className={cardClasses.detailBadge}>
-                                        {internship.workMode}
-                                    </span>
+                                        <span className={cardClasses.detailBadge}>
+                                            {internship.workMode}
+                                        </span>
 
-                                    <span className={cardClasses.detailBadge}>
-                                        {internship.durationInWeeks} weeks
-                                    </span>
+                                        <span className={cardClasses.detailBadge}>
+                                            {internship.durationInWeeks} weeks
+                                        </span>
 
-                                    <span className={cardClasses.detailBadge}>
-                                        {internship.compensationAmount != null
-                                            ? `${internship.compensationAmount} $`
-                                            : internship.compensationNegotiable
-                                                ? 'Negotiable'
-                                                : 'Not specified'}
-                                    </span>
-                                </div>
+                                        <span className={cardClasses.detailBadge}>
+                                            {internship.compensationAmount != null
+                                                ? `${internship.compensationAmount} $`
+                                                : internship.compensationNegotiable
+                                                    ? 'Negotiable'
+                                                    : 'Not specified'}
+                                        </span>
+                                    </div>
 
-                                <p className="mt-3 text-indigo-500">
-                                    {selectedId === internship.id
-                                        ? 'Hide details'
-                                        : 'View details'}
-                                </p>
-                            </button>
-
+                                    <p className="mt-3 text-indigo-500">
+                                        {selectedId === internship.id
+                                            ? 'Hide details'
+                                            : 'View details'}
+                                    </p>
+                                </button>
+                                <Link
+                                    to="/internship/apply"
+                                    className={cardClasses.signupBtn}
+                                >Apply</Link>
+                            </div>
                             {selectedId === internship.id && (
                                 <div className="border-t pt-4 mt-4 space-y-3">
                                     <p className="whitespace-pre-wrap break-words">
