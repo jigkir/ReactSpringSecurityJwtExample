@@ -74,6 +74,7 @@
     "internshipApprovedNotification": "{{amount}} internship offer(s) approved",
     "internshipRejectedNotification": "{{amount}} internship offer(s) rejected",
     "internshipSubmittedForReviewNotification": "{{amount}} new internship offer(s)",
+    "newInternshipApplicationNotification": "{{amount}} new internship application(s) received",
     "notificationLoadError": "Unable to load notifications.",
     "notificationMarkAsReadError": "Unable to mark notifications as read."
   },

@@ -159,12 +159,15 @@ public class EmployerService {
                 .toList();
     }
 
+    @Transactional
     public CvFileResponseDto openReceivedInternshipApplicationCv(long applicationId, String email) throws InternshipApplicationNotFoundException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
         internshipApplication.markAsRead();
 
         internshipApplicationRepository.save(internshipApplication);
+
+        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, applicationId);
 
         return CvFileResponseDto.of(internshipApplication.getCv());
     }
