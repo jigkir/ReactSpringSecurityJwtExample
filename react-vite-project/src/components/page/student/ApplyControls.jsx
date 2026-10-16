@@ -2,6 +2,7 @@ import {useTranslation} from "react-i18next";
 import {useState} from "react";
 import {Link} from "react-router-dom";
 import Button from "../../../styles/Button.jsx";
+import {applyForInternship} from "../../api/Api.jsx";
 
 function ApplyControls({internshipId, cvs, dark}) {
     const {t} = useTranslation();
