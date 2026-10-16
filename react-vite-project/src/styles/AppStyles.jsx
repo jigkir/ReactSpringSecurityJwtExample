@@ -438,3 +438,20 @@ export function getApplicationCardClasses(dark) {
     };
 }
 // endregion
+
+// region Dev Mode
+export function getDevClasses(dark) {
+    return {
+        toggle: (on) => `fixed bottom-4 left-4 z-40 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium shadow-md ${TRANSITION_150} ${FOCUS_RING_OFFSET} ${
+            on
+                ? dark ? "bg-amber-500/20 border-amber-400 text-amber-200" : "bg-amber-100 border-amber-400 text-amber-800"
+                : dark ? "bg-slate-800 border-slate-600 text-slate-400 hover:text-slate-200" : "bg-white border-gray-300 text-gray-500 hover:text-gray-800"
+        }`,
+        panel: `mb-6 space-y-3 rounded-xl border border-dashed p-4 ${dark ? "border-amber-400/50 bg-amber-500/10" : "border-amber-400 bg-amber-50"}`,
+        panelTitle: `flex items-center gap-1.5 text-sm font-semibold ${dark ? "text-amber-200" : "text-amber-800"}`,
+        muted: `text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
+        skel: dark ? "bg-slate-700" : "bg-gray-200",
+    };
+}
+
+// endregion

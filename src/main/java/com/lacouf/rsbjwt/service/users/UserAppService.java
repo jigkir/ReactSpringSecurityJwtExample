@@ -42,10 +42,25 @@ public class UserAppService {
         return new JWTAuthResponse(jwtTokenProvider.generateToken(authentication));
     }
 
+    // Dev Mode only (called from DevController): token for any user, no password
+    public JWTAuthResponse devLoginAs(String email) throws UserNotFoundException {
+        UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities());
+
+        return new JWTAuthResponse(jwtTokenProvider.generateToken(authentication));
+    }
+
     public UserResponseDto getUserByEmail(String email) throws UserNotFoundException {
         UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
 
         return UserResponseDto.of(user);
+    }
+
+    // Dev Mode only (called from DevController)
+    public List<UserResponseDto> getAllDevUsers() {
+        return userAppRepository.findAll().stream()
+                .map(UserResponseDto::of)
+                .toList();
     }
 
     public DisciplineDto getAllDisciplines() {
