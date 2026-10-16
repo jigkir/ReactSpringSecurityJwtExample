@@ -27,6 +27,7 @@ export default function InternshipCard({
                                            OnDelete,
                                            OnEdit,
                                            footer,
+                                           bottomFooter,
                                            dark,
                                            hideStatus = false,
                                            showEmployer = false,
@@ -214,6 +215,17 @@ export default function InternshipCard({
                             {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
                         </button>
                     )}
+                </div>
+            )}
+            {/* Bottom row: always the last thing in the card */}
+            {bottomFooter && (
+                <div
+                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${
+                        footer || showEmployer || showPreview
+                            ? ""
+                            : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`
+                    }`}>
+                    {bottomFooter}
                 </div>
             )}
         </div>

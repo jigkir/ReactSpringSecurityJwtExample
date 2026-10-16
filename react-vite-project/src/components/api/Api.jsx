@@ -220,10 +220,10 @@ export async function deleteInternship(internshipId) {
 // endregion
 
 // region Student internships
-// Returns ResponseEntity.ok("Application submitted successfully"); which is not necessary to keep
+// Returns ResponseEntity.ok("Application submitted successfully");
 export async function applyForInternship(internshipId, cvId) {
-    const response = await fetcher(`/internship/${internshipId}/apply/${cvId}`, {method: "GET"});
-    return handleResponse(response);
+    const response = await fetcher(`student/internship/${internshipId}/apply/${cvId}`, {method: "POST"});
+    return handleEmpty(response);
 }
 
 // endregion
