@@ -160,10 +160,11 @@ export default function InternshipCard({
                 {/* Edit / Delete */}
                 {(OnEdit || OnDelete) && (
                     <div className="ml-auto flex items-center gap-1">
-                        <NavLink to={`/application/${internship.id}`}
+                        {!isRejected &&
+                        <NavLink to={`/application/${internship.id}`} state={{ internshipData: internship }} className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
                         >
-                            <Icon name="view_list" size={24}/>
-                        </NavLink>
+                            {t("internshipCard.viewApplication")}
+                        </NavLink>}
                         {OnEdit && (
                             <button
                                 className={editBtn}

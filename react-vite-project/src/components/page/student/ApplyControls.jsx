@@ -3,6 +3,7 @@ import {useState} from "react";
 import {Link} from "react-router-dom";
 import Button from "../../../styles/Button.jsx";
 import {applyForInternship} from "../../api/Api.jsx";
+import Icon from "../../../styles/Icon.jsx";
 
 function ApplyControls({internshipId, cvs, dark}) {
     const {t} = useTranslation();

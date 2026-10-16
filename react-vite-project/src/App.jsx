@@ -90,10 +90,10 @@ function App() {
                     {/* Employer */}
                     <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
                         <Route path="/internships" element={<PostInternship user={user}/>}/>
+                        <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace/>}/>
-                    <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
                 </Route>
             </Routes>
         </div>

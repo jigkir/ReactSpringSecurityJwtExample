@@ -1,29 +1,53 @@
 import { useEffect, useState, useCallback } from "react";
-import { getApplicationCv, getApplications } from "../api/Api.jsx";
-import { NavLink, useOutletContext, useParams } from "react-router-dom";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../api/Api.jsx";
+import {NavLink, useLocation, useOutletContext, useParams} from "react-router-dom";
 import ApplicationCard from "./ApplicationCard.jsx";
 import { base64ToBlobUrl } from "./cv/cvUtils.js";
 import Icon from "../../styles/Icon.jsx";
+import {sortApplication} from "../../utils/Sort.jsx";
 
 function ViewApplications({ user }) {
+    const location = useLocation();
     const [applications, setApplications] = useState([]);
+    const [internshipTitle, setInternshipTitle] = useState("");
     const { id } = useParams();
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
     const { dark } = useOutletContext();
+    const passedInternship = location.state?.internshipData;
+    const Nid = parseInt(id, 10);
+
 
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
     useEffect(() => {
+        if (!user?.isLoggedIn || !Nid) return;
+
+        getEmployerInternships()
+            .then((internshipsData) => {
+                const list = Array.isArray(internshipsData) ? internshipsData : [];
+                const matchedInternship = list.find((item) => item.id === Nid);
+                if (matchedInternship?.title) {
+                    setInternshipTitle(matchedInternship.title);
+                }
+            })
+            .catch(() => setError({key: "postInternship.loadError"}));
+    }, [user?.isLoggedIn, Nid]);
+
+    useEffect(() => {
         if (!user?.isLoggedIn) return;
 
-        getApplications()
-            .then((data) => setApplications(data))
-            .catch(() => setError("Failed to load applications"))
-            .finally(() => setLoading(false));
-    }, [user?.isLoggedIn]);
+        setLoading(true);
 
-    const title = applications.length > 0 ? applications[0].internshipTitle : "No Applications Found";
+        getApplications()
+            .then((appsData) => {
+                setApplications(sortApplication(appsData, Nid));
+            })
+            .catch(() => setError({key: "viewApplication.loadError"}))
+            .finally(() => setLoading(false));
+    }, [user?.isLoggedIn, Nid]);
+
+    // const title = applications.length > 0 ? applications[0].internshipTitle : "No Applications Found";
 
     const togglePreview = (appId) => {
         setOpenPreviewIds((prev) =>
@@ -66,7 +90,7 @@ function ViewApplications({ user }) {
                     Back to Internships
                 </NavLink>
                 <h1 className={`text-4xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
-                    {title}
+                    {internshipTitle}
                 </h1>
             </div>
 

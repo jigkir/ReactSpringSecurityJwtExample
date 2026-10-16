@@ -1,11 +1,13 @@
 import { getApplicationCardClasses } from "../../styles/AppStyles.jsx";
 import Button from "../../styles/Button.jsx";
 import CvPreview from "./cv/CvPreview.jsx";
+import {useTranslation} from "react-i18next";
 
 function ApplicationCard({ application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl }) {
     const s = getApplicationCardClasses(dark);
+    const {t, i18n} = useTranslation();
     const { student, cvFileName } = application;
-    const viewLabel = isPreviewOpen ? "Close" : "View";
+    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
 
     return (
         <div className={s.card}>
