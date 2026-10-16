@@ -34,7 +34,7 @@ async function toError(response) {
 }
 
 // For endpoints that return a JSON body
-async function handleResponse(response) {
+export async function handleResponse(response) {
     if (!response.ok) throw await toError(response);
     return response.json();
 }

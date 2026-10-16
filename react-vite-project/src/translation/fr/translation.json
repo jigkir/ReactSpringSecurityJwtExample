@@ -433,5 +433,16 @@
       "approved": "Approuvée",
       "rejected": "Rejetée"
     }
+  },
+  "dev": {
+    "label": "Dev",
+    "toggleOn": "Activer le mode Dev",
+    "toggleOff": "Désactiver le mode Dev",
+    "panelTitle": "Mode Dev : remplir la connexion",
+    "selectLabel": "Utilisateur fictif",
+    "selectPlaceholder": "-- Sélectionnez un utilisateur --",
+    "loadError": "Impossible de charger les utilisateurs fictifs.",
+    "retryBtn": "Réessayer",
+    "empty": "Aucun utilisateur fictif disponible."
   }
 }
