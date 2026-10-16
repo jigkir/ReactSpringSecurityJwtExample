@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
@@ -23,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -206,5 +208,110 @@ class UserAppServiceTest {
 
         // Assert
         assert ("514-123-4567").equals(formattedPhoneNumber);
+    }
+
+    // ==========================================
+    // Dev Mode Tests
+    // ==========================================
+
+    @Test
+    void shouldReturnTokenWhenDevLoginAsExistingUser() throws UserNotFoundException {
+        // Arrange
+        Credentials credentials = Credentials.builder()
+                .email("student@example.com")
+                .password("encodedPassword")
+                .role(Role.STUDENT)
+                .build();
+
+        Student student = new Student("John", "Doe", "1234567", credentials, Discipline.COMPUTER_SCIENCE);
+
+        when(userAppRepository.findByCredentialsEmail("student@example.com")).thenReturn(Optional.of(student));
+        when(jwtTokenProvider.generateToken(any(Authentication.class))).thenReturn("dev-jwt-token");
+
+        // Act
+        JWTAuthResponse response = userAppService.devLoginAs("student@example.com");
+
+        // Assert
+        assert ("dev-jwt-token").equals(response.accessToken());
+        assert ("BEARER").equals(response.tokenType());
+
+        ArgumentCaptor<Authentication> captor = ArgumentCaptor.forClass(Authentication.class);
+        verify(jwtTokenProvider).generateToken(captor.capture());
+
+        Authentication generatedFor = captor.getValue();
+
+        assert ("student@example.com").equals(generatedFor.getName());
+        assert generatedFor.getCredentials() == null;
+        assert generatedFor.getAuthorities().contains(new SimpleGrantedAuthority("STUDENT"));
+    }
+
+    @Test
+    void shouldNotRequirePasswordWhenDevLoginAs() throws UserNotFoundException {
+        // Arrange
+        Credentials credentials = Credentials.builder()
+                .email("manager@example.com")
+                .password("encodedPassword")
+                .role(Role.MANAGER)
+                .build();
+
+        Manager manager = new Manager("Jane", "Doe", credentials, "514-123-4567");
+
+        when(userAppRepository.findByCredentialsEmail("manager@example.com")).thenReturn(Optional.of(manager));
+        when(jwtTokenProvider.generateToken(any(Authentication.class))).thenReturn("dev-jwt-token");
+
+        // Act
+        userAppService.devLoginAs("manager@example.com");
+
+        // Assert
+        verifyNoInteractions(authenticationManager, passwordEncoder);
+    }
+
+    @Test
+    void shouldThrowUserNotFoundWhenDevLoginAsUnknownEmail() {
+        // Arrange
+        when(userAppRepository.findByCredentialsEmail("unknown@example.com")).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(UserNotFoundException.class, () -> userAppService.devLoginAs("unknown@example.com"));
+
+        verifyNoInteractions(jwtTokenProvider);
+    }
+
+    @Test
+    void shouldReturnAllDevUsers() {
+        // Arrange
+        Student student = new Student("John", "Doe", "1234567",
+                Credentials.builder().email("student@example.com").password("pw").role(Role.STUDENT).build(),
+                Discipline.COMPUTER_SCIENCE);
+        student.setId(1L);
+
+        Manager manager = new Manager("Jane", "Doe",
+                Credentials.builder().email("manager@example.com").password("pw").role(Role.MANAGER).build(),
+                "514-123-4567");
+        manager.setId(2L);
+
+        when(userAppRepository.findAll()).thenReturn(List.of(student, manager));
+
+        // Act
+        List<UserResponseDto> result = userAppService.getAllDevUsers();
+
+        // Assert
+        assert (Integer.valueOf(2)).equals(result.size());
+        assert ("student@example.com").equals(result.get(0).email());
+        assert ("STUDENT").equals(result.get(0).role());
+        assert ("manager@example.com").equals(result.get(1).email());
+        assert ("MANAGER").equals(result.get(1).role());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoDevUsers() {
+        // Arrange
+        when(userAppRepository.findAll()).thenReturn(List.of());
+
+        // Act
+        List<UserResponseDto> result = userAppService.getAllDevUsers();
+
+        // Assert
+        assert result.isEmpty();
     }
 }

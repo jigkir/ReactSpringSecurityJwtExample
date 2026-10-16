@@ -2,14 +2,18 @@ import {useState} from 'react';
 import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
+import {devLoginAs} from '../../api/DevApi.jsx';
 import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
 import {i18nError} from "../../../utils/i18nError.jsx";
+import {useDevMode} from '../../dev/DevMode.jsx';
+import DevLoginPanel from '../../dev/DevLoginPanel.jsx';
 
 const Login = ({user, setError}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
     const {t} = useTranslation();
+    const {devMode} = useDevMode();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -64,28 +68,32 @@ const Login = ({user, setError}) => {
     };
 
     // region Api.jsx communication
+    // Shared by the normal login and the Dev Mode login: store the token, load the user, redirect by role
+    const finishLogin = async (data) => {
+        localStorage.setItem("token", data.accessToken);
+
+        let userData;
+        try {
+            userData = await getCurrentUser();
+        } catch {
+            throw i18nError("login.userFetchFailed");
+        }
+
+        if (userData.role === "STUDENT") {
+            let hasCv = false;
+            try {
+                const count = await getCvCount();
+                hasCv = count > 0;
+            } catch { /* fallback: send to /cv */ }
+            navigate(hasCv ? "/home" : "/cv");
+        } else {
+            navigate("/home");
+        }
+    };
+
     const fetchFunc = async () => {
         try {
-            const data = await login(email.toLowerCase(), password);
-            localStorage.setItem("token", data.accessToken);
-
-            let userData;
-            try {
-                userData = await getCurrentUser();
-            } catch {
-                throw i18nError("login.userFetchFailed");
-            }
-
-            if (userData.role === "STUDENT") {
-                let hasCv = false;
-                try {
-                    const count = await getCvCount();
-                    hasCv = count > 0;
-                } catch { /* fallback: send to /cv */ }
-                navigate(hasCv ? "/home" : "/cv");
-            } else {
-                navigate("/home");
-            }
+            await finishLogin(await login(email.toLowerCase(), password));
         } catch (err) {
             // Wrong credentials: stay on the login page and show the inline error
             if (err.status === 401 || err.status === 403) {
@@ -106,6 +114,19 @@ const Login = ({user, setError}) => {
     };
     // endregion
 
+    // Dev Mode: picking any mock user (any role) logs in instantly with just their email
+    const loginAsDevUser = async (devUser) => {
+        if (!devUser) return;
+        setServerError("");
+        try {
+            await finishLogin(await devLoginAs(devUser.email));
+        } catch (err) {
+            if (err.i18n) setError(err);
+            else setError(i18nError("login.genericError"));
+            navigate("/error");
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setServerError("");
@@ -121,6 +142,18 @@ const Login = ({user, setError}) => {
         <div className={pageClass}>
             <div className={cardClass}>
                 <h2 className={titleClass}>{t("login.title")}</h2>
+
+                {/* Dev Mode only: pick a mock user and log in instantly */}
+                {devMode && (
+                    <DevLoginPanel
+                        dark={dark}
+                        fieldClass={fieldClass}
+                        labelClass={labelClass}
+                        errorClass={errorClass}
+                        onSelect={loginAsDevUser}
+                    />
+                )}
+
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
                     <div>
                         <EmailField
@@ -161,10 +194,6 @@ const Login = ({user, setError}) => {
 
                     <button type="submit" className={submitClass}>
                         {t("login.submit")}
-                    </button>
-
-                    <button onClick={() => {setPassword("John123#"); setEmail("gestion.stages@claurendeau.qc.ca")}} className={submitClass}>
-                        manager autolog
                     </button>
                 </form>
                 <p className={subtextClass}>

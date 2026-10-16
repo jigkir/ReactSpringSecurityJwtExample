@@ -433,5 +433,16 @@
       "approved": "Approved",
       "rejected": "Rejected"
     }
+  },
+  "dev": {
+    "label": "Dev",
+    "toggleOn": "Enable Dev Mode",
+    "toggleOff": "Disable Dev Mode",
+    "panelTitle": "Dev Mode: autofill login",
+    "selectLabel": "Mock user",
+    "selectPlaceholder": "-- Select a user --",
+    "loadError": "Unable to load mock users.",
+    "retryBtn": "Retry",
+    "empty": "No mock users available."
   }
 }

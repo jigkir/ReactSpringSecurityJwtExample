@@ -41,6 +41,7 @@ public class SecurityConfiguration {
     private static final String DISCIPLINES_LIST_PATH = "/api/disciplines";
     private static final String ROLES_LIST_PATH = "/api/roles";
     private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
+    private static final String DEV_PATH = "/api/dev/**";
 
     // SIGN-UP PATHS
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
@@ -59,7 +60,7 @@ public class SecurityConfiguration {
     private static final String NOTIFICATIONS_PATH = "/api/notifications/**";
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -70,6 +71,7 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, DISCIPLINES_LIST_PATH).permitAll()
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
+                        .requestMatchers(DEV_PATH).permitAll()
 
                         // SIGN-UP
                         .requestMatchers(POST, STUDENT_SIGNUP_PATH).permitAll()
@@ -91,9 +93,7 @@ public class SecurityConfiguration {
 
                         .anyRequest().authenticated() // Changed from denyAll() to authenticated() - more common, adjust if denyAll is strictly needed
                 ) // for h2-console
-                .sessionManagement((secuManagement) -> {
-                    secuManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                })
+                .sessionManagement((secuManagement) -> secuManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(configurer -> configurer.authenticationEntryPoint(authenticationEntryPoint));
 
@@ -150,9 +150,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
