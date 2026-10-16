@@ -2,6 +2,7 @@ import {useTranslation} from 'react-i18next';
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {formatDate} from '../cv/cvUtils.js';
+import {NavLink} from "react-router-dom";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -26,6 +27,7 @@ export default function InternshipCard({
                                            OnDelete,
                                            OnEdit,
                                            footer,
+                                           bottomFooter,
                                            dark,
                                            hideStatus = false,
                                            showEmployer = false,
@@ -158,6 +160,10 @@ export default function InternshipCard({
                 {/* Edit / Delete */}
                 {(OnEdit || OnDelete) && (
                     <div className="ml-auto flex items-center gap-1">
+                        <NavLink to={`/application/${internship.id}`}
+                        >
+                            <Icon name="view_list" size={24}/>
+                        </NavLink>
                         {OnEdit && (
                             <button
                                 className={editBtn}
@@ -195,6 +201,7 @@ export default function InternshipCard({
                                 <Icon name="event" size={20}/>
                                 {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
                             </span>
+
                         </div>
                     )}
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
@@ -208,6 +215,17 @@ export default function InternshipCard({
                             {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
                         </button>
                     )}
+                </div>
+            )}
+            {/* Bottom row: always the last thing in the card */}
+            {bottomFooter && (
+                <div
+                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${
+                        footer || showEmployer || showPreview
+                            ? ""
+                            : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`
+                    }`}>
+                    {bottomFooter}
                 </div>
             )}
         </div>

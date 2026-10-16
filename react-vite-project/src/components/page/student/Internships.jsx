@@ -4,6 +4,8 @@ import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import InternshipCard from "../internship/InternshipCard.jsx";
 import fetcher from "../../../utils/fetcher.js";
+import ApplyControls from "./ApplyControls.jsx";
+import {getStudentCvs} from "../../api/Api.jsx";
 
 function StudentInternships() {
     const {dark} = useOutletContext();
@@ -13,6 +15,7 @@ function StudentInternships() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
+    const [cvs, setCvs] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -44,7 +47,21 @@ function StudentInternships() {
             }
         }
 
+        // Only visible, approved CVs can be used to apply
+        async function loadCvs() {
+            try {
+                const all = await getStudentCvs();
+                if (!cancelled) {
+                    setCvs(all.filter((cv) => cv.visibility === "VISIBLE" && cv.status === "APPROVED"));
+                }
+            } catch (err) {
+                console.error('Failed to load CVs:', err);
+                if (!cancelled) setCvs([]);
+            }
+        }
+
         loadInternships();
+        loadCvs();
 
         return () => {
             cancelled = true;
@@ -96,6 +113,11 @@ function StudentInternships() {
                             showPreview
                             onPreview={handlePreview}
                             expanded={selectedId === internship.id}
+                            bottomFooter={cvs !== null && (<ApplyControls
+                            dark={dark}
+                            cvs={cvs}
+                            internshipId={internship.id}
+                            />)}
                         />
                     ))}
                 </div>

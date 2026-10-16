@@ -220,10 +220,10 @@ export async function deleteInternship(internshipId) {
 // endregion
 
 // region Student internships
-// Returns ResponseEntity.ok("Application submitted successfully"); which is not necessary to keep
+// Returns ResponseEntity.ok("Application submitted successfully");
 export async function applyForInternship(internshipId, cvId) {
-    const response = await fetcher(`/internship/${internshipId}/apply/${cvId}`, {method: "GET"});
-    return handleResponse(response);
+    const response = await fetcher(`student/internship/${internshipId}/apply/${cvId}`, {method: "POST"});
+    return handleEmpty(response);
 }
 
 // endregion
@@ -267,6 +267,19 @@ export async function getUnreadNotificationCount(notificationType) {
 export async function markNotificationsAsRead(targetType) {
     const response = await fetcher(`notifications/read/${targetType}`, {method: "PUT"});
     return handleEmpty(response);
+}
+
+//endregion
+
+//region Application
+export async function getApplications(){
+    const response = await fetcher("employer/applications", {method: "GET"});
+    return handleResponse(response);
+}
+
+export async function getApplicationCv(id){
+    const response = await fetcher(`/applications/${id}/cv`, {method: "GET"});
+    return handleResponse(response);
 }
 
 //endregion

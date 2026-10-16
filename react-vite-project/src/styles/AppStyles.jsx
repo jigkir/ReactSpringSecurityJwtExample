@@ -421,3 +421,20 @@ export function getCvUploadClasses(dark, isDragging) {
 }
 
 // endregion
+
+// region ApplicationCard
+export function getApplicationCardClasses(dark) {
+    return {
+        card: [
+            "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border transition-shadow gap-4 mb-3 shadow-sm",
+            dark ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200 text-gray-900",
+        ].join(" "),
+        title: `text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`,
+        description: `text-sm mt-0.5 ${dark ? "text-slate-400" : "text-gray-500"}`,
+        fileName: [
+            "text-xs font-medium px-2.5 py-1 rounded-md truncate max-w-[200px]",
+            dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-700",
+        ].join(" "),
+    };
+}
+// endregion
