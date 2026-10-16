@@ -11,16 +11,13 @@ const STATUS_KEY_MAP = {
 };
 
 const STATUS_ICON = {
-    PENDING: "schedule",
-    APPROVED: "check_circle",
-    REJECTED: "close",
+    PENDING: "schedule", APPROVED: "check_circle", REJECTED: "close",
 };
 
-const parseSkills = (raw) =>
-    (raw ?? "")
-        .split(",")
-        .map((skill) => skill.trim())
-        .filter(Boolean);
+const parseSkills = (raw) => (raw ?? "")
+    .split(",")
+    .map((skill) => skill.trim())
+    .filter(Boolean);
 
 export default function InternshipCard({
                                            internship,
@@ -33,68 +30,57 @@ export default function InternshipCard({
                                            showEmployer = false,
                                            showPreview = false,
                                            onPreview,
-                                           expanded = false
+                                           expanded = false,
+                                           viewed = false
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
 
-    const statusLabel = STATUS_KEY_MAP[internship.status]
-        ? t(STATUS_KEY_MAP[internship.status])
-        : internship.status;
+    const statusLabel = STATUS_KEY_MAP[internship.status] ? t(STATUS_KEY_MAP[internship.status]) : internship.status;
 
     const skills = parseSkills(internship.requiredSkills);
     const isRejected = internship.status === "REJECTED";
 
-    const isUnpaid = !internship.compensationNegotiable
-        && internship.compensationAmount != null
-        && Number(internship.compensationAmount) === 0;
+    const isUnpaid = !internship.compensationNegotiable && internship.compensationAmount != null && Number(internship.compensationAmount) === 0;
 
-    const compensationText = internship.compensationNegotiable
-        ? t("internshipCard.compensationTbd")
-        : isUnpaid
-            ? t("internshipCard.compensationUnpaid")
-            : t("internshipCard.compensationAmount", {amount: internship.compensationAmount});
+    const compensationText = internship.compensationNegotiable ? t("internshipCard.compensationTbd") : isUnpaid ? t("internshipCard.compensationUnpaid") : t("internshipCard.compensationAmount", {amount: internship.compensationAmount});
 
-    const editBtn = `p-1.5 rounded transition-colors ${dark
-        ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
-        : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
+    const editBtn = `p-1.5 rounded transition-colors ${dark ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300" : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
-    const statusBadge = !hideStatus && (
-        <span className={s.statusBadge(internship.status)}>
+    const statusBadge = !hideStatus && (<span className={s.statusBadge(internship.status)}>
             <Icon name={STATUS_ICON[internship.status] ?? "close"} size={16}/>
             {statusLabel}
-        </span>
-    );
+        </span>);
 
-    return (
-        <div className={s.card}>
+    return (<div className={s.card}>
             {/* MOBILE ONLY: Status badge at the very top of card */}
-            {statusBadge && (
-                <div className="mb-2 block md:hidden">
+            {statusBadge && (<div className="mb-2 block md:hidden">
                     {statusBadge}
-                </div>
-            )}
+                </div>)}
 
             {/* Top row */}
             <div className={s.topRow}>
                 <div className="min-w-0 flex-1">
-                    <h3 className={s.title}>{internship.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h3 className={s.title}>{internship.title}</h3>
+
+                        {showPreview && (<span
+                                className={`rounded-full px-2 py-1 text-xs font-medium ${viewed ? dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600" : dark ? "bg-indigo-900 text-indigo-200" : "bg-indigo-100 text-indigo-700"}`}>
+                             {viewed ? t("studentInternship.viewed") : t("studentInternship.new")}
+                            </span>)}
+                    </div>
                     {(!showPreview || expanded) && (
-                        <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>
-                    )}
+                        <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>)}
                 </div>
                 {/* DESKTOP ONLY: Status badge aligned on top-right */}
-                {statusBadge && (
-                    <div className="hidden md:block">
+                {statusBadge && (<div className="hidden md:block">
                         {statusBadge}
-                    </div>
-                )}
+                    </div>)}
             </div>
 
             {/* Rejection reason (visible to employer and manager) */}
-            {isRejected && internship.rejectionComment && (
-                <div
+            {isRejected && internship.rejectionComment && (<div
                     className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
                     role="note">
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
@@ -104,18 +90,13 @@ export default function InternshipCard({
                        style={{whiteSpace: "pre-wrap"}}>
                         {internship.rejectionComment}
                     </p>
-                </div>
-            )}
+                </div>)}
 
             {/* Required skills: one chip per skill */}
-            {skills.length > 0 && (
-                <div className={`${s.skillsRow} flex flex-wrap items-center gap-1.5`}>
+            {skills.length > 0 && (<div className={`${s.skillsRow} flex flex-wrap items-center gap-1.5`}>
                     <span className="font-semibold mr-1">{t("internshipCard.requiredSkills")}</span>
-                    {skills.map((skill) => (
-                        <span key={skill} className={s.skillBadge}>{skill}</span>
-                    ))}
-                </div>
-            )}
+                    {skills.map((skill) => (<span key={skill} className={s.skillBadge}>{skill}</span>))}
+                </div>)}
 
             {/* Detail badges */}
             <div className={s.detailsRow}>
@@ -126,12 +107,10 @@ export default function InternshipCard({
                 </span>
 
                 {/* Work mode: in person / hybrid / remote */}
-                {internship.workMode && (
-                    <span className={s.detailBadge}>
+                {internship.workMode && (<span className={s.detailBadge}>
                         <Icon name="work" size={20}/>
                         {t(`internshipModal.workModes.${internship.workMode}`, {defaultValue: internship.workMode})}
-                    </span>
-                )}
+                    </span>)}
 
                 {/* Duration */}
                 <span className={s.detailBadge}>
@@ -158,40 +137,32 @@ export default function InternshipCard({
                 </span>
 
                 {/* Edit / Delete */}
-                {(OnEdit || OnDelete) && (
-                    <div className="ml-auto flex items-center gap-1">
+                {(OnEdit || OnDelete) && (<div className="ml-auto flex items-center gap-1">
                         <NavLink to={`/application/${internship.id}`}
                         >
                             <Icon name="view_list" size={24}/>
                         </NavLink>
-                        {OnEdit && (
-                            <button
+                        {OnEdit && (<button
                                 className={editBtn}
                                 aria-label={t("internshipCard.editAria")}
                                 onClick={() => OnEdit(internship)}
                             >
                                 <Icon name="edit" size={24}/>
-                            </button>
-                        )}
-                        {OnDelete && (
-                            <button
+                            </button>)}
+                        {OnDelete && (<button
                                 className={s.deleteBtn}
                                 aria-label={t("internshipCard.deleteAria")}
                                 onClick={() => OnDelete(internship.id)}
                             >
                                 <Icon name="delete" size={24}/>
-                            </button>
-                        )}
-                    </div>
-                )}
+                            </button>)}
+                    </div>)}
             </div>
 
             {/* Footer */}
-            {(footer || showEmployer || showPreview) && (
-                <div
+            {(footer || showEmployer || showPreview) && (<div
                     className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
-                    {showEmployer && (
-                        <div className="mr-auto flex flex-wrap items-center gap-2">
+                    {showEmployer && (<div className="mr-auto flex flex-wrap items-center gap-2">
                             <span className={`${s.detailBadge} break-all`}>{internship.employerEmail}</span>
                             <span className={s.detailBadge}>
                                 <Icon name="home_work" size={20}/>
@@ -202,32 +173,21 @@ export default function InternshipCard({
                                 {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
                             </span>
 
-                        </div>
-                    )}
+                        </div>)}
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
 
-                    {showPreview && (
-                        <button
+                    {showPreview && (<button
                             type="button"
                             onClick={() => onPreview(internship.id)}
                             className="ml-auto rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                         >
                             {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
-                        </button>
-                    )}
-                </div>
-            )}
+                        </button>)}
+                </div>)}
             {/* Bottom row: always the last thing in the card */}
-            {bottomFooter && (
-                <div
-                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${
-                        footer || showEmployer || showPreview
-                            ? ""
-                            : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`
-                    }`}>
+            {bottomFooter && (<div
+                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${footer || showEmployer || showPreview ? "" : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`}`}>
                     {bottomFooter}
-                </div>
-            )}
-        </div>
-    );
+                </div>)}
+        </div>);
 }

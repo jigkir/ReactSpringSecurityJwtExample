@@ -3,9 +3,8 @@ import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import InternshipCard from "../internship/InternshipCard.jsx";
-import fetcher from "../../../utils/fetcher.js";
 import ApplyControls from "./ApplyControls.jsx";
-import {getStudentCvs} from "../../api/Api.jsx";
+import {getStudentCvs, getStudentInternships, markInternshipAsViewed} from "../../api/Api.jsx";
 
 function StudentInternships() {
     const {dark} = useOutletContext();
@@ -22,13 +21,7 @@ function StudentInternships() {
 
         async function loadInternships() {
             try {
-                const response = await fetcher('student/internship');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
+                const data = await getStudentInternships();
 
                 const approved = data
                     .filter(internship => internship.status === 'APPROVED')
@@ -68,8 +61,27 @@ function StudentInternships() {
         };
     }, []);
 
-    const handlePreview = (id) => {
+    const handlePreview = async (id) => {
+        if (selectedId === id) {
+            setSelectedId(null);
+            return;
+        }
+
         setSelectedId(selectedId === id ? null : id);
+
+        try {
+            await markInternshipAsViewed(id);
+
+            setInternships(prev =>
+                prev.map(internship =>
+                    internship.id === id
+                        ? {...internship, viewed: true}
+                        : internship
+                )
+            );
+        } catch (err) {
+            console.error("Failed to mark internship as viewed:", err);
+        }
     };
 
     return (
@@ -111,12 +123,13 @@ function StudentInternships() {
                             showEmployer
                             hideStatus
                             showPreview
+                            viewed={internship.viewed}
                             onPreview={handlePreview}
                             expanded={selectedId === internship.id}
                             bottomFooter={cvs !== null && (<ApplyControls
-                            dark={dark}
-                            cvs={cvs}
-                            internshipId={internship.id}
+                                dark={dark}
+                                cvs={cvs}
+                                internshipId={internship.id}
                             />)}
                         />
                     ))}
