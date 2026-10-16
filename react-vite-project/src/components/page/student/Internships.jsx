@@ -3,6 +3,7 @@ import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import InternshipCard from "../internship/InternshipCard.jsx";
+import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
 import ApplyControls from "./ApplyControls.jsx";
 import {getStudentCvs, getStudentInternships, markInternshipAsViewed} from "../../api/Api.jsx";
 
@@ -15,6 +16,8 @@ function StudentInternships() {
     const [error, setError] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
     const [cvs, setCvs] = useState(null);
+    const filters = useInternshipFilters(internships);
+    const visible = filters.visible ?? [];
 
     useEffect(() => {
         let cancelled = false;
@@ -25,9 +28,7 @@ function StudentInternships() {
 
                 const approved = data
                     .filter(internship => internship.status === 'APPROVED')
-                    .sort((a, b) =>
-                        new Date(b.uploadedAt) - new Date(a.uploadedAt)
-                    );
+                    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
 
                 if (!cancelled) {
                     setInternships(approved);
@@ -72,20 +73,16 @@ function StudentInternships() {
         try {
             await markInternshipAsViewed(id);
 
-            setInternships(prev =>
-                prev.map(internship =>
-                    internship.id === id
-                        ? {...internship, viewed: true}
-                        : internship
-                )
-            );
+            setInternships(prev => prev.map(internship => internship.id === id ? {
+                ...internship,
+                viewed: true
+            } : internship));
         } catch (err) {
             console.error("Failed to mark internship as viewed:", err);
         }
     };
 
-    return (
-        <div className={s.page}>
+    return (<div className={s.page}>
             {/* Same header layout as the manager page */}
             <div className={s.headerSection}>
                 <div>
@@ -96,27 +93,32 @@ function StudentInternships() {
             </div>
 
             <div className={s.listSection}>
+                {!loading && !error && internships.length > 0 && (<InternshipFilters
+                        dark={dark}
+                        filters={filters}
+                        showStatus={false}
+                    />)}
+
                 <div className={s.scrollArea}>
-                    {loading && (
-                        <p className={s.loadingText}>
+                    {loading && (<p className={s.loadingText}>
                             Loading internships...
-                        </p>
-                    )}
+                        </p>)}
 
-                    {error && (
-                        <p className={s.errorText}>
+                    {error && (<p className={s.errorText}>
                             Failed to load internships.
-                        </p>
-                    )}
+                        </p>)}
 
-                    {!loading && !error && internships.length === 0 && (
-                        <p className={s.emptyText}>
+                    {!loading && !error && internships.length === 0 && (<p className={s.emptyText}>
                             No internships are currently available.
+                        </p>)}
+
+                    {!loading && !error && internships.length > 0 && visible.length === 0 && (
+                        <p className={s.emptyText}>
+                            {t("internshipFilters.noMatch")}
                         </p>
                     )}
 
-                    {!loading && !error && internships.map(internship => (
-                        <InternshipCard
+                    {!loading && !error && visible.map(internship => (<InternshipCard
                             key={internship.id}
                             internship={internship}
                             dark={dark}
@@ -131,12 +133,10 @@ function StudentInternships() {
                                 cvs={cvs}
                                 internshipId={internship.id}
                             />)}
-                        />
-                    ))}
+                        />))}
                 </div>
             </div>
-        </div>
-    );
+        </div>);
 }
 
 export default StudentInternships;
