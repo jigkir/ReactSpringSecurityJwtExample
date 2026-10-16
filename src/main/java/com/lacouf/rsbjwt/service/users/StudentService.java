@@ -232,7 +232,7 @@ public class StudentService {
                 .map(application -> {
                     Internship internship = application.getInternship();
                     return InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(),
-                            CvFileResponseDto.of(application.getCv()), application.getApplicationDate());
+                            CvFileResponseDto.of(application.getCv()), application.getApplicationDate(), application.getInternshipApplicationStatus());
                 })
                 .toList();
     }
