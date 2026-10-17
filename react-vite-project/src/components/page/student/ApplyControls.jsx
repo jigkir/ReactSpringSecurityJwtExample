@@ -2,14 +2,15 @@ import {useTranslation} from "react-i18next";
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import Button from "../../../styles/Button.jsx";
-import {applyForInternship} from "../../api/Api.jsx";
+import {applyForInternship, updateApplicationCV} from "../../api/Api.jsx";
 import Icon from "../../../styles/Icon.jsx";
 
-function ApplyControls({internshipId, cvs, dark, alreadyApplied}) {
+function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer}) {
     const {t} = useTranslation();
     const [cvId, setCvId] = useState(null);
     const [status, setStatus] = useState("idle"); // idle | sending | applied | error
     const [errorKey, setErrorKey] = useState(null);
+    const [alreadyApplied, setAlreadyApplied] = useState(false);
 
     // Default to the first CV until the student picks another one
     const selectedCvId = cvId || cvs[0]?.id;
@@ -29,11 +30,12 @@ function ApplyControls({internshipId, cvs, dark, alreadyApplied}) {
         );
     }
    useEffect(() => {
-       if(alreadyApplied) {
+       if(application.map((applic) => applic.internshipId).includes(internshipId)) {
            setStatus("applied");
+           setAlreadyApplied(true);
        }
    })
-    if (status === "applied") {
+    if (status === "applied" && viewedByEmployer) {
         return (
             <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${dark ? "text-green-300" : "text-green-700"}`}
                   role="status">
@@ -48,6 +50,21 @@ function ApplyControls({internshipId, cvs, dark, alreadyApplied}) {
         setErrorKey(null);
         try {
             await applyForInternship(internshipId, selectedCvId);
+            setStatus("applied");
+        } catch (err) {
+            setErrorKey(err.status === 409
+                ? "studentInternship.alreadyApplied"
+                : "studentInternship.applyFailed");
+            setStatus("error");
+        }
+    };
+
+    const handleUpdate = async () => {
+        setStatus("sending");
+        setErrorKey(null);
+        try {
+
+            await updateApplicationCV(internshipId, selectedCvId);
             setStatus("applied");
         } catch (err) {
             setErrorKey(err.status === 409
@@ -79,11 +96,21 @@ function ApplyControls({internshipId, cvs, dark, alreadyApplied}) {
                     <option key={cv.id} value={cv.id}>{cv.fileName}</option>
                 ))}
             </select>
-            <Button tone="success" dark={dark} icon="send"
-                    disabled={status === "sending" || status === "applied"}
-                    onClick={handleApply}>
-                {t("studentInternship.apply")}
-            </Button>
+            {/*Set to be alreadyApplied instead of status  === "applied" because the second causes
+            flickering when the status briefly changes to "sending" upon clicking the button*/}
+            {alreadyApplied ?
+                <Button tone="success" dark={dark} icon="send"
+                        disabled={status === "sending"}
+                        onClick={handleApply}>
+                    {t("studentInternship.updateCV")} currently unfinished
+                </Button>
+                :
+                <Button tone="success" dark={dark} icon="send"
+                        disabled={status === "sending" || status === "applied"}
+                        onClick={handleApply}>
+                    {t("studentInternship.apply")}
+                </Button>
+            }
         </>
     );
 }

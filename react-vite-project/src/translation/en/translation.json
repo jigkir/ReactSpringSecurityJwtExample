@@ -359,7 +359,8 @@
     "goToCv": "Go to my CVs",
     "applied": "Application sent",
     "chooseCv": "Choose a CV",
-    "apply": "Apply"
+    "apply": "Apply",
+    "updateCV": "Update CV"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",

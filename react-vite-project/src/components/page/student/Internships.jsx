@@ -21,7 +21,7 @@ function StudentInternships() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
-    const [appliedInternshipIds, setAppliedInternshipIds] = useState([]);
+    const [appliedInternships, setAppliedInternships] = useState([]);
     const [cvs, setCvs] = useState(null);
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
@@ -43,7 +43,7 @@ function StudentInternships() {
     const loadAppliedInternships = useCallback(async () => {
         try {
             const data = await getStudentAppliedInternships();
-            setAppliedInternshipIds(data.map((application) => application.internshipId));
+            setAppliedInternships(data);
         } catch {
             setError(true);
         }
@@ -139,7 +139,7 @@ function StudentInternships() {
                         dark={dark}
                         cvs={cvs}
                         internshipId={internship.id}
-                        alreadyApplied={appliedInternshipIds.includes(internship.id)}
+                        application={appliedInternships.filter((application) => application.internshipId === internship.id)}
                     />)}
                 />))}
             </div>

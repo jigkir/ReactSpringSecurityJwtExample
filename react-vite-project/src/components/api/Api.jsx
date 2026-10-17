@@ -242,6 +242,12 @@ export async function getStudentAppliedInternships() {
     return handleResponse(response);
 }
 
+export async function updateApplicationCV(applicationId, cvId) {
+    const response = await fetcher(`student/applications/${applicationId}/${cvId}`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
+
 // endregion
 
 // region Manager internships
