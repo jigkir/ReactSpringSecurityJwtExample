@@ -5,7 +5,7 @@ import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import InternshipCard from "../internship/InternshipCard.jsx";
 import fetcher from "../../../utils/fetcher.js";
 import ApplyControls from "./ApplyControls.jsx";
-import {getStudentCvs} from "../../api/Api.jsx";
+import {getStudentAppliedInternships, getStudentCvs} from "../../api/Api.jsx";
 
 function StudentInternships() {
     const {dark} = useOutletContext();
@@ -15,29 +15,43 @@ function StudentInternships() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
+    const [appliedInternshipIds, setAppliedInternshipIds] = useState([]);
     const [cvs, setCvs] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
 
+
+
         async function loadInternships() {
             try {
                 const response = await fetcher('student/internship');
-
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
-
                 const data = await response.json();
-
                 const approved = data
                     .filter(internship => internship.status === 'APPROVED')
                     .sort((a, b) =>
                         new Date(b.uploadedAt) - new Date(a.uploadedAt)
                     );
-
                 if (!cancelled) {
                     setInternships(approved);
+                }
+            } catch (err) {
+                console.error('Failed to load internships:', err);
+                if (!cancelled) setError(true);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+
+        async function loadAppliedInternships() {
+            try {
+                const data = await getStudentAppliedInternships();
+                if (!cancelled) {
+                    setAppliedInternshipIds(data.map((inter) => inter.id));
+                    console.log(data);
                 }
             } catch (err) {
                 console.error('Failed to load internships:', err);
@@ -61,6 +75,7 @@ function StudentInternships() {
         }
 
         loadInternships();
+        loadAppliedInternships();
         loadCvs();
 
         return () => {
@@ -117,6 +132,7 @@ function StudentInternships() {
                             dark={dark}
                             cvs={cvs}
                             internshipId={internship.id}
+                            alreadyApplied={appliedInternshipIds.includes(internship.id)}
                             />)}
                         />
                     ))}

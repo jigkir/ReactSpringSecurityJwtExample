@@ -226,6 +226,11 @@ export async function applyForInternship(internshipId, cvId) {
     return handleEmpty(response);
 }
 
+export async function getStudentAppliedInternships() {
+    const response = await fetcher(`student/applications`, {method: "GET"});
+    return handleResponse(response);
+}
+
 // endregion
 
 // region Manager internships

@@ -352,7 +352,12 @@
     "title": "Available Internships",
     "comingSoon": "This page will be available soon!",
     "preview": "Preview",
-    "hide": "Hide"
+    "hide": "Hide",
+    "noApprovedCv": "You need an approved CV to apply.",
+    "goToCv": "Go to my CVs",
+    "applied": "Application sent",
+    "chooseCv": "Choose a CV",
+    "apply": "Apply"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",
