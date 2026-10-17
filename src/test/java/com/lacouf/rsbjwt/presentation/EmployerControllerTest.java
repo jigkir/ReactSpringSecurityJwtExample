@@ -352,4 +352,15 @@ public class EmployerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileName").value("cv.pdf"));
     }
+
+    @Test
+    void shouldReturnInternshipApplicationCounts() throws Exception {
+        // Arrange
+        when(employerService.countReceivedInternshipApplicationsByInternship(EMPLOYER_EMAIL)).thenReturn(Map.of(10L, 2L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/applications/count").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$['10']").value(2));
+    }
 }

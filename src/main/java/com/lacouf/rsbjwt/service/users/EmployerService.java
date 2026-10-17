@@ -30,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployerService {
@@ -171,6 +173,12 @@ public class EmployerService {
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, applicationId);
 
         return CvFileResponseDto.of(internshipApplication.getCv());
+    }
+
+    public Map<Long, Long> countReceivedInternshipApplicationsByInternship(String email) {
+        return internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(email)
+                .stream()
+                .collect(Collectors.toMap(Internship::getId, internshipApplicationRepository::countByInternship));
     }
 
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {

@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/employer")
@@ -67,5 +68,10 @@ public class EmployerController {
     @GetMapping("/applications/{applicationId}/cv")
     public ResponseEntity<CvFileResponseDto> openReceivedInternshipApplicationCv(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
         return ResponseEntity.ok(employerService.openReceivedInternshipApplicationCv(applicationId, authentication.getName()));
+    }
+
+    @GetMapping("/applications/count")
+    public ResponseEntity<Map<Long, Long>> countReceivedInternshipApplicationsByInternship(Authentication authentication) {
+        return ResponseEntity.ok(employerService.countReceivedInternshipApplicationsByInternship(authentication.getName()));
     }
 }

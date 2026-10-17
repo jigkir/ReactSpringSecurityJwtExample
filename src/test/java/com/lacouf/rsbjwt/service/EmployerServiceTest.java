@@ -44,6 +44,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -366,5 +367,18 @@ public class EmployerServiceTest {
 
         verify(internshipApplicationRepository).save(internshipApplication);
         verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
+    }
+
+    @Test
+    void shouldCountReceivedInternshipApplicationsOfEachInternshipWhenEmployerHasApplications() {
+        // Arrange
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(EMPLOYER_EMAIL)).thenReturn(List.of(internship));
+        when(internshipApplicationRepository.countByInternship(internship)).thenReturn(2L);
+
+        // Act
+        Map<Long, Long> counts = employerService.countReceivedInternshipApplicationsByInternship(EMPLOYER_EMAIL);
+
+        // Assert
+        assert (Map.of(10L, 2L)).equals(counts);
     }
 }
