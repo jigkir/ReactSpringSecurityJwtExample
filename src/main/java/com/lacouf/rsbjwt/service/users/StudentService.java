@@ -225,6 +225,7 @@ public class StudentService {
         applicationRepository.save(application);
     }
 
+    @Transactional(readOnly = true)
     public List<InternshipApplicationResponseDto> getInternshipApplications(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
         return applicationRepository.findByStudent(student).stream()
@@ -232,7 +233,7 @@ public class StudentService {
                 .map(application -> {
                     Internship internship = application.getInternship();
                     return InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(),
-                            CvFileResponseDto.of(application.getCv()), application.getApplicationDate(), application.getInternshipApplicationStatus());
+                           StudentCvResponseDto.of(application.getCv()), application.getApplicationDate(), application.getInternshipApplicationStatus());
                 })
                 .toList();
     }
