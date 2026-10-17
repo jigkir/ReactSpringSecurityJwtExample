@@ -155,6 +155,7 @@ public class EmployerService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ReceivedInternshipApplicationResponseDto> getReceivedInternshipApplications(String email) {
         return internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(email)
                 .stream()
