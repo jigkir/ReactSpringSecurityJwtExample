@@ -288,13 +288,13 @@ export async function markNotificationsAsRead(targetType) {
 //endregion
 
 //region Application
-export async function getApplications(){
+export async function getApplications() {
     const response = await fetcher("employer/applications", {method: "GET"});
     return handleResponse(response);
 }
 
-export async function getApplicationCv(id){
-    const response = await fetcher(`/applications/${id}/cv`, {method: "GET"});
+export async function getApplicationCv(id) {
+    const response = await fetcher(`employer/applications/${id}/cv`, {method: "GET"});
     return handleResponse(response);
 }
 

@@ -439,7 +439,11 @@
       "pendingValidation": "En attente de validation",
       "approved": "Approuvée",
       "rejected": "Rejetée"
-    }
+    },
+    "viewApplication": "Consulter candidature"
+  },
+  "viewApplication": {
+    "loadError": "Impossible de charger les candidatures"
   },
   "dev": {
     "label": "Dev",
