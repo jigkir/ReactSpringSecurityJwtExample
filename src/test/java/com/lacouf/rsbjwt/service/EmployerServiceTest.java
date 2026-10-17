@@ -246,6 +246,7 @@ public class EmployerServiceTest {
     void shouldSoftDeleteInternship() throws InternshipNotFoundException {
         // Arrange
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(internshipApplicationRepository.findByInternship(internship)).thenReturn(List.of(receivedInternshipApplication()));
 
         // Act
         employerService.deleteInternship(10L, EMPLOYER_EMAIL);
@@ -255,6 +256,7 @@ public class EmployerServiceTest {
 
         verify(internshipRepository).save(internship);
         verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
     }
 
     @Test

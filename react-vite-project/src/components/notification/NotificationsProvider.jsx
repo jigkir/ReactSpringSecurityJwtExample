@@ -26,18 +26,27 @@ const TARGET_TYPE = {
     INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
 };
 
-// Opening this page marks the role's review decisions as read
-const REVIEW_PAGE = {
-    [ROLE.STUDENT]: {
-        path: "/cv",
-        targetType: TARGET_TYPE.CV,
-        countKeys: ["cvApproved", "cvRejected"]
-    },
-    [ROLE.EMPLOYER]: {
-        path: "/internships",
-        targetType: TARGET_TYPE.INTERNSHIP_OFFER,
-        countKeys: ["internshipApproved", "internshipRejected"]
-    },
+// Opening one of these pages marks the matching notifications as read
+const MARK_AS_READ_PAGES = {
+    [ROLE.STUDENT]: [
+        {
+            path: "/cv",
+            targetType: TARGET_TYPE.CV,
+            countKeys: ["cvApproved", "cvRejected"]
+        },
+        {
+            path: "/internship",
+            targetType: TARGET_TYPE.INTERNSHIP_OFFER,
+            countKeys: ["internship"]
+        },
+    ],
+    [ROLE.EMPLOYER]: [
+        {
+            path: "/internships",
+            targetType: TARGET_TYPE.INTERNSHIP_OFFER,
+            countKeys: ["internshipApproved", "internshipRejected"]
+        },
+    ],
 };
 
 /**
@@ -160,19 +169,19 @@ export function NotificationsProvider({user, children}) {
         void refresh();
     }, [refresh, pathname]);
 
-    // Opening the review page marks review decisions as read
+    // Opening one of the role's pages marks its notifications as read
     useEffect(() => {
-        const reviewPage = REVIEW_PAGE[role];
-        if (!reviewPage || pathname !== reviewPage.path) return;
+        const openedPage = MARK_AS_READ_PAGES[role]?.find((page) => page.path === pathname);
+        if (!openedPage) return;
 
-        const unreadDecisions = reviewPage.countKeys.reduce((sum, key) => sum + counts[key], 0);
-        if (unreadDecisions === 0) return;
+        const unreadCount = openedPage.countKeys.reduce((sum, key) => sum + counts[key], 0);
+        if (unreadCount === 0) return;
 
         let cancelled = false;
-        markNotificationsAsRead(reviewPage.targetType)
+        markNotificationsAsRead(openedPage.targetType)
             .then(() => {
                 if (!cancelled) {
-                    const clearedCounts = Object.fromEntries(reviewPage.countKeys.map((key) => [key, 0]));
+                    const clearedCounts = Object.fromEntries(openedPage.countKeys.map((key) => [key, 0]));
                     setCounts((c) => ({...c, ...clearedCounts}));
                 }
             })

@@ -141,6 +141,7 @@ public class EmployerService {
         internship.markAsDeleted();
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
+        closeNewInternshipApplicationNotifications(internship);
 
         internshipRepository.save(internship);
     }
@@ -192,5 +193,10 @@ public class EmployerService {
     private InternshipApplication findReceivedInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {
         return internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(applicationId, email)
                 .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
+    }
+
+    private void closeNewInternshipApplicationNotifications(Internship internship) {
+        internshipApplicationRepository.findByInternship(internship)
+                .forEach(application -> notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, application.getId()));
     }
 }

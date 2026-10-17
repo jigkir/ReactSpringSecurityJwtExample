@@ -18,4 +18,6 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
     List<InternshipApplication> findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(String email);
 
     Optional<InternshipApplication> findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(long id, String email);
+
+    List<InternshipApplication> findByInternship(Internship internship);
 }

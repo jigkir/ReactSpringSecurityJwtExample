@@ -33,7 +33,8 @@ export default function InternshipCard({
                                            showEmployer = false,
                                            showPreview = false,
                                            onPreview,
-                                           expanded = false
+                                           expanded = false,
+                                           viewed = false
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
@@ -79,7 +80,19 @@ export default function InternshipCard({
             {/* Top row */}
             <div className={s.topRow}>
                 <div className="min-w-0 flex-1">
-                    <h3 className={s.title}>{internship.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h3 className={s.title}>{internship.title}</h3>
+
+                        {/* New / Viewed badge (student view) */}
+                        {showPreview && (
+                            <span
+                                className={`rounded-full px-2 py-1 text-xs font-medium ${viewed
+                                    ? dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600"
+                                    : dark ? "bg-indigo-900 text-indigo-200" : "bg-indigo-100 text-indigo-700"}`}>
+                                {viewed ? t("studentInternship.viewed") : t("studentInternship.new")}
+                            </span>
+                        )}
+                    </div>
                     {(!showPreview || expanded) && (
                         <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>
                     )}
@@ -157,14 +170,18 @@ export default function InternshipCard({
                     <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
 
-                {/* Edit / Delete */}
+                {/* View applications / Edit / Delete */}
                 {(OnEdit || OnDelete) && (
                     <div className="ml-auto flex items-center gap-1">
-                        {!isRejected &&
-                        <NavLink to={`/application/${internship.id}`} state={{ internshipData: internship }} className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                        >
-                            {t("internshipCard.viewApplication")}
-                        </NavLink>}
+                        {!isRejected && (
+                            <NavLink
+                                to={`/application/${internship.id}`}
+                                state={{internshipData: internship}}
+                                className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                            >
+                                {t("internshipCard.viewApplication")}
+                            </NavLink>
+                        )}
                         {OnEdit && (
                             <button
                                 className={editBtn}
@@ -202,7 +219,6 @@ export default function InternshipCard({
                                 <Icon name="event" size={20}/>
                                 {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
                             </span>
-
                         </div>
                     )}
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
