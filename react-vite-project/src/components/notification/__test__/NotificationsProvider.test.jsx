@@ -3,6 +3,7 @@ import {render, screen, waitFor, fireEvent} from '@testing-library/react';
 import {BrowserRouter, MemoryRouter} from 'react-router-dom';
 import {NotificationsProvider, useNotifications} from '../NotificationsProvider';
 import * as api from '../../api/Api.jsx';
+import {REFRESH_INTERVAL_MS} from "../../../utils/usePolling.js";
 
 vi.mock('../../api/Api.jsx', () => ({
     getNotifications: vi.fn(),
@@ -159,6 +160,7 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
     afterEach(() => {
         localStorage.clear();
         vi.clearAllMocks();
+        vi.useRealTimers();
     });
 
     it('should count only new internship application notifications when employer has unread notifications', async () => {
@@ -210,5 +212,31 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
         });
 
         expect(screen.getByTestId('new-application-count').textContent).toBe('0');
+    });
+
+    it('should increment new internship application count when a student applies while employer stays on the page', async () => {
+        // Arrange
+        vi.useFakeTimers({shouldAdvanceTime: true});
+
+        api.getNotifications
+            .mockResolvedValueOnce([{id: 20, notificationType: NEW_INTERNSHIP_APPLICATION}])
+            .mockResolvedValueOnce([
+                {id: 20, notificationType: NEW_INTERNSHIP_APPLICATION},
+                {id: 21, notificationType: NEW_INTERNSHIP_APPLICATION}
+            ]);
+
+        renderEmployerNotificationsAt();
+
+        await waitFor(() => {
+            expect(screen.getByTestId('new-application-count').textContent).toBe('1');
+        });
+
+        // Act
+        await vi.advanceTimersByTimeAsync(REFRESH_INTERVAL_MS);
+
+        // Assert
+        await waitFor(() => {
+            expect(screen.getByTestId('new-application-count').textContent).toBe('2');
+        });
     });
 });

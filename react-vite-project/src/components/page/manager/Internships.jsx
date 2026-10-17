@@ -21,6 +21,7 @@ import Button from '../../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {approveInternship, getManagerInternships, rejectInternship} from '../../api/Api.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
+import {usePolling} from '../../../utils/usePolling.js';
 
 const ManagerInternships = () => {
     const {dark} = useOutletContext();
@@ -54,6 +55,8 @@ const ManagerInternships = () => {
     useEffect(() => {
         load();
     }, [load]);
+
+    usePolling(load);
 
     const closeForm = () => {
         setConfirmId(null);

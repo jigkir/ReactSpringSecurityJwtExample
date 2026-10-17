@@ -53,6 +53,7 @@ import {
 import {base64ToBlobUrl, formatBytes, formatDate} from './cvUtils.js';
 import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
+import {usePolling} from "../../../utils/usePolling.js";
 
 // ─── API bindings (all HTTP lives in Api.jsx) ─────────────────────────────────
 
@@ -142,6 +143,8 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
     useEffect(() => {
         void load();
     }, [load]);
+
+    usePolling(load);
 
     // Student: list as loaded. Manager: filtered + sorted list from the hook.
     const visibleDocs = docs === null ? null : isManager ? filters.visible : docs;

@@ -1,11 +1,17 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import InternshipCard from "../internship/InternshipCard.jsx";
 import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
 import ApplyControls from "./ApplyControls.jsx";
-import {getStudentAppliedInternships, getStudentCvs, getStudentInternships, markInternshipAsViewed} from "../../api/Api.jsx";
+import {
+    getStudentAppliedInternships,
+    getStudentCvs,
+    getStudentInternships,
+    markInternshipAsViewed
+} from "../../api/Api.jsx";
+import {usePolling} from "../../../utils/usePolling.js";
 
 function StudentInternships() {
     const {dark} = useOutletContext();
@@ -20,64 +26,48 @@ function StudentInternships() {
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
 
-    useEffect(() => {
-        let cancelled = false;
-
-
-
-        async function loadInternships() {
-            try {
-                const data = await getStudentInternships();
-                const approved = data
-                    .filter(internship => internship.status === 'APPROVED')
-                    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-                if (!cancelled) {
-                    setInternships(approved);
-                }
-            } catch (err) {
-                console.error('Failed to load internships:', err);
-                if (!cancelled) setError(true);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
+    const loadInternships = useCallback(async () => {
+        try {
+            const data = await getStudentInternships();
+            setInternships(data
+                .filter(internship => internship.status === 'APPROVED')
+                .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)));
+            setError(false);
+        } catch {
+            setError(true);
+        } finally {
+            setLoading(false);
         }
-
-        async function loadAppliedInternships() {
-            try {
-                const data = await getStudentAppliedInternships();
-                if (!cancelled) {
-                    setAppliedInternshipIds(data.map((inter) => inter.id));
-                    console.log(data);
-                }
-            } catch (err) {
-                console.error('Failed to load internships:', err);
-                if (!cancelled) setError(true);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        }
-
-        // Only visible, approved CVs can be used to apply
-        async function loadCvs() {
-            try {
-                const all = await getStudentCvs();
-                if (!cancelled) {
-                    setCvs(all.filter((cv) => cv.visibility === "VISIBLE" && cv.status === "APPROVED"));
-                }
-            } catch (err) {
-                console.error('Failed to load CVs:', err);
-                if (!cancelled) setCvs([]);
-            }
-        }
-
-        loadInternships();
-        loadAppliedInternships();
-        loadCvs();
-
-        return () => {
-            cancelled = true;
-        };
     }, []);
+
+    const loadAppliedInternships = useCallback(async () => {
+        try {
+            const data = await getStudentAppliedInternships();
+            setAppliedInternshipIds(data.map((application) => application.internshipId));
+        } catch {
+            setError(true);
+        }
+    }, []);
+
+    // Only visible, approved CVs can be used to apply
+    const loadCvs = useCallback(async () => {
+        try {
+            const all = await getStudentCvs();
+            setCvs(all.filter((cv) => cv.visibility === "VISIBLE" && cv.status === "APPROVED"));
+        } catch {
+            setCvs([]);
+        }
+    }, []);
+
+    const load = useCallback(async () => {
+        await Promise.all([loadInternships(), loadAppliedInternships(), loadCvs()]);
+    }, [loadInternships, loadAppliedInternships, loadCvs]);
+
+    useEffect(() => {
+        void load();
+    }, [load]);
+
+    usePolling(load);
 
     const handlePreview = async (id) => {
         if (selectedId === id) {
@@ -100,61 +90,61 @@ function StudentInternships() {
     };
 
     return (<div className={s.page}>
-            {/* Same header layout as the manager page */}
-            <div className={s.headerSection}>
-                <div>
-                    <h1 className={s.title}>
-                        {t("studentInternship.title")}
-                    </h1>
-                </div>
+        {/* Same header layout as the manager page */}
+        <div className={s.headerSection}>
+            <div>
+                <h1 className={s.title}>
+                    {t("studentInternship.title")}
+                </h1>
             </div>
+        </div>
 
-            <div className={s.listSection}>
-                {!loading && !error && internships.length > 0 && (<InternshipFilters
+        <div className={s.listSection}>
+            {!loading && !error && internships.length > 0 && (<InternshipFilters
+                dark={dark}
+                filters={filters}
+                showStatus={false}
+            />)}
+
+            <div className={s.scrollArea}>
+                {loading && (<p className={s.loadingText}>
+                    Loading internships...
+                </p>)}
+
+                {error && (<p className={s.errorText}>
+                    Failed to load internships.
+                </p>)}
+
+                {!loading && !error && internships.length === 0 && (<p className={s.emptyText}>
+                    No internships are currently available.
+                </p>)}
+
+                {!loading && !error && internships.length > 0 && visible.length === 0 && (
+                    <p className={s.emptyText}>
+                        {t("internshipFilters.noMatch")}
+                    </p>
+                )}
+
+                {!loading && !error && visible.map(internship => (<InternshipCard
+                    key={internship.id}
+                    internship={internship}
+                    dark={dark}
+                    showEmployer
+                    hideStatus
+                    showPreview
+                    viewed={internship.viewed}
+                    onPreview={handlePreview}
+                    expanded={selectedId === internship.id}
+                    bottomFooter={cvs !== null && (<ApplyControls
                         dark={dark}
-                        filters={filters}
-                        showStatus={false}
+                        cvs={cvs}
+                        internshipId={internship.id}
+                        alreadyApplied={appliedInternshipIds.includes(internship.id)}
                     />)}
-
-                <div className={s.scrollArea}>
-                    {loading && (<p className={s.loadingText}>
-                            Loading internships...
-                        </p>)}
-
-                    {error && (<p className={s.errorText}>
-                            Failed to load internships.
-                        </p>)}
-
-                    {!loading && !error && internships.length === 0 && (<p className={s.emptyText}>
-                            No internships are currently available.
-                        </p>)}
-
-                    {!loading && !error && internships.length > 0 && visible.length === 0 && (
-                        <p className={s.emptyText}>
-                            {t("internshipFilters.noMatch")}
-                        </p>
-                    )}
-
-                    {!loading && !error && visible.map(internship => (<InternshipCard
-                            key={internship.id}
-                            internship={internship}
-                            dark={dark}
-                            showEmployer
-                            hideStatus
-                            showPreview
-                            viewed={internship.viewed}
-                            onPreview={handlePreview}
-                            expanded={selectedId === internship.id}
-                            bottomFooter={cvs !== null && (<ApplyControls
-                                dark={dark}
-                                cvs={cvs}
-                                internshipId={internship.id}
-                            alreadyApplied={appliedInternshipIds.includes(internship.id)}
-                            />)}
-                        />))}
-                </div>
+                />))}
             </div>
-        </div>);
+        </div>
+    </div>);
 }
 
 export default StudentInternships;

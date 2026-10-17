@@ -1,6 +1,7 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {useLocation} from 'react-router-dom';
 import {getNotifications, getUnreadNotificationCount, markNotificationsAsRead} from '../api/Api.jsx';
+import {usePolling} from "../../utils/usePolling.js";
 
 const ROLE = {
     MANAGER: "MANAGER",
@@ -168,6 +169,9 @@ export function NotificationsProvider({user, children}) {
     useEffect(() => {
         void refresh();
     }, [refresh, pathname]);
+
+    // Keeps counts up to date while the user stays on the same page
+    usePolling(refresh, Boolean(userId));
 
     // Opening one of the role's pages marks its notifications as read
     useEffect(() => {

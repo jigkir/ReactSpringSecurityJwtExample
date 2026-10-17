@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipForm from './InternshipForm.jsx';
@@ -7,6 +7,7 @@ import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {createInternship, deleteInternship, getEmployerInternships, updateInternship} from '../../api/Api.jsx';
+import {usePolling} from "../../../utils/usePolling.js";
 
 function PostInternship({user}) {
     const {dark} = useOutletContext();
@@ -23,13 +24,24 @@ function PostInternship({user}) {
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
 
+    const isLoggedIn = Boolean(user?.isLoggedIn);
+
+    const load = useCallback(async () => {
+        try {
+            setInternships(await getEmployerInternships());
+            setError("");
+        } catch {
+            setError({key: "postInternship.loadError"});
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
-        if (!user?.isLoggedIn) return;
-        getEmployerInternships()
-            .then(setInternships)
-            .catch(() => setError({key: "postInternship.loadError"}))
-            .finally(() => setLoading(false));
-    }, [user?.isLoggedIn]);
+        if (isLoggedIn) void load();
+    }, [isLoggedIn, load]);
+
+    usePolling(load, isLoggedIn);
 
     // Bring the inline form into view (page scroll only) when it opens
     useEffect(() => {

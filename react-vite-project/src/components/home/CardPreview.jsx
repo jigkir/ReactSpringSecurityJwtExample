@@ -14,9 +14,10 @@
  *   classes   result of getHomeClasses(dark)
  */
 
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Icon from '../../styles/Icon.jsx';
+import {usePolling} from "../../utils/usePolling.js";
 
 // region Constants
 // [status, translation key, Material Symbols icon]
@@ -34,15 +35,20 @@ export default function CardPreview({load, itemsKey = "home.preview.latest", cla
     const [failed, setFailed] = useState(false);
 
     // region Data loading
-    useEffect(() => {
-        let cancelled = false;
-        load()
-            .then((d) => !cancelled && setData(d))
-            .catch(() => !cancelled && setFailed(true));
-        return () => {
-            cancelled = true;
-        };
+    const loadPreview = useCallback(async () => {
+        try {
+            setData(await load());
+            setFailed(false);
+        } catch {
+            setFailed(true);
+        }
     }, [load]);
+
+    useEffect(() => {
+        void loadPreview();
+    }, [loadPreview]);
+
+    usePolling(loadPreview);
 
     // endregion
 
