@@ -50,144 +50,144 @@ export default function InternshipCard({
     // Extract status badge element to easily reuse between mobile and desktop layouts
     const statusBadge = !hideStatus && (<span className={s.statusBadge(internship.status)}>
             <Icon name={STATUS_ICON[internship.status] ?? "close"} size={16}/>
-            {statusLabel}
+        {statusLabel}
         </span>);
 
     return (<div className={s.card}>
-            {/* MOBILE ONLY: Status badge at the very top of card */}
-            {statusBadge && (<div className="mb-2 block md:hidden">
-                    {statusBadge}
-                </div>)}
+        {/* MOBILE ONLY: Status badge at the very top of card */}
+        {statusBadge && (<div className="mb-2 block md:hidden">
+            {statusBadge}
+        </div>)}
 
-            {/* Top row */}
-            <div className={s.topRow}>
-                <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <h3 className={s.title}>{internship.title}</h3>
+        {/* Top row */}
+        <div className={s.topRow}>
+            <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                    <h3 className={s.title}>{internship.title}</h3>
 
-                        {showPreview && (<span
-                                className={`rounded-full px-2 py-1 text-xs font-medium ${viewed ? dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600" : dark ? "bg-indigo-900 text-indigo-200" : "bg-indigo-100 text-indigo-700"}`}>
+                    {showPreview && (<span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${viewed ? dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600" : dark ? "bg-indigo-900 text-indigo-200" : "bg-indigo-100 text-indigo-700"}`}>
                              {viewed ? t("studentInternship.viewed") : t("studentInternship.new")}
                             </span>)}
-                    </div>
-                    {(!showPreview || expanded) && (
-                        <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>)}
                 </div>
-                {/* DESKTOP ONLY: Status badge aligned on top-right */}
-                {statusBadge && (<div className="hidden md:block">
-                        {statusBadge}
-                    </div>)}
+                {(!showPreview || expanded) && (
+                    <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>)}
             </div>
+            {/* DESKTOP ONLY: Status badge aligned on top-right */}
+            {statusBadge && (<div className="hidden md:block">
+                {statusBadge}
+            </div>)}
+        </div>
 
-            {/* Rejection reason (visible to employer and manager) */}
-            {isRejected && internship.rejectionComment && (<div
-                    className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
-                    role="note">
-                    <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
-                        {t("internshipCard.rejectionReason")}
-                    </p>
-                    <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
-                       style={{whiteSpace: "pre-wrap"}}>
-                        {internship.rejectionComment}
-                    </p>
-                </div>)}
+        {/* Rejection reason (visible to employer and manager) */}
+        {isRejected && internship.rejectionComment && (<div
+            className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
+            role="note">
+            <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
+                {t("internshipCard.rejectionReason")}
+            </p>
+            <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
+               style={{whiteSpace: "pre-wrap"}}>
+                {internship.rejectionComment}
+            </p>
+        </div>)}
 
-            {/* Required skills: one chip per skill */}
-            {skills.length > 0 && (<div className={`${s.skillsRow} flex flex-wrap items-center gap-1.5`}>
-                    <span className="font-semibold mr-1">{t("internshipCard.requiredSkills")}</span>
-                    {skills.map((skill) => (<span key={skill} className={s.skillBadge}>{skill}</span>))}
-                </div>)}
+        {/* Required skills: one chip per skill */}
+        {skills.length > 0 && (<div className={`${s.skillsRow} flex flex-wrap items-center gap-1.5`}>
+            <span className="font-semibold mr-1">{t("internshipCard.requiredSkills")}</span>
+            {skills.map((skill) => (<span key={skill} className={s.skillBadge}>{skill}</span>))}
+        </div>)}
 
-            {/* Detail badges */}
-            <div className={s.detailsRow}>
-                {/* Location */}
-                <span className={s.detailBadge}>
+        {/* Detail badges */}
+        <div className={s.detailsRow}>
+            {/* Location */}
+            <span className={s.detailBadge}>
                     <Icon name="location_on" size={20}/>
-                    {internship.location}
+                {internship.location}
                 </span>
 
-                {/* Work mode: in person / hybrid / remote */}
-                {internship.workMode && (<span className={s.detailBadge}>
+            {/* Work mode: in person / hybrid / remote */}
+            {internship.workMode && (<span className={s.detailBadge}>
                         <Icon name="work" size={20}/>
-                        {t(`internshipModal.workModes.${internship.workMode}`, {defaultValue: internship.workMode})}
+                {t(`internshipModal.workModes.${internship.workMode}`, {defaultValue: internship.workMode})}
                     </span>)}
 
-                {/* Duration */}
-                <span className={s.detailBadge}>
+            {/* Duration */}
+            <span className={s.detailBadge}>
                     <Icon name="timer" size={20}/>
-                    {t("internshipCard.durationWeeks", {count: internship.durationInWeeks})}
+                {t("internshipCard.durationWeeks", {count: internship.durationInWeeks})}
                 </span>
 
-                {/* Compensation */}
-                <span className={s.detailBadge}>
+            {/* Compensation */}
+            <span className={s.detailBadge}>
                     <Icon name="payments" size={20}/>
-                    {compensationText}
+                {compensationText}
                 </span>
 
-                {/* Start date */}
-                <span className={s.detailBadge} title={t("internshipCard.startsTitle")}>
+            {/* Start date */}
+            <span className={s.detailBadge} title={t("internshipCard.startsTitle")}>
                     <Icon name="play_circle" size={20}/>
                     <span className="font-medium">{t("internshipCard.starts")}</span> {internship.startDate}
                 </span>
 
-                {/* Deadline */}
-                <span className={s.detailBadge} title={t("internshipCard.applyByTitle")}>
+            {/* Deadline */}
+            <span className={s.detailBadge} title={t("internshipCard.applyByTitle")}>
                     <Icon name="hourglass_bottom" size={20}/>
                     <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
 
-                {/* Edit / Delete */}
-                {(OnEdit || OnDelete) && (<div className="ml-auto flex items-center gap-1">
-                        <NavLink to={`/application/${internship.id}`}
-                        >
-                            <Icon name="view_list" size={24}/>
-                        </NavLink>
-                        {OnEdit && (<button
-                                className={editBtn}
-                                aria-label={t("internshipCard.editAria")}
-                                onClick={() => OnEdit(internship)}
-                            >
-                                <Icon name="edit" size={24}/>
-                            </button>)}
-                        {OnDelete && (<button
-                                className={s.deleteBtn}
-                                aria-label={t("internshipCard.deleteAria")}
-                                onClick={() => OnDelete(internship.id)}
-                            >
-                                <Icon name="delete" size={24}/>
-                            </button>)}
-                    </div>)}
-            </div>
+            {/* Edit / Delete */}
+            {(OnEdit || OnDelete) && (<div className="ml-auto flex items-center gap-1">
+                <NavLink to={`/application/${internship.id}`}
+                >
+                    <Icon name="view_list" size={24}/>
+                </NavLink>
+                {OnEdit && (<button
+                    className={editBtn}
+                    aria-label={t("internshipCard.editAria")}
+                    onClick={() => OnEdit(internship)}
+                >
+                    <Icon name="edit" size={24}/>
+                </button>)}
+                {OnDelete && (<button
+                    className={s.deleteBtn}
+                    aria-label={t("internshipCard.deleteAria")}
+                    onClick={() => OnDelete(internship.id)}
+                >
+                    <Icon name="delete" size={24}/>
+                </button>)}
+            </div>)}
+        </div>
 
-            {/* Footer */}
-            {(footer || showEmployer || showPreview) && (<div
-                    className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
-                    {showEmployer && (<div className="mr-auto flex flex-wrap items-center gap-2">
-                            <span className={`${s.detailBadge} break-all`}>{internship.employerEmail}</span>
-                            <span className={s.detailBadge}>
+        {/* Footer */}
+        {(footer || showEmployer || showPreview) && (<div
+            className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
+            {showEmployer && (<div className="mr-auto flex flex-wrap items-center gap-2">
+                <span className={`${s.detailBadge} break-all`}>{internship.employerEmail}</span>
+                <span className={s.detailBadge}>
                                 <Icon name="home_work" size={20}/>
-                                {t(`disciplines.${(internship.discipline ?? "").toLowerCase()}`, {defaultValue: internship.discipline})}
+                    {t(`disciplines.${(internship.discipline ?? "").toLowerCase()}`, {defaultValue: internship.discipline})}
                             </span>
-                            <span className={s.detailBadge}>
+                <span className={s.detailBadge}>
                                 <Icon name="event" size={20}/>
-                                {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
+                    {t("cvDocuments.uploadedOn")} {internship.uploadedAt ? formatDate(internship.uploadedAt) : "—"}
                             </span>
 
-                        </div>)}
-                    {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
+            </div>)}
+            {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
 
-                    {showPreview && (<button
-                            type="button"
-                            onClick={() => onPreview(internship.id)}
-                            className="ml-auto rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                        >
-                            {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
-                        </button>)}
-                </div>)}
-            {/* Bottom row: always the last thing in the card */}
-            {bottomFooter && (<div
-                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${footer || showEmployer || showPreview ? "" : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`}`}>
-                    {bottomFooter}
-                </div>)}
-        </div>);
+            {showPreview && (<button
+                type="button"
+                onClick={() => onPreview(internship.id)}
+                className="ml-auto rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+                {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
+            </button>)}
+        </div>)}
+        {/* Bottom row: always the last thing in the card */}
+        {bottomFooter && (<div
+            className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${footer || showEmployer || showPreview ? "" : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`}`}>
+            {bottomFooter}
+        </div>)}
+    </div>);
 }
