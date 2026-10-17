@@ -352,7 +352,9 @@
     "title": "Stages disponibles",
     "comingSoon": "Cette page sera bientôt disponible !",
     "preview": "Consulter",
-    "hide": "Cacher"
+    "hide": "Cacher",
+    "new": "Nouveau",
+    "viewed": "Consulté"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",

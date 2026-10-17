@@ -226,6 +226,17 @@ export async function applyForInternship(internshipId, cvId) {
     return handleEmpty(response);
 }
 
+export async function getStudentInternships() {
+    const response = await fetcher("student/internship", {method: "GET"});
+    return handleResponse(response);
+}
+
+// TODO: BE endpoint not implemented yet
+export async function markInternshipAsViewed(internshipId) {
+    const response = await fetcher(`student/internship/${internshipId}/viewed`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
 // endregion
 
 // region Manager internships

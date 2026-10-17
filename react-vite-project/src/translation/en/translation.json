@@ -352,7 +352,9 @@
     "title": "Available Internships",
     "comingSoon": "This page will be available soon!",
     "preview": "Preview",
-    "hide": "Hide"
+    "hide": "Hide",
+    "new": "New",
+    "viewed": "Viewed"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",
