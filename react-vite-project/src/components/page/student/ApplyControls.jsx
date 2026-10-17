@@ -1,11 +1,11 @@
 import {useTranslation} from "react-i18next";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import Button from "../../../styles/Button.jsx";
 import {applyForInternship} from "../../api/Api.jsx";
 import Icon from "../../../styles/Icon.jsx";
 
-function ApplyControls({internshipId, cvs, dark}) {
+function ApplyControls({internshipId, cvs, dark, alreadyApplied}) {
     const {t} = useTranslation();
     const [cvId, setCvId] = useState(null);
     const [status, setStatus] = useState("idle"); // idle | sending | applied | error
@@ -21,20 +21,24 @@ function ApplyControls({internshipId, cvs, dark}) {
     if (cvs.length === 0) {
         return (
             <span className={`text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
-                {t("studentInternship.noApprovedCv", {defaultValue: "You need an approved CV to apply."})}{" "}
+                {t("studentInternship.noApprovedCv")}{" "}
                 <Link to="/cv" className="text-indigo-500 hover:underline">
-                    {t("studentInternship.goToCv", {defaultValue: "Go to my CVs"})}
+                    {t("studentInternship.goToCv")}
                 </Link>
             </span>
         );
     }
-
+   useEffect(() => {
+       if(alreadyApplied) {
+           setStatus("applied");
+       }
+   })
     if (status === "applied") {
         return (
             <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${dark ? "text-green-300" : "text-green-700"}`}
                   role="status">
                 <Icon name="check_circle" size={18}/>
-                {t("studentInternship.applied", {defaultValue: "Application sent"})}
+                {t("studentInternship.applied")}
             </span>
         );
     }
@@ -69,7 +73,7 @@ function ApplyControls({internshipId, cvs, dark}) {
                 onChange={(e) => setCvId(e.target.value)}
                 disabled={status === "sending" || status === "applied"}
                 className={selectClass}
-                aria-label={t("studentInternship.chooseCv", {defaultValue: "Choose a CV"})}
+                aria-label={t("studentInternship.chooseCv")}
             >
                 {cvs.map((cv) => (
                     <option key={cv.id} value={cv.id}>{cv.fileName}</option>
@@ -78,7 +82,7 @@ function ApplyControls({internshipId, cvs, dark}) {
             <Button tone="success" dark={dark} icon="send"
                     disabled={status === "sending" || status === "applied"}
                     onClick={handleApply}>
-                {t("studentInternship.apply", {defaultValue: "Apply"})}
+                {t("studentInternship.apply")}
             </Button>
         </>
     );

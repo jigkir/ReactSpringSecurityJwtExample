@@ -354,7 +354,12 @@
     "preview": "Consulter",
     "hide": "Cacher",
     "new": "Nouveau",
-    "viewed": "Consulté"
+    "viewed": "Consulté",
+    "noApprovedCv": "Pour postuler, vous devez disposer d’un CV approuvé.",
+    "goToCv": "Accéder à mes CV",
+    "applied": "Demande envoyée",
+    "chooseCv": "Choisissez un CV",
+    "apply": "Postuler"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",
@@ -434,11 +439,7 @@
       "pendingValidation": "En attente de validation",
       "approved": "Approuvée",
       "rejected": "Rejetée"
-    },
-    "viewApplication": "Consulter candidature"
-  },
-  "viewApplication": {
-    "loadError": "Impossible de charger les candidatures"
+    }
   },
   "dev": {
     "label": "Dev",

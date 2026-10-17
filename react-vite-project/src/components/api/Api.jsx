@@ -237,6 +237,11 @@ export async function markInternshipAsViewed(internshipId) {
     return handleEmpty(response);
 }
 
+export async function getStudentAppliedInternships() {
+    const response = await fetcher(`student/applications`, {method: "GET"});
+    return handleResponse(response);
+}
+
 // endregion
 
 // region Manager internships
@@ -289,7 +294,7 @@ export async function getApplications(){
 }
 
 export async function getApplicationCv(id){
-    const response = await fetcher(`employer/applications/${id}/cv`, {method: "GET"});
+    const response = await fetcher(`/applications/${id}/cv`, {method: "GET"});
     return handleResponse(response);
 }
 

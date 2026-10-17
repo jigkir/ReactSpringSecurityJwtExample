@@ -354,7 +354,12 @@
     "preview": "Preview",
     "hide": "Hide",
     "new": "New",
-    "viewed": "Viewed"
+    "viewed": "Viewed",
+    "noApprovedCv": "You need an approved CV to apply.",
+    "goToCv": "Go to my CVs",
+    "applied": "Application sent",
+    "chooseCv": "Choose a CV",
+    "apply": "Apply"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",
@@ -434,11 +439,7 @@
       "pendingValidation": "Pending Validation",
       "approved": "Approved",
       "rejected": "Rejected"
-    },
-    "viewApplication": "View application"
-  },
-  "viewApplication": {
-    "loadError": "Failed to load applications"
+    }
   },
   "dev": {
     "label": "Dev",
