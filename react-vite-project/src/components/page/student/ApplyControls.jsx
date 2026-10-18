@@ -63,8 +63,8 @@ function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer})
         setStatus("sending");
         setErrorKey(null);
         try {
-
-            await updateApplicationCV(internshipId, selectedCvId);
+            console.log(application);
+            await updateApplicationCV(application[0].id, selectedCvId);
             setStatus("applied");
         } catch (err) {
             setErrorKey(err.status === 409
@@ -88,7 +88,7 @@ function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer})
             <select
                 value={selectedCvId}
                 onChange={(e) => setCvId(e.target.value)}
-                disabled={status === "sending" || status === "applied"}
+                disabled={status === "sending" || (status === "applied" && viewedByEmployer)}
                 className={selectClass}
                 aria-label={t("studentInternship.chooseCv")}
             >
@@ -101,8 +101,8 @@ function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer})
             {alreadyApplied ?
                 <Button tone="success" dark={dark} icon="send"
                         disabled={status === "sending"}
-                        onClick={handleApply}>
-                    {t("studentInternship.updateCV")} currently unfinished
+                        onClick={handleUpdate}>
+                    {t("studentInternship.updateCV")}
                 </Button>
                 :
                 <Button tone="success" dark={dark} icon="send"
