@@ -2,16 +2,18 @@
  * CardPreview.jsx — Preview block shown inside a Home card.
  * Location: src/components/home/CardPreview.jsx
  *
- * Calls `load()` once (loaders are stable module-level functions) and shows:
+ * Calls `load()` and shows:
  *   loading  → skeleton
  *   failed   → nothing (the card still works as a plain link)
  *   empty    → "nothing here yet"
  *   data     → status pills + a short list of items
+ * The data is refreshed by usePolling, so new items show up without a reload.
  *
  * Props
- *   load      () => Promise<{stats, items}>   see previewLoaders.js
- *   itemsKey  translation key for the list label
- *   classes   result of getHomeClasses(dark)
+ *   load       () => Promise<{stats, items}>   see previewLoaders.js
+ *   itemsKey   translation key for the list label
+ *   statOrder  [[statKey, translationKey, icon], ...] (defaults to pending/approved/rejected)
+ *   classes    result of getHomeClasses(dark)
  */
 
 import {useCallback, useEffect, useState} from 'react';
@@ -21,7 +23,7 @@ import {usePolling} from "../../utils/usePolling.js";
 
 // region Constants
 // [status, translation key, Material Symbols icon]
-const STAT_ORDER = [
+const DEFAULT_STAT_ORDER = [
     ["PENDING", "home.preview.pending", "schedule"],
     ["APPROVED", "home.preview.approved", "check_circle"],
     ["REJECTED", "home.preview.rejected", "close"],
@@ -29,7 +31,12 @@ const STAT_ORDER = [
 
 // endregion
 
-export default function CardPreview({load, itemsKey = "home.preview.latest", classes}) {
+export default function CardPreview({
+                                        load,
+                                        itemsKey = "home.preview.latest",
+                                        statOrder = DEFAULT_STAT_ORDER,
+                                        classes
+                                    }) {
     const {t} = useTranslation();
     const [data, setData] = useState(null);   // null = loading
     const [failed, setFailed] = useState(false);
@@ -64,7 +71,7 @@ export default function CardPreview({load, itemsKey = "home.preview.latest", cla
         );
     }
 
-    const total = data.stats.PENDING + data.stats.APPROVED + data.stats.REJECTED;
+    const total = Object.values(data.stats).reduce((sum, n) => sum + n, 0);
     if (total === 0) return <p className={classes.previewEmpty}>{t("home.preview.empty")}</p>;
 
     // endregion
@@ -73,7 +80,7 @@ export default function CardPreview({load, itemsKey = "home.preview.latest", cla
     return (
         <div className={classes.preview}>
             <div className="flex flex-wrap gap-2">
-                {STAT_ORDER.filter(([key]) => data.stats[key] > 0).map(([key, labelKey, icon]) => (
+                {statOrder.filter(([key]) => (data.stats[key] ?? 0) > 0).map(([key, labelKey, icon]) => (
                     <span key={key} className={classes.statPill(key)}>
                         <Icon name={icon} size={14}/>
                         {t(labelKey)} · {data.stats[key]}

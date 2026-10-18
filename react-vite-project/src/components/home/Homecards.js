@@ -4,9 +4,18 @@
  *
  * titleKey / descKey / itemsKey are translation keys (translated at render time).
  * `load` is optional: a card without it is a plain link with no preview.
+ * `statOrder` is optional: custom [key, translationKey, icon] pills (defaults to
+ * pending / approved / rejected).
  */
 
-import {loadEmployerInternships, loadManagerCvs, loadManagerInternships, loadStudentCvs,} from './previewLoaders.js';
+import {
+    loadEmployerApplications,
+    loadEmployerInternships,
+    loadManagerCvs,
+    loadManagerInternships,
+    loadStudentCvs,
+    loadStudentInternships,
+} from './previewLoaders.js';
 
 // region Card definitions
 const CV_CARD = {
@@ -24,13 +33,24 @@ const MANAGER_CV_CARD = {
 const STUDENT_INTERNSHIPS_CARD = {
     to: "/internship", icon: "business_center",
     titleKey: "home.internshipsTitle", descKey: "home.internshipsStudentDesc",
-    // no load: the student internships page is not available yet
+    load: loadStudentInternships,
+    statOrder: [["APPROVED", "home.preview.available", "check_circle"]],
 };
 
 const EMPLOYER_INTERNSHIPS_CARD = {
     to: "/internships", icon: "business_center",
     titleKey: "home.internshipsTitle", descKey: "home.internshipsEmployerDesc",
     load: loadEmployerInternships,
+};
+
+const EMPLOYER_APPLICATIONS_CARD = {
+    to: "/internships", icon: "send",
+    titleKey: "home.applicationsTitle", descKey: "home.applicationsDesc",
+    load: loadEmployerApplications, itemsKey: "home.preview.latestApplications",
+    statOrder: [
+        ["UNREAD", "home.preview.newApplications", "notifications"],
+        ["READ", "home.preview.viewedApplications", "visibility"],
+    ],
 };
 
 const MANAGER_INTERNSHIPS_CARD = {
@@ -44,7 +64,7 @@ const MANAGER_INTERNSHIPS_CARD = {
 // region Cards by role
 export const CARDS_BY_ROLE = {
     STUDENT: [CV_CARD, STUDENT_INTERNSHIPS_CARD],
-    EMPLOYER: [EMPLOYER_INTERNSHIPS_CARD],
+    EMPLOYER: [EMPLOYER_INTERNSHIPS_CARD, EMPLOYER_APPLICATIONS_CARD],
     MANAGER: [MANAGER_CV_CARD, MANAGER_INTERNSHIPS_CARD],
     TEACHER: [],
 };
