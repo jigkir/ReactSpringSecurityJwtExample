@@ -219,7 +219,8 @@ public class StudentService {
 
         CV newCv = validateCVForApplication(email, newCvId);
 
-        application.setCv(newCv);
+        application.changeCv(newCv);
+
         applicationRepository.save(application);
     }
 

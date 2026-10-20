@@ -11,9 +11,9 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
-@Setter
 public class InternshipApplication {
     @Id
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -27,7 +27,7 @@ public class InternshipApplication {
     private Student student;
 
     @Column
-    private LocalDate applicationDate = LocalDate.now();
+    private LocalDate applicationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,10 +40,15 @@ public class InternshipApplication {
         this.internship = internship;
         this.cv = cv;
         this.student = student;
-        internshipApplicationStatus = InternshipApplicationStatus.UNREAD;
+        this.internshipApplicationStatus = InternshipApplicationStatus.UNREAD;
+        this.applicationDate = LocalDate.now();
     }
 
     public void markAsRead() {
         internshipApplicationStatus = InternshipApplicationStatus.READ;
+    }
+
+    public void changeCv(CV cv) {
+        this.cv = cv;
     }
 }

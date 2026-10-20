@@ -784,7 +784,6 @@ public class StudentServiceTest {
         newCv.setVisibility(CvVisibility.VISIBLE);
 
         InternshipApplication application = new InternshipApplication(internship, oldCv, dummyStudent);
-        application.setInternshipApplicationStatus(InternshipApplicationStatus.UNREAD);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
@@ -813,7 +812,6 @@ public class StudentServiceTest {
         newCv.setVisibility(CvVisibility.VISIBLE);
 
         InternshipApplication application = new InternshipApplication(internship, oldCv, dummyStudent);
-        application.setInternshipApplicationStatus(InternshipApplicationStatus.UNREAD);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
@@ -837,7 +835,7 @@ public class StudentServiceTest {
         long newCvId = 2L;
 
         InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
-        application.setInternshipApplicationStatus(InternshipApplicationStatus.READ); // Already read by employer
+        application.markAsRead(); // Already read by employer
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
@@ -969,7 +967,6 @@ public class StudentServiceTest {
         hiddenCv.setVisibility(CvVisibility.HIDDEN);
 
         InternshipApplication application = new InternshipApplication(internship, oldCv, dummyStudent);
-        application.setInternshipApplicationStatus(InternshipApplicationStatus.UNREAD);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
@@ -997,7 +994,6 @@ public class StudentServiceTest {
         internship.setApplicationDeadline(LocalDate.now().minusDays(1));
 
         InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
-        application.setInternshipApplicationStatus(InternshipApplicationStatus.UNREAD);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
