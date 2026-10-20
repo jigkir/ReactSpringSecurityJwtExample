@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "i18next": "^26.4.2"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.3"
   }
 }

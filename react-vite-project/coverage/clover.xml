@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1792528558639" clover="3.2.0">
+  <project timestamp="1792528558640" name="All files">
+    <metrics statements="226" coveredstatements="133" conditionals="514" coveredconditionals="120" methods="101" coveredmethods="40" elements="841" coveredelements="293" complexity="0" loc="226" ncloc="226" packages="8" files="11" classes="11"/>
+    <package name="src">
+      <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="1" methods="1" coveredmethods="1"/>
+      <file name="i18next.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\i18next.jsx">
+        <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="1" methods="1" coveredmethods="1"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.components.page.cv">
+      <metrics statements="20" coveredstatements="6" conditionals="18" coveredconditionals="0" methods="5" coveredmethods="1"/>
+      <file name="cvUtils.js" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\components\page\cv\cvUtils.js">
+        <metrics statements="20" coveredstatements="6" conditionals="18" coveredconditionals="0" methods="5" coveredmethods="1"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="26" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="27" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="30" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="40" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="41" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="48" count="5" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.components.page.internship">
+      <metrics statements="29" coveredstatements="20" conditionals="99" coveredconditionals="55" methods="15" coveredmethods="6"/>
+      <file name="InternshipCard.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\components\page\internship\InternshipCard.jsx">
+        <metrics statements="18" coveredstatements="15" conditionals="88" coveredconditionals="48" methods="7" coveredmethods="4"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="22" count="10" type="stmt"/>
+        <line num="39" count="5" type="stmt"/>
+        <line num="40" count="5" type="stmt"/>
+        <line num="42" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="46" count="5" type="stmt"/>
+        <line num="47" count="5" type="stmt"/>
+        <line num="49" count="5" type="cond" truecount="3" falsecount="0"/>
+        <line num="53" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="59" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="64" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="71" count="5" type="stmt"/>
+        <line num="128" count="10" type="stmt"/>
+        <line num="189" count="0" type="stmt"/>
+        <line num="198" count="0" type="stmt"/>
+        <line num="229" count="0" type="stmt"/>
+      </file>
+      <file name="InternshipFilters.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\components\page\internship\InternshipFilters.jsx">
+        <metrics statements="11" coveredstatements="5" conditionals="11" coveredconditionals="7" methods="8" coveredmethods="2"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="11" count="3" type="cond" truecount="1" falsecount="0"/>
+        <line num="13" count="3" type="stmt"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="65" count="21" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.components.page.student">
+      <metrics statements="47" coveredstatements="36" conditionals="32" coveredconditionals="22" methods="14" coveredmethods="9"/>
+      <file name="Internships.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\components\page\student\Internships.jsx">
+        <metrics statements="47" coveredstatements="36" conditionals="32" coveredconditionals="22" methods="14" coveredmethods="9"/>
+        <line num="17" count="15" type="stmt"/>
+        <line num="18" count="15" type="stmt"/>
+        <line num="19" count="15" type="stmt"/>
+        <line num="20" count="15" type="stmt"/>
+        <line num="21" count="15" type="stmt"/>
+        <line num="22" count="15" type="stmt"/>
+        <line num="23" count="15" type="stmt"/>
+        <line num="24" count="15" type="stmt"/>
+        <line num="25" count="15" type="stmt"/>
+        <line num="26" count="15" type="stmt"/>
+        <line num="27" count="15" type="cond" truecount="1" falsecount="1"/>
+        <line num="29" count="15" type="stmt"/>
+        <line num="30" count="5" type="stmt"/>
+        <line num="31" count="5" type="stmt"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="33" count="7" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="4" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="39" count="5" type="stmt"/>
+        <line num="43" count="15" type="stmt"/>
+        <line num="44" count="5" type="stmt"/>
+        <line num="45" count="5" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="48" count="5" type="stmt"/>
+        <line num="53" count="15" type="stmt"/>
+        <line num="54" count="5" type="stmt"/>
+        <line num="55" count="5" type="stmt"/>
+        <line num="56" count="5" type="cond" truecount="0" falsecount="2"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="62" count="15" type="stmt"/>
+        <line num="63" count="5" type="stmt"/>
+        <line num="66" count="15" type="stmt"/>
+        <line num="67" count="5" type="stmt"/>
+        <line num="70" count="15" type="stmt"/>
+        <line num="72" count="15" type="stmt"/>
+        <line num="73" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="78" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="83" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="92" count="15" type="stmt"/>
+        <line num="128" count="5" type="cond" truecount="3" falsecount="0"/>
+        <line num="142" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.styles">
+      <metrics statements="48" coveredstatements="21" conditionals="269" coveredconditionals="19" methods="22" coveredmethods="3"/>
+      <file name="AppStyles.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\styles\AppStyles.jsx">
+        <metrics statements="46" coveredstatements="19" conditionals="264" coveredconditionals="15" methods="21" coveredmethods="2"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="15" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="26" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="118" count="0" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="170" count="0" type="stmt"/>
+        <line num="190" count="0" type="stmt"/>
+        <line num="191" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="192" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="193" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="202" count="0" type="stmt"/>
+        <line num="212" count="0" type="stmt"/>
+        <line num="233" count="0" type="stmt"/>
+        <line num="250" count="15" type="stmt"/>
+        <line num="269" count="5" type="stmt"/>
+        <line num="281" count="0" type="stmt"/>
+        <line num="282" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="285" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="288" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="299" count="0" type="stmt"/>
+        <line num="319" count="1" type="stmt"/>
+        <line num="323" count="1" type="stmt"/>
+        <line num="341" count="0" type="stmt"/>
+        <line num="362" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="363" count="0" type="cond" truecount="0" falsecount="6"/>
+        <line num="364" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="373" count="0" type="stmt"/>
+        <line num="387" count="0" type="stmt"/>
+        <line num="427" count="0" type="stmt"/>
+        <line num="444" count="0" type="stmt"/>
+        <line num="445" count="0" type="stmt"/>
+      </file>
+      <file name="Icon.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\styles\Icon.jsx">
+        <metrics statements="2" coveredstatements="2" conditionals="5" coveredconditionals="4" methods="1" coveredmethods="1"/>
+        <line num="3" count="1" type="cond" truecount="3" falsecount="0"/>
+        <line num="4" count="40" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.translation.en">
+      <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="translation.json" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\translation\en\translation.json">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+    </package>
+    <package name="src.translation.fr">
+      <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="translation.json" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\translation\fr\translation.json">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+    </package>
+    <package name="src.utils">
+      <metrics statements="77" coveredstatements="45" conditionals="94" coveredconditionals="23" methods="44" coveredmethods="20"/>
+      <file name="Sort.jsx" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\utils\Sort.jsx">
+        <metrics statements="67" coveredstatements="37" conditionals="91" coveredconditionals="21" methods="38" coveredmethods="16"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="29" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="39" count="2" type="cond" truecount="0" falsecount="4"/>
+        <line num="41" count="4" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="46" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="55" count="1" type="cond" truecount="0" falsecount="2"/>
+        <line num="56" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="57" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="64" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="68" count="2" type="cond" truecount="3" falsecount="3"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="81" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="93" count="9" type="cond" truecount="1" falsecount="1"/>
+        <line num="96" count="9" type="stmt"/>
+        <line num="97" count="5" type="cond" truecount="2" falsecount="2"/>
+        <line num="98" count="5" type="cond" truecount="2" falsecount="2"/>
+        <line num="99" count="5" type="stmt"/>
+        <line num="104" count="9" type="cond" truecount="1" falsecount="1"/>
+        <line num="108" count="9" type="cond" truecount="1" falsecount="1"/>
+        <line num="109" count="9" type="stmt"/>
+        <line num="114" count="15" type="stmt"/>
+        <line num="115" count="15" type="stmt"/>
+        <line num="116" count="15" type="stmt"/>
+        <line num="117" count="15" type="stmt"/>
+        <line num="119" count="15" type="stmt"/>
+        <line num="120" count="15" type="stmt"/>
+        <line num="121" count="9" type="stmt"/>
+        <line num="125" count="15" type="stmt"/>
+        <line num="134" count="1" type="cond" truecount="0" falsecount="2"/>
+        <line num="138" count="1" type="stmt"/>
+        <line num="146" count="1" type="stmt"/>
+        <line num="154" count="1" type="stmt"/>
+        <line num="157" count="1" type="stmt"/>
+        <line num="158" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="161" count="0" type="stmt"/>
+        <line num="162" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="163" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="164" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="165" count="0" type="stmt"/>
+        <line num="170" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="174" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="175" count="0" type="stmt"/>
+        <line num="180" count="0" type="stmt"/>
+        <line num="181" count="0" type="stmt"/>
+        <line num="182" count="0" type="stmt"/>
+        <line num="183" count="0" type="stmt"/>
+        <line num="185" count="0" type="stmt"/>
+        <line num="186" count="0" type="stmt"/>
+        <line num="187" count="0" type="stmt"/>
+        <line num="191" count="0" type="stmt"/>
+        <line num="198" count="0" type="stmt"/>
+      </file>
+      <file name="usePolling.js" path="C:\420.B0\A26\Projet_Collab\ReactSpringSecurityJwtExample\react-vite-project\src\utils\usePolling.js">
+        <metrics statements="10" coveredstatements="8" conditionals="3" coveredconditionals="2" methods="6" coveredmethods="4"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="7" count="5" type="stmt"/>
+        <line num="13" count="15" type="stmt"/>
+        <line num="14" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="17" count="5" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="22" count="5" type="stmt"/>
+        <line num="23" count="5" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
