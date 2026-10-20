@@ -313,33 +313,21 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowInvalidFileTypeExceptionWhenContentIsNull() {
+    void shouldThrowEmptyFileExceptionWhenContentIsNull() {
         // Arrange
         CvUploadDto upload = new CvUploadDto(null, "cv.pdf");
 
-        // Act
-        InvalidFileTypeException exception = assertThrows(
-                InvalidFileTypeException.class,
-                () -> studentService.saveCV(upload, dummyStudent)
-        );
-
-        // Assert
-        assert "File content cannot be null or empty.".equals(exception.getMessage());
+        // Act + Assert
+        assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
     }
 
     @Test
-    void shouldThrowInvalidFileTypeExceptionWhenContentIsEmpty() {
+    void shouldThrowEmptyFileExceptionWhenContentIsEmpty() {
         // Arrange
         CvUploadDto upload = new CvUploadDto(new byte[0], "cv.pdf");
 
-        // Act
-        InvalidFileTypeException exception = assertThrows(
-                InvalidFileTypeException.class,
-                () -> studentService.saveCV(upload, dummyStudent)
-        );
-
-        // Assert
-        assert "File content cannot be null or empty.".equals(exception.getMessage());
+        // Act + Assert
+        assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
     }
 
     @Test

@@ -45,7 +45,7 @@ public class StudentController {
     }
 
     @PostMapping("/cvs")
-    public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication) throws IOException, UserNotFoundException, InvalidFileTypeException, NoSuchAlgorithmException, CorruptedFileException, InvalidFileSizeException {
+    public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication) throws IOException, UserNotFoundException, InvalidFileTypeException, NoSuchAlgorithmException, CorruptedFileException, InvalidFileSizeException, EmptyFileException {
         CvUploadDto upload = new CvUploadDto(file.getBytes(), file.getOriginalFilename());
 
         studentService.uploadCV(upload, authentication.getName());

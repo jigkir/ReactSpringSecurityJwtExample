@@ -91,14 +91,14 @@ public class StudentService {
     }
 
     @Transactional
-    public void uploadCV(CvUploadDto upload, String email) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException {
+    public void uploadCV(CvUploadDto upload, String email) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
         Student student = findByEmail(email);
 
         saveCV(upload, student);
     }
 
     @Transactional
-    public void saveCV(CvUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException {
+    public void saveCV(CvUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
         verifyFileSize(upload.content());
 
         if (!"application/pdf".equals(tika.detect(upload.content()))) {
@@ -298,9 +298,9 @@ public class StudentService {
         }
     }
 
-    private void verifyFileSize(byte[] content) throws InvalidFileTypeException, InvalidFileSizeException {
+    private void verifyFileSize(byte[] content) throws InvalidFileSizeException, EmptyFileException {
         if (content == null || content.length == 0) {
-            throw new InvalidFileTypeException("File content cannot be null or empty.");
+            throw new EmptyFileException();
         }
         if (content.length > MAX_FILE_SIZE) {
             throw new InvalidFileSizeException("File size exceeds the maximum allowed size of " + MAX_FILE_SIZE + " bytes.");
