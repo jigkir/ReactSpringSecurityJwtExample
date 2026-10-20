@@ -229,11 +229,7 @@ public class StudentService {
         Student student = findByEmail(email);
         return applicationRepository.findByStudent(student).stream()
                 .filter(application -> isVisibleToStudents(application.getInternship()))
-                .map(application -> {
-                    Internship internship = application.getInternship();
-                    return InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(),
-                            StudentCvResponseDto.of(application.getCv()), application.getApplicationDate(), application.getInternshipApplicationStatus());
-                })
+                .map(InternshipApplicationResponseDto::of)
                 .toList();
     }
 
