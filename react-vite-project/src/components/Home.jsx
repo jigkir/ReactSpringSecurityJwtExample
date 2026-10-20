@@ -52,8 +52,8 @@ const Home = () => {
 
             {cards.length > 0 && (
                 <ul className={classes.grid}>
-                    {cards.map(({to, icon, titleKey, descKey, load, itemsKey}) => (
-                        <li key={to}>
+                    {cards.map(({to, icon, titleKey, descKey, load, itemsKey, statOrder}) => (
+                        <li key={titleKey}>
                             <Link to={to} className={`${classes.card} h-full`}>
                                 <span className={classes.cardIcon}>
                                     <Icon name={icon} size={36} filled/>
@@ -61,7 +61,10 @@ const Home = () => {
                                 <h2 className={classes.cardTitle}>{t(titleKey)}</h2>
                                 <p className={classes.cardDesc}>{t(descKey)}</p>
 
-                                {load && <CardPreview load={load} itemsKey={itemsKey} classes={classes}/>}
+                                {load && (
+                                    <CardPreview load={load} itemsKey={itemsKey} statOrder={statOrder}
+                                                 classes={classes}/>
+                                )}
 
                                 <span className={classes.cardLink}>
                                     {t("home.preview.viewAll")}

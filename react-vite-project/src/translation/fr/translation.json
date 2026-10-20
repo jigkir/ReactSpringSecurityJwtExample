@@ -303,11 +303,17 @@
     "internshipsStudentDesc": "Consultez les offres de stage disponibles.",
     "internshipsEmployerDesc": "Publiez et gérez vos offres de stage.",
     "internshipsManagerDesc": "Révisez et approuvez les offres de stage.",
+    "applicationsTitle": "Candidatures",
+    "applicationsDesc": "Consultez les étudiants qui ont postulé à vos offres de stage.",
     "preview": {
       "pending": "En attente",
       "approved": "Approuvés",
       "rejected": "Refusés",
+      "available": "Disponibles",
+      "newApplications": "Nouvelles",
+      "viewedApplications": "Consultées",
       "latest": "Les plus récents",
+      "latestApplications": "Dernières candidatures",
       "toReview": "À réviser",
       "empty": "Rien pour l'instant.",
       "viewAll": "Ouvrir"
@@ -359,7 +365,8 @@
     "goToCv": "Accéder à mes CV",
     "applied": "Demande envoyée",
     "chooseCv": "Choisissez un CV",
-    "apply": "Postuler"
+    "apply": "Postuler",
+    "updateCV": "Changer CV"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",

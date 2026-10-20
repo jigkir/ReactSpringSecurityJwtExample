@@ -303,11 +303,17 @@
     "internshipsStudentDesc": "Browse the available internship offers.",
     "internshipsEmployerDesc": "Post and manage your internship offers.",
     "internshipsManagerDesc": "Review and approve internship offers.",
+    "applicationsTitle": "Applications",
+    "applicationsDesc": "See the students who applied to your internship offers.",
     "preview": {
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected",
+      "available": "Available",
+      "newApplications": "New",
+      "viewedApplications": "Viewed",
       "latest": "Latest",
+      "latestApplications": "Latest applications",
       "toReview": "To review",
       "empty": "Nothing here yet.",
       "viewAll": "Open"
@@ -359,7 +365,8 @@
     "goToCv": "Go to my CVs",
     "applied": "Application sent",
     "chooseCv": "Choose a CV",
-    "apply": "Apply"
+    "apply": "Apply",
+    "updateCV": "Update CV"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",

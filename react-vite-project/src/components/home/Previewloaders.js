@@ -4,14 +4,21 @@
  *
  * Each loader calls an existing Api.jsx function, then shapes the result with the
  * helpers in utils/Sort.jsx. All of them return:
- *   { stats: {PENDING, APPROVED, REJECTED}, items: [{id, text, sub?}] }
+ *   { stats: {KEY: number, ...}, items: [{id, text, sub?}] }
  *
  * Loaders are module-level (stable references) so CardPreview does not refetch
  * on re-render.
  */
 
 import {countByStatus, sortCvsNewest, sortInternships} from '../../utils/Sort.jsx';
-import {getEmployerInternships, getManagerInternships, getPublicCvs, getStudentCvs} from '../api/Api.jsx';
+import {
+    getApplications,
+    getEmployerInternships,
+    getManagerInternships,
+    getPublicCvs,
+    getStudentCvs,
+    getStudentInternships,
+} from '../api/Api.jsx';
 
 // region Shared helpers
 export const MAX_PREVIEW_ITEMS = 3;
@@ -33,6 +40,19 @@ export const loadStudentCvs = async () => {
     };
 };
 
+// Available (approved) internship offers, newest first
+export const loadStudentInternships = async () => {
+    const list = await getStudentInternships();
+    return {
+        stats: {PENDING: 0, APPROVED: list.length, REJECTED: 0},
+        items: sortInternships(list, "NEWEST").slice(0, MAX_PREVIEW_ITEMS).map((i) => ({
+            id: i.id,
+            text: i.title,
+            sub: i.location,
+        })),
+    };
+};
+
 // endregion
 
 // region Employer
@@ -45,6 +65,22 @@ export const loadEmployerInternships = async () => {
             id: i.id,
             text: i.title,
             sub: i.location,
+        })),
+    };
+};
+
+// Applications received on the employer's offers: unread ones first (newest ids first)
+export const loadEmployerApplications = async () => {
+    const list = await getApplications();
+    const isUnread = (a) => a.internshipApplicationStatus === "UNREAD";
+    const unread = list.filter(isUnread);
+    const ordered = [...unread, ...list.filter((a) => !isUnread(a))];
+    return {
+        stats: {UNREAD: unread.length, READ: list.length - unread.length},
+        items: ordered.slice(0, MAX_PREVIEW_ITEMS).map((a) => ({
+            id: a.id,
+            text: fullName(a.student) || a.student?.email || "",
+            sub: a.internshipTitle,
         })),
     };
 };
