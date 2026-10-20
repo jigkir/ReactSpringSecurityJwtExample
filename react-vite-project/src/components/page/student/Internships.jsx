@@ -78,7 +78,7 @@ function StudentInternships() {
         setSelectedId(selectedId === id ? null : id);
 
         try {
-            await markInternshipAsViewed([id]);
+            await markInternshipAsViewed(id);
 
             setInternships(prev => prev.map(internship => internship.id === id ? {
                 ...internship,
