@@ -191,7 +191,6 @@ public class StudentServiceTest {
 
         // Assert
         assert "studentId".equals(exception.getField());
-        assert "user already exists".equals(exception.getMessage());
 
         verify(studentRepository, never()).save(any(Student.class));
     }
@@ -313,33 +312,21 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowInvalidFileTypeExceptionWhenContentIsNull() {
+    void shouldThrowEmptyFileExceptionWhenContentIsNull() {
         // Arrange
         CvUploadDto upload = new CvUploadDto(null, "cv.pdf");
 
-        // Act
-        InvalidFileTypeException exception = assertThrows(
-                InvalidFileTypeException.class,
-                () -> studentService.saveCV(upload, dummyStudent)
-        );
-
-        // Assert
-        assert "File content cannot be null or empty.".equals(exception.getMessage());
+        // Act + Assert
+        assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
     }
 
     @Test
-    void shouldThrowInvalidFileTypeExceptionWhenContentIsEmpty() {
+    void shouldThrowEmptyFileExceptionWhenContentIsEmpty() {
         // Arrange
         CvUploadDto upload = new CvUploadDto(new byte[0], "cv.pdf");
 
-        // Act
-        InvalidFileTypeException exception = assertThrows(
-                InvalidFileTypeException.class,
-                () -> studentService.saveCV(upload, dummyStudent)
-        );
-
-        // Assert
-        assert "File content cannot be null or empty.".equals(exception.getMessage());
+        // Act + Assert
+        assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
     }
 
     @Test
@@ -361,14 +348,8 @@ public class StudentServiceTest {
         // Arrange
         CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
 
-        // Act
-        InvalidFileTypeException exception = assertThrows(
-                InvalidFileTypeException.class,
-                () -> studentService.saveCV(upload, dummyStudent)
-        );
-
-        // Assert
-        assert "Invalid file type. Only PDF files are allowed.".equals(exception.getMessage());
+        // Act + Assert
+        assertThrows(InvalidFileTypeException.class, () -> studentService.saveCV(upload, dummyStudent));
     }
 
     @Test
@@ -729,12 +710,11 @@ public class StudentServiceTest {
         // The CV is validated before the internship, so the internship is never loaded.
 
         // Act & Assert
-        CVNotApprovedException exception = assertThrows(
+        assertThrows(
                 CVNotApprovedException.class,
                 () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
         );
 
-        assert "CV is not approved for application".equals(exception.getMessage());
         verifyNoInteractions(applicationRepository, internshipRepository);
     }
 
@@ -755,12 +735,11 @@ public class StudentServiceTest {
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(true);
 
         // Act & Assert
-        ApplicationAlreadyExistsException exception = assertThrows(
+        assertThrows(
                 ApplicationAlreadyExistsException.class,
                 () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
         );
 
-        assert "Student has already applied to this internship".equals(exception.getMessage());
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
@@ -781,12 +760,11 @@ public class StudentServiceTest {
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
 
         // Act & Assert
-        DeadlineAlreadyPassedException exception = assertThrows(
+        assertThrows(
                 DeadlineAlreadyPassedException.class,
                 () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
         );
 
-        assert "Application deadline has passed".equals(exception.getMessage());
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
@@ -913,12 +891,11 @@ public class StudentServiceTest {
         when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(hiddenCv));
 
         // Act & Assert
-        CVNotVisibleException exception = assertThrows(
+        assertThrows(
                 CVNotVisibleException.class,
                 () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
         );
 
-        assert "CV is not visible for application".equals(exception.getMessage());
         verifyNoInteractions(applicationRepository, internshipRepository);
     }
 
@@ -1000,12 +977,11 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(hiddenCv));
 
         // Act & Assert
-        CVNotVisibleException exception = assertThrows(
+        assertThrows(
                 CVNotVisibleException.class,
                 () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
         );
 
-        assert "CV is not visible for application".equals(exception.getMessage());
         assert application.getCv().equals(oldCv);
         verify(applicationRepository, never()).save(any());
     }
@@ -1027,12 +1003,11 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(application));
 
         // Act & Assert
-        DeadlineAlreadyPassedException exception = assertThrows(
+        assertThrows(
                 DeadlineAlreadyPassedException.class,
                 () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
         );
 
-        assert "Application deadline has passed".equals(exception.getMessage());
         verifyNoInteractions(cvRepository);
         verify(applicationRepository, never()).save(any());
     }

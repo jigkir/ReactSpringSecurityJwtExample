@@ -58,6 +58,7 @@ public class StudentControllerTest {
     private ObjectMapper objectMapper;
 
     private static final String STUDENT_EMAIL = "test@claurendeau.qc.ca";
+    private static final int MAX_FILE_SIZE = 2 * 1024 * 1024;
     private final Authentication authentication = new UsernamePasswordAuthenticationToken(STUDENT_EMAIL, null);
 
     @BeforeEach
@@ -208,7 +209,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnUnprocessableWhenGettingCVsWithCorruptedFile() throws Exception {
         // Arrange
-        when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new CorruptedFileException("The CV with ID 1 is corrupted or unreadable."));
+        when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new CorruptedFileException());
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs").principal(authentication))
@@ -278,7 +279,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.txt", "text/plain", "text".getBytes());
 
-        doThrow(new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.")).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new InvalidFileTypeException()).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -291,7 +292,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
-        doThrow(new InvalidFileSizeException("File size exceeds the maximum allowed size.")).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new InvalidFileSizeException(MAX_FILE_SIZE)).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -303,7 +304,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
-        doThrow(new CorruptedFileException("The PDF file is corrupted or unreadable.")).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new CorruptedFileException()).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -349,7 +350,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnUnprocessableWhenGettingCorruptedCv() throws Exception {
         // Arrange
-        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CorruptedFileException("The CV with ID 10 is corrupted or unreadable."));
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CorruptedFileException());
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
@@ -381,7 +382,7 @@ public class StudentControllerTest {
     void shouldReturnListofAvailableInternships() throws Exception {
         //Arrange
         when(studentService.getInternships(STUDENT_EMAIL))
-                .thenReturn(List.of(new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now())));
+                .thenReturn(List.of(new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now(), false)));
 
         //Act + Assert
 
@@ -441,7 +442,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnBadRequestWhenApplyingWithUnapprovedCv() throws Exception {
         // Arrange
-        doThrow(new CVNotApprovedException("CV is not approved for application"))
+        doThrow(new CVNotApprovedException())
                 .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
 
         // Act & Assert
@@ -478,7 +479,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnBadRequestWhenUpdatingWithUnapprovedCv() throws Exception {
         // Arrange
-        doThrow(new CVNotApprovedException("New CV is not approved for application"))
+        doThrow(new CVNotApprovedException())
                 .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L);
 
         // Act & Assert
