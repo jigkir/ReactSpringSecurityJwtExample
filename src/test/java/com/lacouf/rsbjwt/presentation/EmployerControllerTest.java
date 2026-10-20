@@ -5,11 +5,14 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.EmployerController;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
@@ -149,6 +152,27 @@ public class EmployerControllerTest {
                 Arguments.of("compensationAmount", 12.345),
                 Arguments.of("compensationAmount", "abc")
         );
+    }
+
+    static Stream<Arguments> invalidInterviewFields() {
+        return Stream.of(
+                Arguments.of("message", null),
+                Arguments.of("message", ""),
+                Arguments.of("message", "   "),
+                Arguments.of("message", "a"),
+                Arguments.of("message", "a".repeat(501)),
+
+                Arguments.of("interviewDate", null),
+                Arguments.of("interviewDate", "not-a-date"),
+                Arguments.of("interviewDate", LocalDateTime.now().minusDays(1).toString())
+        );
+    }
+
+    private static Map<String, Object> validInterview() {
+        return new HashMap<>(Map.of(
+                "message", "Please come to our office",
+                "interviewDate", LocalDateTime.now().plusDays(7).toString()
+        ));
     }
 
     @BeforeEach
@@ -362,5 +386,66 @@ public class EmployerControllerTest {
         mockMvc.perform(get("/api/employer/applications/count").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$['10']").value(2));
+    }
+
+    @Test
+    void shouldReturnOkWhenInterviewIsCreated() throws Exception {
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isOk());
+
+        verify(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidInterviewFields")
+    void shouldReturnBadRequestForInvalidInterviewFields(String field, Object invalidValue) throws Exception {
+        // Arrange
+        Map<String, Object> interview = validInterview();
+        interview.put(field, invalidValue);
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(interview)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(employerService);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenCreatingInterviewForUnknownApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInterviewsOfEmployer() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO interview = new InterviewEmployerResponseDTO(
+                30L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30");
+
+        when(employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(interview));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/interviews").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(30))
+                .andExpect(jsonPath("$[0].studentName").value("Jane Doe"))
+                .andExpect(jsonPath("$[0].internshipTitle").value("Software Developer"))
+                .andExpect(jsonPath("$[0].studentDecision").value("PENDING"))
+                .andExpect(jsonPath("$[0].interviewDate").value("2026-11-01T14:30"));
+
+        verify(employerService).getInterviewsOfEmployer(EMPLOYER_EMAIL);
     }
 }

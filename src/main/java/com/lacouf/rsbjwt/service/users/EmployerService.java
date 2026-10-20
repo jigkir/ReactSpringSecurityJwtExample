@@ -4,12 +4,14 @@ import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundExce
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -18,8 +20,10 @@ import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -42,6 +46,7 @@ public class EmployerService {
     private final NotificationService notificationService;
     private final UserAppService userAppService;
     private final InternshipApplicationRepository internshipApplicationRepository;
+    private final InterviewRepository interviewRepository;
 
     public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository InterviewRepository) {
         this.employerRepository = employerRepository;
@@ -50,6 +55,7 @@ public class EmployerService {
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipApplicationRepository = internshipApplicationRepository;
+        this.interviewRepository = InterviewRepository;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -181,6 +187,35 @@ public class EmployerService {
         return internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(email)
                 .stream()
                 .collect(Collectors.toMap(Internship::getId, internshipApplicationRepository::countByInternship));
+    }
+
+    @Transactional
+    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, UserNotFoundException, InterviewAlreadyExistsException {
+
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        if (interviewRepository.existsByInternshipApplication(internshipApplication)) {
+            throw new InterviewAlreadyExistsException(applicationId);
+        }
+
+        Employer employer = employerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+
+        Interview interview = new Interview(
+                employer,
+                internshipApplication,
+                interviewRequestDto.message(),
+                interviewRequestDto.interviewDate()
+        );
+
+        interviewRepository.save(interview);
+    }
+
+    @Transactional(readOnly = true)
+    public List<InterviewEmployerResponseDTO> getInterviewsOfEmployer(String email) {
+        return interviewRepository.findByEmployer_Credentials_Email(email)
+                .stream()
+                .map(InterviewEmployerResponseDTO::of)
+                .toList();
     }
 
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {

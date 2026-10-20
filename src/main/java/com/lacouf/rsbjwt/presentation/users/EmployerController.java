@@ -5,10 +5,13 @@ import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundExce
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -73,5 +76,16 @@ public class EmployerController {
     @GetMapping("/applications/count")
     public ResponseEntity<Map<Long, Long>> countReceivedInternshipApplicationsByInternship(Authentication authentication) {
         return ResponseEntity.ok(employerService.countReceivedInternshipApplicationsByInternship(authentication.getName()));
+    }
+
+    @PostMapping("/applications/{applicationId}/accept")
+    public ResponseEntity<Void> acceptReceivedInternshipApplication(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, UserNotFoundException, InterviewAlreadyExistsException {
+        employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/interviews")
+    public ResponseEntity<List<InterviewEmployerResponseDTO>> getInterviewsOfEmployer(Authentication authentication) {
+        return ResponseEntity.ok(employerService.getInterviewsOfEmployer(authentication.getName()));
     }
 }

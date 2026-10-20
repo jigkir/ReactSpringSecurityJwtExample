@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -30,12 +30,12 @@ public class Interview {
     private StudentDecision studentDecision;
 
     @Column(nullable = false)
-    private LocalDate interviewDate;
+    private LocalDateTime interviewDate;
 
     public Interview() {
     }
 
-    public Interview(Employer employer, InternshipApplication internshipApplication, String message, LocalDate interviewDate) {
+    public Interview(Employer employer, InternshipApplication internshipApplication, String message, LocalDateTime interviewDate) {
         this.employer = employer;
         this.internshipApplication = internshipApplication;
         this.studentDecision = StudentDecision.PENDING;

@@ -7,6 +7,8 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -17,6 +19,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -24,11 +27,13 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
@@ -46,6 +51,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.answer;
@@ -71,11 +77,15 @@ public class EmployerServiceTest {
     private InternshipRepository internshipRepository;
     @Mock
     private InternshipApplicationRepository internshipApplicationRepository;
+    @Mock
+    private InterviewRepository interviewRepository;
 
     @Captor
     private ArgumentCaptor<Employer> employerArgumentCaptor;
     @Captor
     private ArgumentCaptor<Internship> internshipArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Interview> interviewArgumentCaptor;
 
     private static EmployerSignUpDto employerSignUpDto;
     private static InternshipRequestDto internshipRequestDto;
@@ -380,5 +390,66 @@ public class EmployerServiceTest {
 
         // Assert
         assert (Map.of(10L, 2L)).equals(counts);
+    }
+
+    @Test
+    void shouldCreateInterview() throws Exception {
+        // Arrange
+        LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+        when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
+
+        // Act
+        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", interviewDate));
+
+        // Assert
+        verify(interviewRepository).save(interviewArgumentCaptor.capture());
+
+        Interview savedInterview = interviewArgumentCaptor.getValue();
+        assert (employer).equals(savedInterview.getEmployer());
+        assert (internshipApplication).equals(savedInterview.getInternshipApplication());
+        assert ("Please come to our office").equals(savedInterview.getMessage());
+        assert (interviewDate).equals(savedInterview.getInterviewDate());
+        assert (StudentDecision.PENDING).equals(savedInterview.getStudentDecision());
+    }
+
+    @Test
+    void shouldThrowWhenCreatingInterviewForUnknownApplication() {
+        // Arrange
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class,
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7))));
+
+        verifyNoInteractions(interviewRepository);
+    }
+
+    @Test
+    void shouldReturnInterviewsOfEmployer() {
+        // Arrange
+        LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Please come to our office", interviewDate);
+        interview.setId(30L);
+
+        when(interviewRepository.findByEmployer_Credentials_Email(EMPLOYER_EMAIL)).thenReturn(List.of(interview));
+
+        // Act
+        List<InterviewEmployerResponseDTO> response = employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL);
+
+        // Assert
+        assert (Integer.valueOf(1)).equals(response.size());
+
+        InterviewEmployerResponseDTO first = response.getFirst();
+        assert (Long.valueOf(30L)).equals(first.id());
+        assert ("Jane Doe").equals(first.studentName());
+        assert ("Software Developer").equals(first.internshipTitle());
+        assert ("Please come to our office").equals(first.message());
+        assert ("PENDING").equals(first.studentDecision());
+        assert (interviewDate.toString()).equals(first.interviewDate());
     }
 }
