@@ -14,6 +14,7 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -42,7 +43,7 @@ public class EmployerService {
     private final UserAppService userAppService;
     private final InternshipApplicationRepository internshipApplicationRepository;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository InterviewRepository) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
