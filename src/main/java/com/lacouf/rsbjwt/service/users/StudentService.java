@@ -49,6 +49,7 @@ import java.util.*;
 @Service
 public class StudentService {
     private static final String STUDENT_ID_FIELD = "studentId";
+    private static final String PDF_MIME_TYPE = "application/pdf";
 
     private final StudentRepository studentRepository;
     private final UserAppService userAppService;
@@ -101,8 +102,8 @@ public class StudentService {
     public void saveCV(CvUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
         verifyFileSize(upload.content());
 
-        if (!"application/pdf".equals(tika.detect(upload.content()))) {
-            throw new InvalidFileTypeException("Invalid file type. Only PDF files are allowed.");
+        if (!PDF_MIME_TYPE.equals(tika.detect(upload.content()))) {
+            throw new InvalidFileTypeException();
         }
 
         CV cv = new CV(upload.content(), CvVisibility.VISIBLE, upload.fileName(), LocalDateTime.now());
@@ -112,7 +113,7 @@ public class StudentService {
         cv.setFileHash(calculateFileHash(cv.getContent()));
 
         if (!isCVReadable(cv)) {
-            throw new CorruptedFileException("The PDF file is corrupted or unreadable.");
+            throw new CorruptedFileException();
         }
 
         CV savedCv = cvRepository.save(cv);
@@ -149,7 +150,7 @@ public class StudentService {
         List<StudentCvResponseDto> studentCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
             if (!isCVReadable(cv)) {
-                throw new CorruptedFileException("The CV with ID " + cv.getId() + " is corrupted or unreadable.");
+                throw new CorruptedFileException();
             }
             if (!cv.getVisibility().equals(CvVisibility.VISIBLE)) {
                 continue;
@@ -175,7 +176,7 @@ public class StudentService {
     public CvFileResponseDto getCV(String email, long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
         CV cv = findStudentCv(email, cvId);
         if (!isCVReadable(cv)) {
-            throw new CorruptedFileException("The CV with ID " + cv.getId() + " is corrupted or unreadable.");
+            throw new CorruptedFileException();
         }
         return CvFileResponseDto.of(cv);
     }
@@ -203,7 +204,7 @@ public class StudentService {
         Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
 
         if (applicationRepository.existsByStudentAndInternship(student, internship)) {
-            throw new ApplicationAlreadyExistsException("Student has already applied to this internship");
+            throw new ApplicationAlreadyExistsException();
         }
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
@@ -230,7 +231,7 @@ public class StudentService {
                 .map(application -> {
                     Internship internship = application.getInternship();
                     return InternshipApplicationResponseDto.of(application.getId(), internship.getId(), internship.getTitle(),
-                           StudentCvResponseDto.of(application.getCv()), application.getApplicationDate(), application.getInternshipApplicationStatus());
+                            StudentCvResponseDto.of(application.getCv()), application.getApplicationDate(), application.getInternshipApplicationStatus());
                 })
                 .toList();
     }
@@ -243,11 +244,11 @@ public class StudentService {
         CV cv = findStudentCv(email, cvId);
 
         if (!cv.getStatus().equals(ReviewStatus.APPROVED)) {
-            throw new CVNotApprovedException("CV is not approved for application");
+            throw new CVNotApprovedException();
         }
 
         if (!cv.getVisibility().equals(CvVisibility.VISIBLE)) {
-            throw new CVNotVisibleException("CV is not visible for application");
+            throw new CVNotVisibleException();
         }
 
         return cv;
@@ -282,7 +283,7 @@ public class StudentService {
             throw new InternshipApplicationNotFoundException(applicationId);
         }
         if (application.getInternshipApplicationStatus() == InternshipApplicationStatus.READ) {
-            throw new ApplicationAlreadyReadException("Cannot update an application that has already been read");
+            throw new ApplicationAlreadyReadException();
         }
 
         verifyIfApplicationDeadlinePassed(internship);
@@ -303,7 +304,7 @@ public class StudentService {
             throw new EmptyFileException();
         }
         if (content.length > MAX_FILE_SIZE) {
-            throw new InvalidFileSizeException("File size exceeds the maximum allowed size of " + MAX_FILE_SIZE + " bytes.");
+            throw new InvalidFileSizeException(MAX_FILE_SIZE);
         }
     }
 
