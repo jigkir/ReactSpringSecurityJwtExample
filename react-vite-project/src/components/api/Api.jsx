@@ -231,9 +231,13 @@ export async function getStudentInternships() {
     return handleResponse(response);
 }
 
-// TODO: BE endpoint not implemented yet
-export async function markInternshipAsViewed(internshipId) {
-    const response = await fetcher(`student/internship/${internshipId}/viewed`, {method: "PUT"});
+
+export async function markInternshipAsViewed(internshipIds) {
+    const response = await fetcher("student/internship/viewed", {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({internshipIds}),
+    });
     return handleEmpty(response);
 }
 
