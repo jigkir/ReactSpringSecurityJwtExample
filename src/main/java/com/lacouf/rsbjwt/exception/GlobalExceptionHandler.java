@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.exception;
 
 import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
@@ -24,6 +25,7 @@ public class GlobalExceptionHandler {
     private static final String FIELD_KEY = "field";
     private static final String FILE_TOO_LARGE = "File is too large.";
     private static final String BAD_CREDENTIALS = "Incorrect email or password";
+    private static final String DUPLICATE_RESOURCE = "This resource already exists.";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
@@ -59,5 +61,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
     public ResponseEntity<Map<String, String>> handleFileTooLarge() {
         return new ResponseEntity<>(Map.of(MESSAGE_KEY, FILE_TOO_LARGE), HttpStatus.CONTENT_TOO_LARGE);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateResource() {
+        return new ResponseEntity<>(Map.of(MESSAGE_KEY, DUPLICATE_RESOURCE), HttpStatus.CONFLICT);
     }
 }
