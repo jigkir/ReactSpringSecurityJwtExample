@@ -781,12 +781,11 @@ public class StudentServiceTest {
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
 
         // Act & Assert
-        DeadlineAlreadyPassedException exception = assertThrows(
+        assertThrows(
                 DeadlineAlreadyPassedException.class,
                 () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
         );
 
-        assert "Application deadline has passed".equals(exception.getMessage());
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
@@ -1027,12 +1026,11 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(application));
 
         // Act & Assert
-        DeadlineAlreadyPassedException exception = assertThrows(
+        assertThrows(
                 DeadlineAlreadyPassedException.class,
                 () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
         );
 
-        assert "Application deadline has passed".equals(exception.getMessage());
         verifyNoInteractions(cvRepository);
         verify(applicationRepository, never()).save(any());
     }

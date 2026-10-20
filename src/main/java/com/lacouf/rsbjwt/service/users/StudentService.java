@@ -266,9 +266,7 @@ public class StudentService {
             throw new InternshipNotFoundException(internshipId);
         }
 
-        if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
-            throw new DeadlineAlreadyPassedException("Application deadline has passed");
-        }
+        verifyIfApplicationDeadlinePassed(internship);
 
         return internship;
     }
@@ -286,9 +284,9 @@ public class StudentService {
         if (application.getInternshipApplicationStatus() == InternshipApplicationStatus.READ) {
             throw new ApplicationAlreadyReadException("Cannot update an application that has already been read");
         }
-        if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
-            throw new DeadlineAlreadyPassedException("Application deadline has passed");
-        }
+
+        verifyIfApplicationDeadlinePassed(internship);
+
         return application;
     }
 
@@ -307,6 +305,16 @@ public class StudentService {
         if (content.length > MAX_FILE_SIZE) {
             throw new InvalidFileSizeException("File size exceeds the maximum allowed size of " + MAX_FILE_SIZE + " bytes.");
         }
+    }
+
+    private void verifyIfApplicationDeadlinePassed(Internship internship) throws DeadlineAlreadyPassedException {
+        if (hasApplicationDeadlinePassed(internship)) {
+            throw new DeadlineAlreadyPassedException();
+        }
+    }
+
+    private boolean hasApplicationDeadlinePassed(Internship internship) {
+        return LocalDate.now().isAfter(internship.getApplicationDeadline());
     }
 
     private void notifyManagersOfSubmittedCv(CV cv) {
@@ -351,7 +359,7 @@ public class StudentService {
             if (!internship.getStatus().equals(ReviewStatus.APPROVED)) {
                 continue;
             }
-            if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
+            if (hasApplicationDeadlinePassed(internship)) {
                 continue;
             }
             internshipResponses.add(InternshipResponseDto.of(internship, viewedIds.contains(internship.getId())));
