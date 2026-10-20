@@ -11,6 +11,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "internship_id"}))
 public class InternshipApplication {
     @Id
     @Setter
