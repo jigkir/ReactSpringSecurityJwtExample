@@ -1,4 +1,5 @@
 import fetcher from '../../utils/fetcher.js';
+import employer from "../page/auth/signup/Employer.jsx";
 
 // region Shared response handling
 // Maps an HTTP status to a translation KEY (translated at render time, never here).
@@ -305,6 +306,11 @@ export async function getApplications() {
 
 export async function getApplicationCv(id) {
     const response = await fetcher(`employer/applications/${id}/cv`, {method: "GET"});
+    return handleResponse(response);
+}
+
+export async function getApplicationCount() {
+    const response = await fetcher("employer/applications/count", {method: "GET"});
     return handleResponse(response);
 }
 

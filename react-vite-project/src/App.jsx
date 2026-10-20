@@ -16,7 +16,7 @@ import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
-import ViewApplications from "./components/page/ViewApplications.jsx";
+import ViewApplications from "./components/page/application/ViewApplications.jsx";
 
 function App() {
     const [user, setUser] = useState({});

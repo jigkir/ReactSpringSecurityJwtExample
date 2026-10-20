@@ -1,12 +1,12 @@
 import {useEffect, useState, useCallback} from "react";
-import {getApplicationCv, getApplications, getEmployerInternships} from "../api/Api.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import {NavLink, useLocation, useOutletContext, useParams} from "react-router-dom";
 import ApplicationCard from "./ApplicationCard.jsx";
-import {base64ToBlobUrl} from "./cv/cvUtils.js";
-import Icon from "../../styles/Icon.jsx";
-import {sortApplication} from "../../utils/Sort.jsx";
-import {useNotifications} from "../notification/NotificationsProvider.jsx";
-import {usePolling} from "../../utils/usePolling.js";
+import {base64ToBlobUrl} from "../cv/cvUtils.js";
+import Icon from "../../../styles/Icon.jsx";
+import {sortApplication} from "../../../utils/Sort.jsx";
+import {useNotifications} from "../../notification/NotificationsProvider.jsx";
+import {usePolling} from "../../../utils/usePolling.js";
 
 function ViewApplications({user}) {
     const location = useLocation();

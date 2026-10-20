@@ -330,7 +330,8 @@
     "createError": "Échec de la création de l'offre de stage",
     "createGenericError": "Impossible d'enregistrer l'offre de stage.",
     "deleteError": "Échec de la suppression de l'offre de stage",
-    "deleteGenericError": "Impossible de supprimer l'offre de stage."
+    "deleteGenericError": "Impossible de supprimer l'offre de stage.",
+    "countError": "Impossible de récupérer le nombre de candidatures"
   },
   "managerInternships": {
     "title": "Offres de stage",
@@ -447,10 +448,12 @@
       "approved": "Approuvée",
       "rejected": "Rejetée"
     },
-    "viewApplication": "Consulter candidature"
+    "viewApplication": "Consulter candidature",
+    "applicationCount": "Nombre d'application: "
   },
   "viewApplication": {
-    "loadError": "Impossible de charger les candidatures"
+    "loadError": "Impossible de charger les candidatures",
+    "new": "Nouveau"
   },
   "dev": {
     "label": "Dev",

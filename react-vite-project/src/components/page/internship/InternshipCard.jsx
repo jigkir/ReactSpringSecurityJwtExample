@@ -3,6 +3,8 @@ import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {formatDate} from '../cv/cvUtils.js';
 import {NavLink} from "react-router-dom";
+import {useCallback, useEffect, useState} from "react";
+import {getApplicationCount} from "../../api/Api.jsx";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -34,10 +36,12 @@ export default function InternshipCard({
                                            showPreview = false,
                                            onPreview,
                                            expanded = false,
-                                           viewed = false
+                                           viewed = false,
+                                           applicationCount
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
+
 
     const statusLabel = STATUS_KEY_MAP[internship.status]
         ? t(STATUS_KEY_MAP[internship.status])
@@ -67,6 +71,7 @@ export default function InternshipCard({
             {statusLabel}
         </span>
     );
+
 
     return (
         <div className={s.card}>
@@ -172,34 +177,39 @@ export default function InternshipCard({
 
                 {/* View applications / Edit / Delete */}
                 {(OnEdit || OnDelete) && (
-                    <div className="ml-auto flex items-center gap-1">
-                        {!isRejected && (
-                            <NavLink
-                                to={`/application/${internship.id}`}
-                                state={{internshipData: internship}}
-                                className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                            >
-                                {t("internshipCard.viewApplication")}
-                            </NavLink>
-                        )}
-                        {OnEdit && (
-                            <button
-                                className={editBtn}
-                                aria-label={t("internshipCard.editAria")}
-                                onClick={() => OnEdit(internship)}
-                            >
-                                <Icon name="edit" size={24}/>
-                            </button>
-                        )}
-                        {OnDelete && (
-                            <button
-                                className={s.deleteBtn}
-                                aria-label={t("internshipCard.deleteAria")}
-                                onClick={() => OnDelete(internship.id)}
-                            >
-                                <Icon name="delete" size={24}/>
-                            </button>
-                        )}
+                    <div className="flex items-center justify-between w-full gap-4">
+                        {internship.status === "APPROVED" && (<span>
+                            {t("internshipCard.applicationCount")} {applicationCount}
+                        </span>)}
+                        <div className="flex items-center gap-1 ml-auto">
+                            {internship.status === "APPROVED" && (
+                                <NavLink
+                                    to={`/application/${internship.id}`}
+                                    state={{internshipData: internship}}
+                                    className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                                >
+                                    {t("internshipCard.viewApplication")}
+                                </NavLink>
+                            )}
+                            {OnEdit && (
+                                <button
+                                    className={editBtn}
+                                    aria-label={t("internshipCard.editAria")}
+                                    onClick={() => OnEdit(internship)}
+                                >
+                                    <Icon name="edit" size={24}/>
+                                </button>
+                            )}
+                            {OnDelete && (
+                                <button
+                                    className={s.deleteBtn}
+                                    aria-label={t("internshipCard.deleteAria")}
+                                    onClick={() => OnDelete(internship.id)}
+                                >
+                                    <Icon name="delete" size={24}/>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
