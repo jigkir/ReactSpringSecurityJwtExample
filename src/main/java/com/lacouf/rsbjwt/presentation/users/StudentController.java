@@ -9,6 +9,7 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
@@ -123,4 +124,9 @@ public class StudentController {
         return ResponseEntity.ok("Application CV updated successfully");
     }
 
+    @PutMapping("/internship/viewed")
+    public ResponseEntity<Void> markInternshipsAsViewed(@Valid @RequestBody ViewedInternshipsDto viewedInternshipsDto, Authentication authentication) throws UserNotFoundException {
+        studentService.markInternshipsAsViewed(authentication.getName(), viewedInternshipsDto.internshipIds());
+        return ResponseEntity.noContent().build();
+    }
 }

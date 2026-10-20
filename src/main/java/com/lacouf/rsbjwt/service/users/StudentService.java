@@ -44,10 +44,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class StudentService {
@@ -347,6 +344,7 @@ public class StudentService {
 
     public List<InternshipResponseDto> getInternships(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
+        Set<Long> viewedIds = studentRepository.findViewedInternshipIds(student);
         List<Internship> internships = findInternships(student);
         List<InternshipResponseDto> internshipResponses = new ArrayList<>();
         for (Internship internship : internships) {
@@ -356,8 +354,17 @@ public class StudentService {
             if (LocalDate.now().isAfter(internship.getApplicationDeadline())) {
                 continue;
             }
-            internshipResponses.add(InternshipResponseDto.of(internship));
+            internshipResponses.add(InternshipResponseDto.of(internship, viewedIds.contains(internship.getId())));
         }
         return internshipResponses;
+    }
+
+    @Transactional
+    public void markInternshipsAsViewed(String email, List<Long> internshipIds) throws UserNotFoundException {
+        Student student = findByEmail(email);
+
+        internshipRepository
+                .findByIdInAndDeletedFalseAndStatusAndPostedBy_Discipline(internshipIds, ReviewStatus.APPROVED, student.getDiscipline())
+                .forEach(student::markViewed);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +26,8 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     List<Internship> findByPostedBy_DisciplineAndDeletedIsFalse(Discipline postedByDiscipline);
 
     List<Internship> findByPostedBy_DisciplineAndStatusAndDeletedFalseAndApplicationDeadlineGreaterThanEqual(Discipline discipline, ReviewStatus status, LocalDate date);
+
+    List<Internship> findByIdInAndDeletedFalseAndStatusAndPostedBy_Discipline(
+            Collection<Long> ids, ReviewStatus status, Discipline discipline);
+
 }
