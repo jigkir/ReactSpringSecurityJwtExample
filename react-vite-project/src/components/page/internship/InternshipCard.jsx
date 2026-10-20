@@ -3,8 +3,6 @@ import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {formatDate} from '../cv/cvUtils.js';
 import {NavLink} from "react-router-dom";
-import {useCallback, useEffect, useState} from "react";
-import {getApplicationCount} from "../../api/Api.jsx";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",

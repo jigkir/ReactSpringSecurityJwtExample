@@ -1,4 +1,4 @@
-import {useEffect, useState, useCallback} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import {NavLink, useLocation, useOutletContext, useParams} from "react-router-dom";
 import ApplicationCard from "./ApplicationCard.jsx";
