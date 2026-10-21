@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.presentation.dev.DevController;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -38,8 +39,8 @@ public class DevControllerTest {
     void shouldReturnAllUsers() throws Exception {
         // Arrange
         when(userAppService.getAllDevUsers()).thenReturn(List.of(
-                new UserResponseDto(1L, "John", "Doe", "student@example.com", "STUDENT"),
-                new UserResponseDto(2L, "Jane", "Doe", "manager@example.com", "MANAGER")
+                new UserResponseDto(1L, "John", "Doe", "student@example.com", "STUDENT", Discipline.COMPUTER_SCIENCE),
+                new UserResponseDto(2L, "Jane", "Doe", "manager@example.com", "MANAGER", null)
         ));
 
         // Act + Assert
@@ -48,8 +49,10 @@ public class DevControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].email").value("student@example.com"))
                 .andExpect(jsonPath("$[0].role").value("STUDENT"))
+                .andExpect(jsonPath("$[0].discipline").value("COMPUTER_SCIENCE"))
                 .andExpect(jsonPath("$[1].email").value("manager@example.com"))
-                .andExpect(jsonPath("$[1].role").value("MANAGER"));
+                .andExpect(jsonPath("$[1].role").value("MANAGER"))
+                .andExpect(jsonPath("$[1].discipline").doesNotExist());
 
         verify(userAppService).getAllDevUsers();
     }
