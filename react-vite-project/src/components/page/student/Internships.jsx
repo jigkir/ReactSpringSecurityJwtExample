@@ -142,7 +142,7 @@ function StudentInternships() {
                         dark={dark}
                         cvs={cvs}
                         internshipId={internship.id}
-                        application={appliedInternships.filter((application) => application.internshipId === internship.id)}
+                        application={appliedInternships.find((application) => application.internshipId === internship.id)}
                     />)}
                 />))}
             </div>

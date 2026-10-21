@@ -368,7 +368,11 @@
     "chooseCv": "Choose a CV",
     "apply": "Apply",
     "updateCV": "Update CV",
-    "viewedError": "Could not record that you viewed this internship."
+    "viewedError": "Could not record that you viewed this internship.",
+    "alreadyApplied": "You already applied to this internship.",
+    "applyFailed": "Could not send your application.",
+    "alreadyReadByEmployer": "The employer has already viewed your CV, so it can no longer be changed.",
+    "cvUpdated": "CV updated"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",

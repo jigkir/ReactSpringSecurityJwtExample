@@ -368,7 +368,11 @@
     "chooseCv": "Choisissez un CV",
     "apply": "Postuler",
     "updateCV": "Changer CV",
-    "viewedError": "Impossible d'enregistrer la consultation de cette offre."
+    "viewedError": "Impossible d'enregistrer la consultation de cette offre.",
+    "alreadyApplied": "Vous avez déjà postulé à cette offre.",
+    "applyFailed": "Impossible d'envoyer votre candidature.",
+    "alreadyReadByEmployer": "L'employeur a déjà consulté votre CV : il ne peut plus être changé.",
+    "cvUpdated": "CV mis à jour"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",
