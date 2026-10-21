@@ -2,8 +2,10 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.Teacher;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
@@ -118,8 +120,62 @@ class UserAppServiceTest {
         assert ("Doe").equals(response.lastName());
         assert ("student@example.com").equals(response.email());
         assert ("STUDENT").equals(response.role());
+        assert (Discipline.COMPUTER_SCIENCE).equals(response.discipline());
 
         verify(userAppRepository).findByCredentialsEmail("student@example.com");
+    }
+
+    @Test
+    void shouldReturnTeacherDisciplineWhenGettingUserByEmail() throws UserNotFoundException {
+        // Arrange
+        Teacher teacher = new Teacher("Teach", "Er", "12345",
+                Credentials.builder().email("teacher@example.com").password("pw").role(Role.TEACHER).build(),
+                Discipline.MARKETING);
+        teacher.setId(3L);
+
+        when(userAppRepository.findByCredentialsEmail("teacher@example.com")).thenReturn(Optional.of(teacher));
+
+        // Act
+        UserResponseDto response = userAppService.getUserByEmail("teacher@example.com");
+
+        // Assert
+        assert ("TEACHER").equals(response.role());
+        assert (Discipline.MARKETING).equals(response.discipline());
+    }
+
+    @Test
+    void shouldReturnEmployerDisciplineWhenGettingUserByEmail() throws UserNotFoundException {
+        // Arrange
+        Employer employer = new Employer("Emp", "Loyer",
+                Credentials.builder().email("employer@example.com").password("pw").role(Role.EMPLOYER).build(),
+                "Acme", Discipline.CIVIL_ENGINEERING, "514-123-4567");
+        employer.setId(4L);
+
+        when(userAppRepository.findByCredentialsEmail("employer@example.com")).thenReturn(Optional.of(employer));
+
+        // Act
+        UserResponseDto response = userAppService.getUserByEmail("employer@example.com");
+
+        // Assert
+        assert ("EMPLOYER").equals(response.role());
+        assert (Discipline.CIVIL_ENGINEERING).equals(response.discipline());
+    }
+
+    @Test
+    void shouldReturnNullDisciplineWhenUserIsManager() throws UserNotFoundException {
+        // Arrange
+        Manager manager = new Manager("Jane", "Doe",
+                Credentials.builder().email("manager@example.com").password("pw").role(Role.MANAGER).build(),
+                "514-123-4567");
+        manager.setId(2L);
+
+        when(userAppRepository.findByCredentialsEmail("manager@example.com")).thenReturn(Optional.of(manager));
+
+        // Act
+        UserResponseDto response = userAppService.getUserByEmail("manager@example.com");
+
+        // Assert
+        assert response.discipline() == null;
     }
 
     @Test
@@ -299,8 +355,10 @@ class UserAppServiceTest {
         assert (Integer.valueOf(2)).equals(result.size());
         assert ("student@example.com").equals(result.get(0).email());
         assert ("STUDENT").equals(result.get(0).role());
+        assert (Discipline.COMPUTER_SCIENCE).equals(result.get(0).discipline());
         assert ("manager@example.com").equals(result.get(1).email());
         assert ("MANAGER").equals(result.get(1).role());
+        assert result.get(1).discipline() == null;
     }
 
     @Test
