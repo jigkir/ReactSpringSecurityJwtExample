@@ -47,6 +47,7 @@ function ApplyControls({internshipId, cvs, dark, application}) {
 
     // The CV picked by the student, otherwise the CV already sent, otherwise the first approved CV
     const selectedCvId = cvId ?? application?.cv.id ?? cvs[0].id;
+    const isSentCvSelected = selectedCvId === application?.cv.id;
 
     const submit = async (send, successStatus, conflictKey) => {
         setStatus("sending");
@@ -91,7 +92,7 @@ function ApplyControls({internshipId, cvs, dark, application}) {
             </select>
             {application ? (
                 <Button tone="success" dark={dark} icon="send"
-                        disabled={status === "sending"}
+                        disabled={status === "sending" || isSentCvSelected}
                         onClick={handleUpdate}>
                     {t("studentInternship.updateCV")}
                 </Button>
