@@ -9,7 +9,7 @@ import {
     getStudentAppliedInternships,
     getStudentCvs,
     getStudentInternships,
-    markInternshipAsViewed
+    markInternshipsAsViewed
 } from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 
@@ -20,6 +20,7 @@ function StudentInternships() {
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [viewError, setViewError] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
     const [appliedInternships, setAppliedInternships] = useState([]);
     const [cvs, setCvs] = useState(null);
@@ -75,17 +76,17 @@ function StudentInternships() {
             return;
         }
 
-        setSelectedId(selectedId === id ? null : id);
+        setSelectedId(id);
 
         try {
-            await markInternshipAsViewed([id]);
-
+            await markInternshipsAsViewed([id]);
+            setViewError(false);
             setInternships(prev => prev.map(internship => internship.id === id ? {
                 ...internship,
                 viewed: true
             } : internship));
-        } catch (err) {
-            console.error("Failed to mark internship as viewed:", err);
+        } catch {
+            setViewError(true);
         }
     };
 
@@ -100,6 +101,8 @@ function StudentInternships() {
         </div>
 
         <div className={s.listSection}>
+            {viewError && <p className={s.errorText} role="alert">{t("studentInternship.viewedError")}</p>}
+
             {!loading && !error && internships.length > 0 && (<InternshipFilters
                 dark={dark}
                 filters={filters}
@@ -139,7 +142,7 @@ function StudentInternships() {
                         dark={dark}
                         cvs={cvs}
                         internshipId={internship.id}
-                        application={appliedInternships.filter((application) => application.internshipId === internship.id)}
+                        application={appliedInternships.find((application) => application.internshipId === internship.id)}
                     />)}
                 />))}
             </div>

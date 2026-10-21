@@ -1,13 +1,13 @@
 import {fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import {MemoryRouter, Outlet, Route, Routes} from "react-router-dom";
 import StudentInternships from "../Internships.jsx";
-import {getStudentInternships, getStudentCvs, markInternshipAsViewed} from "../../../api/Api.jsx";
+import {getStudentInternships, getStudentCvs, markInternshipsAsViewed} from "../../../api/Api.jsx";
 import i18n from "../../../../i18next.jsx";
 
 vi.mock("../../../api/Api.jsx", () => ({
     getStudentInternships: vi.fn(),
     getStudentCvs: vi.fn(),
-    markInternshipAsViewed: vi.fn(),
+    markInternshipsAsViewed: vi.fn(),
 }));
 
 vi.mock("../ApplyControls.jsx", () => ({
@@ -56,7 +56,7 @@ beforeEach(() => {
     vi.resetAllMocks();
     getStudentInternships.mockResolvedValue([internship1, internship2]);
     getStudentCvs.mockResolvedValue([]);
-    markInternshipAsViewed.mockResolvedValue(undefined);
+    markInternshipsAsViewed.mockResolvedValue(undefined);
 });
 
 describe("StudentInternships displays available internship offers", () => {
@@ -159,7 +159,7 @@ describe("StudentInternships allows students to consult offers", () => {
 
         // Assert
         await waitFor(() => {
-            expect(markInternshipAsViewed).toHaveBeenCalledWith(2);
+            expect(markInternshipsAsViewed).toHaveBeenCalledWith([2]);
         });
     });
 
@@ -172,13 +172,13 @@ describe("StudentInternships allows students to consult offers", () => {
         fireEvent.click(screen.getAllByRole("button", {name: i18n.t("studentInternship.preview")})[0]);
 
         await waitFor(() => {
-            expect(markInternshipAsViewed).toHaveBeenCalledTimes(1);
+            expect(markInternshipsAsViewed).toHaveBeenCalledTimes(1);
         });
 
         fireEvent.click(screen.getByRole("button", {name: i18n.t("studentInternship.hide")}));
 
         // Assert
-        expect(markInternshipAsViewed).toHaveBeenCalledTimes(1);
+        expect(markInternshipsAsViewed).toHaveBeenCalledTimes(1);
         expect(screen.queryByText(
             /Développement frontend React/
         )).not.toBeInTheDocument();
