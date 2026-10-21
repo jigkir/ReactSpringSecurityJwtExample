@@ -46,9 +46,3 @@ D'ici la fin de la première semaine du sprint 3, l'équipe réalise et complèt
 (environ 8-10h de travail/personne) pour s'assurer d'une progression régulière et d'une charge de travail moins lourde
 vers la fin des 2 semaines.
 pour la definition de done, its what we already have, so i added nothing new
-
-# Sprint 3
-
-## Scrum Master
-
-*Soumeya Tahar-Chaouche*
