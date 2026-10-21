@@ -13,7 +13,7 @@
  * Sort options are [value, translationKey] pairs so components just map over them.
  */
 
-import {useMemo, useState} from 'react';
+import {useMemo, useRef, useState} from 'react';
 
 // ─── 1. Generic helpers ───────────────────────────────────────────────────────
 
@@ -67,11 +67,8 @@ const internshipPay = (i) =>
 const compareUpload = (a, b) =>
     String(a.uploadedAt ?? "").localeCompare(String(b.uploadedAt ?? "")) || compareId(a, b);
 
-// Unviewed offers first (`viewed` is undefined for employer/manager lists, so they are unaffected)
-const compareViewed = (a, b) => Number(Boolean(a.viewed)) - Number(Boolean(b.viewed));
-
 export const INTERNSHIP_SORTERS = {
-    NEWEST: (a, b) => compareViewed(a, b) || reverse(compareUpload)(a, b),
+    NEWEST: reverse(compareUpload),
     OLDEST: compareUpload,
     DEADLINE_ASC: compareIsoDate("applicationDeadline"),
     START_ASC: compareIsoDate("startDate"),
@@ -103,13 +100,23 @@ export function filterInternships(list, {search = "", status = "ALL", discipline
     });
 }
 
-export function sortInternships(list, sort = "NEWEST") {
-    return [...list].sort(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST);
+/**
+ * `viewedAtLoad` (optional Map id -> boolean) is the "viewed" state each offer had when it
+ * first appeared on the page. With "Newest first", offers that were NOT viewed at that time
+ * go on top. Because the state is frozen, previewing an offer does not move it: it only
+ * moves after a page change / reload (when the map is rebuilt).
+ */
+export function sortInternships(list, sort = "NEWEST", viewedAtLoad = null) {
+    const base = INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST;
+    if (!viewedAtLoad || (sort !== "NEWEST" && INTERNSHIP_SORTERS[sort])) return [...list].sort(base);
+
+    const wasViewed = (i) => Number(viewedAtLoad.get(i.id) ?? Boolean(i.viewed));
+    return [...list].sort((a, b) => wasViewed(a) - wasViewed(b) || base(a, b));
 }
 
-export function applyInternshipFilters(list, {search, status, discipline, sort} = {}) {
+export function applyInternshipFilters(list, {search, status, discipline, sort, viewedAtLoad} = {}) {
     if (!list) return null;
-    return sortInternships(filterInternships(list, {search, status, discipline}), sort);
+    return sortInternships(filterInternships(list, {search, status, discipline}), sort, viewedAtLoad);
 }
 
 /** Owns the filter state and returns the visible list (null while `list` is null). */
@@ -119,11 +126,19 @@ export function useInternshipFilters(list) {
     const [discipline, setDiscipline] = useState("ALL");
     const [sort, setSort] = useState("NEWEST");
 
+    // "Viewed" state of each offer the first time it appears. Lives as long as the page
+    // (reset on page change), so previewing an offer never reorders the list.
+    const viewedAtLoad = useRef(new Map());
+
     const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
-    const visible = useMemo(
-        () => applyInternshipFilters(list, {search, status, discipline, sort}),
-        [list, search, status, discipline, sort],
-    );
+    const visible = useMemo(() => {
+        for (const i of list ?? []) {
+            if (!viewedAtLoad.current.has(i.id)) viewedAtLoad.current.set(i.id, Boolean(i.viewed));
+        }
+        return applyInternshipFilters(list, {
+            search, status, discipline, sort, viewedAtLoad: viewedAtLoad.current,
+        });
+    }, [list, search, status, discipline, sort]);
 
     return {
         search, setSearch, status, setStatus, discipline, setDiscipline, sort, setSort,
