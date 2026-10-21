@@ -12,6 +12,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -204,7 +206,9 @@ public class EmployerService {
                 employer,
                 internshipApplication,
                 interviewRequestDto.message(),
-                interviewRequestDto.interviewDate()
+                interviewRequestDto.interviewDate(),
+                interviewRequestDto.meetingType(),
+                interviewRequestDto.meetingDetails()
         );
 
         interviewRepository.save(interview);
@@ -215,6 +219,13 @@ public class EmployerService {
         return interviewRepository.findByEmployer_Credentials_Email(email)
                 .stream()
                 .map(InterviewEmployerResponseDTO::of)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getMeetingTypes() {
+        return Arrays.stream(MeetingType.values())
+                .map(Enum::name)
                 .toList();
     }
 

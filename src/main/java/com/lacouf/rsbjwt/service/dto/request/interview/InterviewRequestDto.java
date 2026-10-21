@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.request.interview;
 
+import com.lacouf.rsbjwt.model.interview.MeetingType;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,13 @@ public record InterviewRequestDto (
 
     @NotNull
     @Future
-    LocalDateTime interviewDate
+    LocalDateTime interviewDate,
+
+    @NotNull
+    MeetingType meetingType,
+
+    @NotNull
+    @Size(max = 255)
+    String meetingDetails
 ) {
 }

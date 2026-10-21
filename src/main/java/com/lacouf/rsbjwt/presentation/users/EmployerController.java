@@ -88,4 +88,9 @@ public class EmployerController {
     public ResponseEntity<List<InterviewEmployerResponseDTO>> getInterviewsOfEmployer(Authentication authentication) {
         return ResponseEntity.ok(employerService.getInterviewsOfEmployer(authentication.getName()));
     }
+
+    @GetMapping("/interviews/meeting-types")
+    public ResponseEntity<List<String>> getMeetingTypes() {
+        return ResponseEntity.ok(employerService.getMeetingTypes());
+    }
 }

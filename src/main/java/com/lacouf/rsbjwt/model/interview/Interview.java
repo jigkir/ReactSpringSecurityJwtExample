@@ -37,16 +37,18 @@ public class Interview {
     private MeetingType meetingType;
 
     @Column(nullable = false)
-    private String meetingLink;
+    private String meetingDetails;
 
     public Interview() {
     }
 
-    public Interview(Employer employer, InternshipApplication internshipApplication, String message, LocalDateTime interviewDate) {
+    public Interview(Employer employer, InternshipApplication internshipApplication, String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {
         this.employer = employer;
         this.internshipApplication = internshipApplication;
         this.studentDecision = StudentDecision.PENDING;
         this.message = message;
         this.interviewDate = interviewDate;
+        this.meetingType = meetingType;
+        this.meetingDetails = meetingDetails;
     }
 }
