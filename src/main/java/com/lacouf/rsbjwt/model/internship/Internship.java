@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 @Getter
 public class Internship {
     @Id
-    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

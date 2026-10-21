@@ -169,6 +169,7 @@ public class StudentService {
         CV cv = findStudentCv(email, cvId);
         cv.setVisibility(CvVisibility.HIDDEN);
         cvRepository.save(cv);
+
         closeCvNotifications(cvId);
     }
 
@@ -188,7 +189,6 @@ public class StudentService {
     public List<StudentCvResponseDto> getApprovedAndVisibleCVs(String email) {
         List<CV> cvs = cvRepository.findByStudent_Credentials_EmailAndStatusAndVisibility(email, ReviewStatus.APPROVED, CvVisibility.VISIBLE);
         List<StudentCvResponseDto> approvedCvResponseDtos = new ArrayList<>();
-
         for (CV cv : cvs) {
             approvedCvResponseDtos.add(StudentCvResponseDto.of(cv));
         }
@@ -198,15 +198,21 @@ public class StudentService {
     @Transactional
     public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, CvNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException, CVNotVisibleException {
         Student student = findByEmail(email);
+
         CV cv = validateCVForApplication(email, cvId);
+
         Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
+
         if (applicationRepository.existsByStudentAndInternship(student, internship)) {
             throw new ApplicationAlreadyExistsException();
         }
+
         InternshipApplication application = new InternshipApplication(internship, cv, student);
         applicationRepository.save(application);
+
         student.markViewed(internship);
         studentRepository.save(student);
+
         notifyEmployerOfNewApplication(application);
     }
 
