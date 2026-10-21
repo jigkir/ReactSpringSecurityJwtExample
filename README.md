@@ -1,5 +1,10 @@
 # *Projet collaboratif - EQ3*
 
+# Definition of Done
+- [ ] Merge dans le main, et rouler les tests
+- [ ] Vérifier la cohérence de l'UI
+- [ ] Revue du plan de démo final
+
 # Sprint 1
 ## Scrum Master
 *Léo Tran*
