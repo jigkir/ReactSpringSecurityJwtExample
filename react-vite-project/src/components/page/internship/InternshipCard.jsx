@@ -35,12 +35,10 @@ export default function InternshipCard({
                                            onPreview,
                                            expanded = false,
                                            viewed = false,
-                                           applicationCount,
-                                           newApplicationCount
+                                           applicationCount
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
-
 
     const statusLabel = STATUS_KEY_MAP[internship.status]
         ? t(STATUS_KEY_MAP[internship.status])
@@ -64,16 +62,12 @@ export default function InternshipCard({
         : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
 
     const totalApplications = applicationCount ?? 0;
-    const newApplications = newApplicationCount ?? 0;
-    const hasNewApplications = newApplications > 0;
 
-    const countBadge = `inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-semibold ${
-        dark ? "bg-slate-700 text-white" : "bg-gray-100 text-gray-900"}`;
+    const pillBase = "inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors";
 
-    const newCountBadge = `inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-semibold ring-1 ${
-        hasNewApplications
-            ? dark ? "bg-indigo-500/20 text-indigo-200 ring-indigo-400/40" : "bg-indigo-100 text-indigo-700 ring-indigo-300"
-            : dark ? "bg-slate-800 text-slate-500 ring-slate-700" : "bg-gray-50 text-gray-400 ring-gray-200"}`;
+    const countBadge = `${pillBase} ${
+        dark ? "bg-red-500/10 text-red-200 border-red-500/30" : "bg-red-50 text-red-800 border-red-300"
+    }`;
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
     const statusBadge = !hideStatus && (
@@ -82,7 +76,6 @@ export default function InternshipCard({
             {statusLabel}
         </span>
     );
-
 
     return (
         <div className={s.card}>
@@ -194,14 +187,11 @@ export default function InternshipCard({
                     {internship.status === "APPROVED" ? (
                         <div className="flex flex-wrap items-center gap-2">
                             <span className={countBadge}>
-                                <Icon name="send" size={20}/>
-                                {t("internshipCard.applicationCount")}
-                                <span>{totalApplications}</span>
-                            </span>
-                            <span className={newCountBadge}>
-                                <Icon name="notifications" size={20}/>
-                                {t("internshipCard.newApplicationCount")}
-                                <span>{newApplications}</span>
+                                <Icon name="send" size={18}/>
+                                <span>{t("internshipCard.applicationCount")}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-red-400 text-slate-900" : "bg-red-600 text-white"}`}>
+                                    {totalApplications}
+                                </span>
                             </span>
                         </div>
                     ) : <span/>}

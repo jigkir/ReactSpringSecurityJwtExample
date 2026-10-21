@@ -17,6 +17,7 @@ import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
 import ViewApplications from "./components/page/application/ViewApplications.jsx";
+import Applications from "./components/page/application/Applications.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -90,6 +91,7 @@ function App() {
                     {/* Employer */}
                     <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
                         <Route path="/internships" element={<PostInternship user={user}/>}/>
+                        <Route path="/applications" element={<Applications user={user}/>}/>
                         <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
                     </Route>
 

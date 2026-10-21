@@ -261,7 +261,7 @@ export function NotificationsProvider({user, children}) {
                     id: "newInternshipApplication",
                     count: counts.newInternshipApplication,
                     labelKey: "navbar.newInternshipApplicationNotification",
-                    to: "/internships",
+                    to: "/applications",
                 },
             ];
         }

@@ -67,8 +67,11 @@ const internshipPay = (i) =>
 const compareUpload = (a, b) =>
     String(a.uploadedAt ?? "").localeCompare(String(b.uploadedAt ?? "")) || compareId(a, b);
 
+// Unviewed offers first (`viewed` is undefined for employer/manager lists, so they are unaffected)
+const compareViewed = (a, b) => Number(Boolean(a.viewed)) - Number(Boolean(b.viewed));
+
 export const INTERNSHIP_SORTERS = {
-    NEWEST: reverse(compareUpload),
+    NEWEST: (a, b) => compareViewed(a, b) || reverse(compareUpload)(a, b),
     OLDEST: compareUpload,
     DEADLINE_ASC: compareIsoDate("applicationDeadline"),
     START_ASC: compareIsoDate("startDate"),

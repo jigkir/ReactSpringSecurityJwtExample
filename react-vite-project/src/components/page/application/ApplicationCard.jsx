@@ -3,9 +3,9 @@ import Button from "../../../styles/Button.jsx";
 import CvPreview from "../cv/CvPreview.jsx";
 import {useTranslation} from "react-i18next";
 
-function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl}) {
+function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
     const s = getApplicationCardClasses(dark);
-    const {t, i18n} = useTranslation();
+    const {t} = useTranslation();
     const {student, cvFileName} = application;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
 
@@ -31,6 +31,9 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             <p className={s.description}>
                                 {student?.email}
                             </p>
+                            {internshipTitle && (
+                                <p className={`${s.description} font-medium`}>{internshipTitle}</p>
+                            )}
                         </div>
 
                         <span className={s.fileName} title={cvFileName}>

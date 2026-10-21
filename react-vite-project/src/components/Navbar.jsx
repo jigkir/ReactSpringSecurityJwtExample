@@ -16,7 +16,10 @@ const NAV_BY_ROLE = {
         {to: "/manager/cvs", labelKey: "navbar.cv"},
         {to: "/manager/internships", labelKey: "navbar.internships"},
     ],
-    EMPLOYER: [{to: "/internships", labelKey: "navbar.postInternship"}],
+    EMPLOYER: [
+        {to: "/internships", labelKey: "navbar.postInternship"},
+        {to: "/applications", labelKey: "navbar.applications"},
+    ],
     TEACHER: [],
 };
 

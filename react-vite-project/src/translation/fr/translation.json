@@ -58,6 +58,7 @@
     "switchToLight": "Passer en mode clair",
     "switchToDark": "Passer en mode sombre",
     "postInternship": "Offrir un stage",
+    "applications": "Candidatures",
     "cv": "CV",
     "internships": "Stages",
     "cvReview": "CVs à valider",
@@ -319,6 +320,26 @@
       "viewAll": "Ouvrir"
     }
   },
+  "applicationsPage": {
+    "title": "Candidatures",
+    "subtitle": "Consultez les étudiants qui ont postulé, regroupés par offre de stage.",
+    "loading": "Chargement…",
+    "empty": "Aucune candidature reçue pour l'instant.",
+    "loadError": "Impossible de charger les candidatures.",
+    "searchPlaceholder": "Rechercher étudiant, courriel, CV…",
+    "searchAria": "Rechercher",
+    "clearSearchAria": "Effacer la recherche",
+    "noMatch": "Aucune candidature ne correspond à votre recherche.",
+    "internshipAria": "Offre de stage",
+    "allInternships": "Toutes les offres de stage",
+    "unknownInternship": "Offre de stage inconnue",
+    "fromInternship": "Candidatures pour l'offre",
+    "applicationCount_one": "{{count}} candidature",
+    "applicationCount_other": "{{count}} candidatures",
+    "unreadCount_one": "{{count}} nouvelle",
+    "unreadCount_other": "{{count}} nouvelles",
+    "openInternship": "Consulter l'offre"
+  },
   "postInternship": {
     "pageTitle": "Gestion des offres",
     "pageSubtitle": "Gérez et publiez vos offres de stage pour les étudiants.",
@@ -454,7 +475,7 @@
       "rejected": "Rejetée"
     },
     "viewApplication": "Consulter candidature",
-    "applicationCount": "Nombre d'application: "
+    "applicationCount": "Candidatures"
   },
   "viewApplication": {
     "loadError": "Impossible de charger les candidatures",
