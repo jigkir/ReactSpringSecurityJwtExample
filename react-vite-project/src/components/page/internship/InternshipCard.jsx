@@ -35,7 +35,8 @@ export default function InternshipCard({
                                            onPreview,
                                            expanded = false,
                                            viewed = false,
-                                           applicationCount
+                                           applicationCount,
+                                           newApplicationCount
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
@@ -61,6 +62,18 @@ export default function InternshipCard({
     const editBtn = `p-1.5 rounded transition-colors ${dark
         ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
         : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
+
+    const totalApplications = applicationCount ?? 0;
+    const newApplications = newApplicationCount ?? 0;
+    const hasNewApplications = newApplications > 0;
+
+    const countBadge = `inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-semibold ${
+        dark ? "bg-slate-700 text-white" : "bg-gray-100 text-gray-900"}`;
+
+    const newCountBadge = `inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-semibold ring-1 ${
+        hasNewApplications
+            ? dark ? "bg-indigo-500/20 text-indigo-200 ring-indigo-400/40" : "bg-indigo-100 text-indigo-700 ring-indigo-300"
+            : dark ? "bg-slate-800 text-slate-500 ring-slate-700" : "bg-gray-50 text-gray-400 ring-gray-200"}`;
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
     const statusBadge = !hideStatus && (
@@ -172,45 +185,58 @@ export default function InternshipCard({
                     <Icon name="hourglass_bottom" size={20}/>
                     <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
-
-                {/* View applications / Edit / Delete */}
-                {(OnEdit || OnDelete) && (
-                    <div className="flex items-center justify-between w-full gap-4">
-                        {internship.status === "APPROVED" && (<span>
-                            {t("internshipCard.applicationCount")} {applicationCount}
-                        </span>)}
-                        <div className="flex items-center gap-1 ml-auto">
-                            {internship.status === "APPROVED" && (
-                                <NavLink
-                                    to={`/application/${internship.id}`}
-                                    state={{internshipData: internship}}
-                                    className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                                >
-                                    {t("internshipCard.viewApplication")}
-                                </NavLink>
-                            )}
-                            {OnEdit && (
-                                <button
-                                    className={editBtn}
-                                    aria-label={t("internshipCard.editAria")}
-                                    onClick={() => OnEdit(internship)}
-                                >
-                                    <Icon name="edit" size={24}/>
-                                </button>
-                            )}
-                            {OnDelete && (
-                                <button
-                                    className={s.deleteBtn}
-                                    aria-label={t("internshipCard.deleteAria")}
-                                    onClick={() => OnDelete(internship.id)}
-                                >
-                                    <Icon name="delete" size={24}/>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )}
             </div>
+
+            {/* Employer actions: second grey bar, then application counters + View application / Edit / Delete */}
+            {(OnEdit || OnDelete) && (
+                <div
+                    className={`flex flex-wrap items-center justify-between gap-3 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
+                    {internship.status === "APPROVED" ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={countBadge}>
+                                <Icon name="send" size={20}/>
+                                {t("internshipCard.applicationCount")}
+                                <span>{totalApplications}</span>
+                            </span>
+                            <span className={newCountBadge}>
+                                <Icon name="notifications" size={20}/>
+                                {t("internshipCard.newApplicationCount")}
+                                <span>{newApplications}</span>
+                            </span>
+                        </div>
+                    ) : <span/>}
+
+                    <div className="flex items-center gap-1 ml-auto">
+                        {internship.status === "APPROVED" && (
+                            <NavLink
+                                to={`/application/${internship.id}`}
+                                state={{internshipData: internship}}
+                                className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                            >
+                                {t("internshipCard.viewApplication")}
+                            </NavLink>
+                        )}
+                        {OnEdit && (
+                            <button
+                                className={editBtn}
+                                aria-label={t("internshipCard.editAria")}
+                                onClick={() => OnEdit(internship)}
+                            >
+                                <Icon name="edit" size={24}/>
+                            </button>
+                        )}
+                        {OnDelete && (
+                            <button
+                                className={s.deleteBtn}
+                                aria-label={t("internshipCard.deleteAria")}
+                                onClick={() => OnDelete(internship.id)}
+                            >
+                                <Icon name="delete" size={24}/>
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             {(footer || showEmployer || showPreview) && (

@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
-import {NavLink, useLocation, useOutletContext, useParams} from "react-router-dom";
+import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
 import ApplicationCard from "./ApplicationCard.jsx";
 import {base64ToBlobUrl} from "../cv/cvUtils.js";
 import Icon from "../../../styles/Icon.jsx";
@@ -9,14 +9,13 @@ import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 
 function ViewApplications({user}) {
-    const location = useLocation();
     const [applications, setApplications] = useState([]);
     const [internshipTitle, setInternshipTitle] = useState("");
     const {id} = useParams();
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [allowed, setAllowed] = useState(null);
     const {dark} = useOutletContext();
-    const passedInternship = location.state?.internshipData;
     const Nid = parseInt(id, 10);
 
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
@@ -25,18 +24,25 @@ function ViewApplications({user}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     useEffect(() => {
-        if (!user?.isLoggedIn || !Nid) return;
+        if (!isLoggedIn) return;
+        if (!Nid) {
+            setAllowed(false);
+            return;
+        }
 
         getEmployerInternships()
             .then((internshipsData) => {
                 const list = Array.isArray(internshipsData) ? internshipsData : [];
                 const matchedInternship = list.find((item) => item.id === Nid);
-                if (matchedInternship?.title) {
-                    setInternshipTitle(matchedInternship.title);
+                if (matchedInternship?.status === "APPROVED") {
+                    setInternshipTitle(matchedInternship.title ?? "");
+                    setAllowed(true);
+                } else {
+                    setAllowed(false);
                 }
             })
             .catch(() => setError({key: "postInternship.loadError"}));
-    }, [user?.isLoggedIn, Nid]);
+    }, [isLoggedIn, Nid]);
 
     const loadApplications = useCallback(async () => {
         try {
@@ -50,12 +56,10 @@ function ViewApplications({user}) {
     }, [Nid]);
 
     useEffect(() => {
-        if (isLoggedIn) void loadApplications();
-    }, [isLoggedIn, loadApplications]);
+        if (isLoggedIn && allowed) void loadApplications();
+    }, [isLoggedIn, allowed, loadApplications]);
 
-    usePolling(loadApplications, isLoggedIn);
-
-    // const title = applications.length > 0 ? applications[0].internshipTitle : "No Applications Found";
+    usePolling(loadApplications, isLoggedIn && allowed === true);
 
     const togglePreview = (appId) => {
         setOpenPreviewIds((prev) =>
@@ -83,7 +87,8 @@ function ViewApplications({user}) {
         return base64ToBlobUrl(cv.content);
     }, [refresh]);
 
-    if (loading) return <div className="p-6 text-center">Loading...</div>;
+    if (allowed === false) return <Navigate to="/internships" replace/>;
+    if (loading || allowed === null) return <div className="p-6 text-center">Loading...</div>;
     if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
 
     const hasItems = applications.length > 0;

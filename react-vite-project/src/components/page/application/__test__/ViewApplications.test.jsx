@@ -35,6 +35,7 @@ describe('ViewApplications Component', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        window.history.pushState({}, '', '/application/10');
     });
 
     it('renders loading state initially', () => {
@@ -48,7 +49,7 @@ describe('ViewApplications Component', () => {
     });
 
     it('renders applications list and internship title successfully', async () => {
-        const mockInternships = [{id: 10, title: 'Software Engineering Intern'}];
+        const mockInternships = [{id: 10, title: 'Software Engineering Intern', status: 'APPROVED'}];
         const mockApplications = [{
             id: 1,
             internshipId: 10,
@@ -70,7 +71,7 @@ describe('ViewApplications Component', () => {
     });
 
     it('renders empty message when no applications are found', async () => {
-        getEmployerInternships.mockResolvedValue([{id: 10, title: 'Internship X'}]);
+        getEmployerInternships.mockResolvedValue([{id: 10, title: 'Internship X', status: 'APPROVED'}]);
         getApplications.mockResolvedValue([]);
 
         render(<MockViewApplications user={loggedInUser}/>);
@@ -78,5 +79,29 @@ describe('ViewApplications Component', () => {
         await waitFor(() => {
             expect(screen.getByText('No applications found for this internship.')).toBeInTheDocument();
         });
+    });
+
+    it('redirects to internships when the internship does not belong to the employer', async () => {
+        getEmployerInternships.mockResolvedValue([{id: 99, title: 'Someone else offer', status: 'APPROVED'}]);
+        getApplications.mockResolvedValue([]);
+
+        render(<MockViewApplications user={loggedInUser}/>);
+
+        await waitFor(() => {
+            expect(window.location.pathname).toBe('/internships');
+        });
+        expect(screen.queryByText('No applications found for this internship.')).not.toBeInTheDocument();
+    });
+
+    it('redirects to internships when the internship is not approved yet', async () => {
+        getEmployerInternships.mockResolvedValue([{id: 10, title: 'Pending offer', status: 'PENDING'}]);
+        getApplications.mockResolvedValue([]);
+
+        render(<MockViewApplications user={loggedInUser}/>);
+
+        await waitFor(() => {
+            expect(window.location.pathname).toBe('/internships');
+        });
+        expect(getApplications).not.toHaveBeenCalled();
     });
 });
