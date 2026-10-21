@@ -1,12 +1,12 @@
-import { getApplicationCardClasses } from "../../styles/AppStyles.jsx";
-import Button from "../../styles/Button.jsx";
-import CvPreview from "./cv/CvPreview.jsx";
+import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/Button.jsx";
+import CvPreview from "../cv/CvPreview.jsx";
 import {useTranslation} from "react-i18next";
 
-function ApplicationCard({ application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl }) {
+function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl}) {
     const s = getApplicationCardClasses(dark);
     const {t, i18n} = useTranslation();
-    const { student, cvFileName } = application;
+    const {student, cvFileName} = application;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
 
     return (
@@ -22,8 +22,9 @@ function ApplicationCard({ application, dark, isNew, isPreviewOpen, onTogglePrev
                                     {student?.firstName} {student?.lastName}
                                 </h3>
                                 {isNew && (
-                                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500 text-white rounded-full animate-bounce">
-                                        New
+                                    <span
+                                        className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500 text-white rounded-full animate-bounce">
+                                        {t("viewApplication.new")}
                                     </span>
                                 )}
                             </div>
@@ -54,7 +55,7 @@ function ApplicationCard({ application, dark, isNew, isPreviewOpen, onTogglePrev
                 {isPreviewOpen && (
                     <div className="w-full pt-4 mt-4">
                         <CvPreview
-                            doc={{ id: application.id, fileName: cvFileName }}
+                            doc={{id: application.id, fileName: cvFileName}}
                             dark={dark}
                             getUrl={getUrl}
                         />

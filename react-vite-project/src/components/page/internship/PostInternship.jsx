@@ -6,7 +6,13 @@ import InternshipCard from './InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
-import {createInternship, deleteInternship, getEmployerInternships, updateInternship} from '../../api/Api.jsx';
+import {
+    createInternship,
+    deleteInternship,
+    getApplicationCount,
+    getEmployerInternships,
+    updateInternship
+} from '../../api/Api.jsx';
 import {usePolling} from "../../../utils/usePolling.js";
 
 function PostInternship({user}) {
@@ -18,6 +24,7 @@ function PostInternship({user}) {
     const [error, setError] = useState("");
     const [actionError, setActionError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [applicationCount, setApplicationCount] = useState({})
     const formRef = useRef(null);
 
     const s = getPostInternshipClasses(dark);
@@ -36,6 +43,21 @@ function PostInternship({user}) {
             setLoading(false);
         }
     }, []);
+
+    const fetchApplicationCount = useCallback(async () => {
+        try {
+            const countData = await getApplicationCount();
+            setApplicationCount(countData);
+        } catch {
+            setError({key: "postInternship.countError:"});
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isLoggedIn) void fetchApplicationCount();
+    }, [isLoggedIn, fetchApplicationCount]);
+
+    usePolling(fetchApplicationCount, isLoggedIn)
 
     useEffect(() => {
         if (isLoggedIn) void load();
@@ -142,7 +164,8 @@ function PostInternship({user}) {
                                         internship={internship}
                                         OnEdit={openEdit}
                                         OnDelete={handleDelete}
-                                        dark={dark}/>
+                                        dark={dark}
+                                        applicationCount={applicationCount[internship.id]}/>
                     ))}
                 </div>
             </div>

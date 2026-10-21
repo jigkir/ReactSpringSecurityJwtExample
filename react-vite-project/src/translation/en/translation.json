@@ -330,7 +330,8 @@
     "createError": "Failed to create internship",
     "createGenericError": "Could not save internship offer.",
     "deleteError": "Failed to delete internship",
-    "deleteGenericError": "Could not delete internship."
+    "deleteGenericError": "Could not delete internship.",
+    "countError": "Unable to retrieve the number of applications"
   },
   "managerInternships": {
     "title": "Internship offers",
@@ -447,10 +448,12 @@
       "approved": "Approved",
       "rejected": "Rejected"
     },
-    "viewApplication": "View application"
+    "viewApplication": "View application",
+    "applicationCount": "Application count: "
   },
   "viewApplication": {
-    "loadError": "Failed to load applications"
+    "loadError": "Failed to load applications",
+    "new": "New"
   },
   "dev": {
     "label": "Dev",

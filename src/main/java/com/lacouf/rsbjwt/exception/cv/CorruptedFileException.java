@@ -4,7 +4,7 @@ import com.lacouf.rsbjwt.exception.APIException;
 import org.springframework.http.HttpStatus;
 
 public class CorruptedFileException extends APIException {
-    public CorruptedFileException(String message) {
-        super(HttpStatus.UNPROCESSABLE_CONTENT, message);
+    public CorruptedFileException() {
+        super(HttpStatus.UNPROCESSABLE_CONTENT, "The PDF file is corrupted or unreadable.");
     }
 }
