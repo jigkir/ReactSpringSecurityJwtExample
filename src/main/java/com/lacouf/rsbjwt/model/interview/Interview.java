@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 public class Interview {
     @Id
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

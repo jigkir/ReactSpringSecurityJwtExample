@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -403,7 +404,7 @@ public class EmployerServiceTest {
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
 
         // Act
-        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", interviewDate));
+        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St"));
 
         // Assert
         verify(interviewRepository).save(interviewArgumentCaptor.capture());
@@ -424,7 +425,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InternshipApplicationNotFoundException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7))));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
 
         verifyNoInteractions(interviewRepository);
     }
@@ -433,7 +434,7 @@ public class EmployerServiceTest {
     void shouldReturnInterviewsOfEmployer() {
         // Arrange
         LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Please come to our office", interviewDate);
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
         interview.setId(30L);
 
         when(interviewRepository.findByEmployer_Credentials_Email(EMPLOYER_EMAIL)).thenReturn(List.of(interview));

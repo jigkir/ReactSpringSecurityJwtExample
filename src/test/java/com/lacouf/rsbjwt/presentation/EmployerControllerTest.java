@@ -164,14 +164,22 @@ public class EmployerControllerTest {
 
                 Arguments.of("interviewDate", null),
                 Arguments.of("interviewDate", "not-a-date"),
-                Arguments.of("interviewDate", LocalDateTime.now().minusDays(1).toString())
+                Arguments.of("interviewDate", LocalDateTime.now().minusDays(1).toString()),
+
+                Arguments.of("meetingType", null),
+                Arguments.of("meetingType", "NOT_A_TYPE"),
+
+                Arguments.of("meetingDetails", null),
+                Arguments.of("meetingDetails", "a".repeat(256))
         );
     }
 
     private static Map<String, Object> validInterview() {
         return new HashMap<>(Map.of(
                 "message", "Please come to our office",
-                "interviewDate", LocalDateTime.now().plusDays(7).toString()
+                "interviewDate", LocalDateTime.now().plusDays(7).toString(),
+                "meetingType", "IN_PERSON",
+                "meetingDetails", "123 Main St"
         ));
     }
 
