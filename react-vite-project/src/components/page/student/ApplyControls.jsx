@@ -62,6 +62,12 @@ function ApplyControls({internshipId, cvs, dark, application, onChanged}) {
         }
     };
 
+    const handleCvChange = (e) => {
+        setCvId(Number(e.target.value));
+        setStatus("idle");
+        setErrorKey(null);
+    };
+
     const handleApply = () => submit(
         () => applyForInternship(internshipId, selectedCvId), "applied", "studentInternship.alreadyApplied");
 
@@ -82,7 +88,7 @@ function ApplyControls({internshipId, cvs, dark, application, onChanged}) {
             )}
             <select
                 value={selectedCvId}
-                onChange={(e) => setCvId(Number(e.target.value))}
+                onChange={handleCvChange}
                 disabled={status === "sending"}
                 className={selectClass}
                 aria-label={t("studentInternship.chooseCv")}
