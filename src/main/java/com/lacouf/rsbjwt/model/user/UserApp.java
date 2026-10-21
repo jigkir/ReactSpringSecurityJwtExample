@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+// TODO : ADD last access
 public abstract class UserApp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,19 +40,19 @@ public abstract class UserApp {
         this.credentials = credentials;
     }
 
-    public String getEmail(){
+    public String getEmail() {
         return credentials.getEmail();
     }
 
-    public String getPassword(){
+    public String getPassword() {
         return credentials.getPassword();
     }
 
-    public Role getRole(){
+    public Role getRole() {
         return credentials.getRole();
     }
 
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return credentials.getAuthorities();
     }
 }
