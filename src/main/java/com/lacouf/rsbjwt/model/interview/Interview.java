@@ -32,6 +32,13 @@ public class Interview {
     @Column(nullable = false)
     private LocalDateTime interviewDate;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MeetingType meetingType;
+
+    @Column(nullable = false)
+    private String meetingLink;
+
     public Interview() {
     }
 
