@@ -143,6 +143,7 @@ function StudentInternships() {
                         cvs={cvs}
                         internshipId={internship.id}
                         application={appliedInternships.find((application) => application.internshipId === internship.id)}
+                        onChanged={loadAppliedInternships}
                     />)}
                 />))}
             </div>

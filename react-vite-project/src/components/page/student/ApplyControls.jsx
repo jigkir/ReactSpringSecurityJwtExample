@@ -13,7 +13,7 @@ const SUCCESS_KEY = {
     cvUpdated: "studentInternship.cvUpdated",
 };
 
-function ApplyControls({internshipId, cvs, dark, application}) {
+function ApplyControls({internshipId, cvs, dark, application, onChanged}) {
     const {t} = useTranslation();
     const [cvId, setCvId] = useState(null);
     const [status, setStatus] = useState("idle"); // idle | sending | applied | cvUpdated | error
@@ -54,6 +54,7 @@ function ApplyControls({internshipId, cvs, dark, application}) {
         setErrorKey(null);
         try {
             await send();
+            await onChanged?.();
             setStatus(successStatus);
         } catch (err) {
             setErrorKey(err.status === HTTP_CONFLICT ? conflictKey : "studentInternship.applyFailed");
