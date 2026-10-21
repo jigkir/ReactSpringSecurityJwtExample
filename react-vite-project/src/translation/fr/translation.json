@@ -367,7 +367,8 @@
     "applied": "Demande envoyée",
     "chooseCv": "Choisissez un CV",
     "apply": "Postuler",
-    "updateCV": "Changer CV"
+    "updateCV": "Changer CV",
+    "viewedError": "Impossible d'enregistrer la consultation de cette offre."
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",

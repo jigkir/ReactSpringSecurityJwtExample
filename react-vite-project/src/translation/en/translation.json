@@ -367,7 +367,8 @@
     "applied": "Application sent",
     "chooseCv": "Choose a CV",
     "apply": "Apply",
-    "updateCV": "Update CV"
+    "updateCV": "Update CV",
+    "viewedError": "Could not record that you viewed this internship."
   },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",
