@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
@@ -227,6 +228,24 @@ public class EmployerService {
         return Arrays.stream(MeetingType.values())
                 .map(Enum::name)
                 .toList();
+    }
+
+    @Transactional
+    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException {
+        Interview interview = interviewRepository.findByIdAndEmployer_Credentials_Email(interviewId, email)
+                .orElseThrow(() -> new InterviewNotFoundException(interviewId));
+
+
+        interview.update(
+                interviewRequestDto.message(),
+                interviewRequestDto.interviewDate(),
+                interviewRequestDto.meetingType(),
+                interviewRequestDto.meetingDetails()
+        );
+
+        interviewRepository.save(interview);
+
+        return InterviewEmployerResponseDTO.of(interview);
     }
 
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {

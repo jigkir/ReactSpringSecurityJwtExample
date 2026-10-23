@@ -19,7 +19,8 @@ public class Interview {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Employer employer;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(unique = true)
     private InternshipApplication internshipApplication;
 
     @Column(nullable = false)
@@ -46,6 +47,13 @@ public class Interview {
         this.employer = employer;
         this.internshipApplication = internshipApplication;
         this.studentDecision = StudentDecision.PENDING;
+        this.message = message;
+        this.interviewDate = interviewDate;
+        this.meetingType = meetingType;
+        this.meetingDetails = meetingDetails;
+    }
+
+    public void update(String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {
         this.message = message;
         this.interviewDate = interviewDate;
         this.meetingType = meetingType;

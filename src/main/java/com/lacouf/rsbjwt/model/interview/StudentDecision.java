@@ -3,5 +3,6 @@ package com.lacouf.rsbjwt.model.interview;
 public enum StudentDecision {
     ACCEPTED,
     REJECTED,
-    PENDING
+    PENDING,
+    RESCHEDULE_REQUESTED
 }
