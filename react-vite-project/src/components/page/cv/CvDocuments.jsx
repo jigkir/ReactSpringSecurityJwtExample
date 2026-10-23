@@ -23,6 +23,8 @@
  * The PDF itself (Base64 `content`) is fetched on demand:
  *   GET student/cvs/{cvId}   or   GET manager/cvs/{cvId}/file
  *
+ * The list is refreshed automatically by usePolling (no manual refresh button).
+ *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live. `getUrl` does not depend on `t`,
  * so an open PDF preview is not reloaded when the language changes.
@@ -455,17 +457,10 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                     {isManager ? t("cvDocuments.titleManager") : t("cvDocuments.title")}
                 </h2>
                 {!isManager && onAddClick && (
-                    <button onClick={onAddClick} className={th.addBtn}>{t("cvDocuments.addBtn")}</button>
+                    <button onClick={onAddClick} className={`${th.addBtn} ml-auto`}>
+                        {t("cvDocuments.addBtn")}
+                    </button>
                 )}
-                <button
-                    className={`px-3 py-1.5 rounded-lg border text-sm flex items-center gap-1 ml-auto ${
-                        dark ? "bg-slate-700 border-slate-600 text-white hover:bg-slate-600" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                    onClick={() => void load()}
-                    title="Refresh"
-                >
-                    <Icon name="refresh" size={20}/>
-                </button>
             </div>
 
             {actionError && (

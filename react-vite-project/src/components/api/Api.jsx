@@ -233,7 +233,7 @@ export async function getStudentInternships() {
 }
 
 
-export async function markInternshipAsViewed(internshipIds) {
+export async function markInternshipsAsViewed(internshipIds) {
     const response = await fetcher("student/internship/viewed", {
         method: "PUT",
         headers: {"Content-Type": "application/json"},

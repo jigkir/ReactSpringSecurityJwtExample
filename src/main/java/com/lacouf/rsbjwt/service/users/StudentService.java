@@ -210,6 +210,9 @@ public class StudentService {
         InternshipApplication application = new InternshipApplication(internship, cv, student);
         applicationRepository.save(application);
 
+        student.markViewed(internship);
+        studentRepository.save(student);
+
         notifyEmployerOfNewApplication(application);
     }
 

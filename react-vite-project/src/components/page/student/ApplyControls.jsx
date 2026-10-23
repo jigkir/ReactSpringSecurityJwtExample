@@ -1,19 +1,23 @@
 import {useTranslation} from "react-i18next";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Link} from "react-router-dom";
 import Button from "../../../styles/Button.jsx";
 import {applyForInternship, updateApplicationCV} from "../../api/Api.jsx";
 import Icon from "../../../styles/Icon.jsx";
 
-function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer}) {
+const HTTP_CONFLICT = 409;
+const READ_BY_EMPLOYER = "READ";
+
+const SUCCESS_KEY = {
+    applied: "studentInternship.applied",
+    cvUpdated: "studentInternship.cvUpdated",
+};
+
+function ApplyControls({internshipId, cvs, dark, application, onChanged}) {
     const {t} = useTranslation();
     const [cvId, setCvId] = useState(null);
-    const [status, setStatus] = useState("idle"); // idle | sending | applied | error
+    const [status, setStatus] = useState("idle"); // idle | sending | applied | cvUpdated | error
     const [errorKey, setErrorKey] = useState(null);
-    const [alreadyApplied, setAlreadyApplied] = useState(false);
-
-    // Default to the first CV until the student picks another one
-    const selectedCvId = cvId || cvs[0]?.id;
 
     const selectClass = `rounded-lg border px-2 py-1.5 text-sm max-w-[14rem] focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white" : "bg-white border-gray-300 text-gray-900"
@@ -29,66 +33,63 @@ function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer})
             </span>
         );
     }
-   useEffect(() => {
-       if(application.map((applic) => applic.internshipId).includes(internshipId)) {
-           setStatus("applied");
-           setAlreadyApplied(true);
-       }
-   })
-    if (status === "applied" && viewedByEmployer) {
+
+    if (application?.internshipApplicationStatus === READ_BY_EMPLOYER) {
         return (
-            <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${dark ? "text-green-300" : "text-green-700"}`}
-                  role="status">
+            <span
+                className={`inline-flex items-center gap-1.5 text-sm font-medium ${dark ? "text-green-300" : "text-green-700"}`}
+                role="status">
                 <Icon name="check_circle" size={18}/>
                 {t("studentInternship.applied")}
             </span>
         );
     }
 
-    const handleApply = async () => {
+    // The CV picked by the student, otherwise the CV already sent, otherwise the first approved CV
+    const selectedCvId = cvId ?? application?.cv.id ?? cvs[0].id;
+    const isSentCvSelected = selectedCvId === application?.cv.id;
+
+    const submit = async (send, successStatus, conflictKey) => {
         setStatus("sending");
         setErrorKey(null);
         try {
-            await applyForInternship(internshipId, selectedCvId);
-            setStatus("applied");
+            await send();
+            await onChanged?.();
+            setStatus(successStatus);
         } catch (err) {
-            setErrorKey(err.status === 409
-                ? "studentInternship.alreadyApplied"
-                : "studentInternship.applyFailed");
+            setErrorKey(err.status === HTTP_CONFLICT ? conflictKey : "studentInternship.applyFailed");
             setStatus("error");
         }
     };
 
-    const handleUpdate = async () => {
-        setStatus("sending");
+    const handleCvChange = (e) => {
+        setCvId(Number(e.target.value));
+        setStatus("idle");
         setErrorKey(null);
-        try {
-            console.log(application);
-            await updateApplicationCV(application[0].id, selectedCvId);
-            setStatus("applied");
-        } catch (err) {
-            setErrorKey(err.status === 409
-                ? "studentInternship.alreadyApplied"
-                : "studentInternship.applyFailed");
-            setStatus("error");
-        }
     };
+
+    const handleApply = () => submit(
+        () => applyForInternship(internshipId, selectedCvId), "applied", "studentInternship.alreadyApplied");
+
+    const handleUpdate = () => submit(
+        () => updateApplicationCV(application.id, selectedCvId), "cvUpdated", "studentInternship.alreadyReadByEmployer");
 
     return (
         <>
             {status === "error" && (
                 <span className={`text-sm ${dark ? "text-red-300" : "text-red-600"}`} role="alert">
-                    {t(errorKey, {
-                        defaultValue: errorKey === "studentInternship.alreadyApplied"
-                            ? "You already applied to this internship."
-                            : "Could not send your application."
-                    })}
+                    {t(errorKey)}
+                </span>
+            )}
+            {SUCCESS_KEY[status] && (
+                <span className={`text-sm ${dark ? "text-green-300" : "text-green-700"}`} role="status">
+                    {t(SUCCESS_KEY[status])}
                 </span>
             )}
             <select
                 value={selectedCvId}
-                onChange={(e) => setCvId(e.target.value)}
-                disabled={status === "sending" || (status === "applied" && viewedByEmployer)}
+                onChange={handleCvChange}
+                disabled={status === "sending"}
                 className={selectClass}
                 aria-label={t("studentInternship.chooseCv")}
             >
@@ -96,21 +97,19 @@ function ApplyControls({internshipId, cvs, dark, application, viewedByEmployer})
                     <option key={cv.id} value={cv.id}>{cv.fileName}</option>
                 ))}
             </select>
-            {/*Set to be alreadyApplied instead of status  === "applied" because the second causes
-            flickering when the status briefly changes to "sending" upon clicking the button*/}
-            {alreadyApplied ?
+            {application ? (
                 <Button tone="success" dark={dark} icon="send"
-                        disabled={status === "sending"}
+                        disabled={status === "sending" || isSentCvSelected}
                         onClick={handleUpdate}>
                     {t("studentInternship.updateCV")}
                 </Button>
-                :
+            ) : (
                 <Button tone="success" dark={dark} icon="send"
                         disabled={status === "sending" || status === "applied"}
                         onClick={handleApply}>
                     {t("studentInternship.apply")}
                 </Button>
-            }
+            )}
         </>
     );
 }

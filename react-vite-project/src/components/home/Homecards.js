@@ -44,7 +44,7 @@ const EMPLOYER_INTERNSHIPS_CARD = {
 };
 
 const EMPLOYER_APPLICATIONS_CARD = {
-    to: "/internships", icon: "send",
+    to: "/applications", icon: "send",
     titleKey: "home.applicationsTitle", descKey: "home.applicationsDesc",
     load: loadEmployerApplications, itemsKey: "home.preview.latestApplications",
     statOrder: [

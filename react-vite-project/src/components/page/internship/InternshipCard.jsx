@@ -40,7 +40,6 @@ export default function InternshipCard({
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark);
 
-
     const statusLabel = STATUS_KEY_MAP[internship.status]
         ? t(STATUS_KEY_MAP[internship.status])
         : internship.status;
@@ -62,6 +61,14 @@ export default function InternshipCard({
         ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
         : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
 
+    const totalApplications = applicationCount ?? 0;
+
+    const pillBase = "inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors";
+
+    const countBadge = `${pillBase} ${
+        dark ? "bg-red-500/10 text-red-200 border-red-500/30" : "bg-red-50 text-red-800 border-red-300"
+    }`;
+
     // Extract status badge element to easily reuse between mobile and desktop layouts
     const statusBadge = !hideStatus && (
         <span className={s.statusBadge(internship.status)}>
@@ -69,7 +76,6 @@ export default function InternshipCard({
             {statusLabel}
         </span>
     );
-
 
     return (
         <div className={s.card}>
@@ -172,45 +178,55 @@ export default function InternshipCard({
                     <Icon name="hourglass_bottom" size={20}/>
                     <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
-
-                {/* View applications / Edit / Delete */}
-                {(OnEdit || OnDelete) && (
-                    <div className="flex items-center justify-between w-full gap-4">
-                        {internship.status === "APPROVED" && (<span>
-                            {t("internshipCard.applicationCount")} {applicationCount}
-                        </span>)}
-                        <div className="flex items-center gap-1 ml-auto">
-                            {internship.status === "APPROVED" && (
-                                <NavLink
-                                    to={`/application/${internship.id}`}
-                                    state={{internshipData: internship}}
-                                    className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                                >
-                                    {t("internshipCard.viewApplication")}
-                                </NavLink>
-                            )}
-                            {OnEdit && (
-                                <button
-                                    className={editBtn}
-                                    aria-label={t("internshipCard.editAria")}
-                                    onClick={() => OnEdit(internship)}
-                                >
-                                    <Icon name="edit" size={24}/>
-                                </button>
-                            )}
-                            {OnDelete && (
-                                <button
-                                    className={s.deleteBtn}
-                                    aria-label={t("internshipCard.deleteAria")}
-                                    onClick={() => OnDelete(internship.id)}
-                                >
-                                    <Icon name="delete" size={24}/>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )}
             </div>
+
+            {/* Employer actions: second grey bar, then application counters + View application / Edit / Delete */}
+            {(OnEdit || OnDelete) && (
+                <div
+                    className={`flex flex-wrap items-center justify-between gap-3 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
+                    {internship.status === "APPROVED" ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={countBadge}>
+                                <Icon name="send" size={18}/>
+                                <span>{t("internshipCard.applicationCount")}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-red-400 text-slate-900" : "bg-red-600 text-white"}`}>
+                                    {totalApplications}
+                                </span>
+                            </span>
+                        </div>
+                    ) : <span/>}
+
+                    <div className="flex items-center gap-1 ml-auto">
+                        {internship.status === "APPROVED" && (
+                            <NavLink
+                                to={`/application/${internship.id}`}
+                                state={{internshipData: internship}}
+                                className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                            >
+                                {t("internshipCard.viewApplication")}
+                            </NavLink>
+                        )}
+                        {OnEdit && (
+                            <button
+                                className={editBtn}
+                                aria-label={t("internshipCard.editAria")}
+                                onClick={() => OnEdit(internship)}
+                            >
+                                <Icon name="edit" size={24}/>
+                            </button>
+                        )}
+                        {OnDelete && (
+                            <button
+                                className={s.deleteBtn}
+                                aria-label={t("internshipCard.deleteAria")}
+                                onClick={() => OnDelete(internship.id)}
+                            >
+                                <Icon name="delete" size={24}/>
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             {(footer || showEmployer || showPreview) && (

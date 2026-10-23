@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useNavigate, useOutletContext} from 'react-router-dom';
+import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import {RoleField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {getRoles} from '../../api/Api.jsx';
@@ -21,7 +21,7 @@ const ROLE_COMPONENTS = (classes) => ({
 
 const Signup = () => {
     const navigate = useNavigate();
-    const {dark} = useOutletContext();
+    const {dark, user} = useOutletContext();
 
     const [role, setRole] = useState('');
     const [roles, setRoles] = useState([]);
@@ -45,6 +45,8 @@ const Signup = () => {
             .catch(() => setRolesFetchError({key: "signup.couldNotLoadRoles"}))
             .finally(() => setRolesLoading(false));
     }, []);
+
+    if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
 
     const roleComponents = ROLE_COMPONENTS(classes);
 
