@@ -247,6 +247,18 @@ public class EmployerService {
         return InterviewEmployerResponseDTO.of(interview);
     }
 
+    @Transactional
+    public InterviewEmployerResponseDTO cancelInterview(long interviewId, String email) throws InterviewNotFoundException {
+        Interview interview = interviewRepository.findByIdAndEmployer_Credentials_Email(interviewId, email)
+                .orElseThrow(() -> new InterviewNotFoundException(interviewId));
+
+        interview.cancel();
+
+        interviewRepository.save(interview);
+
+        return InterviewEmployerResponseDTO.of(interview);
+    }
+
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {
         if (!date.isAfter(LocalDate.now())) {
             throw new InvalidInternshipDateException(label);

@@ -101,5 +101,11 @@ public class EmployerController {
         InterviewEmployerResponseDTO interview = employerService.updateInterview(interviewId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok(interview);
     }
+
+    @PutMapping("/interviews/{interviewId}/cancel")
+    public ResponseEntity<InterviewEmployerResponseDTO> cancelInterview(@PathVariable long interviewId, Authentication authentication) throws InterviewNotFoundException {
+        InterviewEmployerResponseDTO interview = employerService.cancelInterview(interviewId, authentication.getName());
+        return ResponseEntity.ok(interview);
+    }
 }
 
