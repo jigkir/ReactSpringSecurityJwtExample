@@ -26,6 +26,7 @@ import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -224,10 +225,8 @@ public class EmployerService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getMeetingTypes() {
-        return Arrays.stream(MeetingType.values())
-                .map(Enum::name)
-                .toList();
+    public MeetingTypeDTO getMeetingTypes() {
+        return MeetingTypeDTO.of(Arrays.asList(MeetingType.values()));
     }
 
     @Transactional

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
@@ -35,6 +36,7 @@ import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipAppl
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
@@ -453,4 +455,53 @@ public class EmployerServiceTest {
         assert ("PENDING").equals(first.studentDecision());
         assert (interviewDate.toString()).equals(first.interviewDate());
     }
+
+    @Test
+    void shouldReturnMeetingTypes() {
+        // Act
+        MeetingTypeDTO result = employerService.getMeetingTypes();
+
+        // Assert
+        assertEquals(List.of("ONLINE", "IN_PERSON", "PHONE"), result.meetingTypes());
+    }
+
+    @Test
+    void shouldUpdateInterview() throws Exception {
+        // Arrange
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Old message", LocalDateTime.now().plusDays(3), MeetingType.ONLINE, "old-link");
+        interview.setId(30L);
+
+        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
+
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
+
+        // Act
+        InterviewEmployerResponseDTO response = employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", newDate, MeetingType.IN_PERSON, "123 Main St"));
+
+        // Assert
+        assertEquals("New message", interview.getMessage());
+        assertEquals(newDate, interview.getInterviewDate());
+        assertEquals(MeetingType.IN_PERSON, interview.getMeetingType());
+        assertEquals("123 Main St", interview.getMeetingDetails());
+        assertEquals(StudentDecision.PENDING, interview.getStudentDecision());
+
+        assertEquals(30L, response.id());
+        assertEquals("New message", response.message());
+        assertEquals(newDate.toString(), response.interviewDate());
+
+        verify(interviewRepository).save(interview);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingUnknownInterview() {
+        // Arrange
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InterviewNotFoundException.class,
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
 }

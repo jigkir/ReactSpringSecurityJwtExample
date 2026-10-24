@@ -13,6 +13,7 @@ import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -91,7 +92,7 @@ public class EmployerController {
     }
 
     @GetMapping("/interviews/meeting-types")
-    public ResponseEntity<List<String>> getMeetingTypes() {
+    public ResponseEntity<MeetingTypeDTO> getMeetingTypes() {
         return ResponseEntity.ok(employerService.getMeetingTypes());
     }
 

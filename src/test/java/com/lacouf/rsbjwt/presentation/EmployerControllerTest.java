@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
@@ -10,6 +11,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.presentation.users.EmployerController;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
@@ -19,6 +21,7 @@ import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipAppl
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -456,4 +459,70 @@ public class EmployerControllerTest {
 
         verify(employerService).getInterviewsOfEmployer(EMPLOYER_EMAIL);
     }
+
+    @Test
+    void shouldReturnMeetingTypes() throws Exception {
+        // Arrange
+        when(employerService.getMeetingTypes())
+                .thenReturn(MeetingTypeDTO.of(List.of(MeetingType.ONLINE, MeetingType.IN_PERSON, MeetingType.PHONE)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/interviews/meeting-types").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meetingTypes.length()").value(3))
+                .andExpect(jsonPath("$.meetingTypes[0]").value("ONLINE"))
+                .andExpect(jsonPath("$.meetingTypes[1]").value("IN_PERSON"))
+                .andExpect(jsonPath("$.meetingTypes[2]").value("PHONE"));
+    }
+
+    @Test
+    void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
+                30L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30");
+
+        when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(30))
+                .andExpect(jsonPath("$.message").value("Please come to our office"))
+                .andExpect(jsonPath("$.studentDecision").value("PENDING"))
+                .andExpect(jsonPath("$.interviewDate").value("2026-11-01T14:30"));
+
+        verify(employerService).updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingUnknownInterview() throws Exception {
+        // Arrange
+        when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class)))
+                .thenThrow(new InterviewNotFoundException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isNotFound());
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidInterviewFields")
+    void shouldReturnBadRequestForInvalidInterviewFieldsOnUpdate(String field, Object invalidValue) throws Exception {
+        // Arrange
+        Map<String, Object> interview = validInterview();
+        interview.put(field, invalidValue);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(interview)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(employerService);
+    }
+
 }
