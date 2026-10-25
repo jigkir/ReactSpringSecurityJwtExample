@@ -12,7 +12,6 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
-import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -41,8 +40,6 @@ import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -287,18 +284,6 @@ public class EmployerService {
                 .ifPresent(this::cancelAndSaveInterview);
         internshipApplication.updateEmployerDecision(EmployerDecision.REJECTED);
         internshipApplicationRepository.save(internshipApplication);
-    }
-
-    private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {
-        if (!date.isAfter(LocalDate.now())) {
-            throw new InvalidInternshipDateException(label);
-        }
-    }
-
-    private void validateCompensation(BigDecimal amount, boolean negotiable) throws InvalidCompensationException {
-        if (amount == null && !negotiable) {
-            throw new InvalidCompensationException();
-        }
     }
 
     private void notifyManagersOfSubmittedInternship(Internship internship) {
