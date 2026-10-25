@@ -452,7 +452,26 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldUpdateInternshipWithoutChangingStatusWhenManagerUpdatesIt() throws Exception {
+    void shouldApproveAndNotifyWhenManagerUpdatesPendingInternship() throws Exception {
+        //Arrange
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), new BigDecimal("27.00"));
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto updatedInternship = managerService.updateInternship(1L, internshipRequestDto);
+
+        //Assert
+        assert ("Développeur backend").equals(updatedInternship.title());
+        assert (ReviewStatus.APPROVED).equals(updatedInternship.status());
+
+        verify(internshipRepository).save(internship);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_APPROVED,
+                NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage(), 1L, internship.getPostedBy());
+    }
+
+    @Test
+    void shouldNotNotifyWhenManagerUpdatesAlreadyApprovedInternship() throws Exception {
         //Arrange
         internship.approve();
         InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), new BigDecimal("27.00"));

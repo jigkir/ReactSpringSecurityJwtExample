@@ -139,8 +139,7 @@ public class ManagerService {
         internship.approve();
         internshipRepository.save(internship);
 
-        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_APPROVED, NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage());
-        notifyMatchingStudentsOfInternship(internship);
+        notifyOfInternshipApproval(internship);
 
         return InternshipResponseDto.of(internship);
     }
@@ -157,11 +156,18 @@ public class ManagerService {
         return InternshipResponseDto.of(internship);
     }
 
+    @Transactional
     public InternshipResponseDto updateInternship(long internshipId, InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException {
         Internship internship = findInternship(internshipId);
+        boolean wasAlreadyApproved = internship.getStatus() == ReviewStatus.APPROVED;
 
         internshipService.updateDetails(internship, internshipRequestDto);
+        internship.approve();
         internshipRepository.save(internship);
+
+        if (!wasAlreadyApproved) {
+            notifyOfInternshipApproval(internship);
+        }
 
         return InternshipResponseDto.of(internship);
     }
@@ -183,6 +189,11 @@ public class ManagerService {
     private void notifyStudentOfCvReviewDecision(CV cv, NotificationType notificationType, String message) {
         notificationService.closeNotificationsOfTarget(TargetType.CV, cv.getId());
         notificationService.notifyIfAbsent(notificationType, message, cv.getId(), cv.getStudent());
+    }
+
+    private void notifyOfInternshipApproval(Internship internship) {
+        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_APPROVED, NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage());
+        notifyMatchingStudentsOfInternship(internship);
     }
 
     private void notifyEmployerOfInternshipReviewDecision(Internship internship, NotificationType notificationType, String message) {
