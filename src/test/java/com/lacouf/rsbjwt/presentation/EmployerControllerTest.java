@@ -3,12 +3,16 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
+import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
@@ -184,6 +188,19 @@ public class EmployerControllerTest {
                 "meetingType", "IN_PERSON",
                 "meetingDetails", "123 Main St"
         ));
+    }
+
+    private static InterviewEmployerResponseDTO interviewResponse() {
+        return new InterviewEmployerResponseDTO(
+                30L,
+                "Jane Doe",
+                "Software Developer",
+                "Please come to our office",
+                "PENDING",
+                "2026-11-01T14:30",
+                "IN_PERSON",
+                "123 Main St"
+        );
     }
 
     @BeforeEach
@@ -366,7 +383,7 @@ public class EmployerControllerTest {
     void shouldReturnReceivedInternshipApplications() throws Exception {
         // Arrange
         StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
-        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD);
+        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
 
         when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL)).thenReturn(List.of(receivedInternshipApplication));
 
@@ -442,8 +459,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInterviewsOfEmployer() throws Exception {
         // Arrange
-        InterviewEmployerResponseDTO interview = new InterviewEmployerResponseDTO(
-                30L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30");
+        InterviewEmployerResponseDTO interview = interviewResponse();
 
         when(employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(interview));
 
@@ -479,7 +495,7 @@ public class EmployerControllerTest {
     void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
-                30L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30");
+                30L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St");
 
         when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
 
@@ -523,6 +539,101 @@ public class EmployerControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(employerService);
+    }
+
+    @Test
+    void shouldReturnOkWhenApplicationIsRejected() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
+                .andExpect(status().isOk());
+
+        verify(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRejectingUnknownApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(20L))
+                .when(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenInterviewAlreadyExists() throws Exception {
+        // Arrange
+        doThrow(new InterviewAlreadyExistsException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingRejectedApplication() throws Exception {
+        // Arrange
+        doThrow(new ApplicationRejectedException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO cancelled = new InterviewEmployerResponseDTO(
+                30L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St");
+
+        when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30/cancel").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(30));
+
+        verify(employerService).cancelInterview(30L, EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenCancellingUnknownInterview() throws Exception {
+        // Arrange
+        when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenThrow(new InterviewNotFoundException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30/cancel").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenCancellingAlreadyCancelledInterview() throws Exception {
+        // Arrange
+        when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenThrow(new InterviewCancelledException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30/cancel").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenUpdatingCancelledInterview() throws Exception {
+        // Arrange
+        when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class)))
+                .thenThrow(new InterviewCancelledException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
     }
 
 }

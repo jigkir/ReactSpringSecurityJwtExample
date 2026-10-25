@@ -1,19 +1,23 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -157,6 +161,8 @@ public class EmployerService {
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
         closeNewInternshipApplicationNotifications(internship);
 
+        cancelInterviewsOfInternship(internship);
+
         internshipRepository.save(internship);
     }
 
@@ -195,13 +201,18 @@ public class EmployerService {
     }
 
     @Transactional
-    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, UserNotFoundException, InterviewAlreadyExistsException {
+    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, UserNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
 
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        if (internshipApplication.getEmployerDecision() == EmployerDecision.REJECTED) {
+            throw new ApplicationRejectedException(applicationId);
+        }
 
         if (interviewRepository.existsByInternshipApplication(internshipApplication)) {
             throw new InterviewAlreadyExistsException(applicationId);
         }
+
 
         Employer employer = employerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
 
@@ -228,7 +239,7 @@ public class EmployerService {
 
     @Transactional(readOnly = true)
     public List<InterviewEmployerResponseDTO> getInterviewsOfEmployer(String email) {
-        return interviewRepository.findByEmployer_Credentials_Email(email)
+        return interviewRepository.findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(email)
                 .stream()
                 .map(InterviewEmployerResponseDTO::of)
                 .toList();
@@ -240,10 +251,13 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException {
+    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException {
         Interview interview = interviewRepository.findByIdAndEmployer_Credentials_Email(interviewId, email)
                 .orElseThrow(() -> new InterviewNotFoundException(interviewId));
 
+        if (interview.getInterviewStatus() == InterviewStatus.CANCELLED) {
+            throw new InterviewCancelledException(interviewId);
+        }
 
         interview.update(
                 interviewRequestDto.message(),
@@ -258,13 +272,15 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO cancelInterview(long interviewId, String email) throws InterviewNotFoundException {
+    public InterviewEmployerResponseDTO cancelInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewCancelledException {
         Interview interview = interviewRepository.findByIdAndEmployer_Credentials_Email(interviewId, email)
                 .orElseThrow(() -> new InterviewNotFoundException(interviewId));
 
-        interview.cancel();
+        if (interview.getInterviewStatus() == InterviewStatus.CANCELLED) {
+            throw new InterviewCancelledException(interviewId);
+        }
 
-        interviewRepository.save(interview);
+        cancelAndSaveInterview(interview);
 
         return InterviewEmployerResponseDTO.of(interview);
     }
@@ -274,7 +290,19 @@ public class EmployerService {
         internshipApplicationRepository.save(internshipApplication);
     }
 
+    private void cancelInterviewsOfInternship(Internship internship) {
+        interviewRepository.findByInternshipApplication_Internship(internship)
+                .forEach(this::cancelAndSaveInterview);
+    }
+
+    private void cancelAndSaveInterview(Interview interview) {
+        interview.cancel();
+        interviewRepository.save(interview);
+    }
+
     private void rejectApplication(InternshipApplication internshipApplication) {
+        interviewRepository.findByInternshipApplication(internshipApplication)
+                .ifPresent(this::cancelAndSaveInterview);
         internshipApplication.updateEmployerDecision(EmployerDecision.REJECTED);
         internshipApplicationRepository.save(internshipApplication);
     }
