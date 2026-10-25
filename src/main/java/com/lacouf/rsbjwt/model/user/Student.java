@@ -29,11 +29,29 @@ public class Student extends UserApp {
     )
     private Set<Internship> viewedInternships;
 
+    @ManyToMany
+    @JoinTable(
+            name = "StudentHiddenInternship",
+            joinColumns = @JoinColumn(name = "studentId"),
+            inverseJoinColumns = @JoinColumn(name = "internshipId")
+    )
+    private Set<Internship> hiddenInternships;
+
+    @ManyToMany
+    @JoinTable(
+            name = "StudentFavoriteInternship",
+            joinColumns = @JoinColumn(name = "studentId"),
+            inverseJoinColumns = @JoinColumn(name = "internshipId")
+    )
+    private Set<Internship> favoriteInternships;
+
     public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline) {
         super(firstName, lastName, credentials);
         this.studentId = studentId;
         this.discipline = discipline;
         this.viewedInternships = new HashSet<>();
+        this.hiddenInternships = new HashSet<>();
+        this.favoriteInternships = new HashSet<>();
     }
 
     public Student() {
@@ -54,5 +72,21 @@ public class Student extends UserApp {
 
     public void markViewed(Internship internship) {
         viewedInternships.add(internship);
+    }
+
+    public void hide(Internship internship) {
+        hiddenInternships.add(internship);
+    }
+
+    public void unhide(Internship internship) {
+        hiddenInternships.remove(internship);
+    }
+
+    public void addToFavorites(Internship internship) {
+        favoriteInternships.add(internship);
+    }
+
+    public void removeFromFavorites(Internship internship) {
+        favoriteInternships.remove(internship);
     }
 }

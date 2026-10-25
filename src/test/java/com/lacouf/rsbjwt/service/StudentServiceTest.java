@@ -10,7 +10,6 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
-import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -32,6 +31,7 @@ import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
@@ -56,6 +56,7 @@ import java.time.LocalDate;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.answer;
@@ -138,6 +139,14 @@ public class StudentServiceTest {
         internship.setId(10L);
     }
 
+    private Student studentWithVisibleInternship() {
+        Student student = spy(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
+        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
+
+        return student;
+    }
 
     private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -662,6 +671,74 @@ public class StudentServiceTest {
         assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
     }
 
+    @Test
+    void shouldReturnHiddenAndFavoriteFlagsWhenGettingInternships() throws UserNotFoundException {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(studentRepository.findHiddenInternshipIds(dummyStudent)).thenReturn(Set.of(10L));
+
+        // Act
+        StudentInternshipResponseDto studentInternshipResponseDto = studentService.getInternships(STUDENT_EMAIL).getFirst();
+
+        // Assert
+        assert ("Software Developer").equals(studentInternshipResponseDto.internship().title());
+        assert studentInternshipResponseDto.hidden();
+        assert !studentInternshipResponseDto.favorite();
+        assert !studentInternshipResponseDto.viewed();
+    }
+
+    @Test
+    void shouldHideInternshipWhenStudentHidesIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.hideInternship(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).removeFromFavorites(internship);
+        verify(student).hide(internship);
+    }
+
+    @Test
+    void shouldUnhideInternshipWhenStudentUnhidesIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.unhideInternship(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).unhide(internship);
+    }
+
+    @Test
+    void shouldAddInternshipToFavoritesWhenStudentMarksIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.addInternshipToFavorites(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).unhide(internship);
+        verify(student).addToFavorites(internship);
+    }
+
+    @Test
+    void shouldRemoveInternshipFromFavoritesWhenStudentUnmarksIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.removeInternshipFromFavorites(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).removeFromFavorites(internship);
+    }
 
     @Test
     void shouldApplyToInternshipSuccessfully() throws Exception {

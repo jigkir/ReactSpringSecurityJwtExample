@@ -17,6 +17,7 @@ import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.users.StudentService;
@@ -381,14 +382,18 @@ public class StudentControllerTest {
     @Test
     void shouldReturnListofAvailableInternships() throws Exception {
         //Arrange
-        when(studentService.getInternships(STUDENT_EMAIL))
-                .thenReturn(List.of(new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now(), false)));
+        InternshipResponseDto internship = new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
+
+        when(studentService.getInternships(STUDENT_EMAIL)).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
 
         //Act + Assert
-
         mockMvc.perform(get("/api/student/internship")
                         .principal(authentication))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.size()").value(1));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Test"))
+                .andExpect(jsonPath("$[0].hidden").value(true))
+                .andExpect(jsonPath("$[0].favorite").value(false));
     }
 
     @Test

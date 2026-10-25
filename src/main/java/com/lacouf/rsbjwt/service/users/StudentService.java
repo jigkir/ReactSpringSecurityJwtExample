@@ -30,7 +30,7 @@ import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import org.apache.pdfbox.Loader;
@@ -347,23 +347,40 @@ public class StudentService {
         return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException(cvId));
     }
 
+    private Internship findInternshipVisibleTo(Student student, long internshipId) throws InternshipNotFoundException {
+        return internshipRepository
+                .findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(internshipId, ReviewStatus.APPROVED, student.getDiscipline())
+                .orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    }
+
     private List<Internship> findInternships(Student student) {
         return internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(student.getDiscipline());
     }
 
-    public List<InternshipResponseDto> getInternships(String email) throws UserNotFoundException {
+    public List<StudentInternshipResponseDto> getInternships(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        Set<Long> viewedIds = studentRepository.findViewedInternshipIds(student);
+
+        Set<Long> viewedInternshipIds = studentRepository.findViewedInternshipIds(student);
+        Set<Long> hiddenInternshipIds = studentRepository.findHiddenInternshipIds(student);
+        Set<Long> favoriteInternshipIds = studentRepository.findFavoriteInternshipIds(student);
+
         List<Internship> internships = findInternships(student);
-        List<InternshipResponseDto> internshipResponses = new ArrayList<>();
+        List<StudentInternshipResponseDto> internshipResponses = new ArrayList<>();
+
         for (Internship internship : internships) {
-            if (!internship.getStatus().equals(ReviewStatus.APPROVED)) {
+            ReviewStatus reviewStatus = internship.getStatus();
+
+            if (!reviewStatus.equals(ReviewStatus.APPROVED)) {
                 continue;
             }
+
             if (hasApplicationDeadlinePassed(internship)) {
                 continue;
             }
-            internshipResponses.add(InternshipResponseDto.of(internship, viewedIds.contains(internship.getId())));
+
+            long internshipId = internship.getId();
+
+            internshipResponses.add(StudentInternshipResponseDto.of(internship, viewedInternshipIds.contains(internshipId), hiddenInternshipIds.contains(internshipId), favoriteInternshipIds.contains(internshipId)));
         }
         return internshipResponses;
     }
@@ -375,5 +392,37 @@ public class StudentService {
         internshipRepository
                 .findByIdInAndDeletedFalseAndStatusAndPostedBy_Discipline(internshipIds, ReviewStatus.APPROVED, student.getDiscipline())
                 .forEach(student::markViewed);
+    }
+
+    @Transactional
+    public void hideInternship(String email, long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        Student student = findByEmail(email);
+        Internship internship = findInternshipVisibleTo(student, internshipId);
+
+        student.removeFromFavorites(internship);
+        student.hide(internship);
+    }
+
+    @Transactional
+    public void unhideInternship(String email, long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        Student student = findByEmail(email);
+
+        student.unhide(findInternshipVisibleTo(student, internshipId));
+    }
+
+    @Transactional
+    public void addInternshipToFavorites(String email, long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        Student student = findByEmail(email);
+        Internship internship = findInternshipVisibleTo(student, internshipId);
+
+        student.unhide(internship);
+        student.addToFavorites(internship);
+    }
+
+    @Transactional
+    public void removeInternshipFromFavorites(String email, long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        Student student = findByEmail(email);
+
+        student.removeFromFavorites(findInternshipVisibleTo(student, internshipId));
     }
 }

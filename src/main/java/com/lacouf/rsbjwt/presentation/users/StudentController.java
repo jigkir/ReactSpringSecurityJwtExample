@@ -14,7 +14,7 @@ import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import jakarta.validation.Valid;
@@ -88,8 +88,8 @@ public class StudentController {
     }
 
     @GetMapping("/internship")
-    public ResponseEntity<List<InternshipResponseDto>> getInternships(Authentication authentication) throws UserNotFoundException {
-        List<InternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName());
+    public ResponseEntity<List<StudentInternshipResponseDto>> getInternships(Authentication authentication) throws UserNotFoundException {
+        List<StudentInternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -127,6 +127,30 @@ public class StudentController {
     @PutMapping("/internship/viewed")
     public ResponseEntity<Void> markInternshipsAsViewed(@Valid @RequestBody ViewedInternshipsDto viewedInternshipsDto, Authentication authentication) throws UserNotFoundException {
         studentService.markInternshipsAsViewed(authentication.getName(), viewedInternshipsDto.internshipIds());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/internship/{internshipId}/hidden")
+    public ResponseEntity<Void> hideInternship(Authentication authentication, @PathVariable long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        studentService.hideInternship(authentication.getName(), internshipId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/internship/{internshipId}/hidden")
+    public ResponseEntity<Void> unhideInternship(Authentication authentication, @PathVariable long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        studentService.unhideInternship(authentication.getName(), internshipId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/internship/{internshipId}/favorite")
+    public ResponseEntity<Void> addInternshipToFavorites(Authentication authentication, @PathVariable long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        studentService.addInternshipToFavorites(authentication.getName(), internshipId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/internship/{internshipId}/favorite")
+    public ResponseEntity<Void> removeInternshipFromFavorites(Authentication authentication, @PathVariable long internshipId) throws UserNotFoundException, InternshipNotFoundException {
+        studentService.removeInternshipFromFavorites(authentication.getName(), internshipId);
         return ResponseEntity.noContent().build();
     }
 }

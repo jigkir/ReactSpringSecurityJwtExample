@@ -19,4 +19,10 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query("select i.id from Student s join s.viewedInternships i where s = :student")
     Set<Long> findViewedInternshipIds(@Param("student") Student student);
+
+    @Query("select internship.id from Student student join student.hiddenInternships internship where student = :student")
+    Set<Long> findHiddenInternshipIds(@Param("student") Student student);
+
+    @Query("select internship.id from Student student join student.favoriteInternships internship where student = :student")
+    Set<Long> findFavoriteInternshipIds(@Param("student") Student student);
 }
