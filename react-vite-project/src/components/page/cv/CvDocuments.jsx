@@ -53,7 +53,7 @@ import {
     rejectCv,
 } from '../../api/Api.jsx';
 import {base64ToBlobUrl, formatBytes, formatDate} from './cvUtils.js';
-import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
+import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from "../../../utils/usePolling.js";
 
@@ -120,6 +120,14 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
     const selectClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
+
+    // The status select border takes the colour of the selected status
+    const filterBorder = getStatusBorder(filters.status, dark);
+    // Colored borders only when a specific status is selected (not on "All statuses")
+    const showBorders = isManager && filters.status !== "ALL";
+    const statusSelectClass = `rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 text-white" : "bg-white text-gray-900"
+    } ${filterBorder ? `border-2 ${filterBorder}` : `border ${dark ? "border-slate-600" : "border-gray-300"}`}`;
 
     // Row = 3 columns on md+: identity (flexible) | pill (auto) | actions (auto).
     const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 md:grid-cols-[minmax(12rem,1fr)_auto_auto] md:items-center md:gap-6 transition-colors duration-150 ${
@@ -254,7 +262,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                 )}
             </div>
             <select value={filters.status} onChange={(e) => filters.setStatus(e.target.value)}
-                    className={selectClass} aria-label={t("cvDocuments.statusAria")}>
+                    className={statusSelectClass} aria-label={t("cvDocuments.statusAria")}>
                 <option value="ALL">{t("cvDocuments.allStatuses")}</option>
                 <option value="PENDING">{t("cvDocuments.filterPending")}</option>
                 <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
@@ -310,7 +318,7 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
         );
     } else {
         body = (
-            <ul className={th.list}>
+            <ul className={showBorders ? "flex flex-col gap-3 p-4" : th.list}>
                 {visibleDocs.map((doc) => {
                     const busy = busyId === doc.id;
                     const confirming = confirmId === doc.id;
@@ -328,7 +336,8 @@ const CvDocuments = ({dark, mode = "student", api: apiProp, onAddClick}) => {
                         : "flex flex-wrap items-center gap-2 md:justify-end";
 
                     return (
-                        <li key={doc.id} aria-busy={busy}>
+                        <li key={doc.id} aria-busy={busy}
+                            className={showBorders ? `rounded-xl border-2 ${getStatusBorder(status, dark) ?? ""}` : undefined}>
                             <div className={rowClass}>
 
                                 {/* Column 1 — Identity */}

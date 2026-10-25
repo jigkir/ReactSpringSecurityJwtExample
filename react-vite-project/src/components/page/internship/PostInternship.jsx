@@ -165,6 +165,7 @@ function PostInternship({user}) {
                                         OnEdit={openEdit}
                                         OnDelete={handleDelete}
                                         dark={dark}
+                                        showStatusBorder={filters.status !== "ALL"}
                                         applicationCount={applicationCount[internship.id]}/>
                     ))}
                 </div>
