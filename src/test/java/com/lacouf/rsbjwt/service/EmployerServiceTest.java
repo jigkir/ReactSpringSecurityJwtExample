@@ -412,7 +412,6 @@ public class EmployerServiceTest {
 
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
                 .thenReturn(Optional.of(internshipApplication));
-        when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
 
         // Act
         employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St"));
@@ -427,7 +426,7 @@ public class EmployerServiceTest {
         assert (interviewDate).equals(savedInterview.getInterviewDate());
         assert (StudentDecision.PENDING).equals(savedInterview.getStudentDecision());
         assert (InterviewStatus.SCHEDULED).equals(savedInterview.getInterviewStatus());
-        assert (EmployerDecision.ACCEPTED).equals(savedInterview.getInternshipApplication().getEmployerDecision());
+        assert (EmployerDecision.INTERVIEW_OFFERED).equals(savedInterview.getInternshipApplication().getEmployerDecision());
 
         verify(internshipApplicationRepository).save(internshipApplication);
     }
@@ -544,20 +543,6 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InterviewAlreadyExistsException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
-
-        verify(interviewRepository, never()).save(any(Interview.class));
-    }
-
-    @Test
-    void shouldThrowWhenCreatingInterviewForUnknownEmployer() {
-        // Arrange
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(receivedInternshipApplication()));
-        when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.empty());
-
-        // Act + Assert
-        assertThrows(UserNotFoundException.class,
                 () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
 
         verify(interviewRepository, never()).save(any(Interview.class));

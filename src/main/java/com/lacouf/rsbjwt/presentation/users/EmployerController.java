@@ -8,7 +8,7 @@ import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
-import com.lacouf.rsbjwt.exception.interview.InterviewDateInPastException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -84,7 +84,7 @@ public class EmployerController {
     }
 
     @PostMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplication(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, UserNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
+    public ResponseEntity<Void> acceptReceivedInternshipApplication(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
         employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok().build();
     }
@@ -106,13 +106,13 @@ public class EmployerController {
     }
 
     @PutMapping("/interviews/{interviewId}")
-    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewDateInPastException {
+    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
         InterviewEmployerResponseDTO interview = employerService.updateInterview(interviewId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok(interview);
     }
 
     @PutMapping("/interviews/{interviewId}/cancel")
-    public ResponseEntity<InterviewEmployerResponseDTO> cancelInterview(@PathVariable long interviewId, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException {
+    public ResponseEntity<InterviewEmployerResponseDTO> cancelInterview(@PathVariable long interviewId, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
         InterviewEmployerResponseDTO interview = employerService.cancelInterview(interviewId, authentication.getName());
         return ResponseEntity.ok(interview);
     }
