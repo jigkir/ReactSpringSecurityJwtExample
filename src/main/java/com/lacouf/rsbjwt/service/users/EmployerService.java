@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
@@ -213,7 +214,16 @@ public class EmployerService {
                 interviewRequestDto.meetingDetails()
         );
 
+        acceptApplication(internshipApplication);
+
         interviewRepository.save(interview);
+    }
+
+    @Transactional
+    public void rejectInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        rejectApplication(internshipApplication);
     }
 
     @Transactional(readOnly = true)
@@ -257,6 +267,16 @@ public class EmployerService {
         interviewRepository.save(interview);
 
         return InterviewEmployerResponseDTO.of(interview);
+    }
+
+    private void acceptApplication(InternshipApplication internshipApplication) {
+        internshipApplication.updateEmployerDecision(EmployerDecision.ACCEPTED);
+        internshipApplicationRepository.save(internshipApplication);
+    }
+
+    private void rejectApplication(InternshipApplication internshipApplication) {
+        internshipApplication.updateEmployerDecision(EmployerDecision.REJECTED);
+        internshipApplicationRepository.save(internshipApplication);
     }
 
     private void requireFuture(LocalDate date, String label) throws InvalidInternshipDateException {

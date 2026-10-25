@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.response.application;
 
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.cv.CV;
@@ -16,7 +17,8 @@ public record ReceivedInternshipApplicationResponseDto(
         long cvId,
         String cvFileName,
         LocalDate applicationDate,
-        InternshipApplicationStatus internshipApplicationStatus
+        InternshipApplicationStatus internshipApplicationStatus,
+        EmployerDecision employerDecision
 ) {
 
     public static ReceivedInternshipApplicationResponseDto of(InternshipApplication internshipApplication) {
@@ -31,7 +33,8 @@ public record ReceivedInternshipApplicationResponseDto(
                 cv.getId(),
                 cv.getFileName(),
                 internshipApplication.getApplicationDate(),
-                internshipApplication.getInternshipApplicationStatus()
+                internshipApplication.getInternshipApplicationStatus(),
+                internshipApplication.getEmployerDecision()
         );
     }
 }

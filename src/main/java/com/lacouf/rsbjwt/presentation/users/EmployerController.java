@@ -86,6 +86,12 @@ public class EmployerController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/applications/{applicationId}/reject")
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+        employerService.rejectInternshipApplication(applicationId, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/interviews")
     public ResponseEntity<List<InterviewEmployerResponseDTO>> getInterviewsOfEmployer(Authentication authentication) {
         return ResponseEntity.ok(employerService.getInterviewsOfEmployer(authentication.getName()));
