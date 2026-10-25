@@ -2,6 +2,8 @@ package com.lacouf.rsbjwt.service;
 
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -20,9 +22,11 @@ import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
@@ -67,6 +71,9 @@ public class ManagerServiceTest {
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
 
+    @Spy
+    private InternshipService internshipService;
+
     private CV cv;
     private Internship internship;
 
@@ -93,6 +100,10 @@ public class ManagerServiceTest {
                 employer);
 
         internship.setId(1L);
+    }
+
+    private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
+        return new InternshipRequestDto("Développeur backend", "Stage en développement backend", "Java, Spring Boot", 16, "Montréal", WorkMode.HYBRID, startDate, internship.getApplicationDeadline(), compensationAmount, false);
     }
 
     @Test
@@ -436,6 +447,52 @@ public class ManagerServiceTest {
 
         //Act + assert
         assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L, "Who's there?"));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldUpdateInternshipWithoutChangingStatusWhenManagerUpdatesIt() throws Exception {
+        //Arrange
+        internship.approve();
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), new BigDecimal("27.00"));
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act
+        InternshipResponseDto updatedInternship = managerService.updateInternship(1L, internshipRequestDto);
+
+        //Assert
+        assert ("Développeur backend").equals(updatedInternship.title());
+        assert (new BigDecimal("27.00")).equals(updatedInternship.compensationAmount());
+        assert (ReviewStatus.APPROVED).equals(updatedInternship.status());
+
+        verify(internshipRepository).save(internship);
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldThrowInvalidInternshipDateWhenManagerChangesStartDateToPast() {
+        //Arrange
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(LocalDate.now().minusDays(1), new BigDecimal("25.00"));
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act + assert
+        assertThrows(InvalidInternshipDateException.class, () -> managerService.updateInternship(1L, internshipRequestDto));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldThrowInvalidCompensationWhenManagerRemovesAmountWithoutNegotiable() {
+        //Arrange
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), null);
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        //Act + assert
+        assertThrows(InvalidCompensationException.class, () -> managerService.updateInternship(1L, internshipRequestDto));
 
         verify(internshipRepository, never()).save(any(Internship.class));
     }

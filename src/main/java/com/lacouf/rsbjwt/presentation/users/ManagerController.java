@@ -2,6 +2,9 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
@@ -71,5 +74,10 @@ public class ManagerController {
     @PutMapping("/internships/{internshipId}/reject")
     public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRejectionDto rejection) throws InternshipNotFoundException {
         return ResponseEntity.ok(managerService.rejectInternship(internshipId, rejection.comment()));
+    }
+
+    @PutMapping("/internships/{internshipId}")
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException {
+        return ResponseEntity.ok(managerService.updateInternship(internshipId, internshipRequestDto));
     }
 }

@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.ManagerController;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
@@ -44,6 +45,11 @@ public class ManagerControllerTest {
     private ReactSpringSecurityJwtApplication application;
 
     private static final String REJECTION_BODY = "{\"comment\": \"CV too detailed\"}";
+    private static final String INTERNSHIP_BODY = """
+            {"title": "Développeur backend", "description": "Stage en développement backend", "requiredSkills": "Java, Spring Boot",
+             "durationInWeeks": 16, "location": "Montréal", "workMode": "HYBRID", "startDate": "2027-01-10",
+             "applicationDeadline": "2026-12-01", "compensationAmount": 27.00, "compensationNegotiable": false}
+            """;
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
 
     private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
@@ -303,5 +309,18 @@ public class ManagerControllerTest {
                 .content("{\"comment\": \"   \"}")).andExpect(status().isBadRequest());
 
         verifyNoInteractions(managerService);
+    }
+
+    @Test
+    void shouldReturnOkWhenManagerUpdatesInternship() throws Exception {
+        // Arrange
+        when(managerService.updateInternship(eq(1L), any(InternshipRequestDto.class))).thenReturn(internshipWith(ReviewStatus.APPROVED, null));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internships/1").contentType(MediaType.APPLICATION_JSON).content(INTERNSHIP_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        verify(managerService).updateInternship(eq(1L), any(InternshipRequestDto.class));
     }
 }

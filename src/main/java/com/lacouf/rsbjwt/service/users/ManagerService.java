@@ -2,6 +2,8 @@ package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -18,6 +20,8 @@ import com.lacouf.rsbjwt.repository.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
@@ -35,16 +39,19 @@ public class ManagerService {
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
     private final StudentRepository studentRepository;
+
     private final NotificationService notificationService;
     private final UserAppService userAppService;
+    private final InternshipService internshipService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
+        this.internshipService = internshipService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -146,6 +153,15 @@ public class ManagerService {
         internshipRepository.save(internship);
 
         notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_REJECTED, comment);
+
+        return InternshipResponseDto.of(internship);
+    }
+
+    public InternshipResponseDto updateInternship(long internshipId, InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException {
+        Internship internship = findInternship(internshipId);
+
+        internshipService.updateDetails(internship, internshipRequestDto);
+        internshipRepository.save(internship);
 
         return InternshipResponseDto.of(internship);
     }
