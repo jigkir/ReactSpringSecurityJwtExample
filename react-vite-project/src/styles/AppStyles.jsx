@@ -10,6 +10,16 @@ const BRAND_BTN = "bg-indigo-600 hover:bg-indigo-700 text-white";
 const BRAND_FOCUS = "focus:ring-indigo-500";
 // endregion
 
+// region Status border (internships and CVs): rejected = red, pending = yellow, approved = green
+export function getStatusBorder(status, dark = false) {
+    if (status === "APPROVED") return dark ? "border-green-400" : "border-green-500";
+    if (status === "REJECTED" || status === "REFUSED") return dark ? "border-red-400" : "border-red-500";
+    if (status === "PENDING") return dark ? "border-yellow-400" : "border-yellow-500";
+    return null;
+}
+
+// endregion
+
 // region Brand surface (hero + footer)
 export function getBrandSurface(dark) {
     return dark ? "bg-blue-950" : "bg-violet-200";
@@ -265,9 +275,14 @@ export function getPostInternshipClasses(dark) {
 // endregion
 
 // region InternshipCard
-export function getInternshipCardClasses(dark) {
+export function getInternshipCardClasses(dark, status = null) {
+    const statusBorder = getStatusBorder(status, dark);
+    const cardBorder = statusBorder
+        ? `border-2 ${statusBorder}`
+        : `border ${dark ? "border-slate-700" : "border-gray-200"}`;
+
     return {
-        card: `rounded-xl shadow-sm border p-6 text-left space-y-3 overflow-hidden min-w-0 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        card: `rounded-xl shadow-sm p-6 text-left space-y-3 overflow-hidden min-w-0 ${cardBorder} ${dark ? "bg-slate-800" : "bg-white"}`,
         topRow: "flex justify-between items-start gap-4 min-w-0",
         title: `text-xl font-bold break-words min-w-0 w-full ${dark ? "text-white" : "text-gray-900"}`,
         description: `text-base mt-1 break-words whitespace-normal min-w-0 ${dark ? "text-slate-400" : "text-gray-600"}`,

@@ -177,6 +177,7 @@ const ManagerInternships = () => {
                 internship={internship}
                 dark={dark}
                 showEmployer
+                showStatusBorder={filters.status !== "ALL"}
                 footer={renderActions(internship)}
             />
         ));
