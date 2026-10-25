@@ -363,6 +363,7 @@ public class StudentService {
         Set<Long> viewedInternshipIds = studentRepository.findViewedInternshipIds(student);
         Set<Long> hiddenInternshipIds = studentRepository.findHiddenInternshipIds(student);
         Set<Long> favoriteInternshipIds = studentRepository.findFavoriteInternshipIds(student);
+        Set<Long> appliedInternshipIds = applicationRepository.findInternshipIdsByStudent(student);
 
         List<Internship> internships = findInternships(student);
         List<StudentInternshipResponseDto> internshipResponses = new ArrayList<>();
@@ -374,11 +375,11 @@ public class StudentService {
                 continue;
             }
 
-            if (hasApplicationDeadlinePassed(internship)) {
+            long internshipId = internship.getId();
+
+            if (hasApplicationDeadlinePassed(internship) && !appliedInternshipIds.contains(internshipId)) {
                 continue;
             }
-
-            long internshipId = internship.getId();
 
             internshipResponses.add(StudentInternshipResponseDto.of(internship, viewedInternshipIds.contains(internshipId), hiddenInternshipIds.contains(internshipId), favoriteInternshipIds.contains(internshipId)));
         }

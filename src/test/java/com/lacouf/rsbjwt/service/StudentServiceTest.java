@@ -672,6 +672,23 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldGetInternshipAfterDeadlineWhenStudentAppliedToIt() throws UserNotFoundException {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+        internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(applicationRepository.findInternshipIdsByStudent(dummyStudent)).thenReturn(Set.of(10L));
+
+        // Act
+        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL);
+
+        // Assert
+        assert internships.size() == 1;
+    }
+
+    @Test
     void shouldReturnHiddenAndFavoriteFlagsWhenGettingInternships() throws UserNotFoundException {
         // Arrange
         internship.setStatus(ReviewStatus.APPROVED);
