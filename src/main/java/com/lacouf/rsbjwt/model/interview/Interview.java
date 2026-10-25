@@ -38,6 +38,10 @@ public class Interview {
     private MeetingType meetingType;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private InterviewStatus interviewStatus;
+
+    @Column(nullable = false)
     private String meetingDetails;
 
     public Interview() {
@@ -51,6 +55,7 @@ public class Interview {
         this.interviewDate = interviewDate;
         this.meetingType = meetingType;
         this.meetingDetails = meetingDetails;
+        this.interviewStatus = InterviewStatus.SCHEDULED;
     }
 
     public void update(String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {
@@ -58,5 +63,10 @@ public class Interview {
         this.interviewDate = interviewDate;
         this.meetingType = meetingType;
         this.meetingDetails = meetingDetails;
+        this.studentDecision = StudentDecision.PENDING;
+    }
+
+    public void cancel() {
+        this.interviewStatus = InterviewStatus.CANCELLED;
     }
 }

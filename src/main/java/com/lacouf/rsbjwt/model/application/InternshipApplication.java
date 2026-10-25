@@ -32,6 +32,10 @@ public class InternshipApplication {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private EmployerDecision employerDecision;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private InternshipApplicationStatus internshipApplicationStatus;
 
     public InternshipApplication() {
@@ -43,6 +47,7 @@ public class InternshipApplication {
         this.student = student;
         this.internshipApplicationStatus = InternshipApplicationStatus.UNREAD;
         this.applicationDate = LocalDate.now();
+        this.employerDecision = EmployerDecision.PENDING;
     }
 
     public void markAsRead() {
@@ -51,5 +56,9 @@ public class InternshipApplication {
 
     public void changeCv(CV cv) {
         this.cv = cv;
+    }
+
+    public void updateEmployerDecision(EmployerDecision decision) {
+        this.employerDecision = decision;
     }
 }

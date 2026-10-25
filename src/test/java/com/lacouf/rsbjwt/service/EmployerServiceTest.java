@@ -1,14 +1,19 @@
 package com.lacouf.rsbjwt.service;
 
+import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -421,6 +426,10 @@ public class EmployerServiceTest {
         assert ("Please come to our office").equals(savedInterview.getMessage());
         assert (interviewDate).equals(savedInterview.getInterviewDate());
         assert (StudentDecision.PENDING).equals(savedInterview.getStudentDecision());
+        assert (InterviewStatus.SCHEDULED).equals(savedInterview.getInterviewStatus());
+        assert (EmployerDecision.ACCEPTED).equals(savedInterview.getInternshipApplication().getEmployerDecision());
+
+        verify(internshipApplicationRepository).save(internshipApplication);
     }
 
     @Test
@@ -443,8 +452,8 @@ public class EmployerServiceTest {
         Interview interview = new Interview(employer, receivedInternshipApplication(), "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
         interview.setId(30L);
 
-        when(interviewRepository.findByEmployer_Credentials_Email(EMPLOYER_EMAIL)).thenReturn(List.of(interview));
-
+        when(interviewRepository.findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(EMPLOYER_EMAIL))
+                .thenReturn(List.of(interview));
         // Act
         List<InterviewEmployerResponseDTO> response = employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL);
 
@@ -506,6 +515,181 @@ public class EmployerServiceTest {
                 () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowWhenCreatingInterviewForRejectedApplication() {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+        internshipApplication.updateEmployerDecision(EmployerDecision.REJECTED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+
+        // Act + Assert
+        assertThrows(ApplicationRejectedException.class,
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowWhenCreatingInterviewThatAlreadyExists() {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+        when(interviewRepository.existsByInternshipApplication(internshipApplication)).thenReturn(true);
+
+        // Act + Assert
+        assertThrows(InterviewAlreadyExistsException.class,
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowWhenCreatingInterviewForUnknownEmployer() {
+        // Arrange
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(receivedInternshipApplication()));
+        when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(UserNotFoundException.class,
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldRejectApplicationWithoutInterview() throws Exception {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+        when(interviewRepository.findByInternshipApplication(internshipApplication)).thenReturn(Optional.empty());
+
+        // Act
+        employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(EmployerDecision.REJECTED, internshipApplication.getEmployerDecision());
+
+        verify(internshipApplicationRepository).save(internshipApplication);
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldCancelInterviewWhenApplicationIsRejected() throws Exception {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+        Interview interview = new Interview(employer, internshipApplication, "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+        when(interviewRepository.findByInternshipApplication(internshipApplication)).thenReturn(Optional.of(interview));
+
+        // Act
+        employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(EmployerDecision.REJECTED, internshipApplication.getEmployerDecision());
+        assertEquals(InterviewStatus.CANCELLED, interview.getInterviewStatus());
+
+        verify(interviewRepository).save(interview);
+        verify(internshipApplicationRepository).save(internshipApplication);
+    }
+
+    @Test
+    void shouldThrowWhenRejectingUnknownApplication() {
+        // Arrange
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class,
+                () -> employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL));
+
+        verifyNoInteractions(interviewRepository);
+    }
+
+    @Test
+    void shouldCancelInterview() throws Exception {
+        // Arrange
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        interview.setId(30L);
+
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
+
+        // Act
+        InterviewEmployerResponseDTO response = employerService.cancelInterview(30L, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(InterviewStatus.CANCELLED, interview.getInterviewStatus());
+        assertEquals(30L, response.id());
+
+        verify(interviewRepository).save(interview);
+    }
+
+    @Test
+    void shouldThrowWhenCancellingUnknownInterview() {
+        // Arrange
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InterviewNotFoundException.class, () -> employerService.cancelInterview(30L, EMPLOYER_EMAIL));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowWhenCancellingAlreadyCancelledInterview() {
+        // Arrange
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        interview.cancel();
+
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewCancelledException.class, () -> employerService.cancelInterview(30L, EMPLOYER_EMAIL));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingCancelledInterview() {
+        // Arrange
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        interview.cancel();
+
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewCancelledException.class,
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St")));
+
+        assertEquals("Message", interview.getMessage());
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldCancelInterviewsWhenInternshipIsDeleted() throws InternshipNotFoundException {
+        // Arrange
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(interviewRepository.findByInternshipApplication_Internship(internship)).thenReturn(List.of(interview));
+
+        // Act
+        employerService.deleteInternship(10L, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(InterviewStatus.CANCELLED, interview.getInterviewStatus());
+
+        verify(interviewRepository).save(interview);
     }
 
 }
