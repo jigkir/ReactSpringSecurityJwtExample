@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
+import com.lacouf.rsbjwt.exception.interview.InterviewDateInPastException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -105,7 +106,7 @@ public class EmployerController {
     }
 
     @PutMapping("/interviews/{interviewId}")
-    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException {
+    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewDateInPastException {
         InterviewEmployerResponseDTO interview = employerService.updateInterview(interviewId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok(interview);
     }

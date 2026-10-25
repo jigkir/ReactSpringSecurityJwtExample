@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
+import com.lacouf.rsbjwt.exception.interview.InterviewDateInPastException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -40,6 +41,7 @@ import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -230,12 +232,16 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException {
+    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewDateInPastException {
         Interview interview = interviewRepository.findByIdAndEmployer_Credentials_Email(interviewId, email)
                 .orElseThrow(() -> new InterviewNotFoundException(interviewId));
 
         if (interview.getInterviewStatus() == InterviewStatus.CANCELLED) {
             throw new InterviewCancelledException(interviewId);
+        }
+
+        if (interview.getInterviewDate().isBefore(LocalDateTime.now())) {
+            throw new InterviewDateInPastException(interviewId);
         }
 
         interview.update(
