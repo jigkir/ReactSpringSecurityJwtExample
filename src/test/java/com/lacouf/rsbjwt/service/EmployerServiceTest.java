@@ -42,16 +42,14 @@ import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
+import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -94,6 +92,9 @@ public class EmployerServiceTest {
     private ArgumentCaptor<Internship> internshipArgumentCaptor;
     @Captor
     private ArgumentCaptor<Interview> interviewArgumentCaptor;
+
+    @Spy
+    private InternshipService internshipService;
 
     private static EmployerSignUpDto employerSignUpDto;
     private static InternshipRequestDto internshipRequestDto;
@@ -329,6 +330,8 @@ public class EmployerServiceTest {
     @Test
     void shouldUpdateInternship() throws Exception {
         // Arrange
+        internship.approve();
+
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL))
                 .thenReturn(Optional.of(internship));
 
@@ -342,6 +345,7 @@ public class EmployerServiceTest {
         // Assert
         assert (Long.valueOf(10L)).equals(response.id());
         assert ("Software Developer").equals(response.title());
+        assert (ReviewStatus.PENDING).equals(response.status());
 
         verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
         verify(internshipRepository).save(internship);

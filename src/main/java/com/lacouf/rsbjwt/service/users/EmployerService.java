@@ -32,6 +32,7 @@ import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipAppl
 import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
+import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -52,12 +53,14 @@ public class EmployerService {
     private final EmployerRepository employerRepository;
     private final InternshipRepository internshipRepository;
     private final ManagerRepository managerRepository;
-    private final NotificationService notificationService;
-    private final UserAppService userAppService;
     private final InternshipApplicationRepository internshipApplicationRepository;
     private final InterviewRepository interviewRepository;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository InterviewRepository) {
+    private final NotificationService notificationService;
+    private final UserAppService userAppService;
+    private final InternshipService internshipService;
+
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository InterviewRepository, InternshipService internshipService) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
@@ -65,6 +68,7 @@ public class EmployerService {
         this.userAppService = userAppService;
         this.internshipApplicationRepository = internshipApplicationRepository;
         this.interviewRepository = InterviewRepository;
+        this.internshipService = internshipService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -86,10 +90,7 @@ public class EmployerService {
 
     @Transactional
     public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
-        requireFuture(internshipDto.startDate(), "start date");
-        requireFuture(internshipDto.applicationDeadline(), "application deadline");
-
-        validateCompensation(internshipDto.compensationAmount(), internshipDto.compensationNegotiable());
+        internshipService.validateNewInternship(internshipDto);
 
         Employer employer = employerRepository.findByCredentialsEmail(employerEmail).orElseThrow(UserNotFoundException::new);
 
@@ -120,27 +121,8 @@ public class EmployerService {
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
-        if (!dto.startDate().equals(internship.getStartDate())) {
-            requireFuture(dto.startDate(), "start date");
-        }
-        if (!dto.applicationDeadline().equals(internship.getApplicationDeadline())) {
-            requireFuture(dto.applicationDeadline(), "application deadline");
-        }
-
-        validateCompensation(dto.compensationAmount(), dto.compensationNegotiable());
-
-        internship.update(
-                dto.title(),
-                dto.description(),
-                dto.requiredSkills(),
-                dto.durationInWeeks(),
-                dto.location(),
-                dto.workMode(),
-                dto.startDate(),
-                dto.applicationDeadline(),
-                dto.compensationAmount(),
-                dto.compensationNegotiable()
-        );
+        internshipService.updateDetails(internship, dto);
+        internship.resubmitForReview();
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);
 
