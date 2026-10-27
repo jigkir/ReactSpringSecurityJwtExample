@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {getDocument} from 'pdfjs-dist';
+import {getDocument} from './pdfLoader.js';
 
 // Loads the PDF at url with pdf.js; error is true when the file cannot be parsed
 export function usePdfDocument(url) {
