@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.request.cv;
+package com.lacouf.rsbjwt.service.dto.request.document.student.cv;
 
 import jakarta.validation.constraints.NotBlank;
 

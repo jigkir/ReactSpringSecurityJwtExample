@@ -3,7 +3,11 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -12,10 +16,10 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
-import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -272,7 +276,7 @@ public class StudentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().string("CV uploaded successfully"));
 
-        verify(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        verify(studentService).uploadCV(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
     }
 
     @Test
@@ -280,7 +284,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.txt", "text/plain", "text".getBytes());
 
-        doThrow(new InvalidFileTypeException()).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new InvalidFileTypeException()).when(studentService).uploadCV(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -293,7 +297,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
-        doThrow(new InvalidFileSizeException(MAX_FILE_SIZE)).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new InvalidFileSizeException(MAX_FILE_SIZE)).when(studentService).uploadCV(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -305,7 +309,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
-        doThrow(new CorruptedFileException()).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new CorruptedFileException()).when(studentService).uploadCV(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -317,7 +321,7 @@ public class StudentControllerTest {
         // Arrange
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", "pdf".getBytes());
 
-        doThrow(new UserNotFoundException()).when(studentService).uploadCV(any(CvUploadDto.class), eq(STUDENT_EMAIL));
+        doThrow(new UserNotFoundException()).when(studentService).uploadCV(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
 
         // Act + Assert
         mockMvc.perform(multipart("/api/student/cvs").file(file).principal(authentication))
@@ -329,7 +333,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnCvFileSuccessfully() throws Exception {
         // Arrange
-        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenReturn(new CvFileResponseDto(10L, "my_cv.pdf", "pdf".getBytes()));
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenReturn(new DocumentFileResponseDto(10L, "my_cv.pdf", "pdf".getBytes()));
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))

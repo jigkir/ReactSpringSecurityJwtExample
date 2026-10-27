@@ -10,7 +10,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
-import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
@@ -38,7 +38,7 @@ import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -381,7 +381,7 @@ public class EmployerServiceTest {
                 .thenReturn(Optional.of(internshipApplication));
 
         // Act
-        CvFileResponseDto cv = employerService.openReceivedInternshipApplicationCv(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+        DocumentFileResponseDto cv = employerService.openReceivedInternshipApplicationCv(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
 
         // Assert
         assert (InternshipApplicationStatus.READ).equals(internshipApplication.getInternshipApplicationStatus());

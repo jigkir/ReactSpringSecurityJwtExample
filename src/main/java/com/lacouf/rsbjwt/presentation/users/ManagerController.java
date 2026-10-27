@@ -1,15 +1,15 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
-import com.lacouf.rsbjwt.service.dto.request.cv.CvRejectionDto;
+import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +37,7 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs/{cvId}/file")
-    public ResponseEntity<CvFileResponseDto> getCvFile(@PathVariable long cvId) throws CvNotFoundException {
+    public ResponseEntity<DocumentFileResponseDto> getCvFile(@PathVariable long cvId) throws CvNotFoundException {
         return ResponseEntity.ok(managerService.getCvFile(cvId));
     }
 

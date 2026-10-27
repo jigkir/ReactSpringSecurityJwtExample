@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.model.cv;
+package com.lacouf.rsbjwt.model.documents.student.cv;
 
 
 import com.lacouf.rsbjwt.model.ReviewStatus;

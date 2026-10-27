@@ -4,7 +4,13 @@ import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.document.EmptyFileException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -12,7 +18,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -23,14 +29,14 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
-import com.lacouf.rsbjwt.repository.cv.CVRepository;
+import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.StudentService;
@@ -211,7 +217,7 @@ public class StudentServiceTest {
     @Test
     void shouldUploadCVForExistingStudent() throws Exception {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
 
@@ -227,7 +233,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowUserNotFoundExceptionWhenUploadingCVForUnknownEmail() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.empty());
 
@@ -240,7 +246,7 @@ public class StudentServiceTest {
     @Test
     void shouldSaveCVSuccessfully() throws Exception {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         // Act
         studentService.saveCV(upload, dummyStudent);
@@ -260,7 +266,7 @@ public class StudentServiceTest {
     @Test
     void shouldNotifyEveryManagerWhenCVIsSubmitted() throws Exception {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         CV savedCv = new CV();
         savedCv.setId(10L);
@@ -311,7 +317,7 @@ public class StudentServiceTest {
     @Test
     void shouldNotNotifyManagersWhenCVIsInvalid() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
+        DocumentUploadDto upload = new DocumentUploadDto("Hello World".getBytes(), "file.txt");
 
         // Act
         assertThrows(InvalidFileTypeException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -323,7 +329,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowEmptyFileExceptionWhenContentIsNull() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(null, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(null, "cv.pdf");
 
         // Act + Assert
         assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -332,7 +338,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowEmptyFileExceptionWhenContentIsEmpty() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(new byte[0], "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(new byte[0], "cv.pdf");
 
         // Act + Assert
         assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -341,7 +347,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileSizeExceptionWhenFileExceedsMaxSize() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(new byte[2 * 1024 * 1024 + 1], "large.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(new byte[2 * 1024 * 1024 + 1], "large.pdf");
 
         // Act + Assert
         assertThrows(
@@ -355,7 +361,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenMimeTypeIsNotPdf() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
+        DocumentUploadDto upload = new DocumentUploadDto("Hello World".getBytes(), "file.txt");
 
         // Act + Assert
         assertThrows(InvalidFileTypeException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -364,7 +370,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowCorruptedFileExceptionWhenPdfIsCorrupted() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto("%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes(), "corrupted.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto("%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes(), "corrupted.pdf");
 
         // Act + Assert
         assertThrows(
@@ -551,7 +557,7 @@ public class StudentServiceTest {
         when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
 
         // Act
-        CvFileResponseDto result = studentService.getCV(STUDENT_EMAIL, 10L);
+        DocumentFileResponseDto result = studentService.getCV(STUDENT_EMAIL, 10L);
 
         // Assert
         assert Long.valueOf(10L).equals(result.id());

@@ -3,7 +3,13 @@ package com.lacouf.rsbjwt.service.users;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.document.EmptyFileException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
@@ -13,7 +19,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.ReviewStatus;
@@ -21,15 +27,15 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
-import com.lacouf.rsbjwt.repository.cv.CVRepository;
+import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -92,14 +98,14 @@ public class StudentService {
     }
 
     @Transactional
-    public void uploadCV(CvUploadDto upload, String email) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
+    public void uploadCV(DocumentUploadDto upload, String email) throws UserNotFoundException, InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
         Student student = findByEmail(email);
 
         saveCV(upload, student);
     }
 
     @Transactional
-    public void saveCV(CvUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
+    public void saveCV(DocumentUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
         verifyFileSize(upload.content());
 
         if (!PDF_MIME_TYPE.equals(tika.detect(upload.content()))) {
@@ -173,12 +179,12 @@ public class StudentService {
         closeCvNotifications(cvId);
     }
 
-    public CvFileResponseDto getCV(String email, long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+    public DocumentFileResponseDto getCV(String email, long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
         CV cv = findStudentCv(email, cvId);
         if (!isCVReadable(cv)) {
             throw new CorruptedFileException();
         }
-        return CvFileResponseDto.of(cv);
+        return DocumentFileResponseDto.of(cv);
     }
 
     public String getCVStatus(String email, long cvId) throws CvNotFoundException {

@@ -3,16 +3,16 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.ManagerController;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,7 +163,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnCvFile() throws Exception {
         // Arrange
-        when(managerService.getCvFile(1L)).thenReturn(new CvFileResponseDto(1L, "cv.pdf", "pdf".getBytes()));
+        when(managerService.getCvFile(1L)).thenReturn(new DocumentFileResponseDto(1L, "cv.pdf", "pdf".getBytes()));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/1/file"))

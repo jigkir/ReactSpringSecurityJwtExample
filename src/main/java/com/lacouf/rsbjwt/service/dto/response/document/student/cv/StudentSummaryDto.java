@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.response.cv;
+package com.lacouf.rsbjwt.service.dto.response.document.student.cv;
 
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.user.Student;

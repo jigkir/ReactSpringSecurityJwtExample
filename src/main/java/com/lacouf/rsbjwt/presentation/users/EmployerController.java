@@ -14,7 +14,7 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.users.EmployerService;
@@ -74,7 +74,7 @@ public class EmployerController {
     }
 
     @GetMapping("/applications/{applicationId}/cv")
-    public ResponseEntity<CvFileResponseDto> openReceivedInternshipApplicationCv(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+    public ResponseEntity<DocumentFileResponseDto> openReceivedInternshipApplicationCv(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
         return ResponseEntity.ok(employerService.openReceivedInternshipApplicationCv(applicationId, authentication.getName()));
     }
 

@@ -4,16 +4,22 @@ import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
+import com.lacouf.rsbjwt.exception.document.EmptyFileException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
+import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.StudentService;
@@ -46,7 +52,7 @@ public class StudentController {
 
     @PostMapping("/cvs")
     public ResponseEntity<String> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication) throws IOException, UserNotFoundException, InvalidFileTypeException, NoSuchAlgorithmException, CorruptedFileException, InvalidFileSizeException, EmptyFileException {
-        CvUploadDto upload = new CvUploadDto(file.getBytes(), file.getOriginalFilename());
+        DocumentUploadDto upload = new DocumentUploadDto(file.getBytes(), file.getOriginalFilename());
 
         studentService.uploadCV(upload, authentication.getName());
 
@@ -77,7 +83,7 @@ public class StudentController {
     }
 
     @GetMapping("/cvs/{cvId}")
-    public ResponseEntity<CvFileResponseDto> getCV(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
+    public ResponseEntity<DocumentFileResponseDto> getCV(Authentication authentication, @PathVariable long cvId) throws CvNotFoundException, CorruptedFileException, NoSuchAlgorithmException {
         return ResponseEntity.ok(studentService.getCV(authentication.getName(), cvId));
     }
 

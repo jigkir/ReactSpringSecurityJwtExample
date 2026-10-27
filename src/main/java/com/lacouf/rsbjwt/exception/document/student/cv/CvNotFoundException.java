@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.exception.cv;
+package com.lacouf.rsbjwt.exception.document.student.cv;
 
 import com.lacouf.rsbjwt.exception.APIException;
 import org.springframework.http.HttpStatus;

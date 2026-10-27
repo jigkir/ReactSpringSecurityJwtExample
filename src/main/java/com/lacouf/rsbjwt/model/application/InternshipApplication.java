@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.model.application;
 
-import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Student;
 import jakarta.persistence.*;

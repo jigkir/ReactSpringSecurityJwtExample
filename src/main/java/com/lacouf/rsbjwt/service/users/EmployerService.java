@@ -29,7 +29,7 @@ import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
@@ -163,7 +163,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public CvFileResponseDto openReceivedInternshipApplicationCv(long applicationId, String email) throws InternshipApplicationNotFoundException {
+    public DocumentFileResponseDto openReceivedInternshipApplicationCv(long applicationId, String email) throws InternshipApplicationNotFoundException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
         internshipApplication.markAsRead();
@@ -172,7 +172,7 @@ public class EmployerService {
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, applicationId);
 
-        return CvFileResponseDto.of(internshipApplication.getCv());
+        return DocumentFileResponseDto.of(internshipApplication.getCv());
     }
 
     public Map<Long, Long> countReceivedInternshipApplicationsByInternship(String email) {

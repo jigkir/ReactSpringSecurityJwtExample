@@ -22,8 +22,8 @@ import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerRespons
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -399,7 +399,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnCvWhenEmployerOpensApplicationCv() throws Exception {
         // Arrange
-        when(employerService.openReceivedInternshipApplicationCv(20L, EMPLOYER_EMAIL)).thenReturn(new CvFileResponseDto(5L, "cv.pdf", new byte[]{1}));
+        when(employerService.openReceivedInternshipApplicationCv(20L, EMPLOYER_EMAIL)).thenReturn(new DocumentFileResponseDto(5L, "cv.pdf", new byte[]{1}));
 
         // Act + Assert
         mockMvc.perform(get("/api/employer/applications/20/cv").principal(authentication))
