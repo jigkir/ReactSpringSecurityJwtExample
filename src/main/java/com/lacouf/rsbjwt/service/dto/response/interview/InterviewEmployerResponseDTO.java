@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.model.user.Student;
 
 public record InterviewEmployerResponseDTO(
     Long id,
+    Long applicationId,
     String studentName,
     String internshipTitle,
     String message,
@@ -21,6 +22,7 @@ public record InterviewEmployerResponseDTO(
 
         return new InterviewEmployerResponseDTO(
                 interview.getId(),
+                application.getId(),
                 student.getFirstName() + " " + student.getLastName(),
                 application.getInternship().getTitle(),
                 interview.getMessage(),
