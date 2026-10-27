@@ -386,11 +386,9 @@ export function getCvDocumentsClasses(dark) {
 // region CvPreview
 export function getCvPreviewClasses(dark) {
     return {
-        overlay: "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4",
-        dialog: `flex h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border shadow-xl ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
-        header: `flex items-center justify-between gap-4 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`,
-        title: `min-w-0 truncate text-base font-semibold ${dark ? "text-white" : "text-gray-900"}`,
-        body: `min-h-0 flex-1 ${dark ? "bg-slate-900" : "bg-gray-100"}`,
+        dialog: `w-full max-w-5xl rounded-xl border shadow-xl ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        body: `rounded-xl p-4 ${dark ? "bg-slate-900" : "bg-gray-100"}`,
+        viewer: "w-full overflow-x-auto rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
         muted: `px-6 py-8 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
     };
 }
@@ -452,6 +450,7 @@ export function getApplicationCardClasses(dark) {
         ].join(" "),
     };
 }
+
 // endregion
 
 // region Dev Mode
