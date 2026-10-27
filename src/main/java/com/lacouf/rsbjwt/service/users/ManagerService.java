@@ -10,7 +10,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -65,7 +65,7 @@ public class ManagerService {
     }
 
     public List<ManagerCvResponseDto> getAllVisibleCvs() {
-        List<CV> cvs = cvRepository.findByVisibility(CvVisibility.VISIBLE);
+        List<CV> cvs = cvRepository.findByVisibility(DocumentVisibility.VISIBLE);
 
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
@@ -177,7 +177,7 @@ public class ManagerService {
     }
 
     private CV findVisibleCv(long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndVisibility(cvId, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException(cvId));
+        return cvRepository.findByIdAndVisibility(cvId, DocumentVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException(cvId));
     }
 
     private ManagerCvResponseDto saveAndConvert(CV cv) {
@@ -219,7 +219,7 @@ public class ManagerService {
     }
 
     private boolean hasVisibleApprovedCv(Student student) {
-        return cvRepository.findByStudent(student).stream()
-                .anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == ReviewStatus.APPROVED);
+        return cvRepository.findByUser(student).stream()
+                .anyMatch(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE && cv.getStatus() == ReviewStatus.APPROVED);
     }
 }

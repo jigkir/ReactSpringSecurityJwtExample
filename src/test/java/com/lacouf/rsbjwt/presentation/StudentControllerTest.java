@@ -9,7 +9,7 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
@@ -183,7 +183,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetStudentCVsSuccessfully() throws Exception {
         // Arrange
-        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, "my_cv.pdf", 11L, LocalDateTime.now(), CvVisibility.VISIBLE, ReviewStatus.PENDING, null);
+        StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, "my_cv.pdf", 11L, LocalDateTime.now(), DocumentVisibility.VISIBLE, ReviewStatus.PENDING, null);
         when(studentService.getCVs(STUDENT_EMAIL)).thenReturn(List.of(studentCvResponseDto));
 
         // Act + Assert
@@ -193,7 +193,7 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].fileName").value("my_cv.pdf"))
                 .andExpect(jsonPath("$[0].sizeBytes").value(11))
-                .andExpect(jsonPath("$[0].visibility").value(CvVisibility.VISIBLE.name()))
+                .andExpect(jsonPath("$[0].visibility").value(DocumentVisibility.VISIBLE.name()))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
     }
 

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.model.cv;
 
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.documents.Document;
 import com.lacouf.rsbjwt.model.user.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,31 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class CV {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(columnDefinition = "bytea")
-    private byte[] content;
-
-    @Column
-    private String fileHash;
-
-    @Column
-    private String fileName;
-
-    @Column
-    private LocalDateTime uploadDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column
-    private CvVisibility visibility;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private Student student;
+public class CV extends Document {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,12 +25,16 @@ public class CV {
     public CV() {
     }
 
-    public CV(byte[] content, CvVisibility visibility, String fileName, LocalDateTime uploadDate) {
-        this.content = content;
-        this.visibility = visibility;
-        this.fileName = fileName;
-        this.uploadDate = uploadDate;
+    public CV(byte[] content, String fileName, LocalDateTime uploadDate) {
+        super(content, fileName, uploadDate);
         this.status = ReviewStatus.PENDING;
     }
 
+    public Student getStudent() {
+        return (Student) getUser();
+    }
+
+    public void setStudent(Student student) {
+        setUser(student);
+    }
 }

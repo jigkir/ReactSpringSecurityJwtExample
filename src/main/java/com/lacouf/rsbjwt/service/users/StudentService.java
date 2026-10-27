@@ -14,7 +14,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.cv.CV;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -106,7 +106,7 @@ public class StudentService {
             throw new InvalidFileTypeException();
         }
 
-        CV cv = new CV(upload.content(), CvVisibility.VISIBLE, upload.fileName(), LocalDateTime.now());
+        CV cv = new CV(upload.content(), upload.fileName(), LocalDateTime.now());
 
         cv.setStudent(student);
 
@@ -142,17 +142,17 @@ public class StudentService {
     }
 
     public long getCVCount(String email) throws UserNotFoundException {
-        return cvRepository.countByStudentAndVisibility(findByEmail(email), CvVisibility.VISIBLE);
+        return cvRepository.countByUserAndVisibility(findByEmail(email), DocumentVisibility.VISIBLE);
     }
 
     public List<StudentCvResponseDto> getCVs(String email) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
-        List<CV> cvs = cvRepository.findByStudent(findByEmail(email));
+        List<CV> cvs = cvRepository.findByUser(findByEmail(email));
         List<StudentCvResponseDto> studentCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
             if (!isCVReadable(cv)) {
                 throw new CorruptedFileException();
             }
-            if (!cv.getVisibility().equals(CvVisibility.VISIBLE)) {
+            if (!cv.getVisibility().equals(DocumentVisibility.VISIBLE)) {
                 continue;
             }
             studentCvResponseDtos.add(StudentCvResponseDto.of(cv));
@@ -167,7 +167,7 @@ public class StudentService {
     @Transactional
     public void setCvAsInvisible(String email, long cvId) throws CvNotFoundException {
         CV cv = findStudentCv(email, cvId);
-        cv.setVisibility(CvVisibility.HIDDEN);
+        cv.hide();
         cvRepository.save(cv);
 
         closeCvNotifications(cvId);
@@ -187,7 +187,7 @@ public class StudentService {
     }
 
     public List<StudentCvResponseDto> getApprovedAndVisibleCVs(String email) {
-        List<CV> cvs = cvRepository.findByStudent_Credentials_EmailAndStatusAndVisibility(email, ReviewStatus.APPROVED, CvVisibility.VISIBLE);
+        List<CV> cvs = cvRepository.findByUser_Credentials_EmailAndStatusAndVisibility(email, ReviewStatus.APPROVED, DocumentVisibility.VISIBLE);
         List<StudentCvResponseDto> approvedCvResponseDtos = new ArrayList<>();
         for (CV cv : cvs) {
             approvedCvResponseDtos.add(StudentCvResponseDto.of(cv));
@@ -247,7 +247,7 @@ public class StudentService {
             throw new CVNotApprovedException();
         }
 
-        if (!cv.getVisibility().equals(CvVisibility.VISIBLE)) {
+        if (!cv.getVisibility().equals(DocumentVisibility.VISIBLE)) {
             throw new CVNotVisibleException();
         }
 
@@ -344,7 +344,7 @@ public class StudentService {
     }
 
     private CV findStudentCv(String email, long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndStudent_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException(cvId));
+        return cvRepository.findByIdAndUser_Credentials_Email(cvId, email).orElseThrow(() -> new CvNotFoundException(cvId));
     }
 
     private Internship findInternshipVisibleTo(Student student, long internshipId) throws InternshipNotFoundException {

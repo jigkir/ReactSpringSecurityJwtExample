@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service.dto.response.cv;
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.cv.*;
+import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ public record StudentCvResponseDto(
         String fileName,
         long sizeBytes,
         LocalDateTime uploadedAt,
-        CvVisibility visibility,
+        DocumentVisibility visibility,
         ReviewStatus status,
         String rejectionComment
 ) {
