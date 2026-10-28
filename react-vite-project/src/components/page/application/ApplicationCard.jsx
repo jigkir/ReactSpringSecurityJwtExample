@@ -2,9 +2,9 @@ import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
 import CvPreview from "../cv/CvPreview.jsx";
 import {useTranslation} from "react-i18next";
-import {width} from "jsdom/lib/generated/css-property-descriptors.js";
 import {useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
+import {createInterview} from "../../api/Api.jsx";
 
 function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
     const s = getApplicationCardClasses(dark);
@@ -12,9 +12,25 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const {student, cvFileName} = application;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
+    const [editing, setEditing] = useState(false);
     const interviewLabel = isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : t("employerInternship.openInterviewPicker");
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
+
+    const handleSendOffer = async (payload) => {
+        console.log("payload");
+        try {
+            if (editing) {
+                const updated = await updateInterview(application.id, payload);
+            } else {
+                const saved = await createInterview(application.id, payload);
+            }
+            console.log("succ");
+            return {success: true};
+        } catch (err) {
+            return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
+        }
+    };
 
     return (
         <div className={s.card}>
@@ -78,7 +94,8 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             applicationId={application.student.id}
                             dark={dark}
                             onClose={() => setIsInterviewSelectOpen(false)}
-                            onSendOffer={() => alert("Sending Offers not yet implemented")}
+                            onSendOffer={handleSendOffer}
+                            isEdit={editing}
                         />
                     </div>
                 )}
