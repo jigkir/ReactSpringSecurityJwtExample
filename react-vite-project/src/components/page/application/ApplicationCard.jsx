@@ -33,15 +33,15 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     };
 
     return (
-        <div className={s.card}>
+        <div className={`${s.card} min-w-0`}>
             {/* Wrapper ensures everything stacks vertically inside the card */}
-            <div className="w-full flex flex-col">
+            <div className="w-full min-w-0 flex flex-col">
                 {/* Top row: Student Info on the left, View button on the right */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h3 className={s.title}>
+                <div className="flex flex-wrap items-center justify-between w-full gap-x-6 gap-y-3">
+                    <div className="min-w-0 flex flex-wrap items-center gap-x-8 gap-y-3">
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h3 className={`${s.title} break-words`}>
                                     {student?.firstName} {student?.lastName}
                                 </h3>
                                 {isNew && (
@@ -51,7 +51,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                                     </span>
                                 )}
                             </div>
-                            <p className={s.description}>
+                            <p className={`${s.description} break-all`}>
                                 {student?.email}
                             </p>
                             {internshipTitle && (
@@ -64,14 +64,13 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         </span>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button
                             tone={isInterviewSelectOpen ? "danger" : "accent"}
                             dark={dark}
-                            icon={isInterviewSelectOpen ? "close" : "visibility"}
+                            icon={isInterviewSelectOpen ? "close" : "event"}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
-                            className="mr-4"
                         >
                             {interviewLabel}
                         </Button>

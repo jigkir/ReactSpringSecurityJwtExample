@@ -300,6 +300,12 @@
     "cvTitle": "CV",
     "internshipsTitle": "Stages",
     "applicationsTitle": "Candidatures",
+    "studentCvLink": "Consulter mes CV déposés",
+    "studentInternshipsLink": "Consulter les stages disponibles",
+    "employerInternshipsLink": "Gérer mes offres de stage",
+    "employerApplicationsLink": "Consulter les candidatures reçues",
+    "managerCvLink": "Valider les CV en attente",
+    "managerInternshipsLink": "Réviser les offres de stage",
     "noPreviews": "Aucun aperçu disponible pour ce rôle.",
     "preview": {
       "empty": "Rien pour l'instant.",

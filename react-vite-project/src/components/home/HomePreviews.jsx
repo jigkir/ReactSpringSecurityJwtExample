@@ -3,7 +3,7 @@
  * Location: src/components/home/homePreviews.jsx
  *
  * to         page the heading links to
- * titleKey   translation key of the heading
+ * titleKey   translation key of the heading (descriptive, specific to the role)
  * render     (user) => the page component in `preview` mode
  */
 
@@ -16,16 +16,16 @@ import Applications from '../page/application/Applications.jsx';
 
 export const PREVIEWS_BY_ROLE = {
     STUDENT: [
-        {to: "/cv", titleKey: "home.cvTitle", render: () => <Cv preview/>},
-        {to: "/internship", titleKey: "home.internshipsTitle", render: () => <StudentInternships preview/>},
+        {to: "/cv", titleKey: "home.studentCvLink", render: () => <Cv preview/>},
+        {to: "/internship", titleKey: "home.studentInternshipsLink", render: () => <StudentInternships preview/>},
     ],
     EMPLOYER: [
-        {to: "/internships", titleKey: "home.internshipsTitle", render: (user) => <PostInternship user={user} preview/>},
-        {to: "/applications", titleKey: "home.applicationsTitle", render: (user) => <Applications user={user} preview/>},
+        {to: "/internships", titleKey: "home.employerInternshipsLink", render: (user) => <PostInternship user={user} preview/>},
+        {to: "/applications", titleKey: "home.employerApplicationsLink", render: (user) => <Applications user={user} preview/>},
     ],
     MANAGER: [
-        {to: "/manager/cvs", titleKey: "home.cvTitle", render: () => <ManagerCv preview/>},
-        {to: "/manager/internships", titleKey: "home.internshipsTitle", render: () => <ManagerInternships preview/>},
+        {to: "/manager/cvs", titleKey: "home.managerCvLink", render: () => <ManagerCv preview/>},
+        {to: "/manager/internships", titleKey: "home.managerInternshipsLink", render: () => <ManagerInternships preview/>},
     ],
     TEACHER: [],
 };

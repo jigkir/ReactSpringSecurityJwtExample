@@ -300,6 +300,12 @@
     "cvTitle": "CV",
     "internshipsTitle": "Internships",
     "applicationsTitle": "Applications",
+    "studentCvLink": "Check uploaded CVs",
+    "studentInternshipsLink": "Browse available internships",
+    "employerInternshipsLink": "Manage my internship offers",
+    "employerApplicationsLink": "Check received applications",
+    "managerCvLink": "Review CVs awaiting approval",
+    "managerInternshipsLink": "Review internship offers",
     "noPreviews": "No previews available for this role.",
     "preview": {
       "empty": "Nothing yet.",
