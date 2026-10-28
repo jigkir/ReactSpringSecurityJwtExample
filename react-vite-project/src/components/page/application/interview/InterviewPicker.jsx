@@ -18,11 +18,13 @@ const toForm = (i) => i ? {
     meetingDetails: i.meetingDetails ?? "",
 } : INITIAL_FORM;
 
-const MEETINGTYPE = ["IN_PERSON", "HYBRID", "REMOTE"];
+const MEETINGTYPE = ["ONLINE", "PHONE", "IN_PERSON"];
 
 const MESSAGE_MIN = 2;
 const MESSAGE_MAX = 500;
 const DETAILS_MAX = 255;
+
+
 
 function buildPayload(formData, internship) {
     const tomorrow = getTomorrow();
@@ -35,7 +37,7 @@ function buildPayload(formData, internship) {
         return {error: {key: "internshipModal.errorDate"}};
     }
 
-    if (isPastDate(MEETINGTYPE.includes(formData.meetingType), internship?.meetingType)) {
+    if (isPastDate(MEETINGTYPE.includes(formData.meetingType))) {
         return {error: {key: "internshipModal.errorMeetingType"}};
     }
 
@@ -121,20 +123,21 @@ function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer
                 {/* Message: grows with its content */}
                 <Field id="message" label={t("interview.descriptionLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
-                        id="message" name="message" rows={3} value={formData.description}
+                        id="message" name="message" rows={3} value={formData.message}
                         onChange={handleChange}
                         className={s.textarea} required
                     />
                 </Field>
 
-                {/* Date TODO: Add in time selection*/}
+                {/* Date TODO: Add in time selectruion*/}
                 <div className={s.grid2}>
                     <Field id="interviewDate" label={t("interview.MeetingTime")} labelClass={s.label}>
                         <input
-                            id="interviewDate" type="date" name="interviewDate" value={formData.startDate}
+                            id="interviewDate" type="datetime-local" name="interviewDate" value={formData.interviewDate}
                             min={minDate} onChange={handleChange}
                             className={s.input} required
                         />
+
                     </Field>
                 </div>
 
