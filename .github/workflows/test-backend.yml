@@ -2,13 +2,13 @@ name: Backend Tests & Coverage
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'sprint/*' ]
     paths:
       - 'src/**'
       - 'pom.xml'
       - '.github/workflows/test-backend.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'sprint/*' ]
     paths:
       - 'src/**'
       - 'pom.xml'
