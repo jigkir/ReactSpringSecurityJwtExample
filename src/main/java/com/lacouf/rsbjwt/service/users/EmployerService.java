@@ -190,7 +190,7 @@ public class EmployerService {
             throw new ApplicationRejectedException(applicationId);
         }
 
-        if (interviewRepository.existsByInternshipApplication(internshipApplication)) {
+        if (interviewRepository.existsByInternshipApplicationAndInterviewStatus(internshipApplication, InterviewStatus.SCHEDULED)) {
             throw new InterviewAlreadyExistsException(applicationId);
         }
 
@@ -210,7 +210,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public void acceptInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException {
+    public void acceptInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
         updateEmployerDecisionForInterview(internshipApplication, EmployerDecision.ACCEPTED);

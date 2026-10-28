@@ -19,8 +19,7 @@ public class Interview {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Employer employer;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private InternshipApplication internshipApplication;
 
     @Column(nullable = false)
@@ -37,6 +36,7 @@ public class Interview {
     @Enumerated(EnumType.STRING)
     private MeetingType meetingType;
 
+    @Getter
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private InterviewStatus interviewStatus;

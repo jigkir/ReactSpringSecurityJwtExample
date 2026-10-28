@@ -84,7 +84,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException {
+    public ResponseEntity<Void> acceptReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
         employerService.acceptInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
