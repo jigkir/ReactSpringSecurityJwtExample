@@ -389,7 +389,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnOkWhenInterviewIsCreated() throws Exception {
         // Act + Assert
-        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+        mockMvc.perform(post("/api/employer/applications/20/interview").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validInterview())))
                 .andExpect(status().isOk());
@@ -405,7 +405,7 @@ public class EmployerControllerTest {
         interview.put(field, invalidValue);
 
         // Act + Assert
-        mockMvc.perform(post("/api/employer/applications/20/accept")
+        mockMvc.perform(post("/api/employer/applications/20/interview")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(interview)))
                 .andExpect(status().isBadRequest());
@@ -420,7 +420,7 @@ public class EmployerControllerTest {
                 .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
 
         // Act + Assert
-        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+        mockMvc.perform(post("/api/employer/applications/20/interview").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validInterview())))
                 .andExpect(status().isNotFound());
@@ -538,20 +538,7 @@ public class EmployerControllerTest {
                 .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
 
         // Act + Assert
-        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validInterview())))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
-    void shouldReturnConflictWhenAcceptingRejectedApplication() throws Exception {
-        // Arrange
-        doThrow(new ApplicationRejectedException(20L))
-                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
-
-        // Act + Assert
-        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+        mockMvc.perform(post("/api/employer/applications/20/interview").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validInterview())))
                 .andExpect(status().isConflict());

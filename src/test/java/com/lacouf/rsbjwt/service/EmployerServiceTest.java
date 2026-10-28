@@ -662,6 +662,23 @@ public class EmployerServiceTest {
         verify(interviewRepository).save(interview);
     }
 
+    @Test
+    void shouldAcceptInternshipApplication() throws Exception {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+
+        // Act
+        employerService.acceptInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(EmployerDecision.ACCEPTED, internshipApplication.getEmployerDecision());
+
+        verify(internshipApplicationRepository).save(internshipApplication);
+    }
+
     // ---------- Helpers ----------
     
     private static InternshipApplication receivedInternshipApplication() {
