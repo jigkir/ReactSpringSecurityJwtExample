@@ -29,6 +29,7 @@ import com.lacouf.rsbjwt.repository.document.student.academictranscript.Academic
 import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
+import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.document.DocumentService;
@@ -39,6 +40,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
@@ -63,12 +65,13 @@ public class StudentService {
     private final ManagerRepository managerRepository;
     private final InternshipRepository internshipRepository;
     private final InternshipApplicationRepository applicationRepository;
+    private final InterviewRepository InterviewRepository;
 
     private final UserAppService userAppService;
     private final NotificationService notificationService;
     private final DocumentService documentService;
 
-    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService) {
+    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository InterviewRepository) {
         this.userAppService = userAppService;
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
@@ -79,6 +82,7 @@ public class StudentService {
         this.internshipRepository = internshipRepository;
         this.applicationRepository = applicationRepository;
         this.documentService = documentService;
+        this.InterviewRepository = InterviewRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -319,6 +323,15 @@ public class StudentService {
         Student student = findByEmail(email);
 
         student.removeFromFavorites(findInternshipVisibleTo(student, internshipId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<InterviewStudentResponseDTO> getInterviews(String email) throws UserNotFoundException {
+        Student student = findByEmail(email);
+        return InterviewRepository.findByInternshipApplication_Student(student).stream()
+                .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
+                .map(InterviewStudentResponseDTO::of)
+                .toList();
     }
 
     private boolean isVisibleToStudents(Internship internship) {
