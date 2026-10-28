@@ -103,10 +103,6 @@ public class ManagerServiceTest {
         internship.setId(1L);
     }
 
-    private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
-        return new InternshipRequestDto("Développeur backend", "Stage en développement backend", "Java, Spring Boot", 16, "Montréal", WorkMode.HYBRID, startDate, internship.getApplicationDeadline(), compensationAmount, false);
-    }
-
     @Test
     void shouldSaveManager() throws UserAlreadyExistsException {
         // Arrange
@@ -748,5 +744,11 @@ public class ManagerServiceTest {
         inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
         inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REJECTED,
                 "Offer is no good.", 1L, internship.getPostedBy());
+    }
+
+    // ---------- Helpers ----------
+    
+    private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
+        return new InternshipRequestDto("Développeur backend", "Stage en développement backend", "Java, Spring Boot", 16, "Montréal", WorkMode.HYBRID, startDate, internship.getApplicationDeadline(), compensationAmount, false);
     }
 }
