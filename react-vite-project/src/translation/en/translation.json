@@ -395,6 +395,10 @@
     "alreadyReadByEmployer": "The employer has already viewed your CV: it can no longer be changed.",
     "cvUpdated": "CV updated"
   },
+  "employerInternship": {
+    "openInterviewPicker": "Schedule an interview",
+    "closeInterviewPicker": "Cancel"
+  },
   "internshipFilters": {
     "searchPlaceholder": "Search title, skills, location…",
     "searchAria": "Search",
