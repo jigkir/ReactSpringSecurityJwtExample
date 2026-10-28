@@ -37,7 +37,7 @@ import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -615,7 +615,7 @@ public class StudentServiceTest {
         when(coverLetterRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(coverLetter));
 
         // Act
-        List<StudentDocumentResponseDto> coverLetters = studentService.getCoverLetters(STUDENT_EMAIL);
+        List<DocumentResponseDto> coverLetters = studentService.getCoverLetters(STUDENT_EMAIL);
 
         // Assert
         assert coverLetters.size() == 1;
@@ -701,7 +701,7 @@ public class StudentServiceTest {
         when(academicTranscriptRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(academicTranscript));
 
         // Act
-        List<StudentDocumentResponseDto> academicTranscripts = studentService.getAcademicTranscripts(STUDENT_EMAIL);
+        List<DocumentResponseDto> academicTranscripts = studentService.getAcademicTranscripts(STUDENT_EMAIL);
 
         // Assert
         assert academicTranscripts.size() == 1;

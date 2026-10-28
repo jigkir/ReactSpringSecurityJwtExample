@@ -19,7 +19,7 @@ import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
@@ -412,7 +412,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetCoverLettersSuccessfully() throws Exception {
         // Arrange
-        StudentDocumentResponseDto coverLetter = new StudentDocumentResponseDto(20L, "lettre.pdf", 11L, LocalDateTime.now());
+        DocumentResponseDto coverLetter = new DocumentResponseDto(20L, "lettre.pdf", 11L, LocalDateTime.now());
 
         when(studentService.getCoverLetters(STUDENT_EMAIL)).thenReturn(List.of(coverLetter));
 
@@ -496,7 +496,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetAcademicTranscriptsSuccessfully() throws Exception {
         // Arrange
-        StudentDocumentResponseDto academicTranscript = new StudentDocumentResponseDto(30L, "releve.pdf", 11L, LocalDateTime.now());
+        DocumentResponseDto academicTranscript = new DocumentResponseDto(30L, "releve.pdf", 11L, LocalDateTime.now());
 
         when(studentService.getAcademicTranscripts(STUDENT_EMAIL)).thenReturn(List.of(academicTranscript));
 

@@ -19,7 +19,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -104,7 +104,7 @@ public class StudentController {
     }
 
     @GetMapping("/cover-letters")
-    public ResponseEntity<List<StudentDocumentResponseDto>> getCoverLetters(Authentication authentication) throws CorruptedFileException, NoSuchAlgorithmException {
+    public ResponseEntity<List<DocumentResponseDto>> getCoverLetters(Authentication authentication) throws CorruptedFileException, NoSuchAlgorithmException {
         return ResponseEntity.ok(studentService.getCoverLetters(authentication.getName()));
     }
 
@@ -130,7 +130,7 @@ public class StudentController {
     }
 
     @GetMapping("/academic-transcripts")
-    public ResponseEntity<List<StudentDocumentResponseDto>> getAcademicTranscripts(Authentication authentication) throws CorruptedFileException, NoSuchAlgorithmException {
+    public ResponseEntity<List<DocumentResponseDto>> getAcademicTranscripts(Authentication authentication) throws CorruptedFileException, NoSuchAlgorithmException {
         return ResponseEntity.ok(studentService.getAcademicTranscripts(authentication.getName()));
     }
 

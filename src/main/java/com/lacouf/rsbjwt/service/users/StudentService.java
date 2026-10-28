@@ -36,7 +36,7 @@ import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -174,7 +174,7 @@ public class StudentService {
         documentService.save(coverLetter, coverLetterRepository);
     }
 
-    public List<StudentDocumentResponseDto> getCoverLetters(String email) throws CorruptedFileException, NoSuchAlgorithmException {
+    public List<DocumentResponseDto> getCoverLetters(String email) throws CorruptedFileException, NoSuchAlgorithmException {
         return documentService.getVisibleDocuments(email, coverLetterRepository);
     }
 
@@ -196,7 +196,7 @@ public class StudentService {
         documentService.save(academicTranscript, academicTranscriptRepository);
     }
 
-    public List<StudentDocumentResponseDto> getAcademicTranscripts(String email) throws CorruptedFileException, NoSuchAlgorithmException {
+    public List<DocumentResponseDto> getAcademicTranscripts(String email) throws CorruptedFileException, NoSuchAlgorithmException {
         return documentService.getVisibleDocuments(email, academicTranscriptRepository);
     }
 

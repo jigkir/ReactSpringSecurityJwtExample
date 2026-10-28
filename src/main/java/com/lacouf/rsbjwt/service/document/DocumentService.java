@@ -8,7 +8,7 @@ import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.tika.Tika;
@@ -41,13 +41,13 @@ public class DocumentService {
         return repository.save(document);
     }
 
-    public <T extends Document> List<StudentDocumentResponseDto> getVisibleDocuments(String email, DocumentRepository<T> repository) throws CorruptedFileException, NoSuchAlgorithmException {
-        List<StudentDocumentResponseDto> documents = new ArrayList<>();
+    public <T extends Document> List<DocumentResponseDto> getVisibleDocuments(String email, DocumentRepository<T> repository) throws CorruptedFileException, NoSuchAlgorithmException {
+        List<DocumentResponseDto> documents = new ArrayList<>();
 
         for (T document : repository.findByUser_Credentials_EmailAndVisibility(email, DocumentVisibility.VISIBLE)) {
             verifyIsReadable(document);
 
-            documents.add(StudentDocumentResponseDto.of(document));
+            documents.add(DocumentResponseDto.of(document));
         }
 
         return documents;

@@ -9,7 +9,7 @@ import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeAll;
@@ -142,7 +142,7 @@ public class DocumentServiceTest {
         when(coverLetterRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(coverLetter));
 
         // Act
-        List<StudentDocumentResponseDto> documents = documentService.getVisibleDocuments(STUDENT_EMAIL, coverLetterRepository);
+        List<DocumentResponseDto> documents = documentService.getVisibleDocuments(STUDENT_EMAIL, coverLetterRepository);
 
         // Assert
         assert documents.size() == 1;
