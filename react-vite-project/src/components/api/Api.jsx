@@ -314,3 +314,12 @@ export async function getApplicationCount() {
 }
 
 //endregion
+
+//region Student Interviews
+
+export async function getStudentInterviews() {
+    const response = await fetcher("student/interviews", {method: "GET"});
+    return handleResponse(response);
+}
+
+//endregion
