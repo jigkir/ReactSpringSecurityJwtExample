@@ -1,8 +1,8 @@
 package com.lacouf.rsbjwt.repository.document.student.cv;
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
+import com.lacouf.rsbjwt.model.document.DocumentVisibility;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,7 @@
 package com.lacouf.rsbjwt.repository.document;
 
-import com.lacouf.rsbjwt.model.documents.Document;
-import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
+import com.lacouf.rsbjwt.model.document.Document;
+import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 

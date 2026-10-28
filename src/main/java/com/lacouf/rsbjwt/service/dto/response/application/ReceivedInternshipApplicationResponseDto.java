@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.service.dto.response.application;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentSummaryDto;
 

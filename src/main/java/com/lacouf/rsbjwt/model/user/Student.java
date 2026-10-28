@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.model.user;
 
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.internship.Internship;

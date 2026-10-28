@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.response.document.student.cv;
 
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 
 import java.time.LocalDateTime;

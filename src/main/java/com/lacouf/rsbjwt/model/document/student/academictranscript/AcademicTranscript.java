@@ -1,6 +1,6 @@
-package com.lacouf.rsbjwt.model.documents.student.academictranscript;
+package com.lacouf.rsbjwt.model.document.student.academictranscript;
 
-import com.lacouf.rsbjwt.model.documents.Document;
+import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.user.Student;
 import jakarta.persistence.Entity;
 

@@ -13,7 +13,7 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
+import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;

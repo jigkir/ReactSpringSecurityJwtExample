@@ -10,7 +10,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;

@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.model.documents;
+package com.lacouf.rsbjwt.model.document;
 
 import com.lacouf.rsbjwt.model.user.UserApp;
 import jakarta.persistence.*;

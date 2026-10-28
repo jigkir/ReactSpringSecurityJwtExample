@@ -1,8 +1,8 @@
-package com.lacouf.rsbjwt.model.documents.student.cv;
+package com.lacouf.rsbjwt.model.document.student.cv;
 
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.documents.Document;
+import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.user.Student;
 import jakarta.persistence.*;
 import lombok.Getter;

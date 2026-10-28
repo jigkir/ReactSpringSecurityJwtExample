@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.response.document;
 
-import com.lacouf.rsbjwt.model.documents.Document;
+import com.lacouf.rsbjwt.model.document.Document;
 
 import java.time.LocalDateTime;
 

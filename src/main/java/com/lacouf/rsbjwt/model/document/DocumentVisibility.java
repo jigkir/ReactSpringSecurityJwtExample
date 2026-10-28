@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.model.documents;
+package com.lacouf.rsbjwt.model.document;
 
 public enum DocumentVisibility {
     HIDDEN,
