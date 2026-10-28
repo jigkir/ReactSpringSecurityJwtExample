@@ -1,0 +1,55 @@
+name: Frontend Tests & Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'react-vite-project/**'
+      - '.github/workflows/test-frontend.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'react-vite-project/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'react-vite-project/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./react-vite-project
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: ./react-vite-project
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./react-vite-project/coverage/coverage-final.json
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+
+      - name: Archive coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-node-${{ matrix.node-version }}
+          path: react-vite-project/coverage/
+          retention-days: 30
