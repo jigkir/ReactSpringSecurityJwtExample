@@ -30,4 +30,5 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     List<Internship> findByIdInAndDeletedFalseAndStatusAndPostedBy_Discipline(
             Collection<Long> ids, ReviewStatus status, Discipline discipline);
 
+    Optional<Internship> findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(long id, ReviewStatus status, Discipline discipline);
 }

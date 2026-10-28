@@ -35,10 +35,11 @@ export default function InternshipCard({
                                            onPreview,
                                            expanded = false,
                                            viewed = false,
-                                           applicationCount
+                                           applicationCount,
+                                           showStatusBorder = false
                                        }) {
     const {t} = useTranslation();
-    const s = getInternshipCardClasses(dark);
+    const s = getInternshipCardClasses(dark, !hideStatus && showStatusBorder ? internship.status : null);
 
     const statusLabel = STATUS_KEY_MAP[internship.status]
         ? t(STATUS_KEY_MAP[internship.status])
@@ -66,7 +67,7 @@ export default function InternshipCard({
     const pillBase = "inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors";
 
     const countBadge = `${pillBase} ${
-        dark ? "bg-red-500/10 text-red-200 border-red-500/30" : "bg-red-50 text-red-800 border-red-300"
+        dark ? "bg-sky-500/10 text-sky-200 border-sky-500/30" : "bg-sky-50 text-sky-800 border-sky-300"
     }`;
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
@@ -122,7 +123,7 @@ export default function InternshipCard({
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                         {t("internshipCard.rejectionReason")}
                     </p>
-                    <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
+                    <p className={`mt-0.5 text-sm font-semibold wrap-break-word ${dark ? "text-red-100" : "text-red-900"}`}
                        style={{whiteSpace: "pre-wrap"}}>
                         {internship.rejectionComment}
                     </p>
@@ -189,7 +190,7 @@ export default function InternshipCard({
                             <span className={countBadge}>
                                 <Icon name="send" size={18}/>
                                 <span>{t("internshipCard.applicationCount")}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-red-400 text-slate-900" : "bg-red-600 text-white"}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-sky-400 text-slate-900" : "bg-sky-600 text-white"}`}>
                                     {totalApplications}
                                 </span>
                             </span>

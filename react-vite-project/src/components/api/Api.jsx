@@ -1,5 +1,4 @@
 import fetcher from '../../utils/fetcher.js';
-import employer from "../page/auth/signup/Employer.jsx";
 
 // region Shared response handling
 // Maps an HTTP status to a translation KEY (translated at render time, never here).

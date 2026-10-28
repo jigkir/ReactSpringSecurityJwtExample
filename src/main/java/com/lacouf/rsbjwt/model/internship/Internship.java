@@ -97,6 +97,9 @@ public class Internship {
         this.applicationDeadline = applicationDeadline;
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
+    }
+
+    public void resubmitForReview() {
         this.status = ReviewStatus.PENDING;
         this.rejectionComment = null;
     }

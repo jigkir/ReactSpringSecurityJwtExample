@@ -4,9 +4,12 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface InternshipApplicationRepository extends JpaRepository<InternshipApplication, Long> {
     List<InternshipApplication> findByStudent(Student student);
@@ -22,4 +25,7 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
     List<InternshipApplication> findByInternship(Internship internship);
 
     long countByInternship(Internship internship);
+
+    @Query("select internshipApplication.internship.id from InternshipApplication internshipApplication where internshipApplication.student = :student")
+    Set<Long> findInternshipIdsByStudent(@Param("student") Student student);
 }

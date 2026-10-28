@@ -1,14 +1,22 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 
+import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyPassedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -66,7 +74,7 @@ public class EmployerController {
     }
 
     @GetMapping("/applications/{applicationId}/cv")
-    public ResponseEntity<CvFileResponseDto> openReceivedInternshipApplicationCv(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+    public ResponseEntity<DocumentFileResponseDto> openReceivedInternshipApplicationCv(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
         return ResponseEntity.ok(employerService.openReceivedInternshipApplicationCv(applicationId, authentication.getName()));
     }
 
@@ -74,4 +82,39 @@ public class EmployerController {
     public ResponseEntity<Map<Long, Long>> countReceivedInternshipApplicationsByInternship(Authentication authentication) {
         return ResponseEntity.ok(employerService.countReceivedInternshipApplicationsByInternship(authentication.getName()));
     }
+
+    @PostMapping("/applications/{applicationId}/accept")
+    public ResponseEntity<Void> acceptReceivedInternshipApplication(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
+        employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/applications/{applicationId}/reject")
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+        employerService.rejectInternshipApplication(applicationId, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/interviews")
+    public ResponseEntity<List<InterviewEmployerResponseDTO>> getInterviewsOfEmployer(Authentication authentication) {
+        return ResponseEntity.ok(employerService.getInterviewsOfEmployer(authentication.getName()));
+    }
+
+    @GetMapping("/interviews/meeting-types")
+    public ResponseEntity<MeetingTypeDTO> getMeetingTypes() {
+        return ResponseEntity.ok(employerService.getMeetingTypes());
+    }
+
+    @PutMapping("/interviews/{interviewId}")
+    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+        InterviewEmployerResponseDTO interview = employerService.updateInterview(interviewId, authentication.getName(), interviewRequestDto);
+        return ResponseEntity.ok(interview);
+    }
+
+    @PutMapping("/interviews/{interviewId}/cancel")
+    public ResponseEntity<InterviewEmployerResponseDTO> cancelInterview(@PathVariable long interviewId, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+        InterviewEmployerResponseDTO interview = employerService.cancelInterview(interviewId, authentication.getName());
+        return ResponseEntity.ok(interview);
+    }
 }
+

@@ -3,19 +3,29 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
+import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.presentation.users.EmployerController;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,14 +73,6 @@ public class EmployerControllerTest {
     private EmployerService employerService;
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
-
-    private static Map<String, Object> validInternship() {
-        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "workMode", "HYBRID", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
-    }
-
-    private static InternshipResponseDto internshipResponse() {
-        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, ReviewStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now(), false);
-    }
 
     static Stream<Arguments> invalidFields() {
         return Stream.of(
@@ -148,6 +150,26 @@ public class EmployerControllerTest {
                 Arguments.of("compensationAmount", -5),
                 Arguments.of("compensationAmount", 12.345),
                 Arguments.of("compensationAmount", "abc")
+        );
+    }
+
+    static Stream<Arguments> invalidInterviewFields() {
+        return Stream.of(
+                Arguments.of("message", null),
+                Arguments.of("message", ""),
+                Arguments.of("message", "   "),
+                Arguments.of("message", "a"),
+                Arguments.of("message", "a".repeat(501)),
+
+                Arguments.of("interviewDate", null),
+                Arguments.of("interviewDate", "not-a-date"),
+                Arguments.of("interviewDate", LocalDateTime.now().minusDays(1).toString()),
+
+                Arguments.of("meetingType", null),
+                Arguments.of("meetingType", "NOT_A_TYPE"),
+
+                Arguments.of("meetingDetails", null),
+                Arguments.of("meetingDetails", "a".repeat(256))
         );
     }
 
@@ -331,7 +353,7 @@ public class EmployerControllerTest {
     void shouldReturnReceivedInternshipApplications() throws Exception {
         // Arrange
         StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
-        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD);
+        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
 
         when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL)).thenReturn(List.of(receivedInternshipApplication));
 
@@ -345,7 +367,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnCvWhenEmployerOpensApplicationCv() throws Exception {
         // Arrange
-        when(employerService.openReceivedInternshipApplicationCv(20L, EMPLOYER_EMAIL)).thenReturn(new CvFileResponseDto(5L, "cv.pdf", new byte[]{1}));
+        when(employerService.openReceivedInternshipApplicationCv(20L, EMPLOYER_EMAIL)).thenReturn(new DocumentFileResponseDto(5L, "cv.pdf", new byte[]{1}));
 
         // Act + Assert
         mockMvc.perform(get("/api/employer/applications/20/cv").principal(authentication))
@@ -362,5 +384,259 @@ public class EmployerControllerTest {
         mockMvc.perform(get("/api/employer/applications/count").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$['10']").value(2));
+    }
+
+    @Test
+    void shouldReturnOkWhenInterviewIsCreated() throws Exception {
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isOk());
+
+        verify(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidInterviewFields")
+    void shouldReturnBadRequestForInvalidInterviewFields(String field, Object invalidValue) throws Exception {
+        // Arrange
+        Map<String, Object> interview = validInterview();
+        interview.put(field, invalidValue);
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(interview)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(employerService);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenCreatingInterviewForUnknownApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInterviewsOfEmployer() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO interview = interviewResponse();
+
+        when(employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(interview));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/interviews").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(30))
+                .andExpect(jsonPath("$[0].studentName").value("Jane Doe"))
+                .andExpect(jsonPath("$[0].internshipTitle").value("Software Developer"))
+                .andExpect(jsonPath("$[0].studentDecision").value("PENDING"))
+                .andExpect(jsonPath("$[0].interviewDate").value("2026-11-01T14:30"));
+
+        verify(employerService).getInterviewsOfEmployer(EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnMeetingTypes() throws Exception {
+        // Arrange
+        when(employerService.getMeetingTypes())
+                .thenReturn(MeetingTypeDTO.of(List.of(MeetingType.ONLINE, MeetingType.IN_PERSON, MeetingType.PHONE)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/interviews/meeting-types").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meetingTypes.length()").value(3))
+                .andExpect(jsonPath("$.meetingTypes[0]").value("ONLINE"))
+                .andExpect(jsonPath("$.meetingTypes[1]").value("IN_PERSON"))
+                .andExpect(jsonPath("$.meetingTypes[2]").value("PHONE"));
+    }
+
+    @Test
+    void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED");
+
+        when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(30))
+                .andExpect(jsonPath("$.message").value("Please come to our office"))
+                .andExpect(jsonPath("$.studentDecision").value("PENDING"))
+                .andExpect(jsonPath("$.interviewDate").value("2026-11-01T14:30"));
+
+        verify(employerService).updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingUnknownInterview() throws Exception {
+        // Arrange
+        when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class)))
+                .thenThrow(new InterviewNotFoundException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isNotFound());
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidInterviewFields")
+    void shouldReturnBadRequestForInvalidInterviewFieldsOnUpdate(String field, Object invalidValue) throws Exception {
+        // Arrange
+        Map<String, Object> interview = validInterview();
+        interview.put(field, invalidValue);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(interview)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(employerService);
+    }
+
+    @Test
+    void shouldReturnOkWhenApplicationIsRejected() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
+                .andExpect(status().isOk());
+
+        verify(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRejectingUnknownApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(20L))
+                .when(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenInterviewAlreadyExists() throws Exception {
+        // Arrange
+        doThrow(new InterviewAlreadyExistsException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingRejectedApplication() throws Exception {
+        // Arrange
+        doThrow(new ApplicationRejectedException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/accept").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO cancelled = new InterviewEmployerResponseDTO(
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED");
+
+        when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30/cancel").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(30));
+
+        verify(employerService).cancelInterview(30L, EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenCancellingUnknownInterview() throws Exception {
+        // Arrange
+        when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenThrow(new InterviewNotFoundException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30/cancel").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenCancellingAlreadyCancelledInterview() throws Exception {
+        // Arrange
+        when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenThrow(new InterviewCancelledException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30/cancel").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenUpdatingCancelledInterview() throws Exception {
+        // Arrange
+        when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class)))
+                .thenThrow(new InterviewCancelledException(30L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/interviews/30").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
+    }
+
+    // ---------- Helpers ----------
+
+    private static Map<String, Object> validInternship() {
+        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "workMode", "HYBRID", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
+    }
+
+    private static InternshipResponseDto internshipResponse() {
+        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, ReviewStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
+    }
+
+    private static Map<String, Object> validInterview() {
+        return new HashMap<>(Map.of(
+                "message", "Please come to our office",
+                "interviewDate", LocalDateTime.now().plusDays(7).toString(),
+                "meetingType", "IN_PERSON",
+                "meetingDetails", "123 Main St"
+        ));
+    }
+
+    private static InterviewEmployerResponseDTO interviewResponse() {
+        return new InterviewEmployerResponseDTO(
+                30L,
+                10L,
+                "Jane Doe",
+                "Software Developer",
+                "Please come to our office",
+                "PENDING",
+                "2026-11-01T14:30",
+                "IN_PERSON",
+                "123 Main St",
+                "SCHEDULED"
+        );
     }
 }

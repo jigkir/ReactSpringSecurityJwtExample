@@ -4,18 +4,21 @@ import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.cv.*;
+import com.lacouf.rsbjwt.exception.document.*;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
-import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.CV;
-import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.document.DocumentVisibility;
+import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTranscript;
+import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -24,14 +27,19 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
-import com.lacouf.rsbjwt.repository.cv.CVRepository;
+import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
+import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
+import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
-import com.lacouf.rsbjwt.service.dto.request.cv.CvUploadDto;
+import com.lacouf.rsbjwt.service.document.DocumentService;
+import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
@@ -41,10 +49,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayOutputStream;
@@ -53,9 +58,11 @@ import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.answer;
@@ -72,6 +79,9 @@ public class StudentServiceTest {
     @Mock
     private UserAppService userAppService;
 
+    @Spy
+    private DocumentService documentService;
+
     @Mock
     private StudentRepository studentRepository;
     @Mock
@@ -82,6 +92,10 @@ public class StudentServiceTest {
     private InternshipRepository internshipRepository;
     @Mock
     private InternshipApplicationRepository applicationRepository;
+    @Mock
+    private CoverLetterRepository coverLetterRepository;
+    @Mock
+    private AcademicTranscriptRepository academicTranscriptRepository;
 
     @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
@@ -89,6 +103,10 @@ public class StudentServiceTest {
     private ArgumentCaptor<CV> cvArgumentCaptor;
     @Captor
     private ArgumentCaptor<InternshipApplication> applicationArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<CoverLetter> coverLetterArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<AcademicTranscript> academicTranscriptArgumentCaptor;
 
     private static StudentSignUpDto studentSignUpDto;
     private Student dummyStudent;
@@ -136,13 +154,6 @@ public class StudentServiceTest {
         dummyStudent.setId(1L);
         internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer);
         internship.setId(10L);
-    }
-
-
-    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(bytes);
-        return HexFormat.of().formatHex(hashBytes);
     }
 
     // ==========================================
@@ -202,7 +213,7 @@ public class StudentServiceTest {
     @Test
     void shouldUploadCVForExistingStudent() throws Exception {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
 
@@ -218,7 +229,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowUserNotFoundExceptionWhenUploadingCVForUnknownEmail() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.empty());
 
@@ -231,7 +242,7 @@ public class StudentServiceTest {
     @Test
     void shouldSaveCVSuccessfully() throws Exception {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         // Act
         studentService.saveCV(upload, dummyStudent);
@@ -244,14 +255,14 @@ public class StudentServiceTest {
         assert dummyStudent.equals(savedCv.getStudent());
         assert savedCv.getUploadDate() != null;
         assert calculateHash(validPdfBytes).equals(savedCv.getFileHash());
-        assert CvVisibility.VISIBLE.equals(savedCv.getVisibility());
+        assert DocumentVisibility.VISIBLE.equals(savedCv.getVisibility());
         assert ReviewStatus.PENDING.equals(savedCv.getStatus());
     }
 
     @Test
     void shouldNotifyEveryManagerWhenCVIsSubmitted() throws Exception {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(validPdfBytes, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");
 
         CV savedCv = new CV();
         savedCv.setId(10L);
@@ -277,13 +288,13 @@ public class StudentServiceTest {
 
         approvedCv.setId(5L);
         approvedCv.setStatus(ReviewStatus.APPROVED);
-        approvedCv.setVisibility(CvVisibility.VISIBLE);
+        approvedCv.setVisibility(DocumentVisibility.VISIBLE);
         approvedCv.setStudent(dummyStudent);
 
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
         when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
@@ -302,7 +313,7 @@ public class StudentServiceTest {
     @Test
     void shouldNotNotifyManagersWhenCVIsInvalid() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
+        DocumentUploadDto upload = new DocumentUploadDto("Hello World".getBytes(), "file.txt");
 
         // Act
         assertThrows(InvalidFileTypeException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -314,7 +325,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowEmptyFileExceptionWhenContentIsNull() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(null, "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(null, "cv.pdf");
 
         // Act + Assert
         assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -323,7 +334,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowEmptyFileExceptionWhenContentIsEmpty() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(new byte[0], "cv.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(new byte[0], "cv.pdf");
 
         // Act + Assert
         assertThrows(EmptyFileException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -332,7 +343,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileSizeExceptionWhenFileExceedsMaxSize() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto(new byte[2 * 1024 * 1024 + 1], "large.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto(new byte[2 * 1024 * 1024 + 1], "large.pdf");
 
         // Act + Assert
         assertThrows(
@@ -346,7 +357,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowInvalidFileTypeExceptionWhenMimeTypeIsNotPdf() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto("Hello World".getBytes(), "file.txt");
+        DocumentUploadDto upload = new DocumentUploadDto("Hello World".getBytes(), "file.txt");
 
         // Act + Assert
         assertThrows(InvalidFileTypeException.class, () -> studentService.saveCV(upload, dummyStudent));
@@ -355,7 +366,7 @@ public class StudentServiceTest {
     @Test
     void shouldThrowCorruptedFileExceptionWhenPdfIsCorrupted() {
         // Arrange
-        CvUploadDto upload = new CvUploadDto("%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes(), "corrupted.pdf");
+        DocumentUploadDto upload = new DocumentUploadDto("%PDF-1.4 Fake PDF Content That Cannot Be Parsed".getBytes(), "corrupted.pdf");
 
         // Act + Assert
         assertThrows(
@@ -371,75 +382,10 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldReturnTrueWhenIsCVReadable() throws NoSuchAlgorithmException {
-        // Arrange
-        CV cv = new CV();
-        cv.setContent(validPdfBytes);
-        cv.setFileHash(calculateHash(validPdfBytes));
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableHasMismatchedHash() throws NoSuchAlgorithmException {
-        // Arrange
-        CV cv = new CV();
-        cv.setContent(validPdfBytes);
-        cv.setFileHash("invalid_hash_string");
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableHasCorruptedContent() throws NoSuchAlgorithmException {
-        // Arrange
-        byte[] fakeBytes = "Corrupted Data".getBytes();
-        CV cv = new CV();
-        cv.setContent(fakeBytes);
-        cv.setFileHash(calculateHash(fakeBytes));
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableIsNull() throws NoSuchAlgorithmException {
-        // Act
-        boolean readable = studentService.isCVReadable(null);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableHasEmptyContent() throws NoSuchAlgorithmException {
-        // Arrange
-        CV cv = new CV();
-        cv.setContent(new byte[0]);
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
     void shouldGetCVCountByStudent() throws UserNotFoundException {
         // Arrange
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.countByStudentAndVisibility(dummyStudent, CvVisibility.VISIBLE)).thenReturn(3L);
+        when(cvRepository.countByUserAndVisibility(dummyStudent, DocumentVisibility.VISIBLE)).thenReturn(3L);
 
         // Act
         long count = studentService.getCVCount(STUDENT_EMAIL);
@@ -466,9 +412,9 @@ public class StudentServiceTest {
         visibleCv.setId(1L);
         visibleCv.setContent(validPdfBytes);
         visibleCv.setFileHash(calculateHash(validPdfBytes));
-        visibleCv.setVisibility(CvVisibility.VISIBLE);
+        visibleCv.setVisibility(DocumentVisibility.VISIBLE);
 
-        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(visibleCv));
+        when(cvRepository.findByUser(dummyStudent)).thenReturn(List.of(visibleCv));
 
         // Act
         List<StudentCvResponseDto> cvs = studentService.getCVs(STUDENT_EMAIL);
@@ -488,9 +434,9 @@ public class StudentServiceTest {
         hiddenCv.setId(1L);
         hiddenCv.setContent(validPdfBytes);
         hiddenCv.setFileHash(calculateHash(validPdfBytes));
-        hiddenCv.setVisibility(CvVisibility.HIDDEN);
+        hiddenCv.setVisibility(DocumentVisibility.HIDDEN);
 
-        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(hiddenCv));
+        when(cvRepository.findByUser(dummyStudent)).thenReturn(List.of(hiddenCv));
 
         // Act
         List<StudentCvResponseDto> cvs = studentService.getCVs(STUDENT_EMAIL);
@@ -509,7 +455,7 @@ public class StudentServiceTest {
         corruptedCv.setContent("Corrupted".getBytes());
         corruptedCv.setFileHash("badhash");
 
-        when(cvRepository.findByStudent(dummyStudent)).thenReturn(List.of(corruptedCv));
+        when(cvRepository.findByUser(dummyStudent)).thenReturn(List.of(corruptedCv));
 
         // Act + Assert
         assertThrows(CorruptedFileException.class, () -> studentService.getCVs(STUDENT_EMAIL));
@@ -525,12 +471,6 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldGetMaxCVSize() {
-        // Act + Assert
-        assert Integer.valueOf(2 * 1024 * 1024).equals(studentService.getMaxCVSize());
-    }
-
-    @Test
     void shouldGetCVFileWhenStudentOwnsIt() throws Exception {
         // Arrange
         CV cv = new CV();
@@ -539,10 +479,10 @@ public class StudentServiceTest {
         cv.setContent(validPdfBytes);
         cv.setFileHash(calculateHash(validPdfBytes));
 
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
 
         // Act
-        CvFileResponseDto result = studentService.getCV(STUDENT_EMAIL, 10L);
+        DocumentFileResponseDto result = studentService.getCV(STUDENT_EMAIL, 10L);
 
         // Assert
         assert Long.valueOf(10L).equals(result.id());
@@ -550,12 +490,12 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowCvNotFoundExceptionWhenGettingCVNotOwnedByStudent() {
+    void shouldThrowDocumentNotFoundExceptionWhenGettingCVNotOwnedByStudent() {
         // Arrange
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> studentService.getCV(STUDENT_EMAIL, 10L));
+        assertThrows(DocumentNotFoundException.class, () -> studentService.getCV(STUDENT_EMAIL, 10L));
     }
 
     @Test
@@ -566,32 +506,32 @@ public class StudentServiceTest {
         cv.setContent("Corrupted".getBytes());
         cv.setFileHash("badhash");
 
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
 
         // Act + Assert
         assertThrows(CorruptedFileException.class, () -> studentService.getCV(STUDENT_EMAIL, 10L));
     }
 
     @Test
-    void shouldGetCVStatusWhenStudentOwnsIt() throws CvNotFoundException {
+    void shouldGetCVStatusWhenStudentOwnsIt() throws DocumentNotFoundException {
         // Arrange
         CV cv = new CV();
         cv.setId(10L);
         cv.setStatus(ReviewStatus.APPROVED);
 
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
 
         // Act + Assert
         assert ("APPROVED").equals(studentService.getCVStatus(STUDENT_EMAIL, 10L));
     }
 
     @Test
-    void shouldThrowCvNotFoundExceptionWhenGettingStatusOfCVNotOwnedByStudent() {
+    void shouldThrowDocumentNotFoundExceptionWhenGettingStatusOfCVNotOwnedByStudent() {
         // Arrange
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> studentService.getCVStatus(STUDENT_EMAIL, 10L));
+        assertThrows(DocumentNotFoundException.class, () -> studentService.getCVStatus(STUDENT_EMAIL, 10L));
     }
 
     // ==========================================
@@ -599,34 +539,205 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldSetCvAsInvisible() throws CvNotFoundException {
+    void shouldSetCvAsInvisible() throws DocumentNotFoundException {
         // Arrange
         CV cv = new CV();
         cv.setId(10L);
         cv.setStudent(dummyStudent);
-        cv.setVisibility(CvVisibility.VISIBLE);
+        cv.setVisibility(DocumentVisibility.VISIBLE);
 
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.of(cv));
 
         // Act
         studentService.setCvAsInvisible(STUDENT_EMAIL, 10L);
 
         // Assert
-        assert CvVisibility.HIDDEN.equals(cv.getVisibility());
+        assert DocumentVisibility.HIDDEN.equals(cv.getVisibility());
         verify(cvRepository).save(cv);
         verify(notificationService).closeNotificationsOfTarget(TargetType.CV, 10L);
     }
 
     @Test
-    void shouldThrowCvNotFoundExceptionWhenSettingInvisibleForCvNotOwnedByStudent() {
+    void shouldThrowDocumentNotFoundExceptionWhenSettingInvisibleForCvNotOwnedByStudent() {
         // Arrange
-        when(cvRepository.findByIdAndStudent_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+        when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> studentService.setCvAsInvisible(STUDENT_EMAIL, 10L));
+        assertThrows(DocumentNotFoundException.class, () -> studentService.setCvAsInvisible(STUDENT_EMAIL, 10L));
 
         verify(cvRepository, never()).save(any(CV.class));
         verifyNoInteractions(notificationService);
+    }
+
+    // ==========================================
+    // Cover Letter Tests
+    // ==========================================
+
+    @Test
+    void shouldUploadCoverLetterWhenPdfIsValid() throws Exception {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto(validPdfBytes, "lettre_de_recommandation.pdf");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act
+        studentService.uploadCoverLetter(documentUploadDto, STUDENT_EMAIL);
+
+        // Assert
+        verify(coverLetterRepository).save(coverLetterArgumentCaptor.capture());
+
+        CoverLetter savedCoverLetter = coverLetterArgumentCaptor.getValue();
+
+        assert "lettre_de_recommandation.pdf".equals(savedCoverLetter.getFileName());
+        assert dummyStudent.equals(savedCoverLetter.getUser());
+        assert DocumentVisibility.VISIBLE.equals(savedCoverLetter.getVisibility());
+        assert calculateHash(validPdfBytes).equals(savedCoverLetter.getFileHash());
+    }
+
+    @Test
+    void shouldThrowInvalidFileTypeExceptionWhenUploadingCoverLetterThatIsNotPdf() {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto("Hello World".getBytes(), "lettre.txt");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act + Assert
+        assertThrows(InvalidFileTypeException.class, () -> studentService.uploadCoverLetter(documentUploadDto, STUDENT_EMAIL));
+
+        verify(coverLetterRepository, never()).save(any(CoverLetter.class));
+    }
+
+    @Test
+    void shouldGetVisibleCoverLetters() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = readableCoverLetter(20L);
+
+        when(coverLetterRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(coverLetter));
+
+        // Act
+        List<DocumentResponseDto> coverLetters = studentService.getCoverLetters(STUDENT_EMAIL);
+
+        // Assert
+        assert coverLetters.size() == 1;
+        assert coverLetters.getFirst().id() == 20L;
+        assert "lettre_de_recommandation.pdf".equals(coverLetters.getFirst().fileName());
+        assert coverLetters.getFirst().sizeBytes() == validPdfBytes.length;
+    }
+
+    @Test
+    void shouldGetCoverLetterFileWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = readableCoverLetter(20L);
+
+        when(coverLetterRepository.findByIdAndUser_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(coverLetter));
+
+        // Act
+        DocumentFileResponseDto documentFileResponseDto = studentService.getCoverLetter(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert documentFileResponseDto.id() == 20L;
+        assert "lettre_de_recommandation.pdf".equals(documentFileResponseDto.fileName());
+    }
+
+    @Test
+    void shouldHideCoverLetterWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = readableCoverLetter(20L);
+
+        when(coverLetterRepository.findByIdAndUser_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(coverLetter));
+
+        // Act
+        studentService.hideCoverLetter(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert DocumentVisibility.HIDDEN.equals(coverLetter.getVisibility());
+
+        verify(coverLetterRepository).save(coverLetter);
+    }
+
+    // ==========================================
+    // Academic Transcript Tests
+    // ==========================================
+
+    @Test
+    void shouldUploadAcademicTranscriptWhenPdfIsValid() throws Exception {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto(validPdfBytes, "releve_de_notes.pdf");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act
+        studentService.uploadAcademicTranscript(documentUploadDto, STUDENT_EMAIL);
+
+        // Assert
+        verify(academicTranscriptRepository).save(academicTranscriptArgumentCaptor.capture());
+
+        AcademicTranscript savedAcademicTranscript = academicTranscriptArgumentCaptor.getValue();
+
+        assert "releve_de_notes.pdf".equals(savedAcademicTranscript.getFileName());
+        assert dummyStudent.equals(savedAcademicTranscript.getUser());
+        assert DocumentVisibility.VISIBLE.equals(savedAcademicTranscript.getVisibility());
+        assert calculateHash(validPdfBytes).equals(savedAcademicTranscript.getFileHash());
+    }
+
+    @Test
+    void shouldThrowInvalidFileTypeExceptionWhenUploadingAcademicTranscriptThatIsNotPdf() {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto("Hello World".getBytes(), "releve.txt");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act + Assert
+        assertThrows(InvalidFileTypeException.class, () -> studentService.uploadAcademicTranscript(documentUploadDto, STUDENT_EMAIL));
+
+        verify(academicTranscriptRepository, never()).save(any(AcademicTranscript.class));
+    }
+
+    @Test
+    void shouldGetVisibleAcademicTranscripts() throws Exception {
+        // Arrange
+        AcademicTranscript academicTranscript = readableAcademicTranscript(30L);
+
+        when(academicTranscriptRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(academicTranscript));
+
+        // Act
+        List<DocumentResponseDto> academicTranscripts = studentService.getAcademicTranscripts(STUDENT_EMAIL);
+
+        // Assert
+        assert academicTranscripts.size() == 1;
+        assert academicTranscripts.getFirst().id() == 30L;
+        assert "releve_de_notes.pdf".equals(academicTranscripts.getFirst().fileName());
+    }
+
+    @Test
+    void shouldGetAcademicTranscriptFileWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        AcademicTranscript academicTranscript = readableAcademicTranscript(30L);
+
+        when(academicTranscriptRepository.findByIdAndUser_Credentials_Email(30L, STUDENT_EMAIL)).thenReturn(Optional.of(academicTranscript));
+
+        // Act
+        DocumentFileResponseDto documentFileResponseDto = studentService.getAcademicTranscript(STUDENT_EMAIL, 30L);
+
+        // Assert
+        assert documentFileResponseDto.id() == 30L;
+        assert "releve_de_notes.pdf".equals(documentFileResponseDto.fileName());
+    }
+
+    @Test
+    void shouldHideAcademicTranscriptWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        AcademicTranscript academicTranscript = readableAcademicTranscript(30L);
+
+        when(academicTranscriptRepository.findByIdAndUser_Credentials_Email(30L, STUDENT_EMAIL)).thenReturn(Optional.of(academicTranscript));
+
+        // Act
+        studentService.hideAcademicTranscript(STUDENT_EMAIL, 30L);
+
+        // Assert
+        assert DocumentVisibility.HIDDEN.equals(academicTranscript.getVisibility());
+
+        verify(academicTranscriptRepository).save(academicTranscript);
     }
 
     // ==========================================
@@ -662,6 +773,91 @@ public class StudentServiceTest {
         assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
     }
 
+    @Test
+    void shouldGetInternshipAfterDeadlineWhenStudentAppliedToIt() throws UserNotFoundException {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+        internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(applicationRepository.findInternshipIdsByStudent(dummyStudent)).thenReturn(Set.of(10L));
+
+        // Act
+        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL);
+
+        // Assert
+        assert internships.size() == 1;
+    }
+
+    @Test
+    void shouldReturnHiddenAndFavoriteFlagsWhenGettingInternships() throws UserNotFoundException {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(studentRepository.findHiddenInternshipIds(dummyStudent)).thenReturn(Set.of(10L));
+
+        // Act
+        StudentInternshipResponseDto studentInternshipResponseDto = studentService.getInternships(STUDENT_EMAIL).getFirst();
+
+        // Assert
+        assert ("Software Developer").equals(studentInternshipResponseDto.internship().title());
+        assert studentInternshipResponseDto.hidden();
+        assert !studentInternshipResponseDto.favorite();
+        assert !studentInternshipResponseDto.viewed();
+    }
+
+    @Test
+    void shouldHideInternshipWhenStudentHidesIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.hideInternship(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).removeFromFavorites(internship);
+        verify(student).hide(internship);
+    }
+
+    @Test
+    void shouldUnhideInternshipWhenStudentUnhidesIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.unhideInternship(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).unhide(internship);
+    }
+
+    @Test
+    void shouldAddInternshipToFavoritesWhenStudentMarksIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.addInternshipToFavorites(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).unhide(internship);
+        verify(student).addToFavorites(internship);
+    }
+
+    @Test
+    void shouldRemoveInternshipFromFavoritesWhenStudentUnmarksIt() throws Exception {
+        // Arrange
+        Student student = studentWithVisibleInternship();
+
+        // Act
+        studentService.removeInternshipFromFavorites(STUDENT_EMAIL, 10L);
+
+        // Assert
+        verify(student).removeFromFavorites(internship);
+    }
 
     @Test
     void shouldApplyToInternshipSuccessfully() throws Exception {
@@ -669,13 +865,13 @@ public class StudentServiceTest {
         CV approvedCv = new CV();
         approvedCv.setId(5L);
         approvedCv.setStatus(ReviewStatus.APPROVED);
-        approvedCv.setVisibility(CvVisibility.VISIBLE);
+        approvedCv.setVisibility(DocumentVisibility.VISIBLE);
         approvedCv.setStudent(dummyStudent);
 
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
         when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
@@ -702,11 +898,11 @@ public class StudentServiceTest {
         CV pendingCv = new CV();
         pendingCv.setId(5L);
         pendingCv.setStatus(ReviewStatus.PENDING);
-        pendingCv.setVisibility(CvVisibility.VISIBLE);
+        pendingCv.setVisibility(DocumentVisibility.VISIBLE);
         pendingCv.setStudent(dummyStudent);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(pendingCv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(pendingCv));
         // The CV is validated before the internship, so the internship is never loaded.
 
         // Act & Assert
@@ -724,13 +920,13 @@ public class StudentServiceTest {
         CV approvedCv = new CV();
         approvedCv.setId(5L);
         approvedCv.setStatus(ReviewStatus.APPROVED);
-        approvedCv.setVisibility(CvVisibility.VISIBLE);
+        approvedCv.setVisibility(DocumentVisibility.VISIBLE);
         approvedCv.setStudent(dummyStudent);
 
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(true);
 
@@ -749,14 +945,14 @@ public class StudentServiceTest {
         CV approvedCv = new CV();
         approvedCv.setId(5L);
         approvedCv.setStatus(ReviewStatus.APPROVED);
-        approvedCv.setVisibility(CvVisibility.VISIBLE);
+        approvedCv.setVisibility(DocumentVisibility.VISIBLE);
         approvedCv.setStudent(dummyStudent);
 
         internship.setStatus(ReviewStatus.APPROVED);
         internship.setApplicationDeadline(LocalDate.now().minusDays(1)); // Deadline in the past
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
 
         // Act & Assert
@@ -781,13 +977,13 @@ public class StudentServiceTest {
         CV newCv = new CV();
         newCv.setId(newCvId);
         newCv.setStatus(ReviewStatus.APPROVED);
-        newCv.setVisibility(CvVisibility.VISIBLE);
+        newCv.setVisibility(DocumentVisibility.VISIBLE);
 
         InternshipApplication application = new InternshipApplication(internship, oldCv, dummyStudent);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(newCvId, STUDENT_EMAIL))
+        when(cvRepository.findByIdAndUser_Credentials_Email(newCvId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(newCv));
 
         // Act
@@ -809,13 +1005,13 @@ public class StudentServiceTest {
         CV newCv = new CV();
         newCv.setId(newCvId);
         newCv.setStatus(ReviewStatus.PENDING); // Not approved
-        newCv.setVisibility(CvVisibility.VISIBLE);
+        newCv.setVisibility(DocumentVisibility.VISIBLE);
 
         InternshipApplication application = new InternshipApplication(internship, oldCv, dummyStudent);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(newCvId, STUDENT_EMAIL))
+        when(cvRepository.findByIdAndUser_Credentials_Email(newCvId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(newCv));
 
         // Act & Assert
@@ -866,27 +1062,16 @@ public class StudentServiceTest {
         verifyNoInteractions(cvRepository);
     }
 
-    // ---------- Helper ----------
-
-    private CV approvedVisibleCv(long id) {
-        CV cv = new CV();
-        cv.setId(id);
-        cv.setStatus(ReviewStatus.APPROVED);
-        cv.setVisibility(CvVisibility.VISIBLE);
-        cv.setStudent(dummyStudent);
-        return cv;
-    }
-
     // ---------- Apply: CV visibility ----------
 
     @Test
     void shouldThrowExceptionWhenApplyingWithHiddenCv() {
         // Arrange
         CV hiddenCv = approvedVisibleCv(5L);
-        hiddenCv.setVisibility(CvVisibility.HIDDEN);
+        hiddenCv.setVisibility(DocumentVisibility.HIDDEN);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(hiddenCv));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(hiddenCv));
 
         // Act & Assert
         assertThrows(
@@ -906,7 +1091,7 @@ public class StudentServiceTest {
         internship.markAsDeleted();
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
 
         // Act & Assert
@@ -922,7 +1107,7 @@ public class StudentServiceTest {
         internship.setStatus(ReviewStatus.PENDING);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
 
         // Act & Assert
@@ -944,7 +1129,7 @@ public class StudentServiceTest {
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(otherStudent));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
 
         // Act & Assert
@@ -964,13 +1149,13 @@ public class StudentServiceTest {
 
         CV oldCv = new CV();
         CV hiddenCv = approvedVisibleCv(newCvId);
-        hiddenCv.setVisibility(CvVisibility.HIDDEN);
+        hiddenCv.setVisibility(DocumentVisibility.HIDDEN);
 
         InternshipApplication application = new InternshipApplication(internship, oldCv, dummyStudent);
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(application));
-        when(cvRepository.findByIdAndStudent_Credentials_Email(newCvId, STUDENT_EMAIL))
+        when(cvRepository.findByIdAndUser_Credentials_Email(newCvId, STUDENT_EMAIL))
                 .thenReturn(Optional.of(hiddenCv));
 
         // Act & Assert
@@ -1022,5 +1207,49 @@ public class StudentServiceTest {
 
         verify(applicationRepository, never()).save(any());
         verifyNoInteractions(cvRepository);
+    }
+
+    // ---------- Helpers ----------
+
+    private CV approvedVisibleCv(long id) {
+        CV cv = new CV();
+        cv.setId(id);
+        cv.setStatus(ReviewStatus.APPROVED);
+        cv.setVisibility(DocumentVisibility.VISIBLE);
+        cv.setStudent(dummyStudent);
+        return cv;
+    }
+
+    private Student studentWithVisibleInternship() {
+        Student student = spy(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
+        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
+
+        return student;
+    }
+
+    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(bytes);
+        return HexFormat.of().formatHex(hashBytes);
+    }
+
+    private CoverLetter readableCoverLetter(long id) throws NoSuchAlgorithmException {
+        CoverLetter coverLetter = new CoverLetter(validPdfBytes, "lettre_de_recommandation.pdf", LocalDateTime.now());
+
+        coverLetter.setId(id);
+        coverLetter.setFileHash(calculateHash(validPdfBytes));
+
+        return coverLetter;
+    }
+
+    private AcademicTranscript readableAcademicTranscript(long id) throws NoSuchAlgorithmException {
+        AcademicTranscript academicTranscript = new AcademicTranscript(validPdfBytes, "releve_de_notes.pdf", LocalDateTime.now());
+
+        academicTranscript.setId(id);
+        academicTranscript.setFileHash(calculateHash(validPdfBytes));
+
+        return academicTranscript;
     }
 }

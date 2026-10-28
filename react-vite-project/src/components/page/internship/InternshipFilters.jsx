@@ -1,6 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import Icon from '../../../styles/Icon.jsx';
 import {INTERNSHIP_SORT_OPTIONS, useInternshipFilters} from '../../../utils/Sort.jsx';
+import {getStatusBorder} from '../../../styles/AppStyles.jsx';
 
 export {useInternshipFilters};
 
@@ -10,8 +11,15 @@ export default function InternshipFilters({dark, filters, showStatus = true, sho
     const {t} = useTranslation();
     const {search, setSearch, status, setStatus, discipline, setDiscipline, disciplines = [], sort, setSort} = filters;
 
-    const selectClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+    const selectBase = "rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
+    const selectClass = `${selectBase} border ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
+
+    // The status select border takes the colour of the selected status
+    const statusBorder = getStatusBorder(status, dark);
+    const statusSelectClass = `${selectBase} ${dark ? "bg-slate-700 text-white" : "bg-white text-gray-900"} ${
+        statusBorder ? `border-2 ${statusBorder}` : `border ${dark ? "border-slate-600" : "border-gray-300"}`
     }`;
 
     return (
@@ -39,7 +47,7 @@ export default function InternshipFilters({dark, filters, showStatus = true, sho
 
             {showStatus && (
                 <select value={status} onChange={(e) => setStatus(e.target.value)}
-                        className={selectClass} aria-label={t("internshipFilters.statusAria")}>
+                        className={statusSelectClass} aria-label={t("internshipFilters.statusAria")}>
                     <option value="ALL">{t("internshipFilters.allStatuses")}</option>
                     <option value="PENDING">{t("internshipFilters.pending")}</option>
                     <option value="APPROVED">{t("internshipFilters.approved")}</option>

@@ -395,6 +395,10 @@
     "alreadyReadByEmployer": "L'employeur a déjà consulté votre CV : il ne peut plus être changé.",
     "cvUpdated": "CV mis à jour"
   },
+  "employerInternship": {
+    "openInterviewPicker": "Prendre rendez-vous pour une entrevue",
+    "closeInterviewPicker": "Annuler"
+  },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher titre, compétences, lieu…",
     "searchAria": "Rechercher",

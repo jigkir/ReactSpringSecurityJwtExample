@@ -2,12 +2,19 @@ import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
 import CvPreview from "../cv/CvPreview.jsx";
 import {useTranslation} from "react-i18next";
+import {width} from "jsdom/lib/generated/css-property-descriptors.js";
+import {useState} from "react";
+import InterviewPicker from "./interview/InterviewPicker.jsx";
 
 function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
     const s = getApplicationCardClasses(dark);
     const {t} = useTranslation();
     const {student, cvFileName} = application;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+    const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
+    const interviewLabel = isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : t("employerInternship.openInterviewPicker");
+
+    const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
 
     return (
         <div className={s.card}>
@@ -43,6 +50,16 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
 
                     <div className="flex items-center">
                         <Button
+                            tone={isInterviewSelectOpen ? "danger" : "accent"}
+                            dark={dark}
+                            icon={isInterviewSelectOpen ? "close" : "visibility"}
+                            onClick={onToggleInterviewPicker}
+                            aria-expanded={isInterviewSelectOpen}
+                            className="mr-4"
+                        >
+                            {interviewLabel}
+                        </Button>
+                        <Button
                             tone={isPreviewOpen ? "danger" : "accent"}
                             dark={dark}
                             icon={isPreviewOpen ? "close" : "visibility"}
@@ -53,6 +70,18 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         </Button>
                     </div>
                 </div>
+
+                {/* Inline Interview Time Selector — forced underneath with a top border */}
+                {isInterviewSelectOpen && (
+                    <div className="w-full pt-4 mt-4">
+                        <InterviewPicker
+                            applicationId={application.student.id}
+                            dark={dark}
+                            onClose={() => setIsInterviewSelectOpen(false)}
+                            onSendOffer={() => alert("Sending Offers not yet implemented")}
+                        />
+                    </div>
+                )}
 
                 {/* Inline Preview Container — forced underneath with a top border */}
                 {isPreviewOpen && (

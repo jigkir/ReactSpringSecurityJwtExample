@@ -2,9 +2,11 @@
  * DevLoginPanel.jsx — Dev Mode block on the login page: pick a mock user to log in instantly.
  * Location: src/components/dev/DevLoginPanel.jsx
  *
- * Users are grouped (<optgroup>) by role + discipline, e.g. "STUDENT · Marketing".
- * Groups follow the backend Role order, then discipline name; users inside a group
- * are sorted by last name, then first name. Managers have no discipline: their group is just "MANAGER".
+ * Users are grouped (<optgroup>) by role only. The role header is padded with dashes
+ * on both sides so it fills the row, e.g. "--------------- STUDENT ---------------".
+ * Groups follow the backend Role order. Inside a role, users are sorted by discipline
+ * (so all users of the same discipline sit together), then by last name, then first name.
+ * Each option reads "First Last (Discipline)". Managers have no discipline: just "First Last".
  * Calls onSelect(user), or onSelect(null) when the selection is cleared.
  * Mounted by Login.jsx only while Dev Mode is on.
  */
@@ -19,9 +21,18 @@ import {getDevUsers} from '../api/DevApi.jsx';
 // Same order as the Role enum on the backend
 const ROLE_ORDER = ["MANAGER", "STUDENT", "TEACHER", "EMPLOYER"];
 
+// Approximate header length in characters. Raise it for more dashes, lower it for fewer.
+const HEADER_WIDTH = 36;
+
 const roleRank = (role) => {
     const i = ROLE_ORDER.indexOf(role);
     return i === -1 ? ROLE_ORDER.length : i;
+};
+
+// "STUDENT" -> "--------------- STUDENT ---------------"
+export const roleHeader = (role) => {
+    const dashes = "-".repeat(Math.max(3, Math.round((HEADER_WIDTH - role.length) / 2)));
+    return `${dashes} ${role} ${dashes}`;
 };
 
 // Sort by last name, then first name
@@ -36,31 +47,29 @@ export default function DevLoginPanel({dark, fieldClass, labelClass, errorClass,
     const [loadFailed, setLoadFailed] = useState(false);
     const [selectedEmail, setSelectedEmail] = useState("");
 
-    // [{key, label, users}] — one group per role + discipline
+    // [{role, users}] — one group per role, users sorted by discipline, then name
     const groups = useMemo(() => {
         if (!users) return null;
 
-        const byKey = new Map();
+        const byRole = new Map();
         for (const u of users) {
-            const key = `${u.role}|${u.discipline ?? ""}`;
-            if (!byKey.has(key)) {
-                const discipline = u.discipline
+            if (!byRole.has(u.role)) byRole.set(u.role, []);
+            byRole.get(u.role).push({
+                ...u,
+                disciplineLabel: u.discipline
                     ? t(`disciplines.${u.discipline.toLowerCase()}`, {defaultValue: u.discipline})
-                    : null;
-                byKey.set(key, {
-                    key,
-                    role: u.role,
-                    discipline: discipline ?? "",
-                    label: [u.role, discipline].filter(Boolean).join(" · "),
-                    users: [],
-                });
-            }
-            byKey.get(key).users.push(u);
+                    : "",
+            });
         }
 
-        return [...byKey.values()]
-            .sort((a, b) => roleRank(a.role) - roleRank(b.role) || a.discipline.localeCompare(b.discipline))
-            .map((g) => ({...g, users: [...g.users].sort(compareNames)}));
+        return [...byRole.entries()]
+            .sort(([a], [b]) => roleRank(a) - roleRank(b))
+            .map(([role, list]) => ({
+                role,
+                users: list.sort(
+                    (a, b) => a.disciplineLabel.localeCompare(b.disciplineLabel) || compareNames(a, b),
+                ),
+            }));
     }, [users, t]);
 
     const load = useCallback(() => {
@@ -99,10 +108,12 @@ export default function DevLoginPanel({dark, fieldClass, labelClass, errorClass,
                 <select id="devUser" value={selectedEmail} className={fieldClass} onChange={handleChange}>
                     <option value="">{t("dev.selectPlaceholder")}</option>
                     {groups.map((g) => (
-                        <optgroup key={g.key} label={g.label}>
+                        <optgroup key={g.role} label={roleHeader(g.role)} className="text-center">
                             {g.users.map((u) => (
-                                <option key={u.id ?? u.email} value={u.email}>
-                                    {u.firstName} {u.lastName}
+                                <option key={u.id ?? u.email} value={u.email} className="text-left">
+                                    {u.disciplineLabel
+                                        ? `${u.firstName} ${u.lastName} (${u.disciplineLabel})`
+                                        : `${u.firstName} ${u.lastName}`}
                                 </option>
                             ))}
                         </optgroup>
