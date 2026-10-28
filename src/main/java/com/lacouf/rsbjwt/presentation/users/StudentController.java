@@ -22,6 +22,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import jakarta.validation.Valid;
@@ -211,5 +212,11 @@ public class StudentController {
     public ResponseEntity<Void> removeInternshipFromFavorites(Authentication authentication, @PathVariable long internshipId) throws UserNotFoundException, InternshipNotFoundException {
         studentService.removeInternshipFromFavorites(authentication.getName(), internshipId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/interviews")
+    public ResponseEntity<List<InterviewStudentResponseDTO>> getInterviews(Authentication authentication) throws UserNotFoundException {
+        List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
+        return ResponseEntity.ok(interviews);
     }
 }
