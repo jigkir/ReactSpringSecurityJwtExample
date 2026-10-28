@@ -19,7 +19,7 @@ public record InterviewRequestDto (
     MeetingType meetingType,
 
     @NotNull
-    @Size(max = 255)
+    @Size(min = 2, max = 255)
     String meetingDetails
 ) {
 }

@@ -5,41 +5,83 @@ import {useState} from "react";
 import AutoResizeTextarea from "../../../../utils/AutoResizeTextarea.jsx";
 
 const INITIAL_FORM = {
-    date: "",
+    interviewDate: "",
     message: "",
+    meetingType: "",
+    meetingDetails: "",
 };
 
 const toForm = (i) => i ? {
-    date: i.date ?? "",
+    interviewDate: i.interviewDate ?? "",
     message: i.message ?? "",
+    meetingType: i.meetingType ?? "",
+    meetingDetails: i.meetingDetails ?? "",
 } : INITIAL_FORM;
+
+const MEETINGTYPE = ["ONLINE", "PHONE", "IN_PERSON"];
+
+const MESSAGE_MIN = 2;
+const MESSAGE_MAX = 500;
+const DETAILS_MAX = 255;
+
+
 
 function buildPayload(formData, internship) {
     const tomorrow = getTomorrow();
     const isPastDate = (value, original) => value < tomorrow && value !== original;
 
     const message = formData.message.trim();
+    const meetingDetails = formData.meetingDetails.trim();
 
-    if (isPastDate(formData.date, internship?.date)) {
+    if (isPastDate(formData.interviewDate, internship?.interviewDate)) {
         return {error: {key: "internshipModal.errorDate"}};
     }
 
+    if (isPastDate(MEETINGTYPE.includes(formData.meetingType))) {
+        return {error: {key: "internshipModal.errorMeetingType"}};
+    }
+
+    if (message.length < MESSAGE_MIN || meetingDetails.length < 1) {
+        return {error: {key: "internshipModal.errorTooShort"}};
+    }
+
+    if (message.length > MESSAGE_MAX || meetingDetails.length > DETAILS_MAX) {
+        return {error: {key: "internshipModal.errorTooLong"}};
+    }
+/*
+@NotBlank
+@Size(min = 2, max = 500)
+    String message,
+
+    @NotNull
+    @FutureOrPresent
+    LocalDateTime interviewDate,
+
+    @NotNull
+    MeetingType meetingType,
+
+    @NotNull
+    @Size(max = 255)
+    String meetingDetails
+*/
     return {
         payload: {
-            date: formData.date,
             message: message,
+            interviewDate: formData.interviewDate,
+            meetingType: formData.meetingType,
+            meetingDetails: meetingDetails,
         },
     };
 }
 
 const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
+
 function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer}){
     const s = getInternshipFormClasses(dark);
     const {t} = useTranslation();
     const [error, setError] = useState(null);
     const tomorrow = getTomorrow();
-    const isPastDate = (value, original) => value < tomorrow && value !== original;
     const [formData, setFormData] = useState(() => INITIAL_FORM);
     const minDate = tomorrow;
 
@@ -68,7 +110,7 @@ function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer
     return (
         <section className={s.wrapper}>
             <div className={s.header}>
-                <h2 className={s.title}>{isEdit ? t("internshipModal.editTitle") : t("internshipModal.title")}</h2>
+                <h2 className={s.title}>{isEdit ? t("interview.editTitle") : t("interview.title")}</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,33 +120,56 @@ function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer
                     </div>
                 )}
 
-                {/* Date */}
+                {/* Message: grows with its content */}
+                <Field id="message" label={t("interview.descriptionLabel")} labelClass={s.label}>
+                    <AutoResizeTextarea
+                        id="message" name="message" rows={3} value={formData.message}
+                        onChange={handleChange}
+                        className={s.textarea} required
+                    />
+                </Field>
+
+                {/* Date TODO: Add in time selectruion*/}
                 <div className={s.grid2}>
-                    <Field id="date" label={t("internshipModal.startDateLabel")} labelClass={s.label}>
+                    <Field id="interviewDate" label={t("interview.MeetingTime")} labelClass={s.label}>
                         <input
-                            id="date" type="date" name="date" value={formData.startDate}
+                            id="interviewDate" type="datetime-local" name="interviewDate" value={formData.interviewDate}
                             min={minDate} onChange={handleChange}
                             className={s.input} required
                         />
+
                     </Field>
                 </div>
 
-                {/* Message: grows with its content */}
-                <Field id="message" label={t("internshipModal.descriptionLabel")} labelClass={s.label}>
+                {/* Meeting Type */}
+                <Field id="meetingType" label={t("interview.meetingTypeLabel")} labelClass={s.label}>
+                    <select
+                        id="meetingType" name="meetingType" value={formData.meetingType}
+                        onChange={handleChange} className={s.input} required
+                    >
+                        <option value="" disabled>{t("interview.selectPlaceholder")}</option>
+                        {MEETINGTYPE.map((value) => (
+                            <option key={value} value={value}>{t(`interview.meetingTypes.${value}`)}</option>
+                        ))}
+                    </select>
+                </Field>
+
+                {/* Meeting Details: grows with its content */}
+                <Field id="meetingDetails" label={t("interview.meetingDetailsLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
-                        id="message" name="message" rows={3} value={formData.description}
+                        id="meetingDetails" name="meetingDetails" rows={3} value={formData.description}
                         onChange={handleChange}
-                        className={s.textarea}
+                        className={s.textarea} required
                     />
                 </Field>
 
                 {/* Footer */}
                 <div className={s.footer}>
                     <button type="button" onClick={onClose} className={s.cancelBtn}>
-                        {t("internshipModal.cancelBtn")}
+                        {t("interview.cancelBtn")}
                     </button>
                     <button type="submit" className={s.submitBtn}>
-                        {isEdit ? t("internshipModal.saveChanges") : t("internshipModal.submitBtn")}
+                        {isEdit ? t("interview.saveChanges") : t("interview.submitBtn")}
                     </button>
                 </div>
             </form>
