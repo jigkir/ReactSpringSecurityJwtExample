@@ -5,6 +5,10 @@
  *  - A decision can be changed at any time (approve a rejected offer, reject an approved one,
  *    or edit the rejection reason).
  *
+ * <ManagerInternships />          full page (route /manager/internships)
+ * <ManagerInternships preview />  Home page block: the latest offers still waiting for review,
+ *                                 no header, no filters
+ *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live.
  *
@@ -22,8 +26,10 @@ import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {approveInternship, getManagerInternships, rejectInternship} from '../../api/Api.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
+import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
+import PreviewState from '../../home/PreviewState.jsx';
 
-const ManagerInternships = () => {
+const ManagerInternships = ({preview = false}) => {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
@@ -38,6 +44,11 @@ const ManagerInternships = () => {
 
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
+
+    // Home preview: only the first offers still waiting for review
+    const shown = preview
+        ? visible.filter((i) => i.status === "PENDING").slice(0, MAX_PREVIEW_ITEMS)
+        : visible;
 
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
@@ -154,6 +165,31 @@ const ManagerInternships = () => {
         );
     };
 
+    const renderCard = (internship) => (
+        <InternshipCard
+            key={internship.id}
+            internship={internship}
+            dark={dark}
+            showEmployer
+            showStatusBorder={filters.status !== "ALL"}
+            footer={renderActions(internship)}
+        />
+    );
+
+    const errorLine = actionError && <p className={`${s.errorText} mb-4`} role="alert">{t(actionError)}</p>;
+
+    // Home preview: same states and spacing as every other Home preview
+    if (preview) {
+        return (
+            <div>
+                {errorLine}
+                <PreviewState dark={dark} error={loadFailed} loading={internships === null} empty={shown.length === 0}>
+                    {shown.map(renderCard)}
+                </PreviewState>
+            </div>
+        );
+    }
+
     let body;
     if (loadFailed) {
         body = (
@@ -171,16 +207,7 @@ const ManagerInternships = () => {
     } else if (visible.length === 0) {
         body = <p className={s.emptyText}>{t("internshipFilters.noMatch")}</p>;
     } else {
-        body = visible.map((internship) => (
-            <InternshipCard
-                key={internship.id}
-                internship={internship}
-                dark={dark}
-                showEmployer
-                showStatusBorder={filters.status !== "ALL"}
-                footer={renderActions(internship)}
-            />
-        ));
+        body = shown.map(renderCard);
     }
 
     return (
@@ -193,7 +220,7 @@ const ManagerInternships = () => {
             </div>
 
             <div className={s.listSection}>
-                {actionError && <p className={`${s.errorText} mb-4`} role="alert">{t(actionError)}</p>}
+                {errorLine}
                 {internships && internships.length > 0 &&
                     <InternshipFilters dark={dark} filters={filters} showDiscipline/>}
                 <div className={s.scrollArea}>{body}</div>

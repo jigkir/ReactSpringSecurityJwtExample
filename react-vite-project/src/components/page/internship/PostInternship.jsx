@@ -14,8 +14,12 @@ import {
     updateInternship
 } from '../../api/Api.jsx';
 import {usePolling} from "../../../utils/usePolling.js";
+import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
+import PreviewState from '../../home/PreviewState.jsx';
 
-function PostInternship({user}) {
+// <PostInternship user />          full page (route /internships)
+// <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
+function PostInternship({user, preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const [formOpen, setFormOpen] = useState(false);
@@ -30,6 +34,7 @@ function PostInternship({user}) {
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
+    const shown = preview ? visible.slice(0, MAX_PREVIEW_ITEMS) : visible;
 
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
@@ -49,15 +54,16 @@ function PostInternship({user}) {
             const countData = await getApplicationCount();
             setApplicationCount(countData);
         } catch {
-            setError({key: "postInternship.countError:"});
+            setError({key: "postInternship.countError"});
         }
     }, []);
 
+    // The application counters are only displayed on the full page
     useEffect(() => {
-        if (isLoggedIn) void fetchApplicationCount();
-    }, [isLoggedIn, fetchApplicationCount]);
+        if (isLoggedIn && !preview) void fetchApplicationCount();
+    }, [isLoggedIn, preview, fetchApplicationCount]);
 
-    usePolling(fetchApplicationCount, isLoggedIn)
+    usePolling(fetchApplicationCount, isLoggedIn && !preview)
 
     useEffect(() => {
         if (isLoggedIn) void load();
@@ -114,6 +120,40 @@ function PostInternship({user}) {
 
     const hasItems = !loading && !error && internships.length > 0;
 
+    const cards = shown.map((internship) => (
+        <InternshipCard key={internship.id}
+                        internship={internship}
+                        OnEdit={preview ? undefined : openEdit}
+                        OnDelete={preview ? undefined : handleDelete}
+                        dark={dark}
+                        showStatusBorder={filters.status !== "ALL"}
+                        applicationCount={applicationCount[internship.id]}/>
+    ));
+
+    // Home preview: same states and spacing as every other Home preview
+    if (preview) {
+        return (
+            <PreviewState dark={dark} error={Boolean(error)} loading={loading} empty={shown.length === 0}>
+                {cards}
+            </PreviewState>
+        );
+    }
+
+    const list = (
+        <div className={s.scrollArea}>
+            {loading && <p className={s.loadingText}>{t("postInternship.loading")}</p>}
+            {error && <p className={s.errorText}>{translateWarning(t, error)}</p>}
+            {actionError && <p className={s.errorText} role="alert">{translateWarning(t, actionError)}</p>}
+            {!loading && !error && internships.length === 0 && (
+                <p className={s.emptyText}>{t("postInternship.empty")}</p>
+            )}
+            {hasItems && visible.length === 0 && (
+                <p className={s.emptyText}>{t("internshipFilters.noMatch")}</p>
+            )}
+            {hasItems && cards}
+        </div>
+    );
+
     return (
         // No fixed height and no inner scroll: the page scroll bar is the only one
         <div className={s.page}>
@@ -149,26 +189,7 @@ function PostInternship({user}) {
 
                 {hasItems && <InternshipFilters dark={dark} filters={filters}/>}
 
-                <div className={s.scrollArea}>
-                    {loading && <p className={s.loadingText}>{t("postInternship.loading")}</p>}
-                    {error && <p className={s.errorText}>{translateWarning(t, error)}</p>}
-                    {actionError && <p className={s.errorText} role="alert">{translateWarning(t, actionError)}</p>}
-                    {!loading && !error && internships.length === 0 && (
-                        <p className={s.emptyText}>{t("postInternship.empty")}</p>
-                    )}
-                    {hasItems && visible.length === 0 && (
-                        <p className={s.emptyText}>{t("internshipFilters.noMatch")}</p>
-                    )}
-                    {hasItems && visible.map((internship) => (
-                        <InternshipCard key={internship.id}
-                                        internship={internship}
-                                        OnEdit={openEdit}
-                                        OnDelete={handleDelete}
-                                        dark={dark}
-                                        showStatusBorder={filters.status !== "ALL"}
-                                        applicationCount={applicationCount[internship.id]}/>
-                    ))}
-                </div>
+                {list}
             </div>
         </div>
     );

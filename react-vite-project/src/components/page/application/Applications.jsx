@@ -2,6 +2,10 @@
  * Employer page: every application received, grouped by the internship offer it comes from.
  * Location: src/components/page/application/Applications.jsx
  *
+ * <Applications user />          full page (route /applications)
+ * <Applications user preview />  Home page block: the latest MAX_PREVIEW_ITEMS applications
+ *                                (unread first), no header, no filters
+ *
  * - One section per internship (title + number of applications, unread count).
  * - A dropdown lets the employer pick which internship to look at ("All internships" by default).
  * - Search by student / email / CV name.
@@ -20,6 +24,8 @@ import {base64ToBlobUrl} from '../cv/cvUtils.js';
 import {matchesSearch, toNum} from '../../../utils/Sort.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
+import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
+import PreviewState from '../../home/PreviewState.jsx';
 
 const ALL = "ALL";
 
@@ -29,7 +35,19 @@ const isUnread = (a) => a.internshipApplicationStatus === "UNREAD";
 const compareApplications = (a, b) =>
     Number(isUnread(b)) - Number(isUnread(a)) || (toNum(b.id) ?? 0) - (toNum(a.id) ?? 0);
 
-function Applications({user}) {
+// Keeps only the first `max` applications (in display order) across all groups
+const limitGroups = (groups, max) => {
+    let left = max;
+    return groups
+        .map((g) => {
+            const apps = g.apps.slice(0, left);
+            left -= apps.length;
+            return {...g, apps};
+        })
+        .filter((g) => g.apps.length > 0);
+};
+
+function Applications({user, preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh} = useNotifications();
@@ -109,6 +127,8 @@ function Applications({user}) {
         .filter((g) => g.apps.length > 0),
     [groups, internshipFilter, search]);
 
+    const shownGroups = preview ? limitGroups(visibleGroups, MAX_PREVIEW_ITEMS) : visibleGroups;
+
     const togglePreview = (id) =>
         setOpenPreviewIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
 
@@ -127,6 +147,63 @@ function Applications({user}) {
     const headerText = dark ? "text-white" : "text-gray-900";
     const mutedText = dark ? "text-slate-400" : "text-gray-500";
 
+    const sections = shownGroups.map((group) => (
+        <section key={group.id} className="space-y-3" aria-label={group.title}>
+            {/* Which internship these applications come from */}
+            <div className={`flex flex-wrap items-center gap-3 pb-2 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+                <div className="min-w-0 flex-1">
+                    <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
+                        {t("applicationsPage.fromInternship")}
+                    </p>
+                    <h2 className={`text-xl font-bold break-words ${headerText}`}>{group.title}</h2>
+                </div>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${
+                    dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700"}`}>
+                    <Icon name="send" size={16}/>
+                    {t("applicationsPage.applicationCount", {count: group.total})}
+                </span>
+                {group.unread > 0 && (
+                    <span className="rounded-full bg-indigo-500 px-3 py-1 text-sm font-bold text-white">
+                        {t("applicationsPage.unreadCount", {count: group.unread})}
+                    </span>
+                )}
+                <NavLink
+                    to={`/application/${group.id}`}
+                    className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                >
+                    {t("applicationsPage.openInternship")}
+                </NavLink>
+            </div>
+
+            {group.apps.map((application) => (
+                <ApplicationCard
+                    key={application.id}
+                    application={application}
+                    isNew={isUnread(application)}
+                    dark={dark}
+                    isPreviewOpen={openPreviewIds.includes(application.id)}
+                    onTogglePreview={() => togglePreview(application.id)}
+                    getUrl={getUrl}
+                />
+            ))}
+        </section>
+    ));
+
+    // Home preview: same states as every other Home preview (groups are spaced a bit wider)
+    if (preview) {
+        return (
+            <PreviewState
+                dark={dark}
+                error={loadFailed}
+                loading={applications === null}
+                empty={shownGroups.length === 0}
+                className="space-y-8"
+            >
+                {sections}
+            </PreviewState>
+        );
+    }
+
     let body;
     if (loadFailed) {
         body = <p className={s.errorText} role="alert">{t("applicationsPage.loadError")}</p>;
@@ -134,50 +211,10 @@ function Applications({user}) {
         body = <p className={s.loadingText} aria-busy="true">{t("applicationsPage.loading")}</p>;
     } else if (applications.length === 0) {
         body = <p className={s.emptyText}>{t("applicationsPage.empty")}</p>;
-    } else if (visibleGroups.length === 0) {
+    } else if (shownGroups.length === 0) {
         body = <p className={s.emptyText}>{t("applicationsPage.noMatch")}</p>;
     } else {
-        body = visibleGroups.map((group) => (
-            <section key={group.id} className="space-y-3" aria-label={group.title}>
-                {/* Which internship these applications come from */}
-                <div className={`flex flex-wrap items-center gap-3 pb-2 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
-                    <div className="min-w-0 flex-1">
-                        <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
-                            {t("applicationsPage.fromInternship")}
-                        </p>
-                        <h2 className={`text-xl font-bold break-words ${headerText}`}>{group.title}</h2>
-                    </div>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${
-                        dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700"}`}>
-                        <Icon name="send" size={16}/>
-                        {t("applicationsPage.applicationCount", {count: group.total})}
-                    </span>
-                    {group.unread > 0 && (
-                        <span className="rounded-full bg-indigo-500 px-3 py-1 text-sm font-bold text-white">
-                            {t("applicationsPage.unreadCount", {count: group.unread})}
-                        </span>
-                    )}
-                    <NavLink
-                        to={`/application/${group.id}`}
-                        className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                    >
-                        {t("applicationsPage.openInternship")}
-                    </NavLink>
-                </div>
-
-                {group.apps.map((application) => (
-                    <ApplicationCard
-                        key={application.id}
-                        application={application}
-                        isNew={isUnread(application)}
-                        dark={dark}
-                        isPreviewOpen={openPreviewIds.includes(application.id)}
-                        onTogglePreview={() => togglePreview(application.id)}
-                        getUrl={getUrl}
-                    />
-                ))}
-            </section>
-        ));
+        body = sections;
     }
 
     return (
