@@ -12,7 +12,6 @@ public record InterviewStudentResponseDTO(
     String message,
     String studentDecision,
     String interviewDate,
-    String interviewTime,
     String meetingType,
     String meetingDetails,
     String interviewStatus
@@ -28,7 +27,6 @@ public record InterviewStudentResponseDTO(
                 application.getInternship().getTitle(),
                 interview.getMessage(),
                 interview.getStudentDecision().name(),
-                interview.getInterviewDate().toString(),
                 interview.getInterviewDate().toString(),
                 interview.getMeetingType().name(),
                 interview.getMeetingDetails(),

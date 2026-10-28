@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
-    boolean existsByInternshipApplication(InternshipApplication internshipApplication);
     Optional<Interview> findByIdAndEmployer_Credentials_Email(Long id, String email);
     List<Interview> findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(String email);
     Optional<Interview> findByInternshipApplication (InternshipApplication internshipApplication);
