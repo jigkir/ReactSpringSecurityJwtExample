@@ -127,21 +127,6 @@ public class EmployerServiceTest {
         internship.setId(10L);
     }
 
-    private static InternshipApplication receivedInternshipApplication() {
-        Credentials studentCredentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
-        Student student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE);
-        student.setId(3L);
-
-        CV cv = new CV();
-        cv.setId(5L);
-        cv.setFileName("cv.pdf");
-
-        InternshipApplication internshipApplication = new InternshipApplication(internship, cv, student);
-        internshipApplication.setId(INTERNSHIP_APPLICATION_ID);
-
-        return internshipApplication;
-    }
-
     @Test
     void shouldSaveEmployer() throws UserAlreadyExistsException {
         // Arrange
@@ -677,4 +662,20 @@ public class EmployerServiceTest {
         verify(interviewRepository).save(interview);
     }
 
+    // ---------- Helpers ----------
+    
+    private static InternshipApplication receivedInternshipApplication() {
+        Credentials studentCredentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
+        Student student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE);
+        student.setId(3L);
+
+        CV cv = new CV();
+        cv.setId(5L);
+        cv.setFileName("cv.pdf");
+
+        InternshipApplication internshipApplication = new InternshipApplication(internship, cv, student);
+        internshipApplication.setId(INTERNSHIP_APPLICATION_ID);
+
+        return internshipApplication;
+    }
 }

@@ -52,32 +52,6 @@ public class ManagerControllerTest {
             """;
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
 
-    private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
-        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
-    }
-
-    private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {
-        return new InternshipResponseDto(
-                1L,
-                "Développeur logiciel",
-                "Stage en développement logiciel",
-                "Java, Spring Boot",
-                16,
-                "Montréal",
-                WorkMode.HYBRID,
-                LocalDate.of(2027, 1, 10),
-                LocalDate.of(2026, 12, 1),
-                new BigDecimal("25.00"),
-                false,
-                status,
-                comment,
-                1L,
-                "employer@example.com",
-                Discipline.COMPUTER_SCIENCE,
-                LocalDateTime.of(2026, 9, 1, 10, 0)
-        );
-    }
-
     @Test
     void shouldReturnAllVisibleCvs() throws Exception {
         // Arrange
@@ -321,5 +295,33 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.status").value("APPROVED"));
 
         verify(managerService).updateInternship(eq(1L), any(InternshipRequestDto.class));
+    }
+
+    // ---------- Helpers ----------
+    
+    private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
+        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
+    }
+
+    private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {
+        return new InternshipResponseDto(
+                1L,
+                "Développeur logiciel",
+                "Stage en développement logiciel",
+                "Java, Spring Boot",
+                16,
+                "Montréal",
+                WorkMode.HYBRID,
+                LocalDate.of(2027, 1, 10),
+                LocalDate.of(2026, 12, 1),
+                new BigDecimal("25.00"),
+                false,
+                status,
+                comment,
+                1L,
+                "employer@example.com",
+                Discipline.COMPUTER_SCIENCE,
+                LocalDateTime.of(2026, 9, 1, 10, 0)
+        );
     }
 }

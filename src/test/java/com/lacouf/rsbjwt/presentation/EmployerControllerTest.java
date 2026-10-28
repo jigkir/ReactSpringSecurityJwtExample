@@ -74,14 +74,6 @@ public class EmployerControllerTest {
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
-    private static Map<String, Object> validInternship() {
-        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "workMode", "HYBRID", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
-    }
-
-    private static InternshipResponseDto internshipResponse() {
-        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, ReviewStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
-    }
-
     static Stream<Arguments> invalidFields() {
         return Stream.of(
                 Arguments.of("firstName", null),
@@ -178,30 +170,6 @@ public class EmployerControllerTest {
 
                 Arguments.of("meetingDetails", null),
                 Arguments.of("meetingDetails", "a".repeat(256))
-        );
-    }
-
-    private static Map<String, Object> validInterview() {
-        return new HashMap<>(Map.of(
-                "message", "Please come to our office",
-                "interviewDate", LocalDateTime.now().plusDays(7).toString(),
-                "meetingType", "IN_PERSON",
-                "meetingDetails", "123 Main St"
-        ));
-    }
-
-    private static InterviewEmployerResponseDTO interviewResponse() {
-        return new InterviewEmployerResponseDTO(
-                30L,
-                10L,
-                "Jane Doe",
-                "Software Developer",
-                "Please come to our office",
-                "PENDING",
-                "2026-11-01T14:30",
-                "IN_PERSON",
-                "123 Main St",
-                "SCHEDULED"
         );
     }
 
@@ -638,4 +606,37 @@ public class EmployerControllerTest {
                 .andExpect(status().isConflict());
     }
 
+    // ---------- Helpers ----------
+
+    private static Map<String, Object> validInternship() {
+        return new HashMap<>(Map.of("title", "Software Developer", "description", "Develop applications", "requiredSkills", "Java, Spring", "durationInWeeks", 16, "location", "Montreal", "workMode", "HYBRID", "startDate", START_DATE.toString(), "applicationDeadline", APPLICATION_DEADLINE.toString(), "compensationAmount", 25.00, "compensationNegotiable", false));
+    }
+
+    private static InternshipResponseDto internshipResponse() {
+        return new InternshipResponseDto(10L, "Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, ReviewStatus.PENDING, "it sucks", 1L, "employer@example.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
+    }
+
+    private static Map<String, Object> validInterview() {
+        return new HashMap<>(Map.of(
+                "message", "Please come to our office",
+                "interviewDate", LocalDateTime.now().plusDays(7).toString(),
+                "meetingType", "IN_PERSON",
+                "meetingDetails", "123 Main St"
+        ));
+    }
+
+    private static InterviewEmployerResponseDTO interviewResponse() {
+        return new InterviewEmployerResponseDTO(
+                30L,
+                10L,
+                "Jane Doe",
+                "Software Developer",
+                "Please come to our office",
+                "PENDING",
+                "2026-11-01T14:30",
+                "IN_PERSON",
+                "123 Main St",
+                "SCHEDULED"
+        );
+    }
 }
