@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -70,16 +70,16 @@ public class ManagerService {
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
 
-    public ManagerCvResponseDto getCv(long cvId) throws CvNotFoundException {
+    public ManagerCvResponseDto getCv(long cvId) throws DocumentNotFoundException {
         return ManagerCvResponseDto.of(findVisibleCv(cvId));
     }
 
-    public DocumentFileResponseDto getCvFile(long cvId) throws CvNotFoundException {
+    public DocumentFileResponseDto getCvFile(long cvId) throws DocumentNotFoundException {
         return DocumentFileResponseDto.of(findVisibleCv(cvId));
     }
 
     @Transactional
-    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException {
+    public ManagerCvResponseDto approveCv(long cvId) throws DocumentNotFoundException {
         CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == ReviewStatus.APPROVED) {
@@ -101,7 +101,7 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException {
+    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws DocumentNotFoundException {
         CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == ReviewStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
@@ -176,8 +176,8 @@ public class ManagerService {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }
 
-    private CV findVisibleCv(long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndVisibility(cvId, DocumentVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException(cvId));
+    private CV findVisibleCv(long cvId) throws DocumentNotFoundException {
+        return cvRepository.findByIdAndVisibility(cvId, DocumentVisibility.VISIBLE).orElseThrow(() -> new DocumentNotFoundException(cvId));
     }
 
     private ManagerCvResponseDto saveAndConvert(CV cv) {

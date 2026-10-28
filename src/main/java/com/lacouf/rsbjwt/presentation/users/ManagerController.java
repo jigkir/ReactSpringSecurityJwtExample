@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -32,22 +32,22 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs/{cvId}")
-    public ResponseEntity<ManagerCvResponseDto> getCv(@PathVariable long cvId) throws CvNotFoundException {
+    public ResponseEntity<ManagerCvResponseDto> getCv(@PathVariable long cvId) throws DocumentNotFoundException {
         return ResponseEntity.ok(managerService.getCv(cvId));
     }
 
     @GetMapping("/cvs/{cvId}/file")
-    public ResponseEntity<DocumentFileResponseDto> getCvFile(@PathVariable long cvId) throws CvNotFoundException {
+    public ResponseEntity<DocumentFileResponseDto> getCvFile(@PathVariable long cvId) throws DocumentNotFoundException {
         return ResponseEntity.ok(managerService.getCvFile(cvId));
     }
 
     @PutMapping("/cvs/{cvId}/approve")
-    public ResponseEntity<ManagerCvResponseDto> approveCv(@PathVariable long cvId) throws CvNotFoundException {
+    public ResponseEntity<ManagerCvResponseDto> approveCv(@PathVariable long cvId) throws DocumentNotFoundException {
         return ResponseEntity.ok(managerService.approveCv(cvId));
     }
 
     @PutMapping("/cvs/{cvId}/reject")
-    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws CvNotFoundException {
+    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws DocumentNotFoundException {
         return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
 

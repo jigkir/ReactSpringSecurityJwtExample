@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
-import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -122,7 +122,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenApprovingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.approveCv(99L)).thenThrow(new CvNotFoundException(99L));
+        when(managerService.approveCv(99L)).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/approve"))
@@ -132,7 +132,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenRejectingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.rejectCv(99L, "CV too detailed")).thenThrow(new CvNotFoundException(99L));
+        when(managerService.rejectCv(99L, "CV too detailed")).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
@@ -153,7 +153,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.getCv(99L)).thenThrow(new CvNotFoundException(99L));
+        when(managerService.getCv(99L)).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/99"))
@@ -174,7 +174,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingFileOfUnknownCv() throws Exception {
         // Arrange
-        when(managerService.getCvFile(99L)).thenThrow(new CvNotFoundException(99L));
+        when(managerService.getCvFile(99L)).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/99/file"))

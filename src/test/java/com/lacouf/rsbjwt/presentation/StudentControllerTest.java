@@ -7,7 +7,7 @@ import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
-import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -19,6 +19,7 @@ import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
@@ -66,19 +67,17 @@ public class StudentControllerTest {
     private static final int MAX_FILE_SIZE = 2 * 1024 * 1024;
     private final Authentication authentication = new UsernamePasswordAuthenticationToken(STUDENT_EMAIL, null);
 
+    @MockitoBean
+    private StudentService studentService;
+    @MockitoBean
+    private ManagerService managerService;
+    @MockitoBean
+    private ReactSpringSecurityJwtApplication application;
+
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
     }
-
-    @MockitoBean
-    private StudentService studentService;
-
-    @MockitoBean
-    private ManagerService managerService;
-
-    @MockitoBean
-    private ReactSpringSecurityJwtApplication application;
 
     @Test
     void shouldReturnCreatedWhenStudentSignsUp() throws Exception {
@@ -257,7 +256,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenHidingCvNotOwnedByStudent() throws Exception {
         // Arrange
-        doThrow(new CvNotFoundException(10L)).when(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
+        doThrow(new DocumentNotFoundException(10L)).when(studentService).setCvAsInvisible(STUDENT_EMAIL, 10L);
 
         // Act + Assert
         mockMvc.perform(put("/api/student/cvs/10/hide").principal(authentication))
@@ -345,7 +344,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingCvNotOwnedByStudent() throws Exception {
         // Arrange
-        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException(10L));
+        when(studentService.getCV(STUDENT_EMAIL, 10L)).thenThrow(new DocumentNotFoundException(10L));
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10").principal(authentication))
@@ -376,10 +375,178 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingStatusOfCvNotOwnedByStudent() throws Exception {
         // Arrange
-        when(studentService.getCVStatus(STUDENT_EMAIL, 10L)).thenThrow(new CvNotFoundException(10L));
+        when(studentService.getCVStatus(STUDENT_EMAIL, 10L)).thenThrow(new DocumentNotFoundException(10L));
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs/10/status").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    // Cover Letter Tests
+
+    @Test
+    void shouldUploadCoverLetterSuccessfully() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "lettre.pdf", "application/pdf", "pdf".getBytes());
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/cover-letters").file(file).principal(authentication))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("Cover letter uploaded successfully"));
+
+        verify(studentService).uploadCoverLetter(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUploadingCoverLetterWithInvalidFileType() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "lettre.txt", "text/plain", "text".getBytes());
+
+        doThrow(new InvalidFileTypeException()).when(studentService).uploadCoverLetter(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/cover-letters").file(file).principal(authentication))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldGetCoverLettersSuccessfully() throws Exception {
+        // Arrange
+        StudentDocumentResponseDto coverLetter = new StudentDocumentResponseDto(20L, "lettre.pdf", 11L, LocalDateTime.now());
+
+        when(studentService.getCoverLetters(STUDENT_EMAIL)).thenReturn(List.of(coverLetter));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cover-letters").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(20))
+                .andExpect(jsonPath("$[0].fileName").value("lettre.pdf"))
+                .andExpect(jsonPath("$[0].sizeBytes").value(11));
+    }
+
+    @Test
+    void shouldReturnCoverLetterFileSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getCoverLetter(STUDENT_EMAIL, 20L)).thenReturn(new DocumentFileResponseDto(20L, "lettre.pdf", "pdf".getBytes()));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cover-letters/20").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("lettre.pdf"))
+                .andExpect(jsonPath("$.content").value("cGRm"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingCoverLetterNotOwnedByStudent() throws Exception {
+        // Arrange
+        when(studentService.getCoverLetter(STUDENT_EMAIL, 20L)).thenThrow(new DocumentNotFoundException(20L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/cover-letters/20").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldHideCoverLetterSuccessfully() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/cover-letters/20/hide").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Cover letter hidden successfully"));
+
+        verify(studentService).hideCoverLetter(STUDENT_EMAIL, 20L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenHidingCoverLetterNotOwnedByStudent() throws Exception {
+        // Arrange
+        doThrow(new DocumentNotFoundException(20L)).when(studentService).hideCoverLetter(STUDENT_EMAIL, 20L);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/cover-letters/20/hide").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    // Academic Transcript Tests
+
+    @Test
+    void shouldUploadAcademicTranscriptSuccessfully() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "releve.pdf", "application/pdf", "pdf".getBytes());
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/academic-transcripts").file(file).principal(authentication))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("Academic transcript uploaded successfully"));
+
+        verify(studentService).uploadAcademicTranscript(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUploadingAcademicTranscriptWithInvalidFileType() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile("file", "releve.txt", "text/plain", "text".getBytes());
+
+        doThrow(new InvalidFileTypeException()).when(studentService).uploadAcademicTranscript(any(DocumentUploadDto.class), eq(STUDENT_EMAIL));
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/student/academic-transcripts").file(file).principal(authentication))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldGetAcademicTranscriptsSuccessfully() throws Exception {
+        // Arrange
+        StudentDocumentResponseDto academicTranscript = new StudentDocumentResponseDto(30L, "releve.pdf", 11L, LocalDateTime.now());
+
+        when(studentService.getAcademicTranscripts(STUDENT_EMAIL)).thenReturn(List.of(academicTranscript));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/academic-transcripts").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(30))
+                .andExpect(jsonPath("$[0].fileName").value("releve.pdf"))
+                .andExpect(jsonPath("$[0].sizeBytes").value(11));
+    }
+
+    @Test
+    void shouldReturnAcademicTranscriptFileSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getAcademicTranscript(STUDENT_EMAIL, 30L)).thenReturn(new DocumentFileResponseDto(30L, "releve.pdf", "pdf".getBytes()));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/academic-transcripts/30").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("releve.pdf"))
+                .andExpect(jsonPath("$.content").value("cGRm"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingAcademicTranscriptNotOwnedByStudent() throws Exception {
+        // Arrange
+        when(studentService.getAcademicTranscript(STUDENT_EMAIL, 30L)).thenThrow(new DocumentNotFoundException(30L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/student/academic-transcripts/30").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldHideAcademicTranscriptSuccessfully() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/academic-transcripts/30/hide").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Academic transcript hidden successfully"));
+
+        verify(studentService).hideAcademicTranscript(STUDENT_EMAIL, 30L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenHidingAcademicTranscriptNotOwnedByStudent() throws Exception {
+        // Arrange
+        doThrow(new DocumentNotFoundException(30L)).when(studentService).hideAcademicTranscript(STUDENT_EMAIL, 30L);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/academic-transcripts/30/hide").principal(authentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -401,7 +568,7 @@ public class StudentControllerTest {
     }
 
     @Test
-    void shouldReturnNotFoundWhen() throws Exception {
+    void shouldReturnNotFoundWhenGettingInternshipsForNonExistentStudent() throws Exception {
         //Arrange
         when(studentService.getInternships(STUDENT_EMAIL))
                 .thenThrow(new UserNotFoundException());
@@ -439,7 +606,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenApplyingWithNonExistentCv() throws Exception {
         // Arrange
-        doThrow(new CvNotFoundException(10L))
+        doThrow(new DocumentNotFoundException(10L))
                 .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
 
         // Act & Assert

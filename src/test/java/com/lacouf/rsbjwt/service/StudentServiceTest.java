@@ -4,23 +4,21 @@ import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
-import com.lacouf.rsbjwt.exception.document.EmptyFileException;
-import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
-import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
+import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
-import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
-import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
+import com.lacouf.rsbjwt.model.documents.student.academictranscript.AcademicTranscript;
+import com.lacouf.rsbjwt.model.documents.student.coverletter.CoverLetter;
+import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -29,13 +27,17 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
+import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.StudentDocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -47,10 +49,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayOutputStream;
@@ -59,6 +58,7 @@ import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +79,9 @@ public class StudentServiceTest {
     @Mock
     private UserAppService userAppService;
 
+    @Spy
+    private DocumentService documentService;
+
     @Mock
     private StudentRepository studentRepository;
     @Mock
@@ -89,6 +92,10 @@ public class StudentServiceTest {
     private InternshipRepository internshipRepository;
     @Mock
     private InternshipApplicationRepository applicationRepository;
+    @Mock
+    private CoverLetterRepository coverLetterRepository;
+    @Mock
+    private AcademicTranscriptRepository academicTranscriptRepository;
 
     @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
@@ -96,6 +103,10 @@ public class StudentServiceTest {
     private ArgumentCaptor<CV> cvArgumentCaptor;
     @Captor
     private ArgumentCaptor<InternshipApplication> applicationArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<CoverLetter> coverLetterArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<AcademicTranscript> academicTranscriptArgumentCaptor;
 
     private static StudentSignUpDto studentSignUpDto;
     private Student dummyStudent;
@@ -143,21 +154,6 @@ public class StudentServiceTest {
         dummyStudent.setId(1L);
         internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer);
         internship.setId(10L);
-    }
-
-    private Student studentWithVisibleInternship() {
-        Student student = spy(dummyStudent);
-
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
-
-        return student;
-    }
-
-    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(bytes);
-        return HexFormat.of().formatHex(hashBytes);
     }
 
     // ==========================================
@@ -386,71 +382,6 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldReturnTrueWhenIsCVReadable() throws NoSuchAlgorithmException {
-        // Arrange
-        CV cv = new CV();
-        cv.setContent(validPdfBytes);
-        cv.setFileHash(calculateHash(validPdfBytes));
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableHasMismatchedHash() throws NoSuchAlgorithmException {
-        // Arrange
-        CV cv = new CV();
-        cv.setContent(validPdfBytes);
-        cv.setFileHash("invalid_hash_string");
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableHasCorruptedContent() throws NoSuchAlgorithmException {
-        // Arrange
-        byte[] fakeBytes = "Corrupted Data".getBytes();
-        CV cv = new CV();
-        cv.setContent(fakeBytes);
-        cv.setFileHash(calculateHash(fakeBytes));
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableIsNull() throws NoSuchAlgorithmException {
-        // Act
-        boolean readable = studentService.isCVReadable(null);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
-    void shouldReturnFalseWhenIsCVReadableHasEmptyContent() throws NoSuchAlgorithmException {
-        // Arrange
-        CV cv = new CV();
-        cv.setContent(new byte[0]);
-
-        // Act
-        boolean readable = studentService.isCVReadable(cv);
-
-        // Assert
-        assert !readable;
-    }
-
-    @Test
     void shouldGetCVCountByStudent() throws UserNotFoundException {
         // Arrange
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
@@ -540,12 +471,6 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldGetMaxCVSize() {
-        // Act + Assert
-        assert Integer.valueOf(2 * 1024 * 1024).equals(studentService.getMaxCVSize());
-    }
-
-    @Test
     void shouldGetCVFileWhenStudentOwnsIt() throws Exception {
         // Arrange
         CV cv = new CV();
@@ -565,12 +490,12 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowCvNotFoundExceptionWhenGettingCVNotOwnedByStudent() {
+    void shouldThrowDocumentNotFoundExceptionWhenGettingCVNotOwnedByStudent() {
         // Arrange
         when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> studentService.getCV(STUDENT_EMAIL, 10L));
+        assertThrows(DocumentNotFoundException.class, () -> studentService.getCV(STUDENT_EMAIL, 10L));
     }
 
     @Test
@@ -588,7 +513,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldGetCVStatusWhenStudentOwnsIt() throws CvNotFoundException {
+    void shouldGetCVStatusWhenStudentOwnsIt() throws DocumentNotFoundException {
         // Arrange
         CV cv = new CV();
         cv.setId(10L);
@@ -601,12 +526,12 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowCvNotFoundExceptionWhenGettingStatusOfCVNotOwnedByStudent() {
+    void shouldThrowDocumentNotFoundExceptionWhenGettingStatusOfCVNotOwnedByStudent() {
         // Arrange
         when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> studentService.getCVStatus(STUDENT_EMAIL, 10L));
+        assertThrows(DocumentNotFoundException.class, () -> studentService.getCVStatus(STUDENT_EMAIL, 10L));
     }
 
     // ==========================================
@@ -614,7 +539,7 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldSetCvAsInvisible() throws CvNotFoundException {
+    void shouldSetCvAsInvisible() throws DocumentNotFoundException {
         // Arrange
         CV cv = new CV();
         cv.setId(10L);
@@ -633,15 +558,186 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowCvNotFoundExceptionWhenSettingInvisibleForCvNotOwnedByStudent() {
+    void shouldThrowDocumentNotFoundExceptionWhenSettingInvisibleForCvNotOwnedByStudent() {
         // Arrange
         when(cvRepository.findByIdAndUser_Credentials_Email(10L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> studentService.setCvAsInvisible(STUDENT_EMAIL, 10L));
+        assertThrows(DocumentNotFoundException.class, () -> studentService.setCvAsInvisible(STUDENT_EMAIL, 10L));
 
         verify(cvRepository, never()).save(any(CV.class));
         verifyNoInteractions(notificationService);
+    }
+
+    // ==========================================
+    // Cover Letter Tests
+    // ==========================================
+
+    @Test
+    void shouldUploadCoverLetterWhenPdfIsValid() throws Exception {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto(validPdfBytes, "lettre_de_recommandation.pdf");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act
+        studentService.uploadCoverLetter(documentUploadDto, STUDENT_EMAIL);
+
+        // Assert
+        verify(coverLetterRepository).save(coverLetterArgumentCaptor.capture());
+
+        CoverLetter savedCoverLetter = coverLetterArgumentCaptor.getValue();
+
+        assert "lettre_de_recommandation.pdf".equals(savedCoverLetter.getFileName());
+        assert dummyStudent.equals(savedCoverLetter.getUser());
+        assert DocumentVisibility.VISIBLE.equals(savedCoverLetter.getVisibility());
+        assert calculateHash(validPdfBytes).equals(savedCoverLetter.getFileHash());
+    }
+
+    @Test
+    void shouldThrowInvalidFileTypeExceptionWhenUploadingCoverLetterThatIsNotPdf() {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto("Hello World".getBytes(), "lettre.txt");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act + Assert
+        assertThrows(InvalidFileTypeException.class, () -> studentService.uploadCoverLetter(documentUploadDto, STUDENT_EMAIL));
+
+        verify(coverLetterRepository, never()).save(any(CoverLetter.class));
+    }
+
+    @Test
+    void shouldGetVisibleCoverLetters() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = readableCoverLetter(20L);
+
+        when(coverLetterRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(coverLetter));
+
+        // Act
+        List<StudentDocumentResponseDto> coverLetters = studentService.getCoverLetters(STUDENT_EMAIL);
+
+        // Assert
+        assert coverLetters.size() == 1;
+        assert coverLetters.getFirst().id() == 20L;
+        assert "lettre_de_recommandation.pdf".equals(coverLetters.getFirst().fileName());
+        assert coverLetters.getFirst().sizeBytes() == validPdfBytes.length;
+    }
+
+    @Test
+    void shouldGetCoverLetterFileWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = readableCoverLetter(20L);
+
+        when(coverLetterRepository.findByIdAndUser_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(coverLetter));
+
+        // Act
+        DocumentFileResponseDto documentFileResponseDto = studentService.getCoverLetter(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert documentFileResponseDto.id() == 20L;
+        assert "lettre_de_recommandation.pdf".equals(documentFileResponseDto.fileName());
+    }
+
+    @Test
+    void shouldHideCoverLetterWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = readableCoverLetter(20L);
+
+        when(coverLetterRepository.findByIdAndUser_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(coverLetter));
+
+        // Act
+        studentService.hideCoverLetter(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert DocumentVisibility.HIDDEN.equals(coverLetter.getVisibility());
+
+        verify(coverLetterRepository).save(coverLetter);
+    }
+
+    // ==========================================
+    // Academic Transcript Tests
+    // ==========================================
+
+    @Test
+    void shouldUploadAcademicTranscriptWhenPdfIsValid() throws Exception {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto(validPdfBytes, "releve_de_notes.pdf");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act
+        studentService.uploadAcademicTranscript(documentUploadDto, STUDENT_EMAIL);
+
+        // Assert
+        verify(academicTranscriptRepository).save(academicTranscriptArgumentCaptor.capture());
+
+        AcademicTranscript savedAcademicTranscript = academicTranscriptArgumentCaptor.getValue();
+
+        assert "releve_de_notes.pdf".equals(savedAcademicTranscript.getFileName());
+        assert dummyStudent.equals(savedAcademicTranscript.getUser());
+        assert DocumentVisibility.VISIBLE.equals(savedAcademicTranscript.getVisibility());
+        assert calculateHash(validPdfBytes).equals(savedAcademicTranscript.getFileHash());
+    }
+
+    @Test
+    void shouldThrowInvalidFileTypeExceptionWhenUploadingAcademicTranscriptThatIsNotPdf() {
+        // Arrange
+        DocumentUploadDto documentUploadDto = new DocumentUploadDto("Hello World".getBytes(), "releve.txt");
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+
+        // Act + Assert
+        assertThrows(InvalidFileTypeException.class, () -> studentService.uploadAcademicTranscript(documentUploadDto, STUDENT_EMAIL));
+
+        verify(academicTranscriptRepository, never()).save(any(AcademicTranscript.class));
+    }
+
+    @Test
+    void shouldGetVisibleAcademicTranscripts() throws Exception {
+        // Arrange
+        AcademicTranscript academicTranscript = readableAcademicTranscript(30L);
+
+        when(academicTranscriptRepository.findByUser_Credentials_EmailAndVisibility(STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(List.of(academicTranscript));
+
+        // Act
+        List<StudentDocumentResponseDto> academicTranscripts = studentService.getAcademicTranscripts(STUDENT_EMAIL);
+
+        // Assert
+        assert academicTranscripts.size() == 1;
+        assert academicTranscripts.getFirst().id() == 30L;
+        assert "releve_de_notes.pdf".equals(academicTranscripts.getFirst().fileName());
+    }
+
+    @Test
+    void shouldGetAcademicTranscriptFileWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        AcademicTranscript academicTranscript = readableAcademicTranscript(30L);
+
+        when(academicTranscriptRepository.findByIdAndUser_Credentials_Email(30L, STUDENT_EMAIL)).thenReturn(Optional.of(academicTranscript));
+
+        // Act
+        DocumentFileResponseDto documentFileResponseDto = studentService.getAcademicTranscript(STUDENT_EMAIL, 30L);
+
+        // Assert
+        assert documentFileResponseDto.id() == 30L;
+        assert "releve_de_notes.pdf".equals(documentFileResponseDto.fileName());
+    }
+
+    @Test
+    void shouldHideAcademicTranscriptWhenStudentOwnsIt() throws Exception {
+        // Arrange
+        AcademicTranscript academicTranscript = readableAcademicTranscript(30L);
+
+        when(academicTranscriptRepository.findByIdAndUser_Credentials_Email(30L, STUDENT_EMAIL)).thenReturn(Optional.of(academicTranscript));
+
+        // Act
+        studentService.hideAcademicTranscript(STUDENT_EMAIL, 30L);
+
+        // Assert
+        assert DocumentVisibility.HIDDEN.equals(academicTranscript.getVisibility());
+
+        verify(academicTranscriptRepository).save(academicTranscript);
     }
 
     // ==========================================
@@ -966,17 +1062,6 @@ public class StudentServiceTest {
         verifyNoInteractions(cvRepository);
     }
 
-    // ---------- Helper ----------
-
-    private CV approvedVisibleCv(long id) {
-        CV cv = new CV();
-        cv.setId(id);
-        cv.setStatus(ReviewStatus.APPROVED);
-        cv.setVisibility(DocumentVisibility.VISIBLE);
-        cv.setStudent(dummyStudent);
-        return cv;
-    }
-
     // ---------- Apply: CV visibility ----------
 
     @Test
@@ -1122,5 +1207,49 @@ public class StudentServiceTest {
 
         verify(applicationRepository, never()).save(any());
         verifyNoInteractions(cvRepository);
+    }
+
+    // ---------- Helpers ----------
+
+    private CV approvedVisibleCv(long id) {
+        CV cv = new CV();
+        cv.setId(id);
+        cv.setStatus(ReviewStatus.APPROVED);
+        cv.setVisibility(DocumentVisibility.VISIBLE);
+        cv.setStudent(dummyStudent);
+        return cv;
+    }
+
+    private Student studentWithVisibleInternship() {
+        Student student = spy(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
+        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
+
+        return student;
+    }
+
+    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(bytes);
+        return HexFormat.of().formatHex(hashBytes);
+    }
+
+    private CoverLetter readableCoverLetter(long id) throws NoSuchAlgorithmException {
+        CoverLetter coverLetter = new CoverLetter(validPdfBytes, "lettre_de_recommandation.pdf", LocalDateTime.now());
+
+        coverLetter.setId(id);
+        coverLetter.setFileHash(calculateHash(validPdfBytes));
+
+        return coverLetter;
+    }
+
+    private AcademicTranscript readableAcademicTranscript(long id) throws NoSuchAlgorithmException {
+        AcademicTranscript academicTranscript = new AcademicTranscript(validPdfBytes, "releve_de_notes.pdf", LocalDateTime.now());
+
+        academicTranscript.setId(id);
+        academicTranscript.setFileHash(calculateHash(validPdfBytes));
+
+        return academicTranscript;
     }
 }

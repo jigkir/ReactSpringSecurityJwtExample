@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service;
 
-import com.lacouf.rsbjwt.exception.document.student.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -162,7 +162,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnVisibleCv() throws CvNotFoundException {
+    void shouldReturnVisibleCv() throws DocumentNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -180,11 +180,11 @@ public class ManagerServiceTest {
         when(cvRepository.findByIdAndVisibility(99L, DocumentVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> managerService.getCv(99L));
+        assertThrows(DocumentNotFoundException.class, () -> managerService.getCv(99L));
     }
 
     @Test
-    void shouldReturnCvFile() throws CvNotFoundException {
+    void shouldReturnCvFile() throws DocumentNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -202,11 +202,11 @@ public class ManagerServiceTest {
         when(cvRepository.findByIdAndVisibility(99L, DocumentVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> managerService.getCvFile(99L));
+        assertThrows(DocumentNotFoundException.class, () -> managerService.getCvFile(99L));
     }
 
     @Test
-    void shouldApproveCv() throws CvNotFoundException {
+    void shouldApproveCv() throws DocumentNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -222,7 +222,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldClearRejectionCommentWhenApprovingPreviouslyRejectedCv() throws CvNotFoundException {
+    void shouldClearRejectionCommentWhenApprovingPreviouslyRejectedCv() throws DocumentNotFoundException {
         // Arrange
         cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
@@ -241,7 +241,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws CvNotFoundException {
+    void shouldReturnCvWithoutSavingWhenApprovingAlreadyApprovedCv() throws DocumentNotFoundException {
         // Arrange
         cv.setStatus(ReviewStatus.APPROVED);
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
@@ -263,7 +263,7 @@ public class ManagerServiceTest {
         when(cvRepository.findByIdAndVisibility(99L, DocumentVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> managerService.approveCv(99L));
+        assertThrows(DocumentNotFoundException.class, () -> managerService.approveCv(99L));
 
         verify(cvRepository, never()).save(any(CV.class));
     }
@@ -291,7 +291,7 @@ public class ManagerServiceTest {
         when(cvRepository.findByIdAndVisibility(99L, DocumentVisibility.VISIBLE)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(CvNotFoundException.class, () -> managerService.rejectCv(99L, "CV too detailed"));
+        assertThrows(DocumentNotFoundException.class, () -> managerService.rejectCv(99L, "CV too detailed"));
 
         verify(cvRepository, never()).save(any(CV.class));
     }
@@ -574,7 +574,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentWhenApprovingCv() throws CvNotFoundException {
+    void shouldNotifyStudentWhenApprovingCv() throws DocumentNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -586,7 +586,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws CvNotFoundException {
+    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws DocumentNotFoundException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -598,7 +598,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws CvNotFoundException {
+    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws DocumentNotFoundException {
         // Arrange
         cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
@@ -616,7 +616,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws CvNotFoundException {
+    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws DocumentNotFoundException {
         // Arrange
         cv.setStatus(ReviewStatus.APPROVED);
 
@@ -650,7 +650,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentOfOpenInternshipsWhenFirstCvIsApproved() throws CvNotFoundException {
+    void shouldNotifyStudentOfOpenInternshipsWhenFirstCvIsApproved() throws DocumentNotFoundException {
         // Arrange
         internship.approve();
 
@@ -666,7 +666,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentOfOpenInternshipsWhenStudentAlreadyHasApprovedCv() throws CvNotFoundException {
+    void shouldNotNotifyStudentOfOpenInternshipsWhenStudentAlreadyHasApprovedCv() throws DocumentNotFoundException {
         // Arrange
         CV approvedCv = new CV("pdf".getBytes(), "old.pdf", LocalDateTime.of(2026, 8, 1, 10, 0));
 

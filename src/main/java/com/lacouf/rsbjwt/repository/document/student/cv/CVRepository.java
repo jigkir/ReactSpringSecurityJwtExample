@@ -1,10 +1,10 @@
 package com.lacouf.rsbjwt.repository.document.student.cv;
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.documents.DocumentVisibility;
+import com.lacouf.rsbjwt.model.documents.student.cv.CV;
 import com.lacouf.rsbjwt.model.user.Student;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,10 +12,9 @@ import java.util.Optional;
 
 
 @Repository
-public interface CVRepository extends JpaRepository<CV, Long> {
-    List<CV> findByUser(Student student);
+public interface CVRepository extends DocumentRepository<CV> {
 
-    Optional<CV> findByIdAndUser_Credentials_Email(long id, String email);
+    List<CV> findByUser(Student student);
 
     long countByUserAndVisibility(Student student, DocumentVisibility visibility);
 
