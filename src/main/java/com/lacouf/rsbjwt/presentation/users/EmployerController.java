@@ -83,15 +83,21 @@ public class EmployerController {
         return ResponseEntity.ok(employerService.countReceivedInternshipApplicationsByInternship(authentication.getName()));
     }
 
-    @PostMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplication(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
-        employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
+    @PutMapping("/applications/{applicationId}/accept")
+    public ResponseEntity<Void> acceptReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+        employerService.acceptInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/applications/{applicationId}/reject")
     public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
         employerService.rejectInternshipApplication(applicationId, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/applications/{applicationId}/interview")
+    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
+        employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok().build();
     }
 

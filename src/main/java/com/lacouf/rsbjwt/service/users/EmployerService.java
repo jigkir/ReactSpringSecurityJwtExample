@@ -190,7 +190,7 @@ public class EmployerService {
             throw new ApplicationRejectedException(applicationId);
         }
 
-        if (interviewRepository.existsByInternshipApplication(internshipApplication)) {
+        if (interviewRepository.existsByInternshipApplicationAndInterviewStatus(internshipApplication, InterviewStatus.SCHEDULED)) {
             throw new InterviewAlreadyExistsException(applicationId);
         }
 
@@ -205,9 +205,15 @@ public class EmployerService {
                 interviewRequestDto.meetingDetails()
         );
 
-        offerInterview(internshipApplication);
-
+        updateEmployerDecisionForInterview(internshipApplication, EmployerDecision.INTERVIEW_OFFERED);
         interviewRepository.save(interview);
+    }
+
+    @Transactional
+    public void acceptInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        updateEmployerDecisionForInterview(internshipApplication, EmployerDecision.ACCEPTED);
     }
 
     @Transactional
@@ -270,8 +276,8 @@ public class EmployerService {
         return interview;
     }
 
-    private void offerInterview(InternshipApplication internshipApplication) {
-        internshipApplication.updateEmployerDecision(EmployerDecision.INTERVIEW_OFFERED);
+    private void updateEmployerDecisionForInterview(InternshipApplication internshipApplication, EmployerDecision decision) {
+        internshipApplication.updateEmployerDecision(decision);
         internshipApplicationRepository.save(internshipApplication);
     }
 

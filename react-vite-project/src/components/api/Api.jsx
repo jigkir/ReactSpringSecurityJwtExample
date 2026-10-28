@@ -279,6 +279,30 @@ export async function rejectInternship(internshipId, comment) {
 
 // endregion
 
+//region Manager Interviews
+
+export async function updateInterview(applicationId, date, message){
+    const response = await fetcher("employer/internship", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(internship),
+    });
+    return handleResponse(response);
+}
+
+
+export async function createInterview(applicationId, interviewRequest){
+    console.log("interviewRequest");
+    const response = await fetcher(`employer/applications/${applicationId}/interview`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(interviewRequest),
+    });
+    return handleResponse(response);
+}
+
+//endregion
+
 //region Notifications
 export async function getNotifications() {
     const response = await fetcher("notifications", {method: "GET"});
