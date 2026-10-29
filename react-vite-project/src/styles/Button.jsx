@@ -10,7 +10,7 @@ export const ICON_TONES = {
     delete: "danger",
     visibility: "accent",
     event: "accent",
-    edit: "neutral",
+    edit: "warning",
 };
 
 // Arrow icons slide on hover (the Button is a `group`, see CV_BUTTON_BASE)

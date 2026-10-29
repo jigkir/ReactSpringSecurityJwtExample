@@ -60,8 +60,8 @@ export default function InternshipCard({
             : t("internshipCard.compensationAmount", {amount: internship.compensationAmount});
 
     const editBtn = `p-1.5 rounded transition-colors ${dark
-        ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
-        : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
+        ? "text-slate-400 hover:bg-slate-700 hover:text-orange-300"
+        : "text-gray-600 hover:bg-gray-200 hover:text-orange-600"}`;
 
     const totalApplications = applicationCount ?? 0;
 

@@ -122,7 +122,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
 
     const filters = useCvFilters(docs);
 
-    const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+    const textareaClass = `w-full md:w-64 rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
@@ -143,7 +143,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
         dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
     }`;
 
-    // Full-width, centered text inside the student action cells.
+    // Full-width buttons inside the vertical action stack.
     const cellBtn = "w-full";
 
     // ── Data loading ──────────────────────────────────────────────────────────
@@ -317,10 +317,8 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                 const statusIcon = STATUS_ICON[status] ?? STATUS_ICON.PENDING;
                 const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
 
-                // Student normal state → 2 cells (Preview | Delete). Manager / confirm state → wrapping flex row.
-                const actionsClass = (!isManager && !confirming)
-                    ? "grid grid-cols-1 sm:grid-cols-2 gap-2"
-                    : "flex flex-wrap items-center gap-2 md:justify-end";
+                // All actions: one vertical stack on the right of the card, every button the same width
+                const actionsClass = "flex flex-col items-stretch gap-2 md:min-w-[11rem] md:justify-self-end";
 
                 // Home preview: one card per CV, like every other Home preview
                 const itemClass = preview
@@ -370,7 +368,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                                         icon={isPreviewOpen ? "close" : "visibility"}
                                         onClick={() => togglePreview(doc.id)}
                                         disabled={busy}
-                                        className={isManager ? "" : cellBtn}
+                                        className={cellBtn}
                                         aria-expanded={isPreviewOpen}
                                         aria-label={`${viewLabel} : ${doc.fileName}`}>
                                     {viewLabel}
@@ -378,7 +376,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
 
                                 {confirming ? (
                                     <>
-                                        <span className={th.confirmText}>
+                                        <span className={`${th.confirmText} md:text-right`}>
                                             {isManager
                                                 ? t(isRejected ? "cvDocuments.editRefuseAsk" : "cvDocuments.refuseAsk")
                                                 : t("cvDocuments.hideAsk")}
@@ -394,11 +392,11 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                                             />
                                         )}
                                         <Button tone="danger" dark={dark} icon="check_circle"
-                                                disabled={busy || (isManager && !refuseComment.trim())} autoFocus
+                                                disabled={busy || (isManager && !refuseComment.trim())} autoFocus className={cellBtn}
                                                 onClick={() => isManager ? decide(doc, "refuse") : hideDoc(doc)}>
                                             {t("cvDocuments.confirmBtn")}
                                         </Button>
-                                        <Button tone="neutral" dark={dark} icon="close" disabled={busy}
+                                        <Button tone="neutral" dark={dark} icon="close" disabled={busy} className={cellBtn}
                                                 onClick={cancelConfirm}>
                                             {t("cvDocuments.cancelBtn")}
                                         </Button>
@@ -407,20 +405,20 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                                     <>
                                         {/* Decision can be changed at any time */}
                                         {!isApproved && (
-                                            <Button tone="success" dark={dark} icon="check_circle" disabled={busy}
+                                            <Button tone="success" dark={dark} icon="check_circle" disabled={busy} className={cellBtn}
                                                     onClick={() => decide(doc, "approve")}
                                                     aria-label={`${t("cvDocuments.approveBtn")} : ${doc.fileName}`}>
                                                 {t("cvDocuments.approveBtn")}
                                             </Button>
                                         )}
                                         {isRejected ? (
-                                            <Button tone="neutral" dark={dark} icon="edit" disabled={busy}
+                                            <Button tone="neutral" dark={dark} icon="edit" disabled={busy} className={cellBtn}
                                                     onClick={() => startRefuse(doc)}
                                                     aria-label={`${t("cvDocuments.editCommentBtn")} : ${doc.fileName}`}>
                                                 {t("cvDocuments.editCommentBtn")}
                                             </Button>
                                         ) : (
-                                            <Button tone="danger" dark={dark} icon="close" disabled={busy}
+                                            <Button tone="danger" dark={dark} icon="close" disabled={busy} className={cellBtn}
                                                     onClick={() => startRefuse(doc)}
                                                     aria-label={`${t("cvDocuments.refuseBtn")} : ${doc.fileName}`}>
                                                 {t("cvDocuments.refuseBtn")}
