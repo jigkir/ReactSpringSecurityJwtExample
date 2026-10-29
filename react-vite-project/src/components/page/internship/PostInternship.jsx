@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next';
 import InternshipForm from './InternshipForm.jsx';
 import InternshipCard from './InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
+import Button from '../../../styles/Button.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {
@@ -164,9 +165,9 @@ function PostInternship({user, preview = false}) {
                     <p className={s.subtitle}>{t("postInternship.pageSubtitle")}</p>
                 </div>
                 {!formOpen && (
-                    <button onClick={openCreate} className={s.addBtn}>
+                    <Button tone="primary" size="lg" dark={dark} onClick={openCreate} className="shrink-0">
                         {t("postInternship.addBtn")}
-                    </button>
+                    </Button>
                 )}
             </div>
 

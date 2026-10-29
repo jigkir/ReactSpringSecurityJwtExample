@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {getInternshipFormClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import {Field, translateWarning} from '../../../utils/CommonFields.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 
@@ -281,12 +282,12 @@ export default function InternshipForm({onClose, onSubmitInternship, internship 
 
                 {/* Footer */}
                 <div className={s.footer}>
-                    <button type="button" onClick={onClose} className={s.cancelBtn}>
+                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}>
                         {t("internshipModal.cancelBtn")}
-                    </button>
-                    <button type="submit" className={s.submitBtn}>
+                    </Button>
+                    <Button type="submit" tone="primary" size="lg" dark={dark}>
                         {isEdit ? t("internshipModal.saveChanges") : t("internshipModal.submitBtn")}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </section>

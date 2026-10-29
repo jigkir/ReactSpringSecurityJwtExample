@@ -1,19 +1,47 @@
-import {CV_BUTTON_BASE, CV_BUTTON_TONES} from './AppStyles.jsx';
+import {CV_BUTTON_BASE, CV_BUTTON_LIFT, CV_BUTTON_SIZES, CV_BUTTON_TONES} from './AppStyles.jsx';
 import Icon from './Icon.jsx';
 
-export function useButtonClasses(dark) {
-    const btnTone = dark ? CV_BUTTON_TONES.dark : CV_BUTTON_TONES.light;
-    return {btn: CV_BUTTON_BASE, btnTone};
-}
-
 // tone: neutral | accent | danger | success      icon: Material Symbols name (optional)
-const Button = ({tone = "neutral", dark, icon, className = "", children, ...rest}) => {
-    const {btn, btnTone} = useButtonClasses(dark);
+export const ICON_TONES = {
+    check_circle: "success",
+    check: "success",
+    send: "success",
+    close: "danger",
+    delete: "danger",
+    visibility: "accent",
+    event: "accent",
+    edit: "neutral",
+};
+
+// Arrow icons slide on hover (the Button is a `group`, see CV_BUTTON_BASE)
+const ICON_MOTION = {
+    arrow_forward: "transition-transform group-hover:translate-x-1",
+    arrow_back: "transition-transform group-hover:-translate-x-1",
+};
+
+const Button = ({
+                    as: Component = "button",
+                    tone = "neutral",
+                    lockTone = false,
+                    size = "sm",
+                    dark,
+                    icon,
+                    className = "",
+                    children,
+                    ...rest
+                }) => {
+    const tones = dark ? CV_BUTTON_TONES.dark : CV_BUTTON_TONES.light;
+    const resolvedTone = lockTone ? tone : (ICON_TONES[icon] ?? tone);
+    const lift = resolvedTone === "ghost" ? "" : CV_BUTTON_LIFT;
+    const classes = [CV_BUTTON_BASE, CV_BUTTON_SIZES[size], tones[resolvedTone], lift, className]
+        .filter(Boolean)
+        .join(" ");
+
     return (
-        <button className={`${btn} ${btnTone[tone]} ${className}`} {...rest}>
-            {icon && <Icon name={icon} size={18}/>}
+        <Component className={classes} {...rest}>
+            {icon && <Icon name={icon} size={18} className={ICON_MOTION[icon] ?? ""}/>}
             {children}
-        </button>
+        </Component>
     );
 };
 

@@ -23,6 +23,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import CvUpload from '../cv/CvUpload.jsx';
 import CvDocuments from '../cv/CvDocuments.jsx';
 import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';
@@ -224,15 +225,9 @@ const CvPage = ({user}) => {
                         dark={dark}
                         onAddClick={startReplacing}
                     />
-                    <button
-                        onClick={goToDashboard}
-                        className={`self-center text-sm font-medium px-3 py-1.5 rounded-lg transition-colors
-                            ${dark
-                            ? "text-slate-300 hover:text-white hover:bg-slate-700"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
-                    >
+                    <Button tone="ghost" dark={dark} onClick={goToDashboard} className="self-center">
                         {t("cv.goToDashboard")}
-                    </button>
+                    </Button>
                 </div>
             </div>
         );

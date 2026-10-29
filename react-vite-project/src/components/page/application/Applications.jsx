@@ -17,6 +17,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {NavLink, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import ApplicationCard from './ApplicationCard.jsx';
+import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {getApplicationCv, getApplications, getEmployerInternships} from '../../api/Api.jsx';
@@ -155,7 +156,7 @@ function Applications({user, preview = false}) {
                     <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
                         {t("applicationsPage.fromInternship")}
                     </p>
-                    <h2 className={`text-xl font-bold break-words ${headerText}`}>{group.title}</h2>
+                    <h2 className={`text-xl font-bold wrap-break-word ${headerText}`}>{group.title}</h2>
                 </div>
                 <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${
                     dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700"}`}>
@@ -167,12 +168,9 @@ function Applications({user, preview = false}) {
                         {t("applicationsPage.unreadCount", {count: group.unread})}
                     </span>
                 )}
-                <NavLink
-                    to={`/application/${group.id}`}
-                    className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                >
+                <Button as={NavLink} to={`/application/${group.id}`} tone="primary" dark={dark}>
                     {t("applicationsPage.openInternship")}
-                </NavLink>
+                </Button>
             </div>
 
             {group.apps.map((application) => (

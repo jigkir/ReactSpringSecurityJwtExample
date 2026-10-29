@@ -1,4 +1,5 @@
-import {getApplicationCardClasses, getInternshipFormClasses} from "../../../../styles/AppStyles.jsx";
+import {getInternshipFormClasses} from "../../../../styles/AppStyles.jsx";
+import Button from "../../../../styles/Button.jsx";
 import {useTranslation} from "react-i18next";
 import {Field, translateWarning} from "../../../../utils/CommonFields.jsx";
 import {useState} from "react";
@@ -23,7 +24,6 @@ const MEETINGTYPE = ["ONLINE", "PHONE", "IN_PERSON"];
 const MESSAGE_MIN = 2;
 const MESSAGE_MAX = 500;
 const DETAILS_MAX = 255;
-
 
 
 function buildPayload(formData, internship) {
@@ -77,7 +77,7 @@ function buildPayload(formData, internship) {
 const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
 
-function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer}){
+function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer}) {
     const s = getInternshipFormClasses(dark);
     const {t} = useTranslation();
     const [error, setError] = useState(null);
@@ -165,12 +165,12 @@ function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer
 
                 {/* Footer */}
                 <div className={s.footer}>
-                    <button type="button" onClick={onClose} className={s.cancelBtn}>
+                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}>
                         {t("interview.cancelBtn")}
-                    </button>
-                    <button type="submit" className={s.submitBtn}>
+                    </Button>
+                    <Button type="submit" tone="primary" size="lg" dark={dark}>
                         {isEdit ? t("interview.saveChanges") : t("interview.submitBtn")}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </section>

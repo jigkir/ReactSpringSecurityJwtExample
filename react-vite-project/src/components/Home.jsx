@@ -1,6 +1,7 @@
 import {Link, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getHomeClasses, getMainContainerClasses} from '../styles/AppStyles.jsx';
+import Button from '../styles/Button.jsx';
 import Icon from '../styles/Icon.jsx';
 import {PREVIEWS_BY_ROLE} from './home/HomePreviews.jsx';
 import {HOME_COLUMNS} from './home/PreviewLoaders.js';
@@ -67,11 +68,12 @@ const Home = () => {
 
                 {previews.map(({to, titleKey, render}) => (
                     <section key={to} aria-label={t(titleKey)} className="min-w-0">
-                        <Link to={to} className={classes.headingLink}>
+                        <Button as={Link} to={to} tone="primary" size="lg" dark={dark}
+                                className="relative mb-4 w-full px-12 py-3 text-xl font-semibold">
                             {t(titleKey)}
                             <Icon name="arrow_forward" size={24}
                                   className="absolute right-4 transition-transform group-hover:translate-x-1"/>
-                        </Link>
+                        </Button>
                         {render(user)}
                     </section>
                 ))}

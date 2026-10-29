@@ -105,7 +105,7 @@ function Navbar({user, dark, toggleDark}) {
                 : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")
         }`;
 
-    const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
+    const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
     return (
         <>
@@ -156,7 +156,7 @@ function Navbar({user, dark, toggleDark}) {
                                             setMenuOpen((o) => !o);
                                             setAuthMenuOpen(false);
                                         }}
-                                        className="flex items-center justify-center"
+                                        className="flex items-center justify-center transition duration-200 active:scale-95 motion-reduce:active:scale-100"
                                         aria-label={t("navbar.pagesMenu")}
                                         aria-expanded={menuOpen}
                                     >
@@ -249,12 +249,12 @@ function Navbar({user, dark, toggleDark}) {
                                             setAuthMenuOpen((o) => !o);
                                             setMenuOpen(false);
                                         }}
-                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
+                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
                                         aria-label={t("navbar.accountMenu")}
                                         aria-expanded={authMenuOpen}
                                     >
                                     <span
-                                        className="max-w-[6rem] truncate text-md"
+                                        className="max-w-24 truncate text-md"
                                         title={t("navbar.account")}
                                     >
                                       <Icon name="person" size={20}/>
@@ -263,11 +263,11 @@ function Navbar({user, dark, toggleDark}) {
                                 ) : (
                                     <Link
                                         to="/login" // Use `href="/login"` if using Next.js
-                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${theme.authBtn}`}
+                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
                                         aria-label={t("navbar.login")}
                                     >
                                         <Icon name="person" size={20} className="min-[420px]:hidden"/>
-                                        <span className="hidden min-[420px]:inline max-w-[6rem] truncate text-md">
+                                        <span className="hidden min-[420px]:inline max-w-24 truncate text-md">
                                   {t("navbar.login")}
                                 </span>
                                     </Link>

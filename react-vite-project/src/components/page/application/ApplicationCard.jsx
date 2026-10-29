@@ -66,7 +66,8 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
 
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            tone={isInterviewSelectOpen ? "danger" : "accent"}
+                            tone="accent"
+                            lockTone
                             dark={dark}
                             icon={isInterviewSelectOpen ? "close" : "event"}
                             onClick={onToggleInterviewPicker}
@@ -75,7 +76,8 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             {interviewLabel}
                         </Button>
                         <Button
-                            tone={isPreviewOpen ? "danger" : "accent"}
+                            tone="accent"
+                            lockTone
                             dark={dark}
                             icon={isPreviewOpen ? "close" : "visibility"}
                             onClick={onTogglePreview}

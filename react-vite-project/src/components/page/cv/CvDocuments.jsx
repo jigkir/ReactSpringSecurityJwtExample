@@ -15,6 +15,7 @@
  * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters, sortCvsNewest).
  *
  * Preview is rendered inline under the row (toggle), several can be open at once.
+ * The Preview / Close toggle stays blue in both states (Button `lockTone`).
  *
  * Row layout (md and up): 3 columns
  *   [ identity (name + meta) ] [ status pill ] [ actions ]
@@ -43,7 +44,7 @@
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import Button, {useButtonClasses} from '../../../styles/Button.jsx';
+import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
@@ -109,7 +110,6 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
     );
     const api = apiProp ?? defaultApi;
 
-    const {btn, btnTone} = useButtonClasses(dark);
     const th = getCvDocumentsClasses(dark);
 
     const [docs, setDocs] = useState(null);
@@ -144,7 +144,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
     }`;
 
     // Full-width, centered text inside the student action cells.
-    const cellBtn = "w-full justify-center text-center";
+    const cellBtn = "w-full";
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -366,7 +366,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                             {/* Column 3 — Actions */}
                             <div className={actionsClass}>
                                 {/* Preview stays available in every state (also while rejecting / deleting) */}
-                                <Button tone={isPreviewOpen ? "danger" : "accent"} dark={dark}
+                                <Button tone="accent" lockTone dark={dark}
                                         icon={isPreviewOpen ? "close" : "visibility"}
                                         onClick={() => togglePreview(doc.id)}
                                         disabled={busy}
@@ -477,9 +477,9 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
         body = (
             <div className={th.muted} role="alert">
                 <p>{t("cvDocuments.loadError")}</p>
-                <button onClick={() => void load()} className={`${btn} ${btnTone.neutral} mt-3`}>
+                <Button tone="neutral" dark={dark} onClick={() => void load()} className="mt-3">
                     {t("cvDocuments.retryBtn")}
-                </button>
+                </Button>
             </div>
         );
     } else if (visibleDocs === null) {
@@ -512,9 +512,9 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                     {isManager ? t("cvDocuments.titleManager") : t("cvDocuments.title")}
                 </h2>
                 {!isManager && onAddClick && (
-                    <button onClick={onAddClick} className={`${th.addBtn} ml-auto`}>
+                    <Button tone="primary" dark={dark} onClick={onAddClick} className="ml-auto">
                         {t("cvDocuments.addBtn")}
-                    </button>
+                    </Button>
                 )}
             </div>
 

@@ -1,8 +1,9 @@
 import {useTranslation} from 'react-i18next';
+import {NavLink} from "react-router-dom";
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {formatDate} from '../cv/cvUtils.js';
-import {NavLink} from "react-router-dom";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -199,13 +200,16 @@ export default function InternshipCard({
 
                     <div className="flex items-center gap-1 ml-auto">
                         {internship.status === "APPROVED" && (
-                            <NavLink
+                            <Button
+                                as={NavLink}
                                 to={`/application/${internship.id}`}
                                 state={{internshipData: internship}}
-                                className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                                tone="primary"
+                                dark={dark}
+                                className="w-fit"
                             >
                                 {t("internshipCard.viewApplication")}
-                            </NavLink>
+                            </Button>
                         )}
                         {OnEdit && (
                             <button
@@ -249,13 +253,15 @@ export default function InternshipCard({
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
 
                     {showPreview && (
-                        <button
+                        <Button
                             type="button"
+                            tone="primary"
+                            dark={dark}
                             onClick={() => onPreview(internship.id)}
-                            className="ml-auto rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                            className="ml-auto"
                         >
                             {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
-                        </button>
+                        </Button>
                     )}
                 </div>
             )}
