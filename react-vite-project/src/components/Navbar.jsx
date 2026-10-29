@@ -114,7 +114,7 @@ function Navbar({user, dark, toggleDark}) {
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6 min-w-0 w-1/3 justify-start">
                             {/* Desktop brand */}
                             <Link to={homePath}
                                   className={`hidden lg:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -190,8 +190,16 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                         </div>
 
+                        {/*Center section*/}
+                        {isLoggedIn &&
+                            (<form className="flex justify-center w-1/3">
+                                <select>
+                                    <option>test</option>
+                                </select>
+                            </form>)}
+
                         {/* ───────── Right side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 ml-auto shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 ml-auto shrink-0 w-1/3 justify-end">
 
                             <button onClick={toggleLang}
                                     className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
