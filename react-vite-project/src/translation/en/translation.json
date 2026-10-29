@@ -364,9 +364,11 @@
     "cancelBtn": "Cancel",
     "approveBtn": "Approve",
     "rejectBtn": "Reject",
+    "editBtn": "Edit",
     "editReasonBtn": "Edit reason",
     "approveBtnAria": "Approve: {{title}}",
     "rejectBtnAria": "Reject: {{title}}",
+    "editBtnAria": "Edit: {{title}}",
     "editReasonBtnAria": "Edit reason: {{title}}"
   },
   "studentInternship": {

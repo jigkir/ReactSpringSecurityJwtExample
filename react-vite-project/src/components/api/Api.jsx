@@ -277,6 +277,16 @@ export async function rejectInternship(internshipId, comment) {
     return handleResponse(response);
 }
 
+// The manager corrects an offer (same payload as the employer edit). Returns the updated InternshipResponseDto.
+export async function updateManagerInternship(internshipId, internship) {
+    const response = await fetcher(`manager/internships/${internshipId}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(internship),
+    });
+    return handleResponse(response);
+}
+
 // endregion
 
 //region Manager Interviews

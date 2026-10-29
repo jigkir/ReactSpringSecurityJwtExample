@@ -282,10 +282,10 @@ export default function InternshipForm({onClose, onSubmitInternship, internship 
 
                 {/* Footer */}
                 <div className={s.footer}>
-                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}>
+                    <Button type="button" icon="close" dark={dark} onClick={onClose}>
                         {t("internshipModal.cancelBtn")}
                     </Button>
-                    <Button type="submit" tone="primary" size="lg" dark={dark}>
+                    <Button type="submit" icon={isEdit ? "check" : "send"} dark={dark}>
                         {isEdit ? t("internshipModal.saveChanges") : t("internshipModal.submitBtn")}
                     </Button>
                 </div>

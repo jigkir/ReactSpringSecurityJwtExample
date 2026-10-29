@@ -15,15 +15,21 @@
  * Access control: <RequireRole roles={["MANAGER"]}/> in App.jsx + backend.
  */
 
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipCard from '../internship/InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
+import InternshipForm from '../internship/InternshipForm.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 import Button from '../../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
-import {approveInternship, getManagerInternships, rejectInternship} from '../../api/Api.jsx';
+import {
+    approveInternship,
+    getManagerInternships,
+    rejectInternship,
+    updateManagerInternship
+} from '../../api/Api.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
@@ -41,6 +47,8 @@ const ManagerInternships = ({preview = false}) => {
     const [confirmId, setConfirmId] = useState(null); // offer whose reject form is open
     const [rejectComment, setRejectComment] = useState("");
     const [actionError, setActionError] = useState("");
+    const [editing, setEditing] = useState(null); // offer currently being edited by the manager
+    const formRef = useRef(null);
 
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
@@ -69,9 +77,32 @@ const ManagerInternships = ({preview = false}) => {
 
     usePolling(load);
 
+    // Bring the inline edit form into view (page scroll only) when it opens
+    useEffect(() => {
+        if (editing) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
+    }, [editing]);
+
     const closeForm = () => {
         setConfirmId(null);
         setRejectComment("");
+    };
+
+    // Opens the inline edit form (closes any open reject form first)
+    const openEdit = (internship) => {
+        closeForm();
+        setActionError("");
+        setEditing(internship);
+    };
+
+    // Same contract as the employer form: returns {success} or {success: false, message: {key}}
+    const handleSaveEdit = async (payload) => {
+        try {
+            const updated = await updateManagerInternship(editing.id, payload);
+            setInternships((prev) => prev.map((i) => (i.id === editing.id ? {...i, ...updated} : i)));
+            return {success: true};
+        } catch (err) {
+            return {success: false, message: err.i18n ?? {key: "managerInternships.actionFailed"}};
+        }
     };
 
     // The backend returns the updated offer; patch it into the list so the card stays visible.
@@ -140,6 +171,15 @@ const ManagerInternships = ({preview = false}) => {
 
         return (
             <>
+                {/* Once approved, the manager can correct the offer himself */}
+                {isApproved && (
+                    <Button tone="warning" dark={dark} icon="edit" disabled={busy}
+                            onClick={() => openEdit(internship)}
+                            aria-label={t("managerInternships.editBtnAria", {title: internship.title})}>
+                        {t("managerInternships.editBtn")}
+                    </Button>
+                )}
+
                 {/* Decision can be changed at any time */}
                 {!isApproved && (
                     <Button tone="success" dark={dark} icon="check" disabled={busy}
@@ -218,6 +258,19 @@ const ManagerInternships = ({preview = false}) => {
                     <p className={s.subtitle}>{t("managerInternships.subtitle")}</p>
                 </div>
             </div>
+
+            {/* Inline edit form: between the title and the list */}
+            {editing && (
+                <div ref={formRef} className="scroll-mt-20">
+                    <InternshipForm
+                        key={editing.id}
+                        internship={editing}
+                        dark={dark}
+                        onClose={() => setEditing(null)}
+                        onSubmitInternship={handleSaveEdit}
+                    />
+                </div>
+            )}
 
             <div className={s.listSection}>
                 {errorLine}
