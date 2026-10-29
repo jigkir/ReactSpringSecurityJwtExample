@@ -157,7 +157,7 @@ function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer
                 {/* Meeting Details: grows with its content */}
                 <Field id="meetingDetails" label={t("interview.meetingDetailsLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
-                        id="meetingDetails" name="meetingDetails" rows={3} value={formData.description}
+                        id="meetingDetails" name="meetingDetails" rows={3} value={formData.meetingDetails}
                         onChange={handleChange}
                         className={s.textarea} required
                     />

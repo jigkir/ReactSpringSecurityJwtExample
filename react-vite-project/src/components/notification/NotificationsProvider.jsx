@@ -29,7 +29,7 @@ const TARGET_TYPE = {
 };
 
 const PAGE = {
-    STUDENT_CVS: "/cv",
+    STUDENT_CVS: "/portfolio",
     STUDENT_INTERNSHIPS: "/internship",
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",

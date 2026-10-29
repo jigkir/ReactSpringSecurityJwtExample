@@ -16,7 +16,7 @@ import Applications from '../page/application/Applications.jsx';
 
 export const PREVIEWS_BY_ROLE = {
     STUDENT: [
-        {to: "/cv", titleKey: "home.studentCvLink", render: () => <Cv preview/>},
+        {to: "/portfolio", titleKey: "home.studentCvLink", render: () => <Cv preview/>},
         {to: "/internship", titleKey: "home.studentInternshipsLink", render: () => <StudentInternships preview/>},
     ],
     EMPLOYER: [

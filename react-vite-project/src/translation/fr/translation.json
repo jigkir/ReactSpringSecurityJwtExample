@@ -77,7 +77,8 @@
     "internshipSubmittedForReviewNotification": "{{amount}} nouvelle(s) offre(s) de stage",
     "newInternshipApplicationNotification": "{{amount}} nouvelle(s) candidature(s) reçue(s)",
     "notificationLoadError": "Impossible de charger les notifications.",
-    "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues."
+    "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues.",
+    "portfolio": "Portfolio"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",
@@ -300,7 +301,7 @@
     "cvTitle": "CV",
     "internshipsTitle": "Stages",
     "applicationsTitle": "Candidatures",
-    "studentCvLink": "Consulter mes CV déposés",
+    "studentCvLink": "Consulter mon portfolio",
     "studentInternshipsLink": "Consulter les stages disponibles",
     "employerInternshipsLink": "Gérer mes offres de stage",
     "employerApplicationsLink": "Consulter les candidatures reçues",
@@ -388,7 +389,12 @@
     "alreadyApplied": "Vous avez déjà postulé à cette offre.",
     "applyFailed": "Impossible d'envoyer votre candidature.",
     "alreadyReadByEmployer": "L'employeur a déjà consulté votre CV : il ne peut plus être changé.",
-    "cvUpdated": "CV mis à jour"
+    "cvUpdated": "CV mis à jour",
+    "chooseLetter": "Choisissez une lettre de motivation",
+    "noLetter": "Sans lettre de motivation",
+    "uploadLetter": "Téléverser une lettre",
+    "letterInvalid": "La lettre doit être un PDF respectant la taille maximale.",
+    "letterUploadFailed": "Impossible de téléverser la lettre de motivation."
   },
   "employerInternship": {
     "openInterviewPicker": "Prendre rendez-vous pour une entrevue",
@@ -490,5 +496,29 @@
     "loadError": "Impossible de charger les utilisateurs fictifs.",
     "retryBtn": "Réessayer",
     "empty": "Aucun utilisateur fictif disponible."
+  },
+  "portfolio": {
+    "title": "Mon portfolio",
+    "types": {
+      "CV": "CV",
+      "COVER_LETTER": "Lettres de motivation",
+      "TRANSCRIPT": "Relevés de notes"
+    },
+    "titles": {
+      "COVER_LETTER": "Lettres de motivation",
+      "TRANSCRIPT": "Relevés de notes"
+    },
+    "add": "Ajouter des fichiers",
+    "empty": "Aucun document pour l'instant.",
+    "chooseFiles": "Choisir des fichiers",
+    "multiHint": "Vous pouvez sélectionner plusieurs PDF à la fois et choisir le type de chacun.",
+    "typeAria": "Type de document",
+    "removeAria": "Retirer ce fichier",
+    "close": "Fermer",
+    "uploadN_one": "Téléverser {{count}} fichier",
+    "uploadN_other": "Téléverser {{count}} fichiers"
+  },
+  "applicationCard": {
+    "coverLetter": "Lettre de motivation"
   }
 }

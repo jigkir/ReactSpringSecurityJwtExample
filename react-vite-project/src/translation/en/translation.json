@@ -60,6 +60,7 @@
     "postInternship": "Post Internship",
     "applications": "Applications",
     "cv": "CV",
+    "portfolio": "Portfolio",
     "internships": "Internships",
     "cvReview": "CVs to review",
     "hello": "Hello,",
@@ -294,13 +295,34 @@
     "fileTooLarge": "Your file is too large. The maximum allowed size is {{mb}} MB.",
     "fileInvalid": "The file appears to be corrupted or invalid. Please select another one."
   },
+  "portfolio": {
+    "title": "My portfolio",
+    "types": {
+      "CV": "CV",
+      "COVER_LETTER": "Cover letters",
+      "TRANSCRIPT": "Transcripts"
+    },
+    "titles": {
+      "COVER_LETTER": "Cover letters",
+      "TRANSCRIPT": "Academic transcripts"
+    },
+    "add": "Add files",
+    "empty": "No documents yet.",
+    "chooseFiles": "Choose files",
+    "multiHint": "You can select several PDFs at once and set each one's type.",
+    "typeAria": "Document type",
+    "removeAria": "Remove this file",
+    "close": "Close",
+    "uploadN_one": "Upload {{count}} file",
+    "uploadN_other": "Upload {{count}} files"
+  },
   "home": {
     "welcome": "Welcome",
     "apiError": "API error ({{status}})",
     "cvTitle": "CV",
     "internshipsTitle": "Internships",
     "applicationsTitle": "Applications",
-    "studentCvLink": "Check uploaded CVs",
+    "studentCvLink": "Check my portfolio",
     "studentInternshipsLink": "Browse available internships",
     "employerInternshipsLink": "Manage my internship offers",
     "employerApplicationsLink": "Check received applications",
@@ -332,6 +354,9 @@
     "unreadCount_one": "{{count}} new",
     "unreadCount_other": "{{count}} new",
     "openInternship": "View all candidates"
+  },
+  "applicationCard": {
+    "coverLetter": "Cover letter"
   },
   "postInternship": {
     "pageTitle": "Offer management",
@@ -382,6 +407,11 @@
     "goToCv": "Go to my CVs",
     "applied": "Application sent",
     "chooseCv": "Choose a CV",
+    "chooseLetter": "Choose a cover letter",
+    "noLetter": "No cover letter",
+    "uploadLetter": "Upload a letter",
+    "letterInvalid": "The cover letter must be a PDF within the size limit.",
+    "letterUploadFailed": "Unable to upload the cover letter.",
     "apply": "Apply",
     "updateCV": "Update CV",
     "viewedError": "Unable to record that you viewed this offer.",

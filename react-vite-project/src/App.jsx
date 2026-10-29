@@ -10,7 +10,7 @@ import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
 import PostInternship from './components/page/internship/PostInternship.jsx';
 import Home from './components/Home.jsx';
-import StudentCv from './components/page/student/Cv.jsx';
+import Portfolio from './components/page/portfolio/Portfolio.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
@@ -78,7 +78,8 @@ function App() {
 
                     {/* Student */}
                     <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
-                        <Route path="/cv" element={<StudentCv user={user}/>}/>
+                        <Route path="/portfolio" element={<Portfolio/>}/>
+                        <Route path="/cv" element={<Navigate to="/portfolio" replace/>}/>
                         <Route path="/internship" element={<StudentInternships/>}/>
                     </Route>
 

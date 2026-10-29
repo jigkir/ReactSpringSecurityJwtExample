@@ -6,6 +6,7 @@ import InternshipCard from "../internship/InternshipCard.jsx";
 import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
 import ApplyControls from "./ApplyControls.jsx";
 import {
+    getDocuments,
     getStudentAppliedInternships,
     getStudentCvs,
     getStudentInternships,
@@ -30,6 +31,7 @@ function StudentInternships({preview = false}) {
     const [selectedId, setSelectedId] = useState(null);
     const [appliedInternships, setAppliedInternships] = useState([]);
     const [cvs, setCvs] = useState(null);
+    const [letters, setLetters] = useState([]);
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
     const shown = preview ? visible.slice(0, MAX_PREVIEW_ITEMS) : visible;
@@ -67,9 +69,21 @@ function StudentInternships({preview = false}) {
         }
     }, []);
 
+    // Cover letters are optional: a failure just means an empty list
+    const loadLetters = useCallback(async () => {
+        try {
+            const list = await getDocuments("COVER_LETTER");
+            const safe = Array.isArray(list) ? list : [];
+            setLetters(safe);
+            return safe;
+        } catch {
+            return [];
+        }
+    }, []);
+
     const load = useCallback(async () => {
-        await Promise.all([loadInternships(), loadAppliedInternships(), loadCvs()]);
-    }, [loadInternships, loadAppliedInternships, loadCvs]);
+        await Promise.all([loadInternships(), loadAppliedInternships(), loadCvs(), loadLetters()]);
+    }, [loadInternships, loadAppliedInternships, loadCvs, loadLetters]);
 
     // Applying closes the offer's notification, even from the Home preview
     const handleApplicationChanged = useCallback(async () => {
@@ -119,9 +133,11 @@ function StudentInternships({preview = false}) {
         bottomFooter={cvs !== null && (<ApplyControls
             dark={dark}
             cvs={cvs}
+            letters={letters}
             internshipId={internship.id}
             application={appliedInternships.find((application) => application.internshipId === internship.id)}
             onChanged={handleApplicationChanged}
+            onLettersChanged={loadLetters}
         />)}
     />));
 
