@@ -331,7 +331,7 @@
     "applicationCount_other": "{{count}} candidatures",
     "unreadCount_one": "{{count}} nouvelle",
     "unreadCount_other": "{{count}} nouvelles",
-    "openInternship": "Consulter l'offre"
+    "openInternship": "Voir tous les candidats"
   },
   "postInternship": {
     "pageTitle": "Gestion des offres",

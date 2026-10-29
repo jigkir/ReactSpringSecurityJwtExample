@@ -83,7 +83,6 @@ const managerApi = {
 const STATUS_KEY = {
     PENDING: "cvDocuments.statusPending",
     APPROVED: "cvDocuments.statusApproved",
-    REFUSED: "cvDocuments.statusRefused",
     REJECTED: "cvDocuments.statusRefused",
 };
 
@@ -91,7 +90,6 @@ const STATUS_KEY = {
 const STATUS_ICON = {
     PENDING: "schedule",
     APPROVED: "check_circle",
-    REFUSED: "close",
     REJECTED: "close",
 };
 
@@ -278,9 +276,9 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
             <select value={filters.status} onChange={(e) => filters.setStatus(e.target.value)}
                     className={statusSelectClass} aria-label={t("cvDocuments.statusAria")}>
                 <option value="ALL">{t("cvDocuments.allStatuses")}</option>
+                <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
                 <option value="PENDING">{t("cvDocuments.filterPending")}</option>
                 <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
-                <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
             </select>
             <select value={filters.discipline} onChange={(e) => filters.setDiscipline(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
@@ -312,7 +310,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
                 const isPreviewOpen = openPreviewIds.includes(doc.id);
                 const status = doc.status ?? "PENDING";
                 const isApproved = status === "APPROVED";
-                const isRejected = status === "REJECTED" || status === "REFUSED";
+                const isRejected = status === "REJECTED";
                 const statusKey = STATUS_KEY[status] ?? STATUS_KEY.PENDING;
                 const statusIcon = STATUS_ICON[status] ?? STATUS_ICON.PENDING;
                 const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");

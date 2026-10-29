@@ -12,7 +12,7 @@ const BRAND_BTN = "bg-indigo-600 hover:bg-indigo-700 text-white";
 // region Status border (internships and CVs): rejected = red, pending = yellow, approved = green
 export function getStatusBorder(status, dark = false) {
     if (status === "APPROVED") return dark ? "border-green-400" : "border-green-500";
-    if (status === "REJECTED" || status === "REFUSED") return dark ? "border-red-400" : "border-red-500";
+    if (status === "REJECTED") return dark ? "border-red-400" : "border-red-500";
     if (status === "PENDING") return dark ? "border-yellow-400" : "border-yellow-500";
     return null;
 }
@@ -362,7 +362,7 @@ export function getCvDocumentsClasses(dark) {
         confirmText: `text-sm ${dark ? "text-slate-300" : "text-gray-700"}`,
         statusPill: (status) => {
             if (status === "APPROVED") return dark ? "bg-green-500/20 text-green-300" : "bg-green-100 text-green-800";
-            if (status === "REFUSED" || status === "REJECTED") return dark ? "bg-red-500/20 text-red-300" : "bg-red-100 text-red-800";
+            if (status === "REJECTED") return dark ? "bg-red-500/20 text-red-300" : "bg-red-100 text-red-800";
             return dark ? "bg-yellow-500/20 text-yellow-200" : "bg-yellow-100 text-yellow-800";
         },
     };

@@ -49,9 +49,9 @@ export default function InternshipFilters({dark, filters, showStatus = true, sho
                 <select value={status} onChange={(e) => setStatus(e.target.value)}
                         className={statusSelectClass} aria-label={t("internshipFilters.statusAria")}>
                     <option value="ALL">{t("internshipFilters.allStatuses")}</option>
+                    <option value="REJECTED">{t("internshipFilters.rejected")}</option>
                     <option value="PENDING">{t("internshipFilters.pending")}</option>
                     <option value="APPROVED">{t("internshipFilters.approved")}</option>
-                    <option value="REJECTED">{t("internshipFilters.rejected")}</option>
                 </select>
             )}
 

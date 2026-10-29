@@ -331,7 +331,7 @@
     "applicationCount_other": "{{count}} applications",
     "unreadCount_one": "{{count}} new",
     "unreadCount_other": "{{count}} new",
-    "openInternship": "View offer"
+    "openInternship": "View all candidates"
   },
   "postInternship": {
     "pageTitle": "Offer management",
