@@ -232,6 +232,8 @@ public class StudentService {
         student.markViewed(internship);
         studentRepository.save(student);
 
+        notificationService.closeNotificationOfRecipient(NotificationType.NEW_INTERNSHIP_OFFER, internshipId, student);
+
         notifyEmployerOfNewApplication(application);
     }
 

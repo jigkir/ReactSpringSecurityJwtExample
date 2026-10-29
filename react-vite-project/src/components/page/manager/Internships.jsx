@@ -115,7 +115,7 @@ const ManagerInternships = ({preview = false}) => {
                 : await rejectInternship(internship.id, rejectComment.trim());
             setInternships((prev) => prev.map((i) => (i.id === internship.id ? {...i, ...updated} : i)));
             closeForm();
-            refreshNotifications();
+            void refreshNotifications();
         } catch (e) {
             if (e.status === 404) {
                 setActionError("managerInternships.notFound");

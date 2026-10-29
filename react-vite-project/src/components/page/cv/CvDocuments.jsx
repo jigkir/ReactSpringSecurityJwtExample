@@ -200,7 +200,7 @@ const CvDocuments = ({dark, mode = "student", preview = false, api: apiProp, onA
         try {
             const updated = await api[action](doc.id, action === "refuse" ? refuseComment : undefined);
             setDocs((prev) => prev.map((d) => (d.id === doc.id ? {...d, ...updated} : d)));
-            refreshNotifications();
+            void refreshNotifications();
         } catch (e) {
             if (e.status === 409) {
                 setActionError("cvDocuments.alreadyReviewed");

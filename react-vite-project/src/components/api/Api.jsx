@@ -291,7 +291,7 @@ export async function updateManagerInternship(internshipId, internship) {
 
 //region Manager Interviews
 
-export async function updateInterview(applicationId, date, message){
+export async function updateInterview(applicationId, date, message) {
     const response = await fetcher("employer/internship", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -301,7 +301,7 @@ export async function updateInterview(applicationId, date, message){
 }
 
 
-export async function createInterview(applicationId, interviewRequest){
+export async function createInterview(applicationId, interviewRequest) {
     console.log("interviewRequest");
     const response = await fetcher(`employer/applications/${applicationId}/interview`, {
         method: "POST",
@@ -316,11 +316,6 @@ export async function createInterview(applicationId, interviewRequest){
 //region Notifications
 export async function getNotifications() {
     const response = await fetcher("notifications", {method: "GET"});
-    return handleResponse(response);
-}
-
-export async function getUnreadNotificationCount(notificationType) {
-    const response = await fetcher(`notifications/unread/count/${notificationType}`, {method: "GET"});
     return handleResponse(response);
 }
 

@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.presentation.notification;
 
-import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.response.notification.NotificationDto;
@@ -22,11 +21,6 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<NotificationDto>> getUnreadNotifications(Authentication authentication) {
         return ResponseEntity.ok(notificationService.getUnreadNotifications(authentication.getName()));
-    }
-
-    @GetMapping("/unread/count/{notificationType}")
-    public ResponseEntity<Long> countUnread(@PathVariable NotificationType notificationType, Authentication authentication) {
-        return ResponseEntity.ok(notificationService.countUnread(authentication.getName(), notificationType));
     }
 
     @PutMapping("/read/{targetType}")

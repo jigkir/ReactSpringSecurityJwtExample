@@ -6,7 +6,6 @@ import {getNotifications, markNotificationsAsRead} from "../../api/Api.jsx";
 
 vi.mock("../../api/Api.jsx", () => ({
     getNotifications: vi.fn(),
-    getUnreadNotificationCount: vi.fn(),
     markNotificationsAsRead: vi.fn(),
 }));
 
@@ -64,7 +63,7 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
     it("shouldMarkReviewsAsReadWhenEmployerOpensInternshipsPage", async () => {
         // Arrange
         getNotifications
-            .mockResolvedValueOnce([{notificationType: "INTERNSHIP_OFFER_APPROVED"}])
+            .mockResolvedValueOnce([{notificationType: "INTERNSHIP_OFFER_APPROVED", targetType: "INTERNSHIP_OFFER"}])
             .mockResolvedValue([]);
         markNotificationsAsRead.mockResolvedValue();
         render(<MockNotificationMenu/>);

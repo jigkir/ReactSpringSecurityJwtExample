@@ -1,18 +1,31 @@
 import {fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import {MemoryRouter, Outlet, Route, Routes} from "react-router-dom";
 import StudentInternships from "../Internships.jsx";
-import {getStudentInternships, getStudentCvs, markInternshipsAsViewed} from "../../../api/Api.jsx";
+import {
+    getStudentInternships,
+    getStudentCvs,
+    getStudentAppliedInternships,
+    markInternshipsAsViewed
+} from "../../../api/Api.jsx";
 import i18n from "../../../../i18next.jsx";
+import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
 
 vi.mock("../../../api/Api.jsx", () => ({
     getStudentInternships: vi.fn(),
     getStudentCvs: vi.fn(),
+    getStudentAppliedInternships: vi.fn(),
     markInternshipsAsViewed: vi.fn(),
 }));
 
-vi.mock("../ApplyControls.jsx", () => ({
-    default: () => null,
+vi.mock("../../../notification/NotificationsProvider.jsx", () => ({
+    useNotifications: vi.fn(),
 }));
+
+vi.mock("../ApplyControls.jsx", () => ({
+    default: ({internshipId, onChanged}) => <button onClick={onChanged}>{`apply-${internshipId}`}</button>,
+}));
+
+const refreshNotifications = vi.fn();
 
 const internship1 = {
     id: 1,
@@ -56,7 +69,9 @@ beforeEach(() => {
     vi.resetAllMocks();
     getStudentInternships.mockResolvedValue([internship1, internship2]);
     getStudentCvs.mockResolvedValue([]);
+    getStudentAppliedInternships.mockResolvedValue([]);
     markInternshipsAsViewed.mockResolvedValue(undefined);
+    useNotifications.mockReturnValue({refresh: refreshNotifications});
 });
 
 describe("StudentInternships displays available internship offers", () => {
@@ -247,5 +262,20 @@ describe("StudentInternships supports searching and sorting", () => {
         const titles = screen.getAllByRole("heading", {level: 3});
         expect(titles[0]).toHaveTextContent("Développeur Java");
         expect(titles[1]).toHaveTextContent("Développeur React");
+    });
+});
+
+describe("StudentInternships refreshes notifications", () => {
+
+    it("shouldRefreshNotificationsAfterApplying", async () => {
+        // Arrange
+        renderStudentInternships();
+
+        // Act
+        fireEvent.click(await screen.findByRole("button", {name: "apply-1"}));
+
+        // Assert
+        await waitFor(() => expect(refreshNotifications).toHaveBeenCalledTimes(1));
+        expect(getStudentAppliedInternships).toHaveBeenCalledTimes(2);
     });
 });

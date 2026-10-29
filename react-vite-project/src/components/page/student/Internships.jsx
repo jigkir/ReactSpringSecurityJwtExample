@@ -14,12 +14,14 @@ import {
 import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
+import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 
 // <StudentInternships />          full page (route /internship)
 // <StudentInternships preview />  Home page block: the newest offers only, no header, no filters
 function StudentInternships({preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
+    const {refresh: refreshNotifications} = useNotifications();
     const s = getPostInternshipClasses(dark);
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -69,6 +71,12 @@ function StudentInternships({preview = false}) {
         await Promise.all([loadInternships(), loadAppliedInternships(), loadCvs()]);
     }, [loadInternships, loadAppliedInternships, loadCvs]);
 
+    // Applying closes the offer's notification, even from the Home preview
+    const handleApplicationChanged = useCallback(async () => {
+        await loadAppliedInternships();
+        void refreshNotifications();
+    }, [loadAppliedInternships, refreshNotifications]);
+
     useEffect(() => {
         void load();
     }, [load]);
@@ -113,7 +121,7 @@ function StudentInternships({preview = false}) {
             cvs={cvs}
             internshipId={internship.id}
             application={appliedInternships.find((application) => application.internshipId === internship.id)}
-            onChanged={loadAppliedInternships}
+            onChanged={handleApplicationChanged}
         />)}
     />));
 

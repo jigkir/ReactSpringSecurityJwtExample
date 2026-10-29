@@ -1,6 +1,6 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {useLocation} from 'react-router-dom';
-import {getNotifications, getUnreadNotificationCount, markNotificationsAsRead} from '../api/Api.jsx';
+import {getNotifications, markNotificationsAsRead} from '../api/Api.jsx';
 import {usePolling} from "../../utils/usePolling.js";
 
 const ROLE = {
@@ -25,48 +25,85 @@ const NOTIFICATION_TYPE = {
 const TARGET_TYPE = {
     CV: "CV",
     INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
+    INTERNSHIP_APPLICATION: "INTERNSHIP_APPLICATION",
 };
 
-// Opening one of these pages marks the matching notifications as read
-const MARK_AS_READ_PAGES = {
-    [ROLE.STUDENT]: [
+const PAGE = {
+    STUDENT_CVS: "/cv",
+    STUDENT_INTERNSHIPS: "/internship",
+    MANAGER_CVS: "/manager/cvs",
+    MANAGER_INTERNSHIPS: "/manager/internships",
+    EMPLOYER_INTERNSHIPS: "/internships",
+    EMPLOYER_APPLICATIONS: "/applications",
+};
+
+// A notification closes when its page is opened (clicking it opens that page)
+const NOTIFICATION_ITEMS = {
+    [ROLE.MANAGER]: [
         {
-            path: "/cv",
+            id: "cvPosted",
+            notificationType: NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW,
             targetType: TARGET_TYPE.CV,
-            countKeys: ["cvApproved", "cvRejected"]
+            labelKey: "navbar.cvNotification",
+            to: PAGE.MANAGER_CVS
         },
         {
-            path: "/internship",
+            id: "internshipPosted",
+            notificationType: NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
-            countKeys: ["internship"]
+            labelKey: "navbar.internshipSubmittedForReviewNotification",
+            to: PAGE.MANAGER_INTERNSHIPS
+        },
+    ],
+    [ROLE.STUDENT]: [
+        {
+            id: "internship",
+            notificationType: NOTIFICATION_TYPE.NEW_INTERNSHIP_OFFER,
+            targetType: TARGET_TYPE.INTERNSHIP_OFFER,
+            labelKey: "navbar.internshipNotification",
+            to: PAGE.STUDENT_INTERNSHIPS
+        },
+        {
+            id: "cvsApproved",
+            notificationType: NOTIFICATION_TYPE.CV_APPROVED,
+            targetType: TARGET_TYPE.CV,
+            labelKey: "navbar.cvApprovedNotification",
+            to: PAGE.STUDENT_CVS
+        },
+        {
+            id: "cvsRejected",
+            notificationType: NOTIFICATION_TYPE.CV_REJECTED,
+            targetType: TARGET_TYPE.CV,
+            labelKey: "navbar.cvRejectedNotification",
+            to: PAGE.STUDENT_CVS
         },
     ],
     [ROLE.EMPLOYER]: [
         {
-            path: "/internships",
+            id: "internshipApproved",
+            notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
-            countKeys: ["internshipApproved", "internshipRejected"]
+            labelKey: "navbar.internshipApprovedNotification",
+            to: PAGE.EMPLOYER_INTERNSHIPS
+        },
+        {
+            id: "internshipRejected",
+            notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED,
+            targetType: TARGET_TYPE.INTERNSHIP_OFFER,
+            labelKey: "navbar.internshipRejectedNotification",
+            to: PAGE.EMPLOYER_INTERNSHIPS
+        },
+        {
+            id: "newInternshipApplication",
+            notificationType: NOTIFICATION_TYPE.NEW_INTERNSHIP_APPLICATION,
+            targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
+            labelKey: "navbar.newInternshipApplicationNotification",
+            to: PAGE.EMPLOYER_APPLICATIONS
         },
     ],
 };
 
-/**
- * Owns all notification data (fetching, counts, mark-as-read).
- * Consumers (NotificationMenu, any page) call useNotifications().
- *
- * items: [{id, count, labelKey, to, onClick?}]  — labels are translated by the consumer,
- * so they follow the language switch without refetching.
- */
-
-const EMPTY_COUNTS = {
-    manager: 0,
-    internship: 0,
-    cvApproved: 0,
-    cvRejected: 0,
-    internshipApproved: 0,
-    internshipRejected: 0,
-    newInternshipApplication: 0,
-};
+const NO_ITEMS = [];
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
@@ -85,16 +122,22 @@ const NotificationsContext = createContext({
     errorKey: null,
     refresh: () => {
     },
-    clearInternships: () => {
-    },
 });
 
+/**
+ * Owns all notification data (fetching, counts, mark-as-read).
+ * Consumers (NotificationMenu, any page) call useNotifications().
+ *
+ * items: [{id, count, labelKey, to, notificationType, targetType}] — labels are translated by the consumer,
+ * so they follow the language switch without refetching.
+ */
 export function NotificationsProvider({user, children}) {
     const {pathname} = useLocation();
     const role = normalizeRole(user);
     const userId = user?.id;
 
-    const [counts, setCounts] = useState(EMPTY_COUNTS);
+    const roleItems = NOTIFICATION_ITEMS[role] ?? NO_ITEMS;
+    const [notifications, setNotifications] = useState([]);
     const [errorKey, setErrorKey] = useState(null);
     const requestId = useRef(0); // ignore responses from outdated requests
 
@@ -102,68 +145,22 @@ export function NotificationsProvider({user, children}) {
         const id = ++requestId.current;
 
         if (!userId || !hasToken()) {
-            setCounts(EMPTY_COUNTS);
+            setNotifications([]);
             setErrorKey(null);
             return;
         }
 
-        if (role === ROLE.MANAGER) {
-            const [list] = await Promise.allSettled([
-                getNotifications(),
-            ]);
+        try {
+            const list = await getNotifications();
             if (id !== requestId.current) return;
-
-            setErrorKey(list.status === "rejected" ? NOTIFICATION_ERROR.LOAD : null);
-
-            const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
-            setCounts({
-                ...EMPTY_COUNTS,
-                manager: countNotificationsByType(notifications, NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW),
-                internship: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW),
-            });
-            return;
-        }
-
-        if (role === ROLE.STUDENT) {
-            const [unread, list] = await Promise.allSettled([
-                getUnreadNotificationCount(NOTIFICATION_TYPE.NEW_INTERNSHIP_OFFER),
-                getNotifications(),
-            ]);
+            setNotifications(Array.isArray(list) ? list : []);
+            setErrorKey(null);
+        } catch {
             if (id !== requestId.current) return;
-
-            const loadFailed = unread.status === "rejected" || list.status === "rejected";
-            setErrorKey(loadFailed ? NOTIFICATION_ERROR.LOAD : null);
-
-            const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
-            setCounts({
-                ...EMPTY_COUNTS,
-                internship: unread.status === "fulfilled" && typeof unread.value === "number" ? unread.value : 0,
-                cvApproved: countNotificationsByType(notifications, NOTIFICATION_TYPE.CV_APPROVED),
-                cvRejected: countNotificationsByType(notifications, NOTIFICATION_TYPE.CV_REJECTED),
-            });
-            return;
+            setNotifications([]);
+            setErrorKey(NOTIFICATION_ERROR.LOAD);
         }
-
-        if (role === ROLE.EMPLOYER) {
-            const [list] = await Promise.allSettled([
-                getNotifications(),
-            ]);
-            if (id !== requestId.current) return;
-
-            setErrorKey(list.status === "rejected" ? NOTIFICATION_ERROR.LOAD : null);
-
-            const notifications = list.status === "fulfilled" && Array.isArray(list.value) ? list.value : [];
-            setCounts({
-                ...EMPTY_COUNTS,
-                internshipApproved: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED),
-                internshipRejected: countNotificationsByType(notifications, NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED),
-                newInternshipApplication: countNotificationsByType(notifications, NOTIFICATION_TYPE.NEW_INTERNSHIP_APPLICATION),
-            });
-            return;
-        }
-
-        setCounts(EMPTY_COUNTS);
-    }, [role, userId]);
+    }, [userId]);
 
     // Refetch on login/role change and on every route change
     useEffect(() => {
@@ -173,107 +170,38 @@ export function NotificationsProvider({user, children}) {
     // Keeps counts up to date while the user stays on the same page
     usePolling(refresh, Boolean(userId));
 
-    // Opening one of the role's pages marks its notifications as read
-    useEffect(() => {
-        const openedPage = MARK_AS_READ_PAGES[role]?.find((page) => page.path === pathname);
-        if (!openedPage) return;
+    const items = useMemo(() => roleItems.map((item) => ({
+        ...item,
+        count: countNotificationsByType(notifications, item.notificationType),
+    })), [roleItems, notifications]);
 
-        const unreadCount = openedPage.countKeys.reduce((sum, key) => sum + counts[key], 0);
-        if (unreadCount === 0) return;
+    // Opening a notification's page closes it, whether reached from the menu or the navbar
+    useEffect(() => {
+        const targetTypesToClose = new Set(items
+            .filter((item) => item.to === pathname && item.count > 0)
+            .map((item) => item.targetType));
 
         let cancelled = false;
-        markNotificationsAsRead(openedPage.targetType)
-            .then(() => {
-                if (!cancelled) {
-                    const clearedCounts = Object.fromEntries(openedPage.countKeys.map((key) => [key, 0]));
-                    setCounts((c) => ({...c, ...clearedCounts}));
-                }
-            })
-            .catch(() => {
-                if (!cancelled) setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ);
-            });
+        targetTypesToClose.forEach((targetType) => {
+            markNotificationsAsRead(targetType)
+                .then(() => {
+                    if (!cancelled) setNotifications((current) => current.filter((notification) => notification.targetType !== targetType));
+                })
+                .catch(() => {
+                    if (!cancelled) setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ);
+                });
+        });
 
         return () => {
             cancelled = true;
         };
-    }, [role, pathname, counts]);
-
-    const clearInternships = useCallback(() => {
-        markNotificationsAsRead(TARGET_TYPE.INTERNSHIP_OFFER)
-            .then(() => setCounts((c) => ({...c, internship: 0})))
-            .catch(() => setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ));
-    }, []);
-
-    const items = useMemo(() => {
-        if (role === ROLE.MANAGER) {
-            return [{
-                id: "cvPosted",
-                count: counts.manager,
-                labelKey: "navbar.cvNotification",
-                to: "/manager/cvs",
-            },
-                {
-                    id: "internshipPosted",
-                    count: counts.internship,
-                    labelKey: "navbar.internshipSubmittedForReviewNotification",
-                    to: "/manager/internships",
-                }
-            ];
-        }
-        if (role === ROLE.STUDENT) {
-            return [
-                {
-                    id: "internship",
-                    count: counts.internship,
-                    labelKey: "navbar.internshipNotification",
-                    to: "/internship",
-                    onClick: clearInternships,
-                },
-                {
-                    id: "cvsApproved",
-                    count: counts.cvApproved,
-                    labelKey: "navbar.cvApprovedNotification",
-                    to: "/cv",
-                },
-                {
-                    id: "cvsRejected",
-                    count: counts.cvRejected,
-                    labelKey: "navbar.cvRejectedNotification",
-                    to: "/cv",
-                },
-            ];
-        }
-        if (role === ROLE.EMPLOYER) {
-            return [
-                {
-                    id: "internshipApproved",
-                    count: counts.internshipApproved,
-                    labelKey: "navbar.internshipApprovedNotification",
-                    to: "/internships",
-                },
-                {
-                    id: "internshipRejected",
-                    count: counts.internshipRejected,
-                    labelKey: "navbar.internshipRejectedNotification",
-                    to: "/internships",
-                },
-                {
-                    id: "newInternshipApplication",
-                    count: counts.newInternshipApplication,
-                    labelKey: "navbar.newInternshipApplicationNotification",
-                    to: "/applications",
-                },
-            ];
-        }
-        return [];
-    }, [role, counts, clearInternships]);
+    }, [items, pathname]);
 
     const value = useMemo(() => ({
         items,
         errorKey,
-        refresh,
-        clearInternships
-    }), [items, errorKey, refresh, clearInternships]);
+        refresh
+    }), [items, errorKey, refresh]);
 
     return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }

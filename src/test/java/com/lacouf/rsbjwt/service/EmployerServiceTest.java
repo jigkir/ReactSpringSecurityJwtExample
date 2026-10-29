@@ -261,7 +261,7 @@ public class EmployerServiceTest {
 
         verify(internshipRepository).save(internship);
         verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
-        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
+        verify(notificationService).closeNotificationsOfType(NotificationType.NEW_INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
     }
 
     @Test
@@ -373,7 +373,7 @@ public class EmployerServiceTest {
         assert ("cv.pdf").equals(cv.fileName());
 
         verify(internshipApplicationRepository).save(internshipApplication);
-        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
+        verify(notificationService).closeNotificationsOfType(NotificationType.NEW_INTERNSHIP_APPLICATION, INTERNSHIP_APPLICATION_ID);
     }
 
     @Test
@@ -680,7 +680,7 @@ public class EmployerServiceTest {
     }
 
     // ---------- Helpers ----------
-    
+
     private static InternshipApplication receivedInternshipApplication() {
         Credentials studentCredentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
         Student student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE);

@@ -170,7 +170,7 @@ public class EmployerService {
 
         internshipApplicationRepository.save(internshipApplication);
 
-        notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, applicationId);
+        closeNewInternshipApplicationNotification(applicationId);
 
         return DocumentFileResponseDto.of(internshipApplication.getCv());
     }
@@ -318,6 +318,10 @@ public class EmployerService {
 
     private void closeNewInternshipApplicationNotifications(Internship internship) {
         internshipApplicationRepository.findByInternship(internship)
-                .forEach(application -> notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_APPLICATION, application.getId()));
+                .forEach(application -> closeNewInternshipApplicationNotification(application.getId()));
+    }
+
+    private void closeNewInternshipApplicationNotification(long applicationId) {
+        notificationService.closeNotificationsOfType(NotificationType.NEW_INTERNSHIP_APPLICATION, applicationId);
     }
 }

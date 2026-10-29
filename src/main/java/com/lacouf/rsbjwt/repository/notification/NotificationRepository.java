@@ -19,8 +19,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByUser_Credentials_EmailAndStatusOrderByCreatedAtDesc(String email, NotificationStatus status);
 
-    long countByUser_Credentials_EmailAndStatusAndNotificationType(String email, NotificationStatus status, NotificationType notificationType);
-
     @Transactional
     @Modifying
     @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.targetType = :targetType AND n.targetId = :targetId AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
@@ -31,4 +29,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user.credentials.email = :email AND n.targetType = :targetType AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
     void markAllAsReadByEmailAndTargetType(@Param("email") String email, @Param("targetType") TargetType targetType);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.notificationType = :notificationType AND n.targetId = :targetId AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
+    void markAllAsReadByNotificationTypeAndTargetId(@Param("notificationType") NotificationType notificationType, @Param("targetId") long targetId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Notification n SET n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.READ WHERE n.user = :user AND n.notificationType = :notificationType AND n.targetId = :targetId AND n.status = com.lacouf.rsbjwt.model.notification.NotificationStatus.UNREAD")
+    void markAsReadByUserAndNotificationTypeAndTargetId(@Param("user") UserApp user, @Param("notificationType") NotificationType notificationType, @Param("targetId") long targetId);
 }
