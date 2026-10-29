@@ -2,7 +2,7 @@ import {getApplicationCardClasses, getInternshipFormClasses} from "../../../../s
 import {useTranslation} from "react-i18next";
 import {Field, translateWarning} from "../../../../utils/CommonFields.jsx";
 import {useState} from "react";
-import AutoResizeTextarea from "../../../../utils/AutoResizeTextarea.jsx";
+import AutoResizeTextarea from "../../../../styles/AutoResizeTextarea.jsx";
 
 const INITIAL_FORM = {
     interviewDate: "",

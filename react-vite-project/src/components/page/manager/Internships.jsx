@@ -20,7 +20,7 @@ import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipCard from '../internship/InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
-import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
+import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 import Button from '../../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {approveInternship, getManagerInternships, rejectInternship} from '../../api/Api.jsx';

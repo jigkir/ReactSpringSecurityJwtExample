@@ -1,6 +1,5 @@
 import {useLayoutEffect, useRef} from 'react';
 
-// Textarea that grows/shrinks with its content (no inner scrollbar, no manual resize).
 const AutoResizeTextarea = ({value, className = "", ...props}) => {
     const ref = useRef(null);
 

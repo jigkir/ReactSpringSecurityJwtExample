@@ -46,7 +46,7 @@ import {useTranslation} from 'react-i18next';
 import Button, {useButtonClasses} from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import CvPreview from './CvPreview.jsx';
-import AutoResizeTextarea from '../../../utils/AutoResizeTextarea.jsx';
+import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 import {CV_SORT_OPTIONS, sortCvsNewest, useCvFilters} from '../../../utils/Sort.jsx';
 import {
     approveCv,
