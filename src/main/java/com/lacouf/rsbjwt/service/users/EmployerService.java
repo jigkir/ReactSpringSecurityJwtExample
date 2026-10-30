@@ -232,6 +232,16 @@ public class EmployerService {
     }
 
     @Transactional(readOnly = true)
+    public List<InterviewEmployerResponseDTO> getInterviewsByApplicationId(long applicationId, String email) throws InternshipApplicationNotFoundException {
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        return interviewRepository.findByInternshipApplication(internshipApplication)
+                .stream()
+                .map(InterviewEmployerResponseDTO::of)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public MeetingTypeDTO getMeetingTypes() {
         return MeetingTypeDTO.of(Arrays.asList(MeetingType.values()));
     }
@@ -300,7 +310,7 @@ public class EmployerService {
 
     private void rejectApplication(InternshipApplication internshipApplication) {
         interviewRepository.findByInternshipApplication(internshipApplication)
-                .ifPresent(this::cancelIfUpcoming);
+                .forEach(this::cancelIfUpcoming);
 
         internshipApplication.updateEmployerDecision(EmployerDecision.REJECTED);
         internshipApplicationRepository.save(internshipApplication);

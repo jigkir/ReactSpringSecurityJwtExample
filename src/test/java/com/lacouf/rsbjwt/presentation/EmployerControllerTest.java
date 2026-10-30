@@ -593,6 +593,26 @@ public class EmployerControllerTest {
                 .andExpect(status().isConflict());
     }
 
+    @Test
+    void shouldReturnInterviewsByApplicationId() throws Exception {
+        // Arrange
+        InterviewEmployerResponseDTO interview = interviewResponse();
+
+        when(employerService.getInterviewsByApplicationId(20L, EMPLOYER_EMAIL)).thenReturn(List.of(interview));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/20/interviews").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(30))
+                .andExpect(jsonPath("$[0].studentName").value("Jane Doe"))
+                .andExpect(jsonPath("$[0].internshipTitle").value("Software Developer"))
+                .andExpect(jsonPath("$[0].studentDecision").value("PENDING"))
+                .andExpect(jsonPath("$[0].interviewDate").value("2026-11-01T14:30"));
+
+        verify(employerService).getInterviewsByApplicationId(20L, EMPLOYER_EMAIL);
+    }
+
     // ---------- Helpers ----------
 
     private static Map<String, Object> validInternship() {

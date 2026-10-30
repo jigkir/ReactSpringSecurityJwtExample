@@ -13,7 +13,8 @@ import java.util.Optional;
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
     Optional<Interview> findByIdAndEmployer_Credentials_Email(Long id, String email);
     List<Interview> findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(String email);
-    Optional<Interview> findByInternshipApplication (InternshipApplication internshipApplication);
+    List<Interview> findByInternshipApplication (InternshipApplication internshipApplication);
+    Optional<Interview> findByInternshipApplicationAndInterviewStatus(InternshipApplication application, InterviewStatus status);
     List<Interview> findByInternshipApplication_Internship(Internship internship);
     boolean existsByInternshipApplicationAndInterviewStatus(InternshipApplication application, InterviewStatus status);
     List<Interview> findByInternshipApplication_Student(Student student);

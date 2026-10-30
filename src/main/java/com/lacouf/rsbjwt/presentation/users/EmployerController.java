@@ -106,6 +106,12 @@ public class EmployerController {
         return ResponseEntity.ok(employerService.getInterviewsOfEmployer(authentication.getName()));
     }
 
+    @GetMapping("/{applicationId}/interviews")
+    public ResponseEntity<List<InterviewEmployerResponseDTO>> getInterviewsByApplicationId(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+        List<InterviewEmployerResponseDTO> interviews = employerService.getInterviewsByApplicationId(applicationId, authentication.getName());
+        return ResponseEntity.ok(interviews);
+    }
+
     @GetMapping("/interviews/meeting-types")
     public ResponseEntity<MeetingTypeDTO> getMeetingTypes() {
         return ResponseEntity.ok(employerService.getMeetingTypes());

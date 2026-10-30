@@ -540,7 +540,7 @@ public class EmployerServiceTest {
 
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
                 .thenReturn(Optional.of(internshipApplication));
-        when(interviewRepository.findByInternshipApplication(internshipApplication)).thenReturn(Optional.empty());
+        when(interviewRepository.findByInternshipApplication(internshipApplication)).thenReturn(List.of());
 
         // Act
         employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
@@ -560,7 +560,7 @@ public class EmployerServiceTest {
 
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
                 .thenReturn(Optional.of(internshipApplication));
-        when(interviewRepository.findByInternshipApplication(internshipApplication)).thenReturn(Optional.of(interview));
+        when(interviewRepository.findByInternshipApplication(internshipApplication)).thenReturn(List.of(interview));
 
         // Act
         employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
@@ -677,6 +677,34 @@ public class EmployerServiceTest {
         assertEquals(EmployerDecision.ACCEPTED, internshipApplication.getEmployerDecision());
 
         verify(internshipApplicationRepository).save(internshipApplication);
+    }
+
+    @Test
+    void shouldReturnInterviewsOfEmployerForSpecificApplication() throws InternshipApplicationNotFoundException {
+        // Arrange
+        LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+        Interview interview = new Interview(employer, internshipApplication, "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
+        interview.setId(30L);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+        when(interviewRepository.findByInternshipApplication(internshipApplication))
+                .thenReturn(List.of(interview));
+
+        // Act
+        List<InterviewEmployerResponseDTO> response = employerService.getInterviewsByApplicationId(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(1, response.size());
+
+        InterviewEmployerResponseDTO first = response.getFirst();
+        assertEquals(30L, first.id());
+        assertEquals("Jane Doe", first.studentName());
+        assertEquals("Software Developer", first.internshipTitle());
+        assertEquals("Please come to our office", first.message());
+        assertEquals("PENDING", first.studentDecision());
+        assertEquals(interviewDate.toString(), first.interviewDate());
     }
 
     // ---------- Helpers ----------
