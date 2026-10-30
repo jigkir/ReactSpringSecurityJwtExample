@@ -297,11 +297,11 @@ export async function updateManagerInternship(internshipId, internship) {
 
 //region Manager Interviews
 
-export async function updateInterview(applicationId, date, message) {
-    const response = await fetcher("employer/internship", {
-        method: "POST",
+export async function updateInterview(interviewId, interviewRequest) {
+    const response = await fetcher(`employer/interviews/${interviewId}`, {
+        method: "PUT",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(internship),
+        body: JSON.stringify(interviewRequest),
     });
     return handleResponse(response);
 }
@@ -314,6 +314,16 @@ export async function createInterview(applicationId, interviewRequest) {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(interviewRequest),
     });
+    return handleResponse(response);
+}
+
+export async function getEmployerInterviews() {
+    const response = await fetcher("employer/interviews", {method: "GET"});
+    return handleResponse(response);
+}
+
+export async function getEmployerInterviewsByApplicationId(applicationId) {
+    const response = await fetcher(`employer/${applicationId}/interviews`, {method: "GET"});
     return handleResponse(response);
 }
 

@@ -2,10 +2,16 @@ import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
 import CvPreview from "../cv/CvPreview.jsx";
 import {useTranslation} from "react-i18next";
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
-import {createInterview, getApplicationCoverLetter, updateInterview} from "../../api/Api.jsx";
-import {base64ToBlobUrl} from "../cv/cvUtils.js";
+import {
+    createInterview,
+    getEmployerInterviews,
+    getEmployerInterviewsByApplicationId,
+    updateInterview
+} from "../../api/Api.jsx";
+
+
 
 function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
     const s = getApplicationCardClasses(dark);
@@ -13,29 +19,31 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const {student, cvFileName} = application;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
-    const [editing, setEditing] = useState(false);
-    const [isLetterOpen, setIsLetterOpen] = useState(false);
-    const interviewLabel = isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : t("employerInternship.openInterviewPicker");
+    const [interview, setInterview] = useState(null);
+    const interviewLabel =
+        isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.closeInterviewPicker")) ;
 
-    const hasLetter = Boolean(application.coverLetterFileName);
+    const getInterviewFromApplication = useCallback( async (application) => {
+        let Interviews = await getEmployerInterviewsByApplicationId(application.id);
+        let a = ["a","b"];
+        setInterview(Interviews.findLast(() => true));
+        //console.log(Interviews.findLast(() => true));
+    }, []);
+
+
+    useEffect(() => {
+        getInterviewFromApplication(application);
+    }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
 
-    const getLetterUrl = useCallback(async (appId) => {
-        const letter = await getApplicationCoverLetter(appId);
-        if (!letter?.content) throw new Error("missing content");
-        return base64ToBlobUrl(letter.content);
-    }, []);
-
     const handleSendOffer = async (payload) => {
-        console.log("payload");
         try {
-            if (editing) {
-                const updated = await updateInterview(application.id, payload);
+            if (interview !== null) {
+                const updated = await updateInterview(interview.id, payload);
             } else {
                 const saved = await createInterview(application.id, payload);
             }
-            console.log("succ");
             return {success: true};
         } catch (err) {
             return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
@@ -43,15 +51,15 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     };
 
     return (
-        <div className={`${s.card} min-w-0`}>
+        <div className={s.card}>
             {/* Wrapper ensures everything stacks vertically inside the card */}
-            <div className="w-full min-w-0 flex flex-col">
-                {/* Top row: Student Info on the left, View buttons on the right */}
-                <div className="flex flex-wrap items-center justify-between w-full gap-x-6 gap-y-3">
-                    <div className="min-w-0 flex flex-wrap items-center gap-x-8 gap-y-3">
-                        <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <h3 className={`${s.title} break-words`}>
+            <div className="w-full flex flex-col">
+                {/* Top row: Student Info on the left, View button on the right */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className={s.title}>
                                     {student?.firstName} {student?.lastName}
                                 </h3>
                                 {isNew && (
@@ -61,7 +69,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                                     </span>
                                 )}
                             </div>
-                            <p className={`${s.description} break-all`}>
+                            <p className={s.description}>
                                 {student?.email}
                             </p>
                             {internshipTitle && (
@@ -72,27 +80,21 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         <span className={s.fileName} title={cvFileName}>
                             {cvFileName || "No CV uploaded"}
                         </span>
-                        {hasLetter && (
-                            <span className={s.fileName} title={application.coverLetterFileName}>
-                                {application.coverLetterFileName}
-                            </span>
-                        )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center">
                         <Button
-                            tone="accent"
-                            lockTone
+                            tone={isInterviewSelectOpen ? "danger" : "accent"}
                             dark={dark}
-                            icon={isInterviewSelectOpen ? "close" : "event"}
+                            icon={isInterviewSelectOpen ? "close" : "visibility"}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
+                            className="mr-4"
                         >
                             {interviewLabel}
                         </Button>
                         <Button
-                            tone="accent"
-                            lockTone
+                            tone={isPreviewOpen ? "danger" : "accent"}
                             dark={dark}
                             icon={isPreviewOpen ? "close" : "visibility"}
                             onClick={onTogglePreview}
@@ -100,22 +102,10 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         >
                             {viewLabel}
                         </Button>
-                        {hasLetter && (
-                            <Button
-                                tone="accent"
-                                lockTone
-                                dark={dark}
-                                icon={isLetterOpen ? "close" : "visibility"}
-                                onClick={() => setIsLetterOpen((o) => !o)}
-                                aria-expanded={isLetterOpen}
-                            >
-                                {isLetterOpen ? t("cvPreview.closeBtn") : t("applicationCard.coverLetter")}
-                            </Button>
-                        )}
                     </div>
                 </div>
 
-                {/* Inline Interview Time Selector */}
+                {/* Inline Interview Time Selector — forced underneath with a top border */}
                 {isInterviewSelectOpen && (
                     <div className="w-full pt-4 mt-4">
                         <InterviewPicker
@@ -123,29 +113,18 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             dark={dark}
                             onClose={() => setIsInterviewSelectOpen(false)}
                             onSendOffer={handleSendOffer}
-                            isEdit={editing}
+                            interview={interview}
                         />
                     </div>
                 )}
 
-                {/* Inline CV preview */}
+                {/* Inline Preview Container — forced underneath with a top border */}
                 {isPreviewOpen && (
                     <div className="w-full pt-4 mt-4">
                         <CvPreview
                             doc={{id: application.id, fileName: cvFileName}}
                             dark={dark}
                             getUrl={getUrl}
-                        />
-                    </div>
-                )}
-
-                {/* Inline cover letter preview */}
-                {isLetterOpen && (
-                    <div className="w-full pt-4 mt-4">
-                        <CvPreview
-                            doc={{id: application.id, fileName: application.coverLetterFileName}}
-                            dark={dark}
-                            getUrl={getLetterUrl}
                         />
                     </div>
                 )}
