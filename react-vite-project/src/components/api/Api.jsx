@@ -405,8 +405,10 @@ export async function hideDocument(type, id) {
 export async function getApplicationCoverLetter(applicationId) {
     return handleResponse(await fetcher(`employer/applications/${applicationId}/cover-letter`, {method: "GET"}));
 }
+
 // endregion
 
+//region Expired Session
 export async function getSessions() {
     return {
         sessions: [
@@ -434,6 +436,12 @@ export async function getSessions() {
     };
 }
 
-export async function checkUserStatus(){
-    return { status: "PENDING" };
+export async function checkUserStatus() {
+    return {
+        status: "PENDING"
+        // "REJECTED"
+        // "APPROVED"};
+    };
 }
+
+//endregion

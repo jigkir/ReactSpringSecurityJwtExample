@@ -1,11 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Navigate, Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 import {useDarkMode} from './styles/DarkMode.jsx';
 import PageLayout from './components/PageLayout.jsx';
 import About from './components/About.jsx';
 import Login from './components/page/auth/Login.jsx';
 import Signup from './components/page/auth/Signup.jsx';
-import {getCurrentUser} from './components/api/Api.jsx';
+import {checkUserStatus, getCurrentUser} from './components/api/Api.jsx';
 import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
 import PostInternship from './components/page/internship/PostInternship.jsx';
@@ -19,10 +19,12 @@ import StudentInternships from "./components/page/student/Internships.jsx";
 import ViewApplications from "./components/page/application/ViewApplications.jsx";
 import Applications from "./components/page/application/Applications.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
+import {usePolling} from "./utils/usePolling.js";
 
 function App() {
     const [user, setUser] = useState({});
     const [error, setError] = useState(null);
+    const [accountStatus, setAccountStatus] = useState(user?.status || 'PENDING');
     const {dark, toggleDark} = useDarkMode();
     const navigate = useNavigate();
     const location = useLocation();
@@ -58,6 +60,35 @@ function App() {
             cancelled = true;
         };
     }, [location.pathname]);
+
+    useEffect(() => {
+        if (user?.isLoggedIn) {
+            console.log(user);
+            checkUserStatus().then((data) => {
+                if (data?.status) {
+                    setAccountStatus(data.status);
+                }
+            }).catch(() => {
+                // Silence network errors on initial check
+            });
+        }
+    }, [user?.isLoggedIn]);
+
+    const fetchStatus = useCallback(async () => {
+        try {
+            const data = await checkUserStatus();
+            if (data?.status) {
+                setAccountStatus(data.status);
+            }
+        } catch {
+            // Silence network errors during polling
+        }
+    }, []);
+
+    const isPendingOrExpired = accountStatus === 'PENDING'
+    usePolling(fetchStatus, user?.isLoggedIn && isPendingOrExpired);
+
+    const isAccessGranted = accountStatus === 'APPROVED';
 
     return (
         <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
