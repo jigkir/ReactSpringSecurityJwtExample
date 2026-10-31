@@ -1,11 +1,12 @@
 import {Link, NavLink, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
-import {getSessions} from "./api/Api.jsx";
+import {checkUserStatus, getSessions} from "./api/Api.jsx";
+import {usePolling} from "../utils/usePolling.js";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
@@ -32,6 +33,7 @@ function Navbar({user, dark, toggleDark}) {
     const theme = getNavbarClasses(dark);
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState("");
+    const [accountStatus, setAccountStatus] = useState(user?.status || 'PENDING');
 
     // Mobile dropdowns
     const [menuOpen, setMenuOpen] = useState(false);
@@ -86,6 +88,33 @@ function Navbar({user, dark, toggleDark}) {
         }
     }, [isLoggedIn]);
 
+    useEffect(() => {
+        if (isLoggedIn) {
+            checkUserStatus().then((data) => {
+                if (data?.status) {
+                    setAccountStatus(data.status);
+                }
+            }).catch(() => {
+                // Silence network errors on initial check
+            });
+        }
+    }, [isLoggedIn]);
+
+    const fetchStatus = useCallback(async () => {
+        try {
+            const data = await checkUserStatus();
+            if (data?.status) {
+                setAccountStatus(data.status);
+            }
+        } catch {
+            // Silence network errors during polling
+        }
+    }, []);
+
+    const isPendingOrExpired = accountStatus === 'PENDING'
+    usePolling(fetchStatus, isLoggedIn && isPendingOrExpired);
+
+    const isAccessGranted = accountStatus === 'APPROVED';
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
 
@@ -100,7 +129,7 @@ function Navbar({user, dark, toggleDark}) {
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), end: true},
         {to: "/about", label: t("navbar.about")},
-        ...(isLoggedIn ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
+        ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
             ...item,
             label: item.labelKey ? t(item.labelKey) : item.label,
         })),
@@ -158,7 +187,7 @@ function Navbar({user, dark, toggleDark}) {
                                         {label}
                                     </NavLink>
                                 ))}
-                                {isLoggedIn && <NotificationMenu dark={dark}/>}
+                                {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </nav>
 
                             {/* Mobile: app name doubles as the pages dropdown button */}
@@ -201,12 +230,12 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                             {/* Mobile bell (always visible, in the top bar) */}
                             <div className="lg:hidden">
-                                {isLoggedIn && <NotificationMenu dark={dark}/>}
+                                {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </div>
                         </div>
 
                         {/*Center section*/}
-                        {isLoggedIn &&
+                        {isLoggedIn && isAccessGranted &&
                             (<div className="hidden md:flex justify-center flex-1">
                                 <form>
                                     <select
@@ -344,6 +373,7 @@ function Navbar({user, dark, toggleDark}) {
                 selectedSession={selectedSession}
                 setSelectedSession={setSelectedSession}
                 isLoggedIn={isLoggedIn}
+                isAccessGranted={isAccessGranted}
             />
         </>
     );

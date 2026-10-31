@@ -12,7 +12,8 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                                                             sessions,
                                                             selectedSession,
                                                             setSelectedSession,
-                                                            isLoggedIn
+                                                            isLoggedIn,
+                                                            isAccessGranted
                                                         }, ref) {
     if (!isOpen) return null;
 
@@ -72,7 +73,7 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                             </NavLink>
                         ))}
                     </nav>
-                    {isLoggedIn && (
+                    {isLoggedIn && isAccessGranted && (
                         <div className={`pt-10`}>
                             <select
                                 value={selectedSession}

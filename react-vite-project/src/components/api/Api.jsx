@@ -433,3 +433,7 @@ export async function getSessions() {
         ]
     };
 }
+
+export async function checkUserStatus(){
+    return { status: "PENDING" };
+}

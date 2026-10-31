@@ -1,10 +1,14 @@
-import {Link, useOutletContext} from 'react-router-dom';
+import {Link, Navigate, replace, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getHomeClasses, getMainContainerClasses} from '../styles/AppStyles.jsx';
 import Button from '../styles/Button.jsx';
 import Icon from '../styles/Icon.jsx';
 import {PREVIEWS_BY_ROLE} from './home/HomePreviews.jsx';
 import {HOME_COLUMNS} from './home/PreviewLoaders.js';
+import {useCallback, useEffect, useState} from "react";
+import {checkUserStatus} from "./api/Api.jsx";
+import {usePolling} from "../utils/usePolling.js";
+import ExpiredUser from "./page/ExpiredUser.jsx";
 
 const GRID_BY_COLUMNS = {
     1: {grid: "grid-cols-1", span: "", width: "max-w-5xl"},
@@ -18,6 +22,35 @@ const Home = () => {
     const classes = getHomeClasses(dark);
     const landing = getMainContainerClasses(dark);
     const layout = GRID_BY_COLUMNS[HOME_COLUMNS] ?? GRID_BY_COLUMNS[1];
+    const [accountStatus, setAccountStatus] = useState(user?.status || 'PENDING');
+
+    useEffect(() => {
+        if (user?.isLoggedIn) {
+            checkUserStatus().then((data) => {
+                if (data?.status) {
+                    setAccountStatus(data.status);
+                }
+            }).catch(() => {
+                // Silence network errors on initial check
+            });
+        }
+    }, [user?.isLoggedIn]);
+
+    const fetchStatus = useCallback(async () => {
+        try {
+            const data = await checkUserStatus();
+            if (data?.status) {
+                setAccountStatus(data.status);
+            }
+        } catch {
+            // Silence network errors during polling
+        }
+    }, []);
+
+    const isPendingOrExpired = accountStatus === 'PENDING'
+    usePolling(fetchStatus, user?.isLoggedIn && isPendingOrExpired);
+
+    const isAccessGranted = accountStatus === 'APPROVED';
 
     // Token present but user still loading: avoid flashing the landing page
     if (user?.isLoggedIn === undefined && localStorage.getItem("token")) {
@@ -46,6 +79,12 @@ const Home = () => {
         );
     }
 
+    // endregion
+
+    // region Logged in, but account access is not approved yet -> Render ExpiredUser view
+    if (user?.isLoggedIn && !isAccessGranted) {
+        return <Navigate to="/expired" replace/>;
+    }
     // endregion
 
     // region Logged in: the real pages in preview mode, same layout for every role

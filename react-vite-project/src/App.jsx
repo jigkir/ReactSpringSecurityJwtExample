@@ -18,6 +18,7 @@ import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
 import ViewApplications from "./components/page/application/ViewApplications.jsx";
 import Applications from "./components/page/application/Applications.jsx";
+import ExpiredUser from "./components/page/ExpiredUser.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -97,6 +98,7 @@ function App() {
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace/>}/>
+                    <Route path="/expired" element={<ExpiredUser user={user}/>}/>
                 </Route>
             </Routes>
         </div>
