@@ -121,7 +121,7 @@ function InterviewPicker({application = null, dark, onClose, onSendOffer, interv
                 )}
 
                 {/* Message: grows with its content */}
-                <Field id="message" label={t("interview.descriptionLabel")} labelClass={s.label}>
+                <Field id="message" label={t("interview.messageLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
                         id="message" name="message" rows={3} value={formData.message}
                         onChange={handleChange}
@@ -131,7 +131,7 @@ function InterviewPicker({application = null, dark, onClose, onSendOffer, interv
 
                 {/* Date TODO: Add in time selectruion*/}
                 <div className={s.grid2}>
-                    <Field id="interviewDate" label={t("interview.MeetingTime")} labelClass={s.label}>
+                    <Field id="interviewDate" label={t("interview.meetingTimeLabel")} labelClass={s.label}>
                         <input
                             id="interviewDate" type="datetime-local" name="interviewDate" value={formData.interviewDate}
                             min={minDate} onChange={handleChange}

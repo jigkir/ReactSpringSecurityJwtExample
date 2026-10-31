@@ -422,6 +422,7 @@
   },
   "employerInternship": {
     "openInterviewPicker": "Schedule an interview",
+    "editInterviewPicker": "Edit interview request",
     "closeInterviewPicker": "Cancel"
   },
   "internshipFilters": {
@@ -505,6 +506,23 @@
     },
     "viewApplication": "View applications",
     "applicationCount": "Applications"
+  },
+  "interview": {
+    "editTitle": "Editing interview request",
+    "title": "Send an interview request",
+    "messageLabel": "Message",
+    "meetingTimeLabel": "Meeting time",
+    "meetingTypeLabel": "Meeting type",
+    "selectPlaceholder": "Select an option",
+    "meetingDetailsLabel": "Meeting details",
+    "cancelBtn": "Cancel",
+    "saveChanges": "Save changes",
+    "submitBtn": "Submit",
+    "meetingTypes": {
+      "ONLINE": "Online",
+      "PHONE": "On the phone",
+      "IN_PERSON": "In person"
+    }
   },
   "viewApplication": {
     "loadError": "Unable to load applications",
