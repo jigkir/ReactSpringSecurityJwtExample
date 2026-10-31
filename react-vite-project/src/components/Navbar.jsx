@@ -5,6 +5,7 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
+import {getSessions} from "./api/Api.jsx";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
@@ -29,6 +30,8 @@ function Navbar({user, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
     const theme = getNavbarClasses(dark);
+    const [sessions, setSessions] = useState([]);
+    const [selectedSession, setSelectedSession] = useState("");
 
     // Mobile dropdowns
     const [menuOpen, setMenuOpen] = useState(false);
@@ -67,9 +70,21 @@ function Navbar({user, dark, toggleDark}) {
         };
     }, [menuOpen, authMenuOpen]);
 
+
     const role = normalizeRole(user);
     const isLoggedIn = user?.isLoggedIn ?? false;
     const homePath = isLoggedIn ? "/home" : "/";
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            getSessions().then((data) => {
+                setSessions(data.sessions);
+                if (data.sessions.length > 0) {
+                    setSelectedSession(data.sessions[0].name);
+                }
+            });
+        }
+    }, [isLoggedIn]);
 
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
@@ -114,7 +129,7 @@ function Navbar({user, dark, toggleDark}) {
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6 min-w-0 flex-1 justify-start">
                             {/* Desktop brand */}
                             <Link to={homePath}
                                   className={`hidden lg:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -190,8 +205,27 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                         </div>
 
+                        {/*Center section*/}
+                        {isLoggedIn &&
+                            (<div className="hidden md:flex justify-center flex-1">
+                                <form>
+                                    <select
+                                        value={selectedSession}
+                                        onChange={(e) => setSelectedSession(e.target.value)}
+                                        className={`px-3 py-1 rounded-lg text-sm border text-white ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300"}`}
+                                    >
+                                        {sessions.map((session) => (
+                                            <option key={session.name} value={session.name}>
+                                                {session.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </form>
+                            </div>)}
+
                         {/* ───────── Right side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 ml-auto shrink-0">
+                        <div
+                            className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 ml-auto shrink-0 flex-1 justify-end">
 
                             <button onClick={toggleLang}
                                     className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
@@ -306,6 +340,10 @@ function Navbar({user, dark, toggleDark}) {
                 dark={dark}
                 t={t}
                 mobileLinkClass={mobileLinkClass}
+                sessions={sessions}
+                selectedSession={selectedSession}
+                setSelectedSession={setSelectedSession}
+                isLoggedIn={isLoggedIn}
             />
         </>
     );

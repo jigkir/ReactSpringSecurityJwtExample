@@ -297,11 +297,11 @@ export async function updateManagerInternship(internshipId, internship) {
 
 //region Manager Interviews
 
-export async function updateInterview(applicationId, date, message) {
-    const response = await fetcher("employer/internship", {
-        method: "POST",
+export async function updateInterview(interviewId, interviewRequest) {
+    const response = await fetcher(`employer/interviews/${interviewId}`, {
+        method: "PUT",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(internship),
+        body: JSON.stringify(interviewRequest),
     });
     return handleResponse(response);
 }
@@ -314,6 +314,16 @@ export async function createInterview(applicationId, interviewRequest) {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(interviewRequest),
     });
+    return handleResponse(response);
+}
+
+export async function getEmployerInterviews() {
+    const response = await fetcher("employer/interviews", {method: "GET"});
+    return handleResponse(response);
+}
+
+export async function getEmployerInterviewsByApplicationId(applicationId) {
+    const response = await fetcher(`employer/${applicationId}/interviews`, {method: "GET"});
     return handleResponse(response);
 }
 
@@ -396,3 +406,30 @@ export async function getApplicationCoverLetter(applicationId) {
     return handleResponse(await fetcher(`employer/applications/${applicationId}/cover-letter`, {method: "GET"}));
 }
 // endregion
+
+export async function getSessions() {
+    return {
+        sessions: [
+            {
+                name: "H2026",
+                startDate: "2026-01-05",
+                endDate: "2026-04-30"
+            },
+            {
+                name: "E2026",
+                startDate: "2026-05-04",
+                endDate: "2026-08-21"
+            },
+            {
+                name: "A2026",
+                startDate: "2026-08-31",
+                endDate: "2026-12-18"
+            },
+            {
+                name: "H2027",
+                startDate: "2027-01-11",
+                endDate: "2027-04-30"
+            }
+        ]
+    };
+}

@@ -77,14 +77,14 @@ function buildPayload(formData, internship) {
 const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
 
-function InterviewPicker({application = null, dark, isEdit, onClose, onSendOffer}) {
+function InterviewPicker({application = null, dark, onClose, onSendOffer, interview}) {
     const s = getInternshipFormClasses(dark);
     const {t} = useTranslation();
     const [error, setError] = useState(null);
     const tomorrow = getTomorrow();
-    const [formData, setFormData] = useState(() => INITIAL_FORM);
+    const [formData, setFormData] = useState(toForm(interview));
     const minDate = tomorrow;
-
+    const [isEdit, setIsEdit] = useState(interview !== undefined && interview != null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

@@ -104,7 +104,7 @@ function ViewApplications({user}) {
                     {internshipTitle}
                 </h1>
             </div>
-
+            {/*This is the page for each individual thing*/}
             {/* Applications List */}
             <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
                 {hasItems ? (
