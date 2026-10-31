@@ -11,6 +11,10 @@
  * section only own the UI state (search / status / sort) and call those functions.
  *
  * Sort options are [value, translationKey] pairs so components just map over them.
+ *
+ * Display order everywhere (CVs and internships, Home included):
+ *   REJECTED → PENDING → APPROVED
+ * The status always comes first; the chosen sort only orders items inside the same status.
  */
 
 import {useMemo, useRef, useState} from 'react';
@@ -40,6 +44,15 @@ export const compareText = (field) => (a, b) => (a[field] ?? "").localeCompare(b
 
 export const reverse = (cmp) => (a, b) => cmp(b, a);
 
+// Display order of statuses: rejected first, then pending, then approved
+const STATUS_RANK = {REJECTED: 0, PENDING: 1, APPROVED: 2};
+
+// A missing or unknown status counts as PENDING
+export const statusRank = (item) => STATUS_RANK[item.status ?? "PENDING"] ?? STATUS_RANK.PENDING;
+
+// Wraps a comparator so the status order always wins; `cmp` only orders items of the same status
+export const byStatusThen = (cmp) => (a, b) => statusRank(a) - statusRank(b) || cmp(a, b);
+
 // True if the lower-cased search text appears in any of the given values
 export const matchesSearch = (values, search) => {
     const q = (search ?? "").trim().toLowerCase();
@@ -49,11 +62,11 @@ export const matchesSearch = (values, search) => {
 
 /**
  * Counts items per status for CVs and internships.
- * REFUSED is treated as REJECTED; a missing status counts as PENDING.
+ * A missing status counts as PENDING.
  * Returns {PENDING, APPROVED, REJECTED}.
  */
 export const countByStatus = (list) => (list ?? []).reduce((acc, d) => {
-    const key = d.status === "REFUSED" ? "REJECTED" : (d.status ?? "PENDING");
+    const key = d.status ?? "PENDING";
     acc[key] = (acc[key] ?? 0) + 1;
     return acc;
 }, {PENDING: 0, APPROVED: 0, REJECTED: 0});
@@ -101,17 +114,20 @@ export function filterInternships(list, {search = "", status = "ALL", discipline
 }
 
 /**
+ * Status order first (REJECTED → PENDING → APPROVED), then the chosen sort.
+ *
  * `viewedAtLoad` (optional Map id -> boolean) is the "viewed" state each offer had when it
  * first appeared on the page. With "Newest first", offers that were NOT viewed at that time
- * go on top. Because the state is frozen, previewing an offer does not move it: it only
- * moves after a page change / reload (when the map is rebuilt).
+ * go on top (inside the same status). Because the state is frozen, previewing an offer does
+ * not move it: it only moves after a page change / reload (when the map is rebuilt).
  */
 export function sortInternships(list, sort = "NEWEST", viewedAtLoad = null) {
-    const base = INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST;
+    const base = byStatusThen(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST);
     if (!viewedAtLoad || (sort !== "NEWEST" && INTERNSHIP_SORTERS[sort])) return [...list].sort(base);
 
     const wasViewed = (i) => Number(viewedAtLoad.get(i.id) ?? Boolean(i.viewed));
-    return [...list].sort((a, b) => wasViewed(a) - wasViewed(b) || base(a, b));
+    return [...list].sort((a, b) =>
+        statusRank(a) - statusRank(b) || wasViewed(a) - wasViewed(b) || base(a, b));
 }
 
 export function applyInternshipFilters(list, {search, status, discipline, sort, viewedAtLoad} = {}) {
@@ -168,8 +184,8 @@ export const CV_SORT_OPTIONS = [
     ["NAME_DESC", "cvDocuments.sortNameDesc"],
 ];
 
-/** Student side: newest first (replaces sortDocs in cvUtils.js). */
-export const sortCvsNewest = (list) => [...list].sort(CV_SORTERS.DATE_DESC);
+/** Student side: REJECTED → PENDING → APPROVED, newest first inside each status. */
+export const sortCvsNewest = (list) => [...list].sort(byStatusThen(CV_SORTERS.DATE_DESC));
 
 /** Distinct, sorted disciplines found in a manager CV list. */
 export const getCvDisciplines = (docs) =>
@@ -185,7 +201,7 @@ export function filterCvs(docs, {status = "ALL", discipline = "ALL", search = ""
 }
 
 export function sortCvs(docs, sort = "DATE_DESC") {
-    return [...docs].sort(CV_SORTERS[sort] ?? CV_SORTERS.DATE_DESC);
+    return [...docs].sort(byStatusThen(CV_SORTERS[sort] ?? CV_SORTERS.DATE_DESC));
 }
 
 export function applyCvFilters(docs, {status, discipline, search, sort} = {}) {

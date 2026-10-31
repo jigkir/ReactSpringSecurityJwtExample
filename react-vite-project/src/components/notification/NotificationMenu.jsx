@@ -14,7 +14,7 @@ export default function NotificationMenu({dark}) {
     const theme = getNavbarClasses(dark);
     const menuClasses = getNotificationMenuClasses(dark);
 
-    const active = items.filter((notif) => (notif.count ?? 0) > 0);
+    const active = items.filter((notif) => notif.count > 0);
     const total = active.reduce((sum, notif) => sum + notif.count, 0);
 
     useEffect(() => {
@@ -64,10 +64,7 @@ export default function NotificationMenu({dark}) {
                                         <Link
                                             to={notif.to}
                                             className={menuClasses.link}
-                                            onClick={() => {
-                                                setOpen(false);
-                                                notif.onClick?.();
-                                            }}
+                                            onClick={() => setOpen(false)}
                                         >
                                             <span>{t(notif.labelKey, {amount: notif.count})}</span>
                                         </Link>

@@ -1,26 +1,30 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
+import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.cv.CV;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.cv.CvVisibility;
+import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.repository.cv.CVRepository;
+import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import org.springframework.stereotype.Service;
@@ -35,16 +39,19 @@ public class ManagerService {
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
     private final StudentRepository studentRepository;
+
     private final NotificationService notificationService;
     private final UserAppService userAppService;
+    private final InternshipService internshipService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
+        this.internshipService = internshipService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -58,21 +65,21 @@ public class ManagerService {
     }
 
     public List<ManagerCvResponseDto> getAllVisibleCvs() {
-        List<CV> cvs = cvRepository.findByVisibility(CvVisibility.VISIBLE);
+        List<CV> cvs = cvRepository.findByVisibility(DocumentVisibility.VISIBLE);
 
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }
 
-    public ManagerCvResponseDto getCv(long cvId) throws CvNotFoundException {
+    public ManagerCvResponseDto getCv(long cvId) throws DocumentNotFoundException {
         return ManagerCvResponseDto.of(findVisibleCv(cvId));
     }
 
-    public CvFileResponseDto getCvFile(long cvId) throws CvNotFoundException {
-        return CvFileResponseDto.of(findVisibleCv(cvId));
+    public DocumentFileResponseDto getCvFile(long cvId) throws DocumentNotFoundException {
+        return DocumentFileResponseDto.of(findVisibleCv(cvId));
     }
 
     @Transactional
-    public ManagerCvResponseDto approveCv(long cvId) throws CvNotFoundException {
+    public ManagerCvResponseDto approveCv(long cvId) throws DocumentNotFoundException {
         CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == ReviewStatus.APPROVED) {
@@ -94,7 +101,7 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws CvNotFoundException {
+    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws DocumentNotFoundException {
         CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == ReviewStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
@@ -132,8 +139,7 @@ public class ManagerService {
         internship.approve();
         internshipRepository.save(internship);
 
-        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_APPROVED, NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage());
-        notifyMatchingStudentsOfInternship(internship);
+        notifyOfInternshipApproval(internship);
 
         return InternshipResponseDto.of(internship);
     }
@@ -150,12 +156,28 @@ public class ManagerService {
         return InternshipResponseDto.of(internship);
     }
 
+    @Transactional
+    public InternshipResponseDto updateInternship(long internshipId, InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException {
+        Internship internship = findInternship(internshipId);
+        boolean wasAlreadyApproved = internship.getStatus() == ReviewStatus.APPROVED;
+
+        internshipService.updateDetails(internship, internshipRequestDto);
+        internship.approve();
+        internshipRepository.save(internship);
+
+        if (!wasAlreadyApproved) {
+            notifyOfInternshipApproval(internship);
+        }
+
+        return InternshipResponseDto.of(internship);
+    }
+
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }
 
-    private CV findVisibleCv(long cvId) throws CvNotFoundException {
-        return cvRepository.findByIdAndVisibility(cvId, CvVisibility.VISIBLE).orElseThrow(() -> new CvNotFoundException(cvId));
+    private CV findVisibleCv(long cvId) throws DocumentNotFoundException {
+        return cvRepository.findByIdAndVisibility(cvId, DocumentVisibility.VISIBLE).orElseThrow(() -> new DocumentNotFoundException(cvId));
     }
 
     private ManagerCvResponseDto saveAndConvert(CV cv) {
@@ -167,6 +189,11 @@ public class ManagerService {
     private void notifyStudentOfCvReviewDecision(CV cv, NotificationType notificationType, String message) {
         notificationService.closeNotificationsOfTarget(TargetType.CV, cv.getId());
         notificationService.notifyIfAbsent(notificationType, message, cv.getId(), cv.getStudent());
+    }
+
+    private void notifyOfInternshipApproval(Internship internship) {
+        notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_APPROVED, NotificationType.INTERNSHIP_OFFER_APPROVED.getMessage());
+        notifyMatchingStudentsOfInternship(internship);
     }
 
     private void notifyEmployerOfInternshipReviewDecision(Internship internship, NotificationType notificationType, String message) {
@@ -192,7 +219,7 @@ public class ManagerService {
     }
 
     private boolean hasVisibleApprovedCv(Student student) {
-        return cvRepository.findByStudent(student).stream()
-                .anyMatch(cv -> cv.getVisibility() == CvVisibility.VISIBLE && cv.getStatus() == ReviewStatus.APPROVED);
+        return cvRepository.findByUser(student).stream()
+                .anyMatch(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE && cv.getStatus() == ReviewStatus.APPROVED);
     }
 }

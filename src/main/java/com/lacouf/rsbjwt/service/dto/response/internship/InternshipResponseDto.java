@@ -26,8 +26,7 @@ public record InternshipResponseDto(
         long employerId,
         String employerEmail,
         Discipline discipline,
-        LocalDateTime uploadedAt,
-        boolean viewed
+        LocalDateTime uploadedAt
 ) {
     public static InternshipResponseDto of(Internship internship) {
         return new InternshipResponseDto(
@@ -47,30 +46,7 @@ public record InternshipResponseDto(
                 internship.getPostedBy().getId(),
                 internship.getPostedBy().getEmail(),
                 internship.getPostedBy().getDiscipline(),
-                internship.getUploadDate(),
-                false
+                internship.getUploadDate()
         );
-    }
-
-    public static InternshipResponseDto of(Internship internship, boolean viewed) {
-        return new InternshipResponseDto(
-                internship.getId(),
-                internship.getTitle(),
-                internship.getDescription(),
-                internship.getRequiredSkills(),
-                internship.getDurationInWeeks(),
-                internship.getLocation(),
-                internship.getWorkMode(),
-                internship.getStartDate(),
-                internship.getApplicationDeadline(),
-                internship.getCompensationAmount(),
-                internship.isCompensationNegotiable(),
-                internship.getStatus(),
-                internship.getRejectionComment(),
-                internship.getPostedBy().getId(),
-                internship.getPostedBy().getEmail(),
-                internship.getPostedBy().getDiscipline(),
-                internship.getUploadDate(),
-                viewed);
     }
 }

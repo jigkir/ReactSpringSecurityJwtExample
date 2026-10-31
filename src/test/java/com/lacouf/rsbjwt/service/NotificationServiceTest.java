@@ -87,19 +87,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldReturnUnreadCountWhenCountingByType() {
-        // Arrange
-        when(notificationRepository.countByUser_Credentials_EmailAndStatusAndNotificationType(
-                EMAIL, NotificationStatus.UNREAD, NotificationType.NEW_INTERNSHIP_OFFER)).thenReturn(3L);
-
-        // Act
-        long result = notificationService.countUnread(EMAIL, NotificationType.NEW_INTERNSHIP_OFFER);
-
-        // Assert
-        assert (Long.valueOf(3L)).equals(result);
-    }
-
-    @Test
     void shouldMarkAllNotificationsOfTargetTypeAsReadForConnectedUser() {
         // Act
         notificationService.markAllAsReadByTargetType(EMAIL, TargetType.CV);
@@ -115,5 +102,23 @@ class NotificationServiceTest {
 
         // Assert
         verify(notificationRepository).markAllAsReadByTargetTypeAndTargetId(TargetType.INTERNSHIP_OFFER, 1L);
+    }
+
+    @Test
+    void shouldCloseOnlyNotificationsOfTypeWhenClosingByType() {
+        // Act
+        notificationService.closeNotificationsOfType(NotificationType.NEW_INTERNSHIP_APPLICATION, 1L);
+
+        // Assert
+        verify(notificationRepository).markAllAsReadByNotificationTypeAndTargetId(NotificationType.NEW_INTERNSHIP_APPLICATION, 1L);
+    }
+
+    @Test
+    void shouldCloseOnlyNotificationOfRecipientWhenClosingForRecipient() {
+        // Act
+        notificationService.closeNotificationOfRecipient(NotificationType.NEW_INTERNSHIP_OFFER, 1L, student);
+
+        // Assert
+        verify(notificationRepository).markAsReadByUserAndNotificationTypeAndTargetId(student, NotificationType.NEW_INTERNSHIP_OFFER, 1L);
     }
 }

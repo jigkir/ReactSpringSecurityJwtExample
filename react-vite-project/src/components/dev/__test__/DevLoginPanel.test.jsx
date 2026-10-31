@@ -1,6 +1,6 @@
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import DevLoginPanel from '../DevLoginPanel.jsx';
+import DevLoginPanel, {roleHeader} from '../DevLoginPanel.jsx';
 import {getDevUsers} from '../../api/DevApi.jsx';
 
 vi.mock('../../api/DevApi.jsx', () => ({
@@ -42,6 +42,21 @@ beforeEach(() => {
     vi.resetAllMocks();
 });
 
+describe('roleHeader', () => {
+    it('shouldPutTheRoleBetweenTwoEqualRowsOfDashes', () => {
+        const header = roleHeader('STUDENT');
+
+        expect(header).toMatch(/^(-+) STUDENT \1$/);
+    });
+
+    it('shouldAlwaysKeepAtLeastThreeDashesOnEachSide', () => {
+        const header = roleHeader('A_VERY_LONG_ROLE_NAME_THAT_EXCEEDS_THE_HEADER_WIDTH');
+
+        expect(header.startsWith('--- ')).toBe(true);
+        expect(header.endsWith(' ---')).toBe(true);
+    });
+});
+
 describe('DevLoginPanel loading and display', () => {
     it('shouldShowSkeletonWhileUsersAreLoading', () => {
         getDevUsers.mockReturnValue(new Promise(() => {}));
@@ -69,7 +84,7 @@ describe('DevLoginPanel loading and display', () => {
         expect(await screen.findByRole('option', {name: 'Alex Tremblay'})).toBeInTheDocument();
         expect(screen.getByRole('option', {name: 'Sarah Lin'})).toBeInTheDocument();
         expect(screen.getByRole('option', {name: '-- Sélectionnez un utilisateur --'})).toBeInTheDocument();
-        expect(groupLabels()).toEqual(['MANAGER', 'STUDENT']);
+        expect(groupLabels()).toEqual([roleHeader('MANAGER'), roleHeader('STUDENT')]);
     });
 
     it('shouldShowEmptyMessageWhenNoMockUsersExist', async () => {
@@ -82,32 +97,44 @@ describe('DevLoginPanel loading and display', () => {
     });
 });
 
-describe('DevLoginPanel grouping by role and discipline', () => {
-    it('shouldGroupByRoleThenByDiscipline', async () => {
+describe('DevLoginPanel grouping by role, sorted by discipline', () => {
+    it('shouldGroupByRoleOnly', async () => {
         getDevUsers.mockResolvedValue(MIXED_USERS);
 
         renderPanel();
         await screen.findByRole('combobox');
 
         expect(groupLabels()).toEqual([
-            'MANAGER',
-            'STUDENT · Informatique',
-            'STUDENT · Soins infirmiers',
-            'TEACHER · Marketing',
-            'EMPLOYER · Génie civil',
-            'EMPLOYER · Informatique',
+            roleHeader('MANAGER'),
+            roleHeader('STUDENT'),
+            roleHeader('TEACHER'),
+            roleHeader('EMPLOYER'),
         ]);
     });
 
-    it('shouldPutUsersOfTheSameRoleAndDisciplineInTheSameGroupSortedByLastName', async () => {
+    it('shouldShowTheDisciplineInParenthesesAfterTheName', async () => {
+        getDevUsers.mockResolvedValue(MIXED_USERS);
+
+        renderPanel();
+
+        expect(await screen.findByRole('option', {name: 'Amy Adams (Informatique)'})).toBeInTheDocument();
+        expect(screen.getByRole('option', {name: 'Zed Zimmer (Soins infirmiers)'})).toBeInTheDocument();
+        expect(screen.getByRole('option', {name: 'Emp Loyer (Génie civil)'})).toBeInTheDocument();
+    });
+
+    it('shouldKeepUsersOfTheSameDisciplineTogetherInsideARole', async () => {
         getDevUsers.mockResolvedValue(MIXED_USERS);
 
         renderPanel();
         await screen.findByRole('combobox');
 
-        const studentCs = screen.getByRole('group', {name: 'STUDENT · Informatique'});
-        const names = Array.from(studentCs.querySelectorAll('option')).map((o) => o.textContent);
-        expect(names).toEqual(['Amy Adams', 'Bob Baker']);
+        const students = screen.getByRole('group', {name: roleHeader('STUDENT')});
+        const names = Array.from(students.querySelectorAll('option')).map((o) => o.textContent);
+        expect(names).toEqual([
+            'Amy Adams (Informatique)',
+            'Bob Baker (Informatique)',
+            'Zed Zimmer (Soins infirmiers)',
+        ]);
     });
 
     it('shouldKeepTheOverallOptionOrderRoleThenDisciplineThenName', async () => {
@@ -120,22 +147,22 @@ describe('DevLoginPanel grouping by role and discipline', () => {
         expect(labels).toEqual([
             '-- Sélectionnez un utilisateur --',
             'John Doe',
-            'Amy Adams',
-            'Bob Baker',
-            'Zed Zimmer',
-            'Teach Er',
-            'Emp Loyer',
-            'Eva Employer',
+            'Amy Adams (Informatique)',
+            'Bob Baker (Informatique)',
+            'Zed Zimmer (Soins infirmiers)',
+            'Teach Er (Marketing)',
+            'Emp Loyer (Génie civil)',
+            'Eva Employer (Informatique)',
         ]);
     });
 
-    it('shouldShowOnlyRoleInGroupLabelWhenUsersHaveNoDiscipline', async () => {
+    it('shouldShowNoParenthesesWhenUserHasNoDiscipline', async () => {
         getDevUsers.mockResolvedValue([MIXED_USERS[4]]);
 
         renderPanel();
-        await screen.findByRole('combobox');
 
-        expect(groupLabels()).toEqual(['MANAGER']);
+        expect(await screen.findByRole('option', {name: 'John Doe'})).toBeInTheDocument();
+        expect(groupLabels()).toEqual([roleHeader('MANAGER')]);
     });
 
     it('shouldFallBackToRawDisciplineWhenNoTranslationExists', async () => {
@@ -144,9 +171,9 @@ describe('DevLoginPanel grouping by role and discipline', () => {
         ]);
 
         renderPanel();
-        await screen.findByRole('combobox');
 
-        expect(groupLabels()).toEqual(['STUDENT · UNKNOWN_FIELD']);
+        expect(await screen.findByRole('option', {name: 'X Y (UNKNOWN_FIELD)'})).toBeInTheDocument();
+        expect(groupLabels()).toEqual([roleHeader('STUDENT')]);
     });
 
     it('shouldCallOnSelectWithTheRightUserAfterGrouping', async () => {

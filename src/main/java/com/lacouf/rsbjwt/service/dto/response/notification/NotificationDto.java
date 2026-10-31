@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.response.notification;
 
+import com.lacouf.rsbjwt.model.notification.Notification;
 import com.lacouf.rsbjwt.model.notification.NotificationStatus;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
@@ -17,7 +18,7 @@ public record NotificationDto(
         LocalDateTime createdAt
 ) {
 
-    public static NotificationDto of(com.lacouf.rsbjwt.model.notification.Notification notification) {
+    public static NotificationDto of(Notification notification) {
         return new NotificationDto(
                 notification.getId(),
                 notification.getTitle(),

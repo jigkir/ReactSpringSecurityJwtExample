@@ -1,8 +1,9 @@
 import {useTranslation} from 'react-i18next';
+import {NavLink} from "react-router-dom";
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {formatDate} from '../cv/cvUtils.js';
-import {NavLink} from "react-router-dom";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -35,10 +36,11 @@ export default function InternshipCard({
                                            onPreview,
                                            expanded = false,
                                            viewed = false,
-                                           applicationCount
+                                           applicationCount,
+                                           showStatusBorder = false
                                        }) {
     const {t} = useTranslation();
-    const s = getInternshipCardClasses(dark);
+    const s = getInternshipCardClasses(dark, !hideStatus && showStatusBorder ? internship.status : null);
 
     const statusLabel = STATUS_KEY_MAP[internship.status]
         ? t(STATUS_KEY_MAP[internship.status])
@@ -58,15 +60,15 @@ export default function InternshipCard({
             : t("internshipCard.compensationAmount", {amount: internship.compensationAmount});
 
     const editBtn = `p-1.5 rounded transition-colors ${dark
-        ? "text-slate-400 hover:bg-slate-700 hover:text-indigo-300"
-        : "text-gray-600 hover:bg-gray-200 hover:text-indigo-600"}`;
+        ? "text-slate-400 hover:bg-slate-700 hover:text-orange-300"
+        : "text-gray-600 hover:bg-gray-200 hover:text-orange-600"}`;
 
     const totalApplications = applicationCount ?? 0;
 
     const pillBase = "inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors";
 
     const countBadge = `${pillBase} ${
-        dark ? "bg-red-500/10 text-red-200 border-red-500/30" : "bg-red-50 text-red-800 border-red-300"
+        dark ? "bg-sky-500/10 text-sky-200 border-sky-500/30" : "bg-sky-50 text-sky-800 border-sky-300"
     }`;
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
@@ -122,7 +124,7 @@ export default function InternshipCard({
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                         {t("internshipCard.rejectionReason")}
                     </p>
-                    <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
+                    <p className={`mt-0.5 text-sm font-semibold wrap-break-word ${dark ? "text-red-100" : "text-red-900"}`}
                        style={{whiteSpace: "pre-wrap"}}>
                         {internship.rejectionComment}
                     </p>
@@ -189,7 +191,7 @@ export default function InternshipCard({
                             <span className={countBadge}>
                                 <Icon name="send" size={18}/>
                                 <span>{t("internshipCard.applicationCount")}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-red-400 text-slate-900" : "bg-red-600 text-white"}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-sky-400 text-slate-900" : "bg-sky-600 text-white"}`}>
                                     {totalApplications}
                                 </span>
                             </span>
@@ -198,13 +200,16 @@ export default function InternshipCard({
 
                     <div className="flex items-center gap-1 ml-auto">
                         {internship.status === "APPROVED" && (
-                            <NavLink
+                            <Button
+                                as={NavLink}
                                 to={`/application/${internship.id}`}
                                 state={{internshipData: internship}}
-                                className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                                tone="primary"
+                                dark={dark}
+                                className="w-fit"
                             >
                                 {t("internshipCard.viewApplication")}
-                            </NavLink>
+                            </Button>
                         )}
                         {OnEdit && (
                             <button
@@ -248,13 +253,15 @@ export default function InternshipCard({
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
 
                     {showPreview && (
-                        <button
+                        <Button
                             type="button"
+                            tone="primary"
+                            dark={dark}
                             onClick={() => onPreview(internship.id)}
-                            className="ml-auto rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                            className="ml-auto"
                         >
                             {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
-                        </button>
+                        </Button>
                     )}
                 </div>
             )}

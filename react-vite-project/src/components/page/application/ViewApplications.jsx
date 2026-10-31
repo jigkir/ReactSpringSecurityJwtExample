@@ -2,8 +2,8 @@ import {useCallback, useEffect, useState} from "react";
 import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
 import ApplicationCard from "./ApplicationCard.jsx";
+import Button from "../../../styles/Button.jsx";
 import {base64ToBlobUrl} from "../cv/cvUtils.js";
-import Icon from "../../../styles/Icon.jsx";
 import {sortApplication} from "../../../utils/Sort.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
@@ -97,13 +97,9 @@ function ViewApplications({user}) {
         <div className="p-6 flex flex-col gap-6">
             {/* Header Section */}
             <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
-                <NavLink
-                    to="/internships"
-                    className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 w-fit transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                >
-                    <Icon name="arrow_back" size={16}/>
+                <Button as={NavLink} to="/internships" tone="primary" dark={dark} icon="arrow_back" className="w-fit">
                     Back to Internships
-                </NavLink>
+                </Button>
                 <h1 className={`text-4xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
                     {internshipTitle}
                 </h1>
