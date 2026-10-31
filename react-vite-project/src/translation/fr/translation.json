@@ -398,6 +398,7 @@
   },
   "employerInternship": {
     "openInterviewPicker": "Prendre rendez-vous pour une entrevue",
+    "editInterviewPicker": "Modifier la demande d'entrevue",
     "closeInterviewPicker": "Annuler"
   },
   "internshipFilters": {
@@ -481,6 +482,23 @@
     },
     "viewApplication": "Consulter candidature",
     "applicationCount": "Candidatures"
+  },
+  "interview": {
+    "editTitle": "Modifier une demande d'entrevue",
+    "title": "Envoyer une demande d'entrevue",
+    "messageLabel": "Message",
+    "meetingTimeLabel": "Heure de l'entrevue",
+    "meetingTypeLabel": "Type d'entrevue",
+    "selectPlaceholder": "Choisissez une option",
+    "meetingDetailsLabel": "Détails de la réunion",
+    "cancelBtn": "Annuler",
+    "saveChanges": "Enregistrer les modifications",
+    "submitBtn": "Soumettre",
+    "meetingTypes": {
+      "ONLINE": "En ligne",
+      "PHONE": "Au téléphone",
+      "IN_PERSON": "En personne"
+    }
   },
   "viewApplication": {
     "loadError": "Impossible de charger les candidatures",
