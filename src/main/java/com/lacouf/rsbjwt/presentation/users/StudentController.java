@@ -14,6 +14,7 @@ import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.application.StudentOfferDecision;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
@@ -218,5 +219,17 @@ public class StudentController {
     public ResponseEntity<List<InterviewStudentResponseDTO>> getInterviews(Authentication authentication) throws UserNotFoundException {
         List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
+    }
+
+    @PutMapping("/applications/{applicationId}/offer/reject")
+    public ResponseEntity<Void> withdrawInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, UserNotFoundException {
+        studentService.updateStudentOfferDecision(authentication.getName(), applicationId, StudentOfferDecision.REJECTED);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/applications/{applicationId}/offer/accept")
+    public ResponseEntity<Void> acceptInternshipOffer(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, UserNotFoundException {
+        studentService.updateStudentOfferDecision(authentication.getName(), applicationId, StudentOfferDecision.ACCEPTED);
+        return ResponseEntity.noContent().build();
     }
 }

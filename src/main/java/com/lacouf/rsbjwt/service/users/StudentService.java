@@ -14,6 +14,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentOfferDecision;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -334,6 +335,15 @@ public class StudentService {
                 .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
                 .map(InterviewStudentResponseDTO::of)
                 .toList();
+    }
+
+    @Transactional
+    public void updateStudentOfferDecision(String email, long applicationId, StudentOfferDecision decision) throws InternshipApplicationNotFoundException, UserNotFoundException {
+        InternshipApplication application = applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, email)
+                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
+
+        application.setStudentOfferDecision(decision);
+        applicationRepository.save(application);
     }
 
     private boolean isVisibleToStudents(Internship internship) {

@@ -128,5 +128,11 @@ public class EmployerController {
         InterviewEmployerResponseDTO interview = employerService.cancelInterview(interviewId, authentication.getName());
         return ResponseEntity.ok(interview);
     }
+
+    @PutMapping("/applications/offer")
+    public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException {
+        employerService.acceptStudentsToInternship(applicationIds, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
 }
 

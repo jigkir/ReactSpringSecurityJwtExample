@@ -271,6 +271,14 @@ public class EmployerService {
         return InterviewEmployerResponseDTO.of(interview);
     }
 
+    @Transactional
+    public void acceptStudentsToInternship(List<Long> applicationIds, String email) throws InternshipApplicationNotFoundException {
+        for (Long applicationId : applicationIds) {
+            InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+            updateEmployerDecisionForInterview(internshipApplication, EmployerDecision.ACCEPTED);
+        }
+    }
+
     private Interview findModifiableInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewAlreadyPassedException, InterviewCancelledException {
         Interview interview = interviewRepository.findByIdAndEmployer_Credentials_Email(interviewId, email)
                 .orElseThrow(() -> new InterviewNotFoundException(interviewId));
