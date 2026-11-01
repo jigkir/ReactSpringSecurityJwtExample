@@ -1,8 +1,7 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 
-import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -84,19 +83,19 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
-        employerService.acceptInternshipApplication(applicationId, authentication.getName());
+    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+        employerService.acceptInternshipApplicationForInterview(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/applications/{applicationId}/reject")
-    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException {
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationAlreadyHiredException {
         employerService.rejectInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/applications/{applicationId}/interview")
-    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException {
+    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, ApplicationAlreadyHiredException {
         employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok().build();
     }
@@ -130,8 +129,8 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException {
-        employerService.acceptStudentsToInternship(applicationIds, authentication.getName());
+    public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+        employerService.hireStudentsToInternship(applicationIds, authentication.getName());
         return ResponseEntity.ok().build();
     }
 }

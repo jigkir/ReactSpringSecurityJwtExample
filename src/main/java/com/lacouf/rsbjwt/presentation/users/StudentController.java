@@ -1,9 +1,6 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
-import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.EmptyFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
@@ -14,7 +11,6 @@ import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.application.StudentOfferDecision;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
@@ -166,7 +162,7 @@ public class StudentController {
     }
 
     @PostMapping("/internship/{internshipId}/apply/{cvId}")
-    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException {
+    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
         studentService.applyToInternship(authentication.getName(), cvId, internshipId);
         return ResponseEntity.ok("Application submitted successfully");
     }
@@ -219,17 +215,5 @@ public class StudentController {
     public ResponseEntity<List<InterviewStudentResponseDTO>> getInterviews(Authentication authentication) throws UserNotFoundException {
         List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
-    }
-
-    @PutMapping("/applications/{applicationId}/offer/reject")
-    public ResponseEntity<Void> withdrawInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, UserNotFoundException {
-        studentService.updateStudentOfferDecision(authentication.getName(), applicationId, StudentOfferDecision.REJECTED);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/applications/{applicationId}/offer/accept")
-    public ResponseEntity<Void> acceptInternshipOffer(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, UserNotFoundException {
-        studentService.updateStudentOfferDecision(authentication.getName(), applicationId, StudentOfferDecision.ACCEPTED);
-        return ResponseEntity.noContent().build();
     }
 }

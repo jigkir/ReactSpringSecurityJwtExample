@@ -671,7 +671,7 @@ public class EmployerServiceTest {
                 .thenReturn(Optional.of(internshipApplication));
 
         // Act
-        employerService.acceptInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+        employerService.acceptInternshipApplicationForInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
 
         // Assert
         assertEquals(EmployerDecision.ACCEPTED, internshipApplication.getEmployerDecision());

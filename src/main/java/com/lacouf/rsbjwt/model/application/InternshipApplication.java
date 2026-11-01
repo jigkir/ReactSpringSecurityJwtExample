@@ -38,11 +38,6 @@ public class InternshipApplication {
     @Column(nullable = false)
     private InternshipApplicationStatus internshipApplicationStatus;
 
-    @Setter
-    @Enumerated
-    @Column(nullable = false)
-    private StudentOfferDecision studentOfferDecision;
-
     public InternshipApplication() {
     }
 

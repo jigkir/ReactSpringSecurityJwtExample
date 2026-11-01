@@ -1,9 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
-import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
@@ -14,7 +11,6 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
-import com.lacouf.rsbjwt.model.application.StudentOfferDecision;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -25,6 +21,7 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
 import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
@@ -66,7 +63,7 @@ public class StudentService {
     private final ManagerRepository managerRepository;
     private final InternshipRepository internshipRepository;
     private final InternshipApplicationRepository applicationRepository;
-    private final InterviewRepository InterviewRepository;
+    private final InterviewRepository interviewRepository;
 
     private final UserAppService userAppService;
     private final NotificationService notificationService;
@@ -83,7 +80,7 @@ public class StudentService {
         this.internshipRepository = internshipRepository;
         this.applicationRepository = applicationRepository;
         this.documentService = documentService;
-        this.InterviewRepository = InterviewRepository;
+        this.interviewRepository = InterviewRepository;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -216,12 +213,16 @@ public class StudentService {
     }
 
     @Transactional
-    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException, CVNotVisibleException {
+    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
         Student student = findByEmail(email);
 
         CV cv = validateCVForApplication(email, cvId);
 
         Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
+
+        if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
+            throw new StudentAlreadyEmployedException(student.getId());
+        }
 
         if (applicationRepository.existsByStudentAndInternship(student, internship)) {
             throw new ApplicationAlreadyExistsException();
@@ -331,19 +332,10 @@ public class StudentService {
     @Transactional(readOnly = true)
     public List<InterviewStudentResponseDTO> getInterviews(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        return InterviewRepository.findByInternshipApplication_Student(student).stream()
+        return interviewRepository.findByInternshipApplication_Student(student).stream()
                 .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
                 .map(InterviewStudentResponseDTO::of)
                 .toList();
-    }
-
-    @Transactional
-    public void updateStudentOfferDecision(String email, long applicationId, StudentOfferDecision decision) throws InternshipApplicationNotFoundException, UserNotFoundException {
-        InternshipApplication application = applicationRepository.findByIdAndStudent_Credentials_Email(applicationId, email)
-                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
-
-        application.setStudentOfferDecision(decision);
-        applicationRepository.save(application);
     }
 
     private boolean isVisibleToStudents(Internship internship) {

@@ -5,6 +5,8 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +22,12 @@ public class Student extends UserApp {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private Set<CV> cvs = new HashSet<>();
+
+    @Setter
+    @Getter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudentInternshipStatus studentInternshipStatus;
 
     @ManyToMany
     @JoinTable(
@@ -52,6 +60,7 @@ public class Student extends UserApp {
         this.viewedInternships = new HashSet<>();
         this.hiddenInternships = new HashSet<>();
         this.favoriteInternships = new HashSet<>();
+        this.studentInternshipStatus = StudentInternshipStatus.NOT_EMPLOYED;
     }
 
     public Student() {
