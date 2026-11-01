@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -176,7 +177,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnAllInternships() throws Exception {
         // Arrange
-        when(managerService.getAllInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null), internshipWith(ReviewStatus.APPROVED, null)));
+        when(managerService.getAllInternships(null)).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null), internshipWith(ReviewStatus.APPROVED, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships"))
@@ -184,13 +185,13 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].status").value("APPROVED"));
 
-        verify(managerService).getAllInternships();
+        verify(managerService).getAllInternships(null);
     }
 
     @Test
     void shouldReturnPendingInternships() throws Exception {
         // Arrange
-        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
+        when(managerService.getPendingInternships(null)).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/pending"))
@@ -198,7 +199,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
 
-        verify(managerService).getPendingInternships();
+        verify(managerService).getPendingInternships(null);
     }
 
     @Test
@@ -297,8 +298,22 @@ public class ManagerControllerTest {
         verify(managerService).updateInternship(eq(1L), any(InternshipRequestDto.class));
     }
 
+    @Test
+    void shouldReturnInternshipsOfChosenSession() throws Exception {
+        // Arrange
+        when(managerService.getAllInternships(2L)).thenReturn(List.of());
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internships").param("sessionId", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        verify(managerService).getAllInternships(2L);
+    }
+
+
     // ---------- Helpers ----------
-    
+
     private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
         return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
     }

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.model.internship;
 
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -67,7 +68,11 @@ public class Internship {
     @Column
     private LocalDateTime uploadDate;
 
-    public Internship(String title, String description, String requiredSkills, int durationInWeeks, String location, WorkMode workMode, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, Employer employer) {
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "session_id", nullable = false)
+    private AcademicSession session;
+
+    public Internship(String title, String description, String requiredSkills, int durationInWeeks, String location, WorkMode workMode, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, Employer employer, AcademicSession session) {
         this.title = title;
         this.description = description;
         this.requiredSkills = requiredSkills;
@@ -78,6 +83,7 @@ public class Internship {
         this.applicationDeadline = applicationDeadline;
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
+        this.session = session;
         this.status = ReviewStatus.PENDING;
         this.postedBy = employer;
         this.deleted = false;

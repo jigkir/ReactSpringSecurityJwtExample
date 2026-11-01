@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
@@ -18,6 +19,8 @@ import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.ReviewStatus;
@@ -44,6 +47,7 @@ import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerRespons
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import com.lacouf.rsbjwt.service.users.EmployerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,6 +78,8 @@ public class EmployerServiceTest {
     private NotificationService notificationService;
     @Mock
     private UserAppService userAppService;
+    @Mock
+    private AcademicSessionService academicSessionService;
 
     @Mock
     private EmployerRepository employerRepository;
@@ -101,6 +107,7 @@ public class EmployerServiceTest {
 
     private static Employer employer;
     private static Internship internship;
+    private static AcademicSession currentSession;
 
     private static final String EMPLOYER_EMAIL = "email@example.com";
     private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
@@ -121,9 +128,12 @@ public class EmployerServiceTest {
         employer = new Employer("First Name", "Last Name", credentials, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
         employer.setId(1L);
 
+        currentSession = new AcademicSession(Season.FALL, 2026);
+        currentSession.setId(1L);
+
         internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
-        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer);
+        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer, currentSession);
         internship.setId(10L);
     }
 
@@ -185,7 +195,7 @@ public class EmployerServiceTest {
     void shouldSaveInternship() throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
         // Arrange
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
-
+        when(academicSessionService.getCurrentSession()).thenReturn(currentSession);
         when(internshipRepository.save(any(Internship.class)))
                 .thenAnswer(invocation -> {
                     Internship internship = invocation.getArgument(0);
@@ -204,7 +214,7 @@ public class EmployerServiceTest {
         assert (ReviewStatus.PENDING).equals(savedInternship.getStatus());
         assert !savedInternship.isDeleted();
         assert (employer).equals(savedInternship.getPostedBy());
-
+        assert (currentSession).equals(savedInternship.getSession());
         assert (Long.valueOf(10L)).equals(response.id());
         assert ("Software Developer").equals(response.title());
         assert ("Develop applications").equals(response.description());
@@ -265,18 +275,35 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldReturnInternshipsOfEmployer() {
+    void shouldReturnInternshipsOfEmployer() throws AcademicSessionNotFoundException {
         // Arrange
-        when(internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(EMPLOYER_EMAIL)).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession)).thenReturn(List.of(internship));
 
         // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL);
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null);
 
         // Assert
         assert (Integer.valueOf(1)).equals(response.size());
         assert (Long.valueOf(10L)).equals(response.getFirst().id());
         assert ("Software Developer").equals(response.getFirst().title());
         assert (Long.valueOf(1L)).equals(response.getFirst().employerId());
+    }
+
+    @Test
+    void shouldReturnInternshipsOfChosenSessionWhenSessionIsGiven() throws AcademicSessionNotFoundException {
+        // Arrange
+        AcademicSession pastSession = new AcademicSession(Season.WINTER, 2026);
+        pastSession.setId(2L);
+
+        when(academicSessionService.findSessionOrCurrent(2L)).thenReturn(pastSession);
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, pastSession)).thenReturn(List.of());
+
+        // Act
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, 2L);
+
+        // Assert
+        assert response.isEmpty();
     }
 
     @Test
@@ -339,13 +366,13 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldReturnReceivedInternshipApplicationsWhenEmployerHasApplications() {
+    void shouldReturnReceivedInternshipApplicationsWhenEmployerHasApplications() throws AcademicSessionNotFoundException {
         // Arrange
-        when(internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(EMPLOYER_EMAIL))
-                .thenReturn(List.of(receivedInternshipApplication()));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_SessionAndInternship_DeletedFalse(EMPLOYER_EMAIL, currentSession)).thenReturn(List.of(receivedInternshipApplication()));
 
         // Act
-        List<ReceivedInternshipApplicationResponseDto> internshipApplications = employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL);
+        List<ReceivedInternshipApplicationResponseDto> internshipApplications = employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL, null);
 
         // Assert
         ReceivedInternshipApplicationResponseDto internshipApplication = internshipApplications.getFirst();

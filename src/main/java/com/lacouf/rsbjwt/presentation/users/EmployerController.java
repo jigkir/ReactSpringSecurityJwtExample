@@ -10,6 +10,7 @@ import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
@@ -64,13 +65,13 @@ public class EmployerController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication) {
-        return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName()));
+    public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication, @RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName(), sessionId));
     }
 
     @GetMapping("/applications")
-    public ResponseEntity<List<ReceivedInternshipApplicationResponseDto>> getReceivedInternshipApplications(Authentication authentication) {
-        return ResponseEntity.ok(employerService.getReceivedInternshipApplications(authentication.getName()));
+    public ResponseEntity<List<ReceivedInternshipApplicationResponseDto>> getReceivedInternshipApplications(Authentication authentication, @RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(employerService.getReceivedInternshipApplications(authentication.getName(), sessionId));
     }
 
     @GetMapping("/applications/{applicationId}/cv")

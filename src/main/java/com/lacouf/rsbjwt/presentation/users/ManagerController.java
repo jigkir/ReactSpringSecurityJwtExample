@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
@@ -52,13 +53,13 @@ public class ManagerController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getAllInternships() {
-        return ResponseEntity.ok(managerService.getAllInternships());
+    public ResponseEntity<List<InternshipResponseDto>> getAllInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getAllInternships(sessionId));
     }
 
     @GetMapping("/internships/pending")
-    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships() {
-        return ResponseEntity.ok(managerService.getPendingInternships());
+    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getPendingInternships(sessionId));
     }
 
     @GetMapping("/internships/{internshipId}")

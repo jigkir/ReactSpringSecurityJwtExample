@@ -3,7 +3,6 @@ package com.lacouf.rsbjwt.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
-import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
@@ -336,7 +335,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInternshipsOfEmployer() throws Exception {
         // Arrange
-        when(employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(internshipResponse()));
+        when(employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null)).thenReturn(List.of(internshipResponse()));
 
         // Act + Assert
         mockMvc.perform(get("/api/employer/internships").principal(authentication))
@@ -346,7 +345,7 @@ public class EmployerControllerTest {
                 .andExpect(jsonPath("$[0].title").value("Software Developer"))
                 .andExpect(jsonPath("$[0].employerId").value(1));
 
-        verify(employerService).getInternshipsOfEmployer(EMPLOYER_EMAIL);
+        verify(employerService).getInternshipsOfEmployer(EMPLOYER_EMAIL, null);
     }
 
     @Test
@@ -355,7 +354,7 @@ public class EmployerControllerTest {
         StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
         ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
 
-        when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL)).thenReturn(List.of(receivedInternshipApplication));
+        when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL, null)).thenReturn(List.of(receivedInternshipApplication));
 
         // Act + Assert
         mockMvc.perform(get("/api/employer/applications").principal(authentication))
