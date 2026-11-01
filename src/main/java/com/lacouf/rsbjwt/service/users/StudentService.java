@@ -100,7 +100,8 @@ public class StudentService {
                 studentSignUpDto.lastName(),
                 studentSignUpDto.studentId(),
                 credentials,
-                studentSignUpDto.discipline()
+                studentSignUpDto.discipline(),
+                academicSessionService.getCurrentSession()
         );
 
         studentRepository.save(student);

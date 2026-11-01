@@ -90,7 +90,7 @@ public class ManagerServiceTest {
         currentSession = new AcademicSession(Season.FALL, 2026);
         currentSession.setId(1L);
 
-        Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE);
+        Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, null);
         student.setId(2L);
 
         cv = new CV("pdf".getBytes(), "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));

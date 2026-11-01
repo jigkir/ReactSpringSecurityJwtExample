@@ -28,6 +28,7 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
+import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -167,7 +168,8 @@ public class StudentServiceTest {
         dummyStudent = new Student(
                 "First Name", "Last Name", "1234567",
                 Credentials.builder().email("test@claurendeau.qc.ca").role(Role.STUDENT).build(),
-                Discipline.COMPUTER_SCIENCE
+                Discipline.COMPUTER_SCIENCE,
+                currentSession
         );
         dummyStudent.setId(1L);
 
@@ -206,6 +208,8 @@ public class StudentServiceTest {
         assert student.getEmail().equals("test@claurendeau.qc.ca");
         assert student.getPassword().equals("Test123@-encoded");
         assert student.getDiscipline().equals(Discipline.COMPUTER_SCIENCE);
+        assert student.getAccessSession().equals(currentSession);
+        assert student.getAccountStatus().equals(AccountStatus.APPROVED);
     }
 
     @Test
@@ -1200,7 +1204,8 @@ public class StudentServiceTest {
         Student otherStudent = new Student(
                 "Other", "Student", "7654321",
                 Credentials.builder().email(STUDENT_EMAIL).role(Role.STUDENT).build(),
-                Discipline.CIVIL_ENGINEERING
+                Discipline.CIVIL_ENGINEERING,
+                currentSession
         );
         otherStudent.setId(2L);
 

@@ -4,12 +4,15 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
-import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.presentation.users.ManagerController;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
+import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
@@ -42,6 +45,8 @@ public class ManagerControllerTest {
 
     @MockitoBean
     private ManagerService managerService;
+    @MockitoBean
+    private AccountAccessService accountAccessService;
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
@@ -311,6 +316,43 @@ public class ManagerControllerTest {
         verify(managerService).getAllInternships(2L);
     }
 
+    @Test
+    void shouldReturnStudentAccesses() throws Exception {
+        // Arrange
+        when(accountAccessService.getStudentAccesses()).thenReturn(List.of(studentAccessWith(AccountStatus.PENDING)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/students"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
+    }
+
+    @Test
+    void shouldReturnOkWhenStudentIsReactivated() throws Exception {
+        // Arrange
+        when(accountAccessService.reactivateStudentAccess(2L)).thenReturn(studentAccessWith(AccountStatus.APPROVED));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/students/2/reactivate"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        verify(accountAccessService).reactivateStudentAccess(2L);
+    }
+
+    @Test
+    void shouldReturnOkWhenStudentAccessIsDenied() throws Exception {
+        // Arrange
+        when(accountAccessService.denyStudentAccess(2L)).thenReturn(studentAccessWith(AccountStatus.REJECTED));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/students/2/deny"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"));
+
+        verify(accountAccessService).denyStudentAccess(2L);
+    }
 
     // ---------- Helpers ----------
 
@@ -338,5 +380,9 @@ public class ManagerControllerTest {
                 Discipline.COMPUTER_SCIENCE,
                 LocalDateTime.of(2026, 9, 1, 10, 0)
         );
+    }
+
+    private static StudentAccessResponseDto studentAccessWith(AccountStatus status) {
+        return new StudentAccessResponseDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE, status);
     }
 }

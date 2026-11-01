@@ -738,7 +738,7 @@ public class EmployerServiceTest {
 
     private static InternshipApplication receivedInternshipApplication() {
         Credentials studentCredentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
-        Student student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE);
+        Student student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE, null);
         student.setId(3L);
 
         CV cv = new CV();

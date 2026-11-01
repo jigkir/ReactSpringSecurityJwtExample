@@ -5,13 +5,16 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +25,11 @@ import java.util.List;
 @RequestMapping("/api/manager")
 public class ManagerController {
     private final ManagerService managerService;
+    private final AccountAccessService accountAccessService;
 
-    public ManagerController(ManagerService managerService) {
+    public ManagerController(ManagerService managerService, AccountAccessService accountAccessService) {
         this.managerService = managerService;
+        this.accountAccessService = accountAccessService;
     }
 
     @GetMapping("/cvs")
@@ -80,5 +85,20 @@ public class ManagerController {
     @PutMapping("/internships/{internshipId}")
     public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException {
         return ResponseEntity.ok(managerService.updateInternship(internshipId, internshipRequestDto));
+    }
+
+    @GetMapping("/students")
+    public ResponseEntity<List<StudentAccessResponseDto>> getStudentAccesses() {
+        return ResponseEntity.ok(accountAccessService.getStudentAccesses());
+    }
+
+    @PutMapping("/students/{studentId}/reactivate")
+    public ResponseEntity<StudentAccessResponseDto> reactivateStudentAccess(@PathVariable long studentId) throws UserNotFoundException {
+        return ResponseEntity.ok(accountAccessService.reactivateStudentAccess(studentId));
+    }
+
+    @PutMapping("/students/{studentId}/deny")
+    public ResponseEntity<StudentAccessResponseDto> denyStudentAccess(@PathVariable long studentId) throws UserNotFoundException {
+        return ResponseEntity.ok(accountAccessService.denyStudentAccess(studentId));
     }
 }

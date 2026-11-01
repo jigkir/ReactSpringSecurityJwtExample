@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.security;
 
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
+import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,7 @@ public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserAppRepository userRepository;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final AccountAccessService accountAccessService;
 
     // PUBLIC PATHS
     private static final String USER_LOGIN_PATH = "/api/login";
@@ -50,6 +52,7 @@ public class SecurityConfiguration {
 
     // LOGGED-IN USER PATH
     private static final String CURRENT_USER_PATH = "/api/users/current";
+    private static final String USER_STATUS_PATH = "/api/users/status";
     private static final String SESSIONS_PATH = "/api/sessions";
 
     // ROLES PATHS
@@ -81,6 +84,7 @@ public class SecurityConfiguration {
 
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
+                        .requestMatchers(GET, USER_STATUS_PATH).authenticated()
                         .requestMatchers(GET, SESSIONS_PATH).authenticated()
 
                         // NOTIFICATIONS
@@ -148,7 +152,7 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtTokenProvider, userRepository);
+        return new JwtAuthenticationFilter(jwtTokenProvider, userRepository, accountAccessService);
     }
 
     @Bean
