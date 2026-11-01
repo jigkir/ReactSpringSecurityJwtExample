@@ -410,38 +410,12 @@ export async function getApplicationCoverLetter(applicationId) {
 
 //region Expired Session
 export async function getSessions() {
-    return {
-        sessions: [
-            {
-                name: "H2026",
-                startDate: "2026-01-05",
-                endDate: "2026-04-30"
-            },
-            {
-                name: "E2026",
-                startDate: "2026-05-04",
-                endDate: "2026-08-21"
-            },
-            {
-                name: "A2026",
-                startDate: "2026-08-31",
-                endDate: "2026-12-18"
-            },
-            {
-                name: "H2027",
-                startDate: "2027-01-11",
-                endDate: "2027-04-30"
-            }
-        ]
-    };
+    const sessions = await handleResponse(await fetcher("sessions", {method: "GET"}));
+    return {sessions};
 }
 
 export async function checkUserStatus() {
-    return {
-        status: "PENDING"
-        // "REJECTED"
-        // "APPROVED"};
-    };
+    return handleResponse(await fetcher("users/status", {method: "GET"}));
 }
 
 //endregion

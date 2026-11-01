@@ -1,13 +1,15 @@
 import {Navigate, Outlet, useOutletContext} from 'react-router-dom';
+import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 
 /**
  * Layout route: renders children only if the user has one of `roles`.
  *   not logged in     → /login
  *   still loading     → blank (avoids a redirect flash)
  *   wrong role        → /home
+ *   access not active → /expired
  * The backend still enforces access; this is UX only.
  *
- * IMPORTANT: it forwards PageLayout's outlet context ({dark, user}) to the
+ * IMPORTANT: it forwards PageLayout's outlet context ({dark, user, accountStatus}) to the
  * child routes. Without `context={ctx}`, children calling useOutletContext()
  * get `undefined` and crash.
  */
@@ -20,6 +22,9 @@ export default function RequireRole({user, roles}) {
 
     const role = (user.role ?? "").toString().replace("ROLE_", "");
     if (!roles.includes(role)) return <Navigate to="/home" replace/>;
+
+    if (ctx.accountStatus === null) return <div aria-busy="true"/>;
+    if (ctx.accountStatus !== ACCOUNT_STATUS.APPROVED) return <Navigate to="/expired" replace/>;
 
     return <Outlet context={ctx}/>;
 }

@@ -1,34 +1,18 @@
-import React, { useCallback, useState } from 'react';
-import { Link, useNavigate, useOutletContext } from 'react-router-dom';
+import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import Icon from "../../styles/Icon.jsx";
-import { usePolling } from "../../utils/usePolling.js";
-import { checkUserStatus } from "../api/Api.jsx";
-import Button from "../../styles/Button.jsx"; // Adjust path if needed
+import Button from "../../styles/Button.jsx";
+import {ACCOUNT_STATUS} from "../../utils/AccountStatus.js";
 
-function ExpiredUser({ user }) {
+function ExpiredUser({user}) {
     const navigate = useNavigate();
-    // Possible status states: 'PENDING' | 'REJECTED'
-    const [status, setStatus] = useState(user?.status || 'PENDING');
-    const { dark } = useOutletContext();
-    const isLoggedIn = Boolean(user?.isLoggedIn);
+    // App keeps polling the status, so this page updates by itself
+    const {dark, accountStatus} = useOutletContext();
 
-    const checkStatus = useCallback(async () => {
-        try {
-            const res = await checkUserStatus();
-            setStatus(res?.status)
-            if (res?.status === 'APPROVED') {
-                // Access granted -> redirect student to home or dashboard
-                navigate('/', { replace: true });
-            }
-        } catch {
-            // Silence network/polling errors during waiting state
-        }
-    }, [navigate]);
+    if (!localStorage.getItem("token")) return <Navigate to="/login" replace/>;
+    if (accountStatus === null) return <div aria-busy="true"/>;
+    if (accountStatus === ACCOUNT_STATUS.APPROVED) return <Navigate to="/home" replace/>;
 
-    // Keep polling while logged in and still in PENDING state
-    usePolling(checkStatus, status === "PENDING");
-
-    const isPending = status === 'PENDING';
+    const isPending = accountStatus === ACCOUNT_STATUS.PENDING;
 
     const formatRole = (role) => {
         if (!role) return 'User';
@@ -40,7 +24,8 @@ function ExpiredUser({ user }) {
 
     return (
         <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-4">
-            <div className={`max-w-md w-full border ${dark ? "bg-slate-900/60 border-slate-800" : "bg-indigo-500 border-indigo-400"} rounded-2xl p-8 text-center shadow-xl backdrop-blur-sm`}>
+            <div
+                className={`max-w-md w-full border ${dark ? "bg-slate-900/60 border-slate-800" : "bg-indigo-500 border-indigo-400"} rounded-2xl p-8 text-center shadow-xl backdrop-blur-sm`}>
 
                 {/* Fused Dynamic Icon & Status Pill Badge */}
                 <div className="inline-flex items-center justify-center mb-6">
@@ -50,7 +35,7 @@ function ExpiredUser({ user }) {
                             : 'bg-red-500/10 border-red-500/20 text-red-300'
                     }`}>
                         <span className="relative flex items-center justify-center">
-                            <Icon name={isPending ? "alarm" : "error"} size={20} />
+                            <Icon name={isPending ? "alarm" : "error"} size={20}/>
                         </span>
                         <span className="text-xs font-medium tracking-wide">
                             {isPending ? "Waiting for supervisor approval" : "Request rejected by supervisor"}
@@ -78,7 +63,8 @@ function ExpiredUser({ user }) {
 
                 {/* Action Link */}
                 <div className="flex justify-center">
-                    <Button dark={dark} tone="primary" size="lg" icon="logout" onClick={() => navigate('/logout')} className=" mx-auto">
+                    <Button dark={dark} tone="primary" size="lg" icon="logout" onClick={() => navigate('/logout')}
+                            className=" mx-auto">
                         Sign Out
                     </Button>
 

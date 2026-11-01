@@ -1,12 +1,12 @@
 import {Link, NavLink, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
-import {checkUserStatus, getSessions} from "./api/Api.jsx";
-import {usePolling} from "../utils/usePolling.js";
+import {getSessions} from "./api/Api.jsx";
+import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
@@ -27,13 +27,12 @@ const NAV_BY_ROLE = {
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
-function Navbar({user, dark, toggleDark}) {
+function Navbar({user, accountStatus, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
     const theme = getNavbarClasses(dark);
     const [sessions, setSessions] = useState([]);
     const [selectedSession, setSelectedSession] = useState("");
-    const [accountStatus, setAccountStatus] = useState(user?.status || 'PENDING');
 
     // Mobile dropdowns
     const [menuOpen, setMenuOpen] = useState(false);
@@ -88,33 +87,7 @@ function Navbar({user, dark, toggleDark}) {
         }
     }, [isLoggedIn]);
 
-    useEffect(() => {
-        if (isLoggedIn) {
-            checkUserStatus().then((data) => {
-                if (data?.status) {
-                    setAccountStatus(data.status);
-                }
-            }).catch(() => {
-                // Silence network errors on initial check
-            });
-        }
-    }, [isLoggedIn]);
-
-    const fetchStatus = useCallback(async () => {
-        try {
-            const data = await checkUserStatus();
-            if (data?.status) {
-                setAccountStatus(data.status);
-            }
-        } catch {
-            // Silence network errors during polling
-        }
-    }, []);
-
-    const isPendingOrExpired = accountStatus === 'PENDING'
-    usePolling(fetchStatus, isLoggedIn && isPendingOrExpired);
-
-    const isAccessGranted = accountStatus === 'APPROVED';
+    const isAccessGranted = accountStatus === ACCOUNT_STATUS.APPROVED;
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
 

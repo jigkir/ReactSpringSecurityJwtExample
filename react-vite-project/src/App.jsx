@@ -20,14 +20,20 @@ import ViewApplications from "./components/page/application/ViewApplications.jsx
 import Applications from "./components/page/application/Applications.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
+import {ACCOUNT_STATUS} from "./utils/AccountStatus.js";
 
 function App() {
     const [user, setUser] = useState({});
     const [error, setError] = useState(null);
-    const [accountStatus, setAccountStatus] = useState(user?.status || 'PENDING');
+    const [accountStatus, setAccountStatus] = useState(null);
     const {dark, toggleDark} = useDarkMode();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const clearSession = useCallback(() => {
+        localStorage.removeItem("token");
+        setUser({});
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -45,8 +51,7 @@ function App() {
             .catch((err) => {
                 if (cancelled) return;
                 if (err.status === 401) {
-                    localStorage.removeItem("token");
-                    setUser({});
+                    clearSession();
                     return;
                 }
                 if (err.status === 403) setError(i18nError("error.accessRefused"));
@@ -61,39 +66,29 @@ function App() {
         };
     }, [location.pathname]);
 
-    useEffect(() => {
-        if (user?.isLoggedIn) {
-            console.log(user);
-            checkUserStatus().then((data) => {
-                if (data?.status) {
-                    setAccountStatus(data.status);
-                }
-            }).catch(() => {
-                // Silence network errors on initial check
-            });
-        }
-    }, [user?.isLoggedIn]);
-
     const fetchStatus = useCallback(async () => {
         try {
             const data = await checkUserStatus();
-            if (data?.status) {
-                setAccountStatus(data.status);
-            }
-        } catch {
-            // Silence network errors during polling
+            setAccountStatus(data.status);
+        } catch (err) {
+            if (err.status === 401) clearSession();
         }
-    }, []);
+    }, [clearSession]);
 
-    const isPendingOrExpired = accountStatus === 'PENDING'
-    usePolling(fetchStatus, user?.isLoggedIn && isPendingOrExpired);
+    // Reload the status whenever another user logs in
+    useEffect(() => {
+        setAccountStatus(null);
+        if (user?.email) void fetchStatus();
+    }, [user?.email, fetchStatus]);
 
-    const isAccessGranted = accountStatus === 'APPROVED';
+    // Keep checking until access is granted: the manager can still reactivate a refused account
+    usePolling(fetchStatus, Boolean(user?.email) && accountStatus !== ACCOUNT_STATUS.APPROVED);
 
     return (
         <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
             <Routes>
-                <Route element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
+                <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
+                                            toggleDark={toggleDark}/>}>
 
                     {/* Public: Home shows the landing page when logged out, the role home when logged in */}
                     <Route path="/" element={<Home/>}/>
