@@ -50,6 +50,7 @@ public class SecurityConfiguration {
 
     // LOGGED-IN USER PATH
     private static final String CURRENT_USER_PATH = "/api/users/current";
+    private static final String SESSIONS_PATH = "/api/sessions";
 
     // ROLES PATHS
     private static final String STUDENT_PATH = "/api/student/**";
@@ -80,6 +81,7 @@ public class SecurityConfiguration {
 
                         // LOGGED-IN USER
                         .requestMatchers(GET, CURRENT_USER_PATH).authenticated()
+                        .requestMatchers(GET, SESSIONS_PATH).authenticated()
 
                         // NOTIFICATIONS
                         .requestMatchers(NOTIFICATIONS_PATH).hasAnyAuthority(Role.STUDENT.name(), Role.MANAGER.name(), Role.EMPLOYER.name())
