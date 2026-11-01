@@ -317,7 +317,6 @@ public class StudentServiceTest {
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
         when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
             InternshipApplication application = invocation.getArgument(0);
@@ -900,7 +899,6 @@ public class StudentServiceTest {
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
         when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
             InternshipApplication application = invocation.getArgument(0);
@@ -957,7 +955,6 @@ public class StudentServiceTest {
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
         when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
             InternshipApplication application = invocation.getArgument(0);
@@ -986,7 +983,6 @@ public class StudentServiceTest {
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
         when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(true);
 
         // Act & Assert
@@ -1013,7 +1009,6 @@ public class StudentServiceTest {
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
         when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
 
         // Act & Assert
         assertThrows(

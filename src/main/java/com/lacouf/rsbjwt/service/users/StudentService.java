@@ -376,10 +376,6 @@ public class StudentService {
             throw new InternshipNotFoundException(internshipId);
         }
 
-        if (!academicSessionService.isCurrent(internship.getSession())) {
-            throw new InternshipNotFoundException(internshipId);
-        }
-
         verifyIfApplicationDeadlinePassed(internship);
 
         return internship;
