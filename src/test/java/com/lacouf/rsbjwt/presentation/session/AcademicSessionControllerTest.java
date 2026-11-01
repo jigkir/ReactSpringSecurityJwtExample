@@ -1,8 +1,7 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.session;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
-import com.lacouf.rsbjwt.presentation.session.AcademicSessionController;
 import com.lacouf.rsbjwt.service.dto.response.session.AcademicSessionResponseDto;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
@@ -51,8 +51,6 @@ import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipRespon
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
-import com.lacouf.rsbjwt.service.users.StudentService;
-import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeAll;

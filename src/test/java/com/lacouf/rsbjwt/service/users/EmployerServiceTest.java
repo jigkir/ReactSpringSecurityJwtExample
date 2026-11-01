@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
@@ -48,8 +48,6 @@ import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
-import com.lacouf.rsbjwt.service.users.EmployerService;
-import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

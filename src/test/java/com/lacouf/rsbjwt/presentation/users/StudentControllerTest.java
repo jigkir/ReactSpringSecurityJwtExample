@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
@@ -15,7 +15,6 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;

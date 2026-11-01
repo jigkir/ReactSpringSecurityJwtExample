@@ -1,8 +1,7 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;

@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -16,8 +16,6 @@ import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.user.RoleDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import com.lacouf.rsbjwt.service.users.AccountAccessService;
-import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

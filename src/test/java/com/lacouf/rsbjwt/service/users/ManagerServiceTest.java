@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -33,8 +33,6 @@ import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvRespo
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
-import com.lacouf.rsbjwt.service.users.ManagerService;
-import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

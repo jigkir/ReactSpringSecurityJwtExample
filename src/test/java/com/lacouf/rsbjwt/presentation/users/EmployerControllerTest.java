@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
@@ -15,7 +15,6 @@ import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
-import com.lacouf.rsbjwt.presentation.users.EmployerController;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;

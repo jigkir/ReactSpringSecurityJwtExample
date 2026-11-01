@@ -1,15 +1,13 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
-import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.user.AccountStatus;
-import com.lacouf.rsbjwt.presentation.users.ManagerController;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;

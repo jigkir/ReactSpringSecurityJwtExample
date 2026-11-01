@@ -1,11 +1,10 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.session;
 
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.repository.session.AcademicSessionRepository;
 import com.lacouf.rsbjwt.service.dto.response.session.AcademicSessionResponseDto;
-import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
