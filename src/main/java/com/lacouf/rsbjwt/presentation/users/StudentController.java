@@ -1,9 +1,6 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
-import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.EmptyFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
@@ -165,7 +162,7 @@ public class StudentController {
     }
 
     @PostMapping("/internship/{internshipId}/apply/{cvId}")
-    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException {
+    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
         studentService.applyToInternship(authentication.getName(), cvId, internshipId);
         return ResponseEntity.ok("Application submitted successfully");
     }
