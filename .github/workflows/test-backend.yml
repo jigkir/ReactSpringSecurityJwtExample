@@ -1,0 +1,63 @@
+name: Backend Tests & Coverage
+
+on:
+  push:
+    branches: [ main, develop, 'sprint/*' ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/test-backend.yml'
+  pull_request:
+    branches: [ main, develop, 'sprint/*' ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: ['25']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests with Maven
+        run: mvn clean test
+
+      - name: Generate coverage report
+        run: mvn jacoco:report
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./target/site/jacoco/jacoco.xml
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results-java-${{ matrix.java-version }}
+          path: target/surefire-reports/
+          retention-days: 30
+
+      - name: Archive coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-java-${{ matrix.java-version }}
+          path: target/site/jacoco/
+          retention-days: 30
