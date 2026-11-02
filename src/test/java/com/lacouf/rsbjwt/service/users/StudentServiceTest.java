@@ -4,6 +4,9 @@ import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
 import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
@@ -28,10 +31,7 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
-import com.lacouf.rsbjwt.model.user.AccountStatus;
-import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.model.user.Manager;
-import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.*;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
 import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
@@ -40,10 +40,12 @@ import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -86,6 +88,8 @@ public class StudentServiceTest {
     private NotificationService notificationService;
     @Mock
     private UserAppService userAppService;
+    @Mock
+    private ContractService contractService;
 
     @Spy
     private DocumentService documentService;
@@ -1361,5 +1365,96 @@ public class StudentServiceTest {
         academicTranscript.setFileHash(calculateHash(validPdfBytes));
 
         return academicTranscript;
+    }
+
+    // ---------- Apply: student already employed ----------
+
+    @Test
+    void shouldThrowExceptionWhenApplyingAsStudentAlreadyEmployed() {
+        // Arrange
+        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+
+        // Act + Assert
+        assertThrows(StudentAlreadyEmployedException.class,
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L));
+
+        verifyNoInteractions(applicationRepository);
+    }
+
+// ---------- Contracts ----------
+
+    @Test
+    void shouldReturnContractsOfStudent() throws UserNotFoundException {
+        // Arrange
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(contractService.getContractsOfStudent(dummyStudent)).thenReturn(List.of());
+
+        // Act
+        List<ContractResponseDto> contracts = studentService.getContracts(STUDENT_EMAIL);
+
+        // Assert
+        assert contracts.isEmpty();
+        verify(contractService).getContractsOfStudent(dummyStudent);
+    }
+
+    @Test
+    void shouldThrowUserNotFoundExceptionWhenGettingContractsForUnknownEmail() {
+        // Arrange
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(UserNotFoundException.class, () -> studentService.getContracts(STUDENT_EMAIL));
+
+        verifyNoInteractions(contractService);
+    }
+
+    @Test
+    void shouldAcceptContract() throws Exception {
+        // Act
+        studentService.acceptContract(40L, STUDENT_EMAIL);
+
+        // Assert
+        verify(contractService).studentAcceptsContract(40L, STUDENT_EMAIL);
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenAcceptingContractFails() throws Exception {
+        // Arrange
+        doThrow(new StudentAlreadyEmployedException(1L)).when(contractService).studentAcceptsContract(40L, STUDENT_EMAIL);
+
+        // Act + Assert
+        assertThrows(StudentAlreadyEmployedException.class, () -> studentService.acceptContract(40L, STUDENT_EMAIL));
+    }
+
+    @Test
+    void shouldRejectContract() throws Exception {
+        // Act
+        studentService.rejectContract(40L, STUDENT_EMAIL);
+
+        // Assert
+        verify(contractService).studentRejectsContract(40L, STUDENT_EMAIL);
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenRejectingContractFails() throws Exception {
+        // Arrange
+        doThrow(new ContractNotPendingException(40L)).when(contractService).studentRejectsContract(40L, STUDENT_EMAIL);
+
+        // Act + Assert
+        assertThrows(ContractNotPendingException.class, () -> studentService.rejectContract(40L, STUDENT_EMAIL));
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenContractIsNotFound() throws Exception {
+        // Arrange
+        doThrow(new ContractNotFoundException(40L)).when(contractService).studentAcceptsContract(40L, STUDENT_EMAIL);
+
+        // Act + Assert
+        assertThrows(ContractNotFoundException.class, () -> studentService.acceptContract(40L, STUDENT_EMAIL));
     }
 }

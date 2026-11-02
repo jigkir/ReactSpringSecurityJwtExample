@@ -3,6 +3,9 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
@@ -17,6 +20,7 @@ import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -687,5 +691,108 @@ public class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    void shouldReturnStudentContractsSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getContracts(STUDENT_EMAIL)).thenReturn(List.<ContractResponseDto>of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/student/contracts")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingContractsForNonExistentStudent() throws Exception {
+        // Arrange
+        when(studentService.getContracts(STUDENT_EMAIL)).thenThrow(new UserNotFoundException());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/student/contracts").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnNoContentWhenContractIsAccepted() throws Exception {
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/accept").principal(authentication))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).acceptContract(40L, STUDENT_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAcceptingUnknownContract() throws Exception {
+        // Arrange
+        doThrow(new ContractNotFoundException(40L)).when(studentService).acceptContract(40L, STUDENT_EMAIL);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/accept").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingContractThatIsNotPending() throws Exception {
+        // Arrange
+        doThrow(new ContractNotPendingException(40L)).when(studentService).acceptContract(40L, STUDENT_EMAIL);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/accept").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingContractAndStudentIsAlreadyEmployed() throws Exception {
+        // Arrange
+        doThrow(new StudentAlreadyEmployedException(1L)).when(studentService).acceptContract(40L, STUDENT_EMAIL);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/accept").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnNoContentWhenContractIsRejected() throws Exception {
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/reject").principal(authentication))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).rejectContract(40L, STUDENT_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRejectingUnknownContract() throws Exception {
+        // Arrange
+        doThrow(new ContractNotFoundException(40L)).when(studentService).rejectContract(40L, STUDENT_EMAIL);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/reject").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenRejectingContractThatIsNotPending() throws Exception {
+        // Arrange
+        doThrow(new ContractNotPendingException(40L)).when(studentService).rejectContract(40L, STUDENT_EMAIL);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/contracts/40/reject").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenApplyingAsStudentAlreadyEmployed() throws Exception {
+        // Arrange
+        doThrow(new StudentAlreadyEmployedException(1L))
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/student/internship/10/apply/5")
+                        .principal(authentication))
+                .andExpect(status().isConflict());
     }
 }

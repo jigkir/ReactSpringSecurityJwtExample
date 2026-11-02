@@ -3,6 +3,11 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyHiredException;
+import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
@@ -643,5 +648,123 @@ public class EmployerControllerTest {
                 "123 Main St",
                 "SCHEDULED"
         );
+    }
+
+    @Test
+    void shouldReturnOkWhenContractsAreOffered() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20, 21]"))
+                .andExpect(status().isOk());
+
+        verify(employerService).offerContracts(List.of(20L, 21L), EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenOfferingContractForUnknownApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(20L))
+                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20]"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenOfferingContractToStudentAlreadyEmployed() throws Exception {
+        // Arrange
+        doThrow(new StudentAlreadyEmployedException(3L))
+                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20]"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenContractAlreadyExists() throws Exception {
+        // Arrange
+        doThrow(new ContractAlreadyExistsException(20L))
+                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20]"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenOfferingContractForRejectedApplication() throws Exception {
+        // Arrange
+        doThrow(new ApplicationRejectedException(20L))
+                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20]"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnOkWhenApplicationIsAcceptedForInterview() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/accept").principal(authentication))
+                .andExpect(status().isOk());
+
+        verify(employerService).acceptInternshipApplicationForInterview(20L, EMPLOYER_EMAIL);
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingRejectedApplicationForInterview() throws Exception {
+        // Arrange
+        doThrow(new ApplicationRejectedException(20L))
+                .when(employerService).acceptInternshipApplicationForInterview(20L, EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/accept").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingForInterviewAnApplicationAlreadyOffered() throws Exception {
+        // Arrange
+        doThrow(new ApplicationAlreadyHiredException(20L))
+                .when(employerService).acceptInternshipApplicationForInterview(20L, EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/accept").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenCreatingInterviewForApplicationAlreadyOffered() throws Exception {
+        // Arrange
+        doThrow(new ApplicationAlreadyHiredException(20L))
+                .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
+
+        // Act + Assert
+        mockMvc.perform(post("/api/employer/applications/20/interview").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validInterview())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenRejectingApplicationWithActiveContract() throws Exception {
+        // Arrange
+        doThrow(new ContractAlreadyActiveException(40L))
+                .when(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
+                .andExpect(status().isConflict());
     }
 }
