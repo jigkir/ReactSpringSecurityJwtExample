@@ -1,5 +1,6 @@
 import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
+import Badge from "../../../styles/Badge.jsx";
 import PdfPreview from "../../documents/PdfPreview.jsx";
 import {useTranslation} from "react-i18next";
 import {useCallback, useEffect, useState} from "react";
@@ -63,12 +64,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                                 <h3 className={s.title}>
                                     {student?.firstName} {student?.lastName}
                                 </h3>
-                                {isNew && (
-                                    <span
-                                        className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500 text-white rounded-full animate-bounce">
-                                        {t("viewApplication.new")}
-                                    </span>
-                                )}
+                                {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
                             </div>
                             <p className={s.description}>
                                 {student?.email}

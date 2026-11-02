@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
@@ -27,14 +27,29 @@ function StudentInternships({preview = false}) {
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-    const [viewError, setViewError] = useState(false);
-    const [selectedId, setSelectedId] = useState(null);
     const [appliedInternships, setAppliedInternships] = useState([]);
     const [cvs, setCvs] = useState(null);
     const [letters, setLetters] = useState([]);
-    const filters = useInternshipFilters(internships);
+    const appliedIds = useMemo(
+        () => new Set(appliedInternships.map((application) => application.internshipId)),
+        [appliedInternships]);
+    const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
-    const shown = preview ? visible.slice(0, MAX_PREVIEW_ITEMS) : visible;
+    const ordered = [...visible].sort((a, b) =>
+        Number(appliedIds.has(b.id)) - Number(appliedIds.has(a.id))
+        || Number(Boolean(a.viewed)) - Number(Boolean(b.viewed)));
+    const shown = preview ? ordered.slice(0, MAX_PREVIEW_ITEMS) : ordered;
+
+    const unviewedIdsRef = useRef([]);
+    useEffect(() => {
+        unviewedIdsRef.current = shown.filter((i) => !i.viewed).map((i) => i.id);
+    });
+
+    useEffect(() => () => {
+        const ids = unviewedIdsRef.current;
+        if (ids.length > 0) Promise.resolve(markInternshipsAsViewed(ids)).catch(() => {
+        });
+    }, []);
 
     const loadInternships = useCallback(async () => {
         try {
@@ -97,55 +112,34 @@ function StudentInternships({preview = false}) {
 
     usePolling(load);
 
-    const handlePreview = async (id) => {
-        if (selectedId === id) {
-            setSelectedId(null);
-            return;
-        }
+    const cards = shown.map(internship => {
+        const application = appliedInternships.find((a) => a.internshipId === internship.id);
 
-        setSelectedId(id);
-
-        try {
-            await markInternshipsAsViewed([id]);
-            setViewError(false);
-            setInternships(prev => prev.map(internship => internship.id === id ? {
-                ...internship,
-                viewed: true
-            } : internship));
-        } catch {
-            setViewError(true);
-        }
-    };
-
-    const viewErrorLine = viewError &&
-        <p className={s.errorText} role="alert">{t("studentInternship.viewedError")}</p>;
-
-    const cards = shown.map(internship => (<InternshipCard
-        key={internship.id}
-        internship={internship}
-        dark={dark}
-        showEmployer
-        hideStatus
-        showPreview
-        viewed={internship.viewed}
-        onPreview={handlePreview}
-        expanded={selectedId === internship.id}
-        bottomFooter={cvs !== null && (<ApplyControls
+        return (<InternshipCard
+            key={internship.id}
+            internship={internship}
             dark={dark}
-            cvs={cvs}
-            letters={letters}
-            internshipId={internship.id}
-            application={appliedInternships.find((application) => application.internshipId === internship.id)}
-            onChanged={handleApplicationChanged}
-            onLettersChanged={loadLetters}
-        />)}
-    />));
+            showEmployer
+            hideStatus
+            showPreview
+            viewed={internship.viewed}
+            application={application}
+            bottomFooter={cvs !== null && (<ApplyControls
+                dark={dark}
+                cvs={cvs}
+                letters={letters}
+                internshipId={internship.id}
+                application={application}
+                onChanged={handleApplicationChanged}
+                onLettersChanged={loadLetters}
+            />)}
+        />);
+    });
 
     // Home preview: same states and spacing as every other Home preview
     if (preview) {
         return (
             <div className="space-y-4">
-                {viewErrorLine}
                 <PreviewState dark={dark} error={error} loading={loading} empty={shown.length === 0}>
                     {cards}
                 </PreviewState>
@@ -188,12 +182,11 @@ function StudentInternships({preview = false}) {
         </div>
 
         <div className={s.listSection}>
-            {viewErrorLine}
-
             {!loading && !error && internships.length > 0 && (<InternshipFilters
                 dark={dark}
                 filters={filters}
                 showStatus={false}
+                showApplied
             />)}
 
             {list}

@@ -60,17 +60,6 @@ export const matchesSearch = (values, search) => {
     return values.filter(Boolean).join(" ").toLowerCase().includes(q);
 };
 
-/**
- * Counts items per status for CVs and internships.
- * A missing status counts as PENDING.
- * Returns {PENDING, APPROVED, REJECTED}.
- */
-export const countByStatus = (list) => (list ?? []).reduce((acc, d) => {
-    const key = d.status ?? "PENDING";
-    acc[key] = (acc[key] ?? 0) + 1;
-    return acc;
-}, {PENDING: 0, APPROVED: 0, REJECTED: 0});
-
 // ─── 2. Internships ───────────────────────────────────────────────────────────
 
 const internshipPay = (i) =>
@@ -105,10 +94,17 @@ export const INTERNSHIP_SORT_OPTIONS = [
 export const getInternshipDisciplines = (list) =>
     [...new Set((list ?? []).map((i) => i.discipline).filter(Boolean))].sort();
 
-export function filterInternships(list, {search = "", status = "ALL", discipline = "ALL"} = {}) {
+/**
+ * `applied` ("ALL" | "APPLIED" | "NOT_APPLIED") and `appliedIds` (Set of internship ids the student
+ * applied to) are student-side only: without `appliedIds` the applied filter does nothing.
+ */
+export function filterInternships(list, {
+    search = "", status = "ALL", discipline = "ALL", applied = "ALL", appliedIds = null
+} = {}) {
     return list.filter((i) => {
         if (status !== "ALL" && i.status !== status) return false;
         if (discipline !== "ALL" && i.discipline !== discipline) return false;
+        if (appliedIds && applied !== "ALL" && appliedIds.has(i.id) !== (applied === "APPLIED")) return false;
         return matchesSearch([i.title, i.description, i.requiredSkills, i.location, i.employerEmail], search);
     });
 }
@@ -130,16 +126,23 @@ export function sortInternships(list, sort = "NEWEST", viewedAtLoad = null) {
         statusRank(a) - statusRank(b) || wasViewed(a) - wasViewed(b) || base(a, b));
 }
 
-export function applyInternshipFilters(list, {search, status, discipline, sort, viewedAtLoad} = {}) {
+export function applyInternshipFilters(list, {
+    search, status, discipline, sort, viewedAtLoad, applied, appliedIds
+} = {}) {
     if (!list) return null;
-    return sortInternships(filterInternships(list, {search, status, discipline}), sort, viewedAtLoad);
+    return sortInternships(
+        filterInternships(list, {search, status, discipline, applied, appliedIds}), sort, viewedAtLoad);
 }
 
-/** Owns the filter state and returns the visible list (null while `list` is null). */
-export function useInternshipFilters(list) {
+/**
+ * Owns the filter state and returns the visible list (null while `list` is null).
+ * `appliedIds` (optional, a stable Set) enables the applied / not applied filter.
+ */
+export function useInternshipFilters(list, appliedIds = null) {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("ALL");
     const [discipline, setDiscipline] = useState("ALL");
+    const [applied, setApplied] = useState("ALL");
     const [sort, setSort] = useState("NEWEST");
 
     // "Viewed" state of each offer the first time it appears. Lives as long as the page
@@ -152,14 +155,15 @@ export function useInternshipFilters(list) {
             if (!viewedAtLoad.current.has(i.id)) viewedAtLoad.current.set(i.id, Boolean(i.viewed));
         }
         return applyInternshipFilters(list, {
-            search, status, discipline, sort, viewedAtLoad: viewedAtLoad.current,
+            search, status, discipline, sort, applied, appliedIds, viewedAtLoad: viewedAtLoad.current,
         });
-    }, [list, search, status, discipline, sort]);
+    }, [list, search, status, discipline, sort, applied, appliedIds]);
 
     return {
         search, setSearch, status, setStatus, discipline, setDiscipline, sort, setSort,
+        applied, setApplied,
         disciplines, visible,
-        filtersActive: search.trim() !== "" || status !== "ALL" || discipline !== "ALL",
+        filtersActive: search.trim() !== "" || status !== "ALL" || discipline !== "ALL" || applied !== "ALL",
     };
 }
 
