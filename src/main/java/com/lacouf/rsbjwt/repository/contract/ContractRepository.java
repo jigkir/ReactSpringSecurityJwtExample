@@ -14,4 +14,5 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     Optional<Contract> findByIdAndInternshipApplication_Student_Credentials_Email(long id, String email);
     List<Contract> findByInternshipApplication_StudentAndContractStatus(Student student, ContractStatus status);
     Optional<Contract> findByInternshipApplication(InternshipApplication application);
+    List<Contract> findByInternshipApplication_Student(Student student);
 }

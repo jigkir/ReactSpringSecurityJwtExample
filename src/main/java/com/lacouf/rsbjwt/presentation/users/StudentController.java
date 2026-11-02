@@ -1,6 +1,8 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.EmptyFileException;
@@ -17,6 +19,7 @@ import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -217,5 +220,23 @@ public class StudentController {
     public ResponseEntity<List<InterviewStudentResponseDTO>> getInterviews(Authentication authentication) throws UserNotFoundException {
         List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
+    }
+
+    @GetMapping("/contracts")
+    public ResponseEntity<List<ContractResponseDto>> getContracts(Authentication authentication) throws UserNotFoundException {
+        List<ContractResponseDto> contracts = studentService.getContracts(authentication.getName());
+        return ResponseEntity.ok(contracts);
+    }
+
+    @PutMapping("/contracts/{contractId}/accept")
+    public ResponseEntity<Void> acceptContract(@PathVariable long contractId, Authentication authentication) throws ContractNotFoundException, ContractNotPendingException, StudentAlreadyEmployedException {
+        studentService.acceptContract(contractId, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/contracts/{contractId}/reject")
+    public ResponseEntity<Void> rejectContract(@PathVariable long contractId, Authentication authentication) throws ContractNotPendingException, ContractNotFoundException {
+        studentService.rejectContract(contractId, authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 }

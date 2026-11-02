@@ -1,6 +1,8 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
@@ -33,10 +35,12 @@ import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -73,8 +77,9 @@ public class StudentService {
     private final NotificationService notificationService;
     private final DocumentService documentService;
     private final AcademicSessionService academicSessionService;
+    private final ContractService contractService;
 
-    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository interviewRepository, AcademicSessionService academicSessionService) {
+    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository interviewRepository, AcademicSessionService academicSessionService, ContractService contractService) {
         this.userAppService = userAppService;
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
@@ -87,6 +92,7 @@ public class StudentService {
         this.documentService = documentService;
         this.interviewRepository = interviewRepository;
         this.academicSessionService = academicSessionService;
+        this.contractService = contractService;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -346,6 +352,22 @@ public class StudentService {
                 .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
                 .map(InterviewStudentResponseDTO::of)
                 .toList();
+    }
+
+    @Transactional
+    public void acceptContract(long contractId, String email) throws ContractNotFoundException, ContractNotPendingException, StudentAlreadyEmployedException {
+        contractService.studentAcceptsContract(contractId, email);
+    }
+
+    @Transactional
+    public void rejectContract(long contractId, String email) throws ContractNotFoundException, ContractNotPendingException {
+        contractService.studentRejectsContract(contractId, email);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContractResponseDto> getContracts(String email) throws UserNotFoundException {
+        Student student = findByEmail(email);
+        return contractService.getContractsOfStudent(student);
     }
 
     private boolean isVisibleToStudents(Internship internship) {

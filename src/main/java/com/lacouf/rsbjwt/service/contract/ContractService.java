@@ -9,9 +9,11 @@ import com.lacouf.rsbjwt.model.contract.StudentConsent;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,6 +31,14 @@ public class ContractService {
 
         Contract contract = new Contract(internshipApplication);
         contractRepository.save(contract);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContractResponseDto> getContractsOfStudent(Student student) {
+        return contractRepository.findByInternshipApplication_Student(student).stream()
+                .filter(contract -> !contract.getInternshipApplication().getInternship().isDeleted())
+                .map(ContractResponseDto::of)
+                .toList();
     }
 
     @Transactional
