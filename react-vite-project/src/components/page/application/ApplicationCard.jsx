@@ -21,7 +21,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
     const interviewLabel =
-        isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.closeInterviewPicker")) ;
+        isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker")) ;
 
     const getInterviewFromApplication = useCallback( async (application) => {
         let Interviews = await getEmployerInterviewsByApplicationId(application.id);
