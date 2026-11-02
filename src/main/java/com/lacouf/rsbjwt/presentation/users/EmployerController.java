@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
@@ -92,7 +94,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/reject")
-    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ContractAlreadyExistsException, ContractAlreadyActiveException {
         employerService.rejectInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -132,8 +134,8 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationAlreadyHiredException {
-        employerService.hireStudentsToInternship(applicationIds, authentication.getName());
+    public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
+        employerService.offerContracts(applicationIds, authentication.getName());
         return ResponseEntity.ok().build();
     }
 }

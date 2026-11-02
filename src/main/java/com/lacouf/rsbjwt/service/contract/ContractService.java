@@ -1,8 +1,6 @@
 package com.lacouf.rsbjwt.service.contract;
 
-import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
+import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
@@ -13,6 +11,8 @@ import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class ContractService {
@@ -32,25 +32,61 @@ public class ContractService {
     }
 
     @Transactional
-    public void studentAcceptsContract(Contract contract) {
-        InternshipApplication internshipApplication = contract.getInternshipApplication();
-        Student student = internshipApplication.getStudent();
+    public void studentAcceptsContract(long contractId, String email) throws ContractNotFoundException, ContractNotPendingException, StudentAlreadyEmployedException {
+        Contract contract = findPendingContract(contractId, email);
+        Student student = contract.getInternshipApplication().getStudent();
+
+        if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
+            throw new StudentAlreadyEmployedException(student.getId());
+        }
 
         contract.setStudentConsent(StudentConsent.ACCEPTED);
-
         contract.setContractStatus(ContractStatus.ACTIVE);
-
         student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
 
-        contractRepository.save(contract);
+        terminateOtherPendingContracts(student, contract);
     }
 
     @Transactional
-    public void studentRejectsContract(Contract contract) {
+    public void studentRejectsContract(long contractId, String email) throws ContractNotFoundException, ContractNotPendingException {
+        Contract contract = findPendingContract(contractId, email);
+
         contract.setStudentConsent(StudentConsent.REJECTED);
         contract.setContractStatus(ContractStatus.TERMINATED);
+    }
 
-        contractRepository.save(contract);
+    private Contract findPendingContract(long contractId, String email) throws ContractNotFoundException, ContractNotPendingException {
+        Contract contract = contractRepository.findByIdAndInternshipApplication_Student_Credentials_Email(contractId, email)
+                .orElseThrow(() -> new ContractNotFoundException(contractId));
+
+        if (contract.getInternshipApplication().getInternship().isDeleted()) {
+            throw new ContractNotFoundException(contractId);
+        }
+        if (contract.getContractStatus() != ContractStatus.PENDING) {
+            throw new ContractNotPendingException(contractId);
+        }
+        return contract;
+    }
+
+    private void terminateOtherPendingContracts(Student student, Contract accepted) {
+        contractRepository.findByInternshipApplication_StudentAndContractStatus(student, ContractStatus.PENDING).stream()
+                .filter(other -> !other.getId().equals(accepted.getId()))
+                .forEach(other -> {
+                    other.setStudentConsent(StudentConsent.REJECTED);
+                    other.setContractStatus(ContractStatus.TERMINATED);
+                });
+    }
+
+    @Transactional
+    public void terminateForRejection(InternshipApplication application) throws ContractAlreadyActiveException {
+        Optional<Contract> contract = contractRepository.findByInternshipApplication(application);
+        if (contract.isEmpty()) {
+            return;
+        }
+        if (contract.get().getContractStatus() == ContractStatus.ACTIVE) {
+            throw new ContractAlreadyActiveException(contract.get().getId());
+        }
+        contract.get().setContractStatus(ContractStatus.TERMINATED);
     }
 
     private void checkIfContractCanBeCreated(InternshipApplication internshipApplication) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {

@@ -7,6 +7,7 @@ import lombok.Setter;
 
 @Entity
 public class Contract {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,8 +19,8 @@ public class Contract {
     private StudentConsent studentConsent;
 
     @Getter
-    @OneToOne
-    InternshipApplication internshipApplication;
+    @OneToOne (fetch = FetchType.LAZY, optional = false)
+    private InternshipApplication internshipApplication;
 
     @Setter
     @Getter
