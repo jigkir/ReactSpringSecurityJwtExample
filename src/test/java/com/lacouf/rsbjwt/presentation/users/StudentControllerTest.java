@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
@@ -15,7 +15,6 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.presentation.users.StudentController;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -555,7 +554,7 @@ public class StudentControllerTest {
         //Arrange
         InternshipResponseDto internship = new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
 
-        when(studentService.getInternships(STUDENT_EMAIL)).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
+        when(studentService.getInternships(STUDENT_EMAIL, null)).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
 
         //Act + Assert
         mockMvc.perform(get("/api/student/internship")
@@ -570,7 +569,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingInternshipsForNonExistentStudent() throws Exception {
         //Arrange
-        when(studentService.getInternships(STUDENT_EMAIL))
+        when(studentService.getInternships(STUDENT_EMAIL, null))
                 .thenThrow(new UserNotFoundException());
 
         //Act + Assert
@@ -630,7 +629,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetAppliedApplicationsSuccessfully() throws Exception {
         // Arrange
-        when(studentService.getInternshipApplications(STUDENT_EMAIL))
+        when(studentService.getInternshipApplications(STUDENT_EMAIL, null))
                 .thenReturn(List.of());
 
         // Act & Assert

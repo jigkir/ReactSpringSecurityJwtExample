@@ -6,6 +6,7 @@ import Icon from '../styles/Icon.jsx';
 import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
 import {getSessions} from "./api/Api.jsx";
+import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
@@ -26,7 +27,7 @@ const NAV_BY_ROLE = {
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
-function Navbar({user, dark, toggleDark}) {
+function Navbar({user, accountStatus, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
     const theme = getNavbarClasses(dark);
@@ -86,6 +87,7 @@ function Navbar({user, dark, toggleDark}) {
         }
     }, [isLoggedIn]);
 
+    const isAccessGranted = accountStatus === ACCOUNT_STATUS.APPROVED;
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
 
@@ -100,7 +102,7 @@ function Navbar({user, dark, toggleDark}) {
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), end: true},
         {to: "/about", label: t("navbar.about")},
-        ...(isLoggedIn ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
+        ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
             ...item,
             label: item.labelKey ? t(item.labelKey) : item.label,
         })),
@@ -158,7 +160,7 @@ function Navbar({user, dark, toggleDark}) {
                                         {label}
                                     </NavLink>
                                 ))}
-                                {isLoggedIn && <NotificationMenu dark={dark}/>}
+                                {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </nav>
 
                             {/* Mobile: app name doubles as the pages dropdown button */}
@@ -201,12 +203,12 @@ function Navbar({user, dark, toggleDark}) {
                             </div>
                             {/* Mobile bell (always visible, in the top bar) */}
                             <div className="lg:hidden">
-                                {isLoggedIn && <NotificationMenu dark={dark}/>}
+                                {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </div>
                         </div>
 
                         {/*Center section*/}
-                        {isLoggedIn &&
+                        {isLoggedIn && isAccessGranted &&
                             (<div className="hidden md:flex justify-center flex-1">
                                 <form>
                                     <select
@@ -344,6 +346,7 @@ function Navbar({user, dark, toggleDark}) {
                 selectedSession={selectedSession}
                 setSelectedSession={setSelectedSession}
                 isLoggedIn={isLoggedIn}
+                isAccessGranted={isAccessGranted}
             />
         </>
     );

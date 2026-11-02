@@ -9,6 +9,7 @@ import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
@@ -145,8 +146,8 @@ public class StudentController {
     }
 
     @GetMapping("/internship")
-    public ResponseEntity<List<StudentInternshipResponseDto>> getInternships(Authentication authentication) throws UserNotFoundException {
-        List<StudentInternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName());
+    public ResponseEntity<List<StudentInternshipResponseDto>> getInternships(Authentication authentication, @RequestParam(required = false) Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
+        List<StudentInternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName(), sessionId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -168,8 +169,8 @@ public class StudentController {
     }
 
     @GetMapping("/applications")
-    public ResponseEntity<List<InternshipApplicationResponseDto>> getAppliedInternships(Authentication authentication) throws UserNotFoundException {
-        List<InternshipApplicationResponseDto> appliedInternships = studentService.getInternshipApplications(authentication.getName());
+    public ResponseEntity<List<InternshipApplicationResponseDto>> getAppliedInternships(Authentication authentication, @RequestParam(required = false) Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
+        List<InternshipApplicationResponseDto> appliedInternships = studentService.getInternshipApplications(authentication.getName(), sessionId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(appliedInternships);

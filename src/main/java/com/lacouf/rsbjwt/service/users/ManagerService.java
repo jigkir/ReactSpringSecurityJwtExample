@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -14,6 +15,7 @@ import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
@@ -27,6 +29,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +46,9 @@ public class ManagerService {
     private final NotificationService notificationService;
     private final UserAppService userAppService;
     private final InternshipService internshipService;
+    private final AcademicSessionService academicSessionService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
@@ -52,6 +56,7 @@ public class ManagerService {
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipService = internshipService;
+        this.academicSessionService = academicSessionService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -116,12 +121,16 @@ public class ManagerService {
         return saveAndConvert(cv);
     }
 
-    public List<InternshipResponseDto> getPendingInternships() {
-        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
+    public List<InternshipResponseDto> getPendingInternships(Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+
+        return internshipRepository.findBySessionAndStatusAndDeletedFalse(session, ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
     }
 
-    public List<InternshipResponseDto> getAllInternships() {
-        return internshipRepository.findByDeletedFalse().stream().map(InternshipResponseDto::of).toList();
+    public List<InternshipResponseDto> getAllInternships(Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+
+        return internshipRepository.findBySessionAndDeletedFalse(session).stream().map(InternshipResponseDto::of).toList();
     }
 
     public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {

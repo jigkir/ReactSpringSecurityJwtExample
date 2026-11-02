@@ -1,19 +1,24 @@
-import {Link, useOutletContext} from 'react-router-dom';
+import {Link, Navigate, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getHomeClasses, getMainContainerClasses} from '../styles/AppStyles.jsx';
 import Button from '../styles/Button.jsx';
 import Icon from '../styles/Icon.jsx';
 import {PREVIEWS_BY_ROLE} from './home/HomePreviews.jsx';
 import {HOME_COLUMNS} from './home/PreviewLoaders.js';
+import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 
 const GRID_BY_COLUMNS = {
     1: {grid: "grid-cols-1", span: "", width: "max-w-5xl"},
     2: {grid: "grid-cols-1 xl:grid-cols-2", span: "xl:col-span-2", width: "max-w-[100rem]"},
-    3: {grid: "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3", span: "lg:col-span-2 xl:col-span-3", width: "max-w-[120rem]"},
+    3: {
+        grid: "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3",
+        span: "lg:col-span-2 xl:col-span-3",
+        width: "max-w-[120rem]"
+    },
 };
 
 const Home = () => {
-    const {dark, user} = useOutletContext();
+    const {dark, user, accountStatus} = useOutletContext();
     const {t} = useTranslation();
     const classes = getHomeClasses(dark);
     const landing = getMainContainerClasses(dark);
@@ -46,6 +51,11 @@ const Home = () => {
         );
     }
 
+    // endregion
+
+    // region Logged in: wait for the account status, then send an inactive account to /expired
+    if (accountStatus === null) return <div aria-busy="true"/>;
+    if (accountStatus !== ACCOUNT_STATUS.APPROVED) return <Navigate to="/expired" replace/>;
     // endregion
 
     // region Logged in: the real pages in preview mode, same layout for every role

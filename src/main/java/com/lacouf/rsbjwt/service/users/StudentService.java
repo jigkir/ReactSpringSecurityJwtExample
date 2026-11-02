@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -20,6 +21,7 @@ import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
@@ -41,6 +43,7 @@ import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipRespon
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,8 +71,9 @@ public class StudentService {
     private final UserAppService userAppService;
     private final NotificationService notificationService;
     private final DocumentService documentService;
+    private final AcademicSessionService academicSessionService;
 
-    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository InterviewRepository) {
+    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository interviewRepository, AcademicSessionService academicSessionService) {
         this.userAppService = userAppService;
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
@@ -80,7 +84,8 @@ public class StudentService {
         this.internshipRepository = internshipRepository;
         this.applicationRepository = applicationRepository;
         this.documentService = documentService;
-        this.interviewRepository = InterviewRepository;
+        this.interviewRepository = interviewRepository;
+        this.academicSessionService = academicSessionService;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -93,7 +98,8 @@ public class StudentService {
                 studentSignUpDto.lastName(),
                 studentSignUpDto.studentId(),
                 credentials,
-                studentSignUpDto.discipline()
+                studentSignUpDto.discipline(),
+                academicSessionService.getCurrentSession()
         );
 
         studentRepository.save(student);
@@ -251,23 +257,26 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<InternshipApplicationResponseDto> getInternshipApplications(String email) throws UserNotFoundException {
+    public List<InternshipApplicationResponseDto> getInternshipApplications(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
         Student student = findByEmail(email);
-        return applicationRepository.findByStudent(student).stream()
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+
+        return applicationRepository.findByStudentAndInternship_Session(student, session).stream()
                 .filter(application -> isVisibleToStudents(application.getInternship()))
                 .map(InternshipApplicationResponseDto::of)
                 .toList();
     }
 
-    public List<StudentInternshipResponseDto> getInternships(String email) throws UserNotFoundException {
+    public List<StudentInternshipResponseDto> getInternships(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
         Student student = findByEmail(email);
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
 
         Set<Long> viewedInternshipIds = studentRepository.findViewedInternshipIds(student);
         Set<Long> hiddenInternshipIds = studentRepository.findHiddenInternshipIds(student);
         Set<Long> favoriteInternshipIds = studentRepository.findFavoriteInternshipIds(student);
         Set<Long> appliedInternshipIds = applicationRepository.findInternshipIdsByStudent(student);
 
-        List<Internship> internships = findInternships(student);
+        List<Internship> internships = findInternships(student, session);
         List<StudentInternshipResponseDto> internshipResponses = new ArrayList<>();
 
         for (Internship internship : internships) {
@@ -448,7 +457,7 @@ public class StudentService {
                 .orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }
 
-    private List<Internship> findInternships(Student student) {
-        return internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(student.getDiscipline());
+    private List<Internship> findInternships(Student student, AcademicSession session) {
+        return internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(student.getDiscipline(), session);
     }
 }

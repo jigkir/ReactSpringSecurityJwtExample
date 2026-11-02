@@ -2,6 +2,8 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.document.DocumentService;
+import com.lacouf.rsbjwt.service.dto.response.user.AccountStatusResponseDto;
+import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import com.lacouf.rsbjwt.service.dto.request.auth.UserLoginDTO;
 import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
@@ -21,6 +23,7 @@ public class UserController {
 
     private final UserAppService userAppService;
     private final DocumentService documentService;
+    private final AccountAccessService accountAccessService;
 
     @PostMapping("/login")
     public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody UserLoginDTO userLoginDto) {
@@ -30,6 +33,11 @@ public class UserController {
     @GetMapping("/users/current")
     public ResponseEntity<UserResponseDto> getCurrentUser(Authentication authentication) throws UserNotFoundException {
         return ResponseEntity.ok(userAppService.getUserByEmail(authentication.getName()));
+    }
+
+    @GetMapping("/users/status")
+    public ResponseEntity<AccountStatusResponseDto> getAccountStatus(Authentication authentication) throws UserNotFoundException {
+        return ResponseEntity.ok(accountAccessService.getAccountStatus(authentication.getName()));
     }
 
     @GetMapping("/disciplines")

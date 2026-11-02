@@ -34,10 +34,13 @@ public class UserAppService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserAppRepository userAppRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AccountAccessService accountAccessService;
 
     public JWTAuthResponse login(UserLoginDTO userLoginDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDto.email(), userLoginDto.password()));
+
+        accountAccessService.notifyManagersIfAccessExpired(authentication.getName());
 
         return new JWTAuthResponse(jwtTokenProvider.generateToken(authentication));
     }
@@ -46,6 +49,8 @@ public class UserAppService {
     public JWTAuthResponse devLoginAs(String email) throws UserNotFoundException {
         UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities());
+
+        accountAccessService.notifyManagersIfAccessExpired(authentication.getName());
 
         return new JWTAuthResponse(jwtTokenProvider.generateToken(authentication));
     }

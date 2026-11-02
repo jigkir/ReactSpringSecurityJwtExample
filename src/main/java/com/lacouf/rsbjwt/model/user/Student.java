@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +54,14 @@ public class Student extends UserApp {
     )
     private Set<Internship> favoriteInternships;
 
-    public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline) {
+    @ManyToOne
+    @JoinColumn(name = "access_session_id")
+    private AcademicSession accessSession;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
+
+    public Student(String firstName, String lastName, String studentId, Credentials credentials, Discipline discipline, AcademicSession session) {
         super(firstName, lastName, credentials);
         this.studentId = studentId;
         this.discipline = discipline;
@@ -61,6 +69,7 @@ public class Student extends UserApp {
         this.hiddenInternships = new HashSet<>();
         this.favoriteInternships = new HashSet<>();
         this.studentInternshipStatus = StudentInternshipStatus.NOT_EMPLOYED;
+        grantAccess(session);
     }
 
     public Student() {
@@ -97,5 +106,23 @@ public class Student extends UserApp {
 
     public void removeFromFavorites(Internship internship) {
         favoriteInternships.remove(internship);
+    }
+
+    public AcademicSession getAccessSession() {
+        return accessSession;
+    }
+
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void grantAccess(AcademicSession session) {
+        this.accessSession = session;
+        this.accountStatus = AccountStatus.APPROVED;
+    }
+
+    public void denyAccess(AcademicSession session) {
+        this.accessSession = session;
+        this.accountStatus = AccountStatus.REJECTED;
     }
 }

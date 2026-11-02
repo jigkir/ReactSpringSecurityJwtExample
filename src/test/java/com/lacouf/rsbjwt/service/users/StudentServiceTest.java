@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -25,6 +26,9 @@ import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.session.Season;
+import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -39,14 +43,14 @@ import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
-import com.lacouf.rsbjwt.service.users.StudentService;
-import com.lacouf.rsbjwt.service.users.UserAppService;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeAll;
@@ -102,6 +106,8 @@ public class StudentServiceTest {
     private AcademicTranscriptRepository academicTranscriptRepository;
     @Mock
     private InterviewRepository interviewRepository;
+    @Mock
+    private AcademicSessionService academicSessionService;
 
     @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
@@ -124,6 +130,7 @@ public class StudentServiceTest {
 
     private static Employer employer;
     private static Internship internship;
+    private static AcademicSession currentSession;
 
     private static final String EMPLOYER_EMAIL = "email@example.com";
     private static final LocalDate START_DATE = LocalDate.now().plusMonths(4);
@@ -141,7 +148,6 @@ public class StudentServiceTest {
             validPdfBytes = baos.toByteArray();
         }
 
-
         Credentials credentials = Credentials.builder()
                 .email(EMPLOYER_EMAIL)
                 .password("Test123@-encoded")
@@ -154,13 +160,18 @@ public class StudentServiceTest {
 
     @BeforeEach
     void setUp() {
+        currentSession = new AcademicSession(Season.FALL, 2026);
+        currentSession.setId(1L);
+
         dummyStudent = new Student(
                 "First Name", "Last Name", "1234567",
                 Credentials.builder().email("test@claurendeau.qc.ca").role(Role.STUDENT).build(),
-                Discipline.COMPUTER_SCIENCE
+                Discipline.COMPUTER_SCIENCE,
+                currentSession
         );
         dummyStudent.setId(1L);
-        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer);
+
+        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer, currentSession);
         internship.setId(10L);
     }
 
@@ -174,7 +185,7 @@ public class StudentServiceTest {
         Credentials credentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
 
         when(userAppService.createCredentials(STUDENT_EMAIL, "Test123@", Role.STUDENT)).thenReturn(credentials);
-
+        when(academicSessionService.getCurrentSession()).thenReturn(currentSession);
         when(studentRepository.save(any(Student.class)))
                 .thenAnswer(answer((Student student) -> {
                     student.setId(1L);
@@ -195,6 +206,8 @@ public class StudentServiceTest {
         assert student.getEmail().equals("test@claurendeau.qc.ca");
         assert student.getPassword().equals("Test123@-encoded");
         assert student.getDiscipline().equals(Discipline.COMPUTER_SCIENCE);
+        assert student.getAccessSession().equals(currentSession);
+        assert student.getAccountStatus().equals(AccountStatus.APPROVED);
     }
 
     @Test
@@ -753,62 +766,67 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldGetAInternshipsSuccessfully() throws UserNotFoundException {
+    void shouldGetAInternshipsSuccessfully() throws UserNotFoundException, AcademicSessionNotFoundException {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         internship.setStatus(ReviewStatus.APPROVED);
         //Act + Assert
-        assert !studentService.getInternships(dummyStudent.getEmail()).isEmpty();
+        assert !studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
     }
 
     @Test
-    void shouldNotGetAInternshipsWhenStatusIsNotApproved() throws UserNotFoundException {
+    void shouldNotGetAInternshipsWhenStatusIsNotApproved() throws UserNotFoundException, AcademicSessionNotFoundException {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         //Act + Assert
-        assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
+        assert studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
     }
 
     @Test
-    void shouldNotGetAInternshipsWhenAfterDeadline() throws UserNotFoundException {
+    void shouldNotGetAInternshipsWhenAfterDeadline() throws UserNotFoundException, AcademicSessionNotFoundException {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
         //Act + Assert
-        assert studentService.getInternships(dummyStudent.getEmail()).isEmpty();
+        assert studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
     }
 
     @Test
-    void shouldGetInternshipAfterDeadlineWhenStudentAppliedToIt() throws UserNotFoundException {
+    void shouldGetInternshipAfterDeadlineWhenStudentAppliedToIt() throws UserNotFoundException, AcademicSessionNotFoundException {
         // Arrange
         internship.setStatus(ReviewStatus.APPROVED);
         internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         when(applicationRepository.findInternshipIdsByStudent(dummyStudent)).thenReturn(Set.of(10L));
 
         // Act
-        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL);
+        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL, null);
 
         // Assert
         assert internships.size() == 1;
     }
 
     @Test
-    void shouldReturnHiddenAndFavoriteFlagsWhenGettingInternships() throws UserNotFoundException {
+    void shouldReturnHiddenAndFavoriteFlagsWhenGettingInternships() throws UserNotFoundException, AcademicSessionNotFoundException {
         // Arrange
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(internshipRepository.findByPostedBy_DisciplineAndDeletedIsFalse(dummyStudent.getDiscipline())).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         when(studentRepository.findHiddenInternshipIds(dummyStudent)).thenReturn(Set.of(10L));
 
         // Act
-        StudentInternshipResponseDto studentInternshipResponseDto = studentService.getInternships(STUDENT_EMAIL).getFirst();
+        StudentInternshipResponseDto studentInternshipResponseDto = studentService.getInternships(STUDENT_EMAIL, null).getFirst();
 
         // Assert
         assert ("Software Developer").equals(studentInternshipResponseDto.internship().title());
@@ -1002,6 +1020,26 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldGetInternshipApplicationsOfChosenSession() throws Exception {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
+        application.setId(20L);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(applicationRepository.findByStudentAndInternship_Session(dummyStudent, currentSession)).thenReturn(List.of(application));
+
+        // Act
+        List<InternshipApplicationResponseDto> applications = studentService.getInternshipApplications(STUDENT_EMAIL, 1L);
+
+        // Assert
+        assert applications.size() == 1;
+        assert applications.getFirst().internshipId() == 10L;
+    }
+
+    @Test
     void shouldUpdateInternshipApplicationSuccessfully() throws Exception {
         // Arrange
         internship.setStatus(ReviewStatus.APPROVED);
@@ -1159,7 +1197,8 @@ public class StudentServiceTest {
         Student otherStudent = new Student(
                 "Other", "Student", "7654321",
                 Credentials.builder().email(STUDENT_EMAIL).role(Role.STUDENT).build(),
-                Discipline.CIVIL_ENGINEERING
+                Discipline.CIVIL_ENGINEERING,
+                currentSession
         );
         otherStudent.setId(2L);
 

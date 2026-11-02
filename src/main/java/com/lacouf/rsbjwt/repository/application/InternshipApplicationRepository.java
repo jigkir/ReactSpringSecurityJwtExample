@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.repository.application;
 
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,13 +13,14 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface InternshipApplicationRepository extends JpaRepository<InternshipApplication, Long> {
-    List<InternshipApplication> findByStudent(Student student);
+
+    List<InternshipApplication> findByStudentAndInternship_Session(Student student, AcademicSession session);
 
     boolean existsByStudentAndInternship(Student student, Internship internship);
 
     Optional<InternshipApplication> findByIdAndStudent_Credentials_Email(long id, String email);
 
-    List<InternshipApplication> findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(String email);
+    List<InternshipApplication> findByInternship_PostedBy_Credentials_EmailAndInternship_SessionAndInternship_DeletedFalse(String email, AcademicSession session);
 
     Optional<InternshipApplication> findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(long id, String email);
 

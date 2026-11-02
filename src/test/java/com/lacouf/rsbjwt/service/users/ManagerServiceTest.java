@@ -1,9 +1,10 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -15,6 +16,8 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -29,8 +32,7 @@ import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
-import com.lacouf.rsbjwt.service.users.ManagerService;
-import com.lacouf.rsbjwt.service.users.UserAppService;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,6 +61,8 @@ public class ManagerServiceTest {
     private NotificationService notificationService;
     @Mock
     private UserAppService userAppService;
+    @Mock
+    private AcademicSessionService academicSessionService;
 
     @Mock
     private ManagerRepository managerRepository;
@@ -77,14 +81,20 @@ public class ManagerServiceTest {
 
     private CV cv;
     private Internship internship;
+    private AcademicSession currentSession;
 
     @BeforeEach
     void setUp() {
-        Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE);
+        currentSession = new AcademicSession(Season.FALL, 2026);
+        currentSession.setId(1L);
+
+        Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, null);
         student.setId(2L);
+
         cv = new CV("pdf".getBytes(), "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
         cv.setId(1L);
         student.addCv(cv);
+
         Employer employer = new Employer("Jean", "Dupont", Credentials.builder().email("employer@example.com").role(Role.EMPLOYER).build(), "Tech Corp", Discipline.COMPUTER_SCIENCE, "514-123-4567");
         employer.setId(3L);
 
@@ -98,7 +108,9 @@ public class ManagerServiceTest {
                 LocalDate.of(2026, 12, 1),
                 new BigDecimal("25.00"),
                 false,
-                employer);
+                employer,
+                currentSession
+        );
 
         internship.setId(1L);
     }
@@ -328,12 +340,13 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnPendingInternships() {
+    void shouldReturnPendingInternships() throws AcademicSessionNotFoundException {
         //Arrange
-        when(internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING)).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findBySessionAndStatusAndDeletedFalse(currentSession, ReviewStatus.PENDING)).thenReturn(List.of(internship));
 
         //Act
-        List<InternshipResponseDto> result = managerService.getPendingInternships();
+        List<InternshipResponseDto> result = managerService.getPendingInternships(null);
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -341,16 +354,33 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnAllInternships() {
+    void shouldReturnAllInternships() throws AcademicSessionNotFoundException {
         //Arrange
-        when(internshipRepository.findByDeletedFalse()).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findBySessionAndDeletedFalse(currentSession)).thenReturn(List.of(internship));
 
         //Act
-        List<InternshipResponseDto> result = managerService.getAllInternships();
+        List<InternshipResponseDto> result = managerService.getAllInternships(null);
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
         assert ("Développeur logiciel").equals(result.getFirst().title());
+    }
+
+    @Test
+    void shouldReturnInternshipsOfChosenSessionWhenSessionIsGiven() throws AcademicSessionNotFoundException {
+        //Arrange
+        AcademicSession pastSession = new AcademicSession(Season.WINTER, 2026);
+        pastSession.setId(2L);
+
+        when(academicSessionService.findSessionOrCurrent(2L)).thenReturn(pastSession);
+        when(internshipRepository.findBySessionAndDeletedFalse(pastSession)).thenReturn(List.of());
+
+        //Act
+        List<InternshipResponseDto> result = managerService.getAllInternships(2L);
+
+        //Assert
+        assert result.isEmpty();
     }
 
     @Test
@@ -747,7 +777,7 @@ public class ManagerServiceTest {
     }
 
     // ---------- Helpers ----------
-    
+
     private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
         return new InternshipRequestDto("Développeur backend", "Stage en développement backend", "Java, Spring Boot", 16, "Montréal", WorkMode.HYBRID, startDate, internship.getApplicationDeadline(), compensationAmount, false);
     }

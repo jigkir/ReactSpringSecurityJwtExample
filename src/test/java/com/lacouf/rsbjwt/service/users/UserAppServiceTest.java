@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service;
+package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -16,7 +16,6 @@ import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.user.RoleDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -44,6 +43,8 @@ class UserAppServiceTest {
 
     @InjectMocks
     private UserAppService userAppService;
+    @Mock
+    private AccountAccessService accountAccessService;
 
     @Mock
     private AuthenticationManager authenticationManager;
@@ -62,6 +63,7 @@ class UserAppServiceTest {
         UserLoginDTO login = new UserLoginDTO("user@example.com", "Password123");
 
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(authentication.getName()).thenReturn("user@example.com");
         when(jwtTokenProvider.generateToken(authentication)).thenReturn("jwt-token");
 
         // Act
@@ -80,6 +82,7 @@ class UserAppServiceTest {
         assert ("Password123").equals(authenticationRequest.getCredentials());
 
         verify(jwtTokenProvider).generateToken(authentication);
+        verify(accountAccessService).notifyManagersIfAccessExpired("user@example.com");
     }
 
     @Test
@@ -105,7 +108,7 @@ class UserAppServiceTest {
                 .role(Role.STUDENT)
                 .build();
 
-        Student student = new Student("John", "Doe", "1234567", credentials, Discipline.COMPUTER_SCIENCE);
+        Student student = new Student("John", "Doe", "1234567", credentials, Discipline.COMPUTER_SCIENCE, null);
 
         student.setId(1L);
 
@@ -279,7 +282,7 @@ class UserAppServiceTest {
                 .role(Role.STUDENT)
                 .build();
 
-        Student student = new Student("John", "Doe", "1234567", credentials, Discipline.COMPUTER_SCIENCE);
+        Student student = new Student("John", "Doe", "1234567", credentials, Discipline.COMPUTER_SCIENCE, null);
 
         when(userAppRepository.findByCredentialsEmail("student@example.com")).thenReturn(Optional.of(student));
         when(jwtTokenProvider.generateToken(any(Authentication.class))).thenReturn("dev-jwt-token");
@@ -299,6 +302,8 @@ class UserAppServiceTest {
         assert ("student@example.com").equals(generatedFor.getName());
         assert generatedFor.getCredentials() == null;
         assert generatedFor.getAuthorities().contains(new SimpleGrantedAuthority("STUDENT"));
+
+        verify(accountAccessService).notifyManagersIfAccessExpired("student@example.com");
     }
 
     @Test
@@ -338,7 +343,7 @@ class UserAppServiceTest {
         // Arrange
         Student student = new Student("John", "Doe", "1234567",
                 Credentials.builder().email("student@example.com").password("pw").role(Role.STUDENT).build(),
-                Discipline.COMPUTER_SCIENCE);
+                Discipline.COMPUTER_SCIENCE, null);
         student.setId(1L);
 
         Manager manager = new Manager("Jane", "Doe",

@@ -3,5 +3,6 @@ package com.lacouf.rsbjwt.model.notification;
 public enum TargetType {
     CV,
     INTERNSHIP_OFFER,
-    INTERNSHIP_APPLICATION
+    INTERNSHIP_APPLICATION,
+    STUDENT_ACCOUNT
 }

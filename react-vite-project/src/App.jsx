@@ -1,11 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Navigate, Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 import {useDarkMode} from './styles/DarkMode.jsx';
 import PageLayout from './components/PageLayout.jsx';
 import About from './components/About.jsx';
 import Login from './components/page/auth/Login.jsx';
 import Signup from './components/page/auth/Signup.jsx';
-import {getCurrentUser} from './components/api/Api.jsx';
+import {checkUserStatus, getCurrentUser} from './components/api/Api.jsx';
 import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
 import PostInternship from './components/page/internship/PostInternship.jsx';
@@ -19,13 +19,22 @@ import StudentInternships from "./components/page/student/Internships.jsx";
 import ViewApplications from "./components/page/application/ViewApplications.jsx";
 import Applications from "./components/page/application/Applications.jsx";
 import Interviews from "./components/page/student/Interviews.jsx";
+import ExpiredUser from "./components/page/ExpiredUser.jsx";
+import {usePolling} from "./utils/usePolling.js";
+import {ACCOUNT_STATUS} from "./utils/AccountStatus.js";
 
 function App() {
     const [user, setUser] = useState({});
     const [error, setError] = useState(null);
+    const [accountStatus, setAccountStatus] = useState(null);
     const {dark, toggleDark} = useDarkMode();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const clearSession = useCallback(() => {
+        localStorage.removeItem("token");
+        setUser({});
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -43,8 +52,7 @@ function App() {
             .catch((err) => {
                 if (cancelled) return;
                 if (err.status === 401) {
-                    localStorage.removeItem("token");
-                    setUser({});
+                    clearSession();
                     return;
                 }
                 if (err.status === 403) setError(i18nError("error.accessRefused"));
@@ -59,10 +67,29 @@ function App() {
         };
     }, [location.pathname]);
 
+    const fetchStatus = useCallback(async () => {
+        try {
+            const data = await checkUserStatus();
+            setAccountStatus(data.status);
+        } catch (err) {
+            if (err.status === 401) clearSession();
+        }
+    }, [clearSession]);
+
+    // Reload the status whenever another user logs in
+    useEffect(() => {
+        setAccountStatus(null);
+        if (user?.email) void fetchStatus();
+    }, [user?.email, fetchStatus]);
+
+    // Keep checking until access is granted: the manager can still reactivate a refused account
+    usePolling(fetchStatus, Boolean(user?.email) && accountStatus !== ACCOUNT_STATUS.APPROVED);
+
     return (
         <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
             <Routes>
-                <Route element={<PageLayout user={user} dark={dark} toggleDark={toggleDark}/>}>
+                <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
+                                            toggleDark={toggleDark}/>}>
 
                     {/* Public: Home shows the landing page when logged out, the role home when logged in */}
                     <Route path="/" element={<Home/>}/>
@@ -99,6 +126,7 @@ function App() {
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace/>}/>
+                    <Route path="/expired" element={<ExpiredUser user={user}/>}/>
                 </Route>
             </Routes>
         </div>

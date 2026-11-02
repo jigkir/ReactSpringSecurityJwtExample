@@ -1,9 +1,12 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.UserAppRepository;
+import com.lacouf.rsbjwt.service.dto.response.user.AccountStatusResponseDto;
+import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import com.lacouf.rsbjwt.service.dto.response.user.DisciplineDto;
@@ -18,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -50,13 +54,13 @@ class UserControllerWebMvcTest {
 
     @MockitoBean
     private UserAppService userService;
-
     @MockitoBean
     private ManagerService managerService;
+    @MockitoBean
+    private AccountAccessService accountAccessService;
 
     @MockitoBean
     private ManagerRepository managerRepository;
-
     @MockitoBean
     private UserAppRepository userAppRepository;
 
@@ -158,6 +162,17 @@ class UserControllerWebMvcTest {
                                 "EMPLOYER"
                         )
                 ));
+    }
+
+    @Test
+    void shouldReturnAccountStatusOfCurrentUser() throws Exception {
+        // Arrange
+        when(accountAccessService.getAccountStatus("student@example.com")).thenReturn(new AccountStatusResponseDto(AccountStatus.PENDING));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/users/status").principal(new UsernamePasswordAuthenticationToken("student@example.com", null)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING"));
     }
 
     @ParameterizedTest

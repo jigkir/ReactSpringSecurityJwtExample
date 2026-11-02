@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyPassedException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
@@ -20,6 +21,7 @@ import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
@@ -39,6 +41,7 @@ import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,8 +60,9 @@ public class EmployerService {
     private final NotificationService notificationService;
     private final UserAppService userAppService;
     private final InternshipService internshipService;
+    private final AcademicSessionService academicSessionService;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
@@ -67,6 +71,7 @@ public class EmployerService {
         this.internshipApplicationRepository = internshipApplicationRepository;
         this.interviewRepository = interviewRepository;
         this.internshipService = internshipService;
+        this.academicSessionService = academicSessionService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -103,7 +108,8 @@ public class EmployerService {
                 internshipDto.applicationDeadline(),
                 internshipDto.compensationAmount(),
                 internshipDto.compensationNegotiable(),
-                employer
+                employer,
+                academicSessionService.getCurrentSession()
         );
 
         internshipRepository.save(internship);
@@ -146,16 +152,20 @@ public class EmployerService {
         internshipRepository.save(internship);
     }
 
-    public List<InternshipResponseDto> getInternshipsOfEmployer(String email) {
-        List<Internship> internships = internshipRepository.findByPostedBy_Credentials_EmailAndDeletedIsFalse(email);
+    public List<InternshipResponseDto> getInternshipsOfEmployer(String email, Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+        List<Internship> internships = internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(email, session);
+
         return internships.stream()
                 .map(InternshipResponseDto::of)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ReceivedInternshipApplicationResponseDto> getReceivedInternshipApplications(String email) {
-        return internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(email)
+    public List<ReceivedInternshipApplicationResponseDto> getReceivedInternshipApplications(String email, Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+
+        return internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_SessionAndInternship_DeletedFalse(email, session)
                 .stream()
                 .map(ReceivedInternshipApplicationResponseDto::of)
                 .toList();

@@ -1,9 +1,8 @@
-package com.lacouf.rsbjwt.presentation;
+package com.lacouf.rsbjwt.presentation.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
-import com.lacouf.rsbjwt.presentation.users.TeacherController;
 import com.lacouf.rsbjwt.service.users.TeacherService;
 import com.lacouf.rsbjwt.service.dto.request.signup.TeacherSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
