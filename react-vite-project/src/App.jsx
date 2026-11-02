@@ -18,6 +18,7 @@ import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
 import ViewApplications from "./components/page/application/ViewApplications.jsx";
 import Applications from "./components/page/application/Applications.jsx";
+import Interviews from "./components/page/student/Interviews.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -80,6 +81,7 @@ function App() {
                     <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
                         <Route path="/cv" element={<StudentCv user={user}/>}/>
                         <Route path="/internship" element={<StudentInternships/>}/>
+                        <Route path="/interviews" element={<Interviews/>}/>
                     </Route>
 
                     {/* Manager */}
