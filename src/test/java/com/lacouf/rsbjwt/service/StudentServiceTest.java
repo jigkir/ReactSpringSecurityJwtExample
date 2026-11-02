@@ -21,6 +21,8 @@ import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -31,6 +33,7 @@ import com.lacouf.rsbjwt.repository.document.student.academictranscript.Academic
 import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
+import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.document.DocumentService;
@@ -40,6 +43,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
@@ -96,6 +100,8 @@ public class StudentServiceTest {
     private CoverLetterRepository coverLetterRepository;
     @Mock
     private AcademicTranscriptRepository academicTranscriptRepository;
+    @Mock
+    private InterviewRepository interviewRepository;
 
     @Captor
     private ArgumentCaptor<Student> studentArgumentCaptor;
@@ -107,6 +113,8 @@ public class StudentServiceTest {
     private ArgumentCaptor<CoverLetter> coverLetterArgumentCaptor;
     @Captor
     private ArgumentCaptor<AcademicTranscript> academicTranscriptArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Interview> interviewArgumentCaptor;
 
     private static StudentSignUpDto studentSignUpDto;
     private Student dummyStudent;
@@ -1236,6 +1244,40 @@ public class StudentServiceTest {
 
         verify(applicationRepository, never()).save(any());
         verifyNoInteractions(cvRepository);
+    }
+
+    @Test
+    void shouldReturnStudentInterviews() throws UserNotFoundException {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
+        application.setId(20L);
+
+        LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
+        Interview interview = new Interview(employer, application, "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
+        interview.setId(30L);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(interviewRepository.findByInternshipApplication_Student(dummyStudent)).thenReturn(List.of(interview));
+
+        // Act
+        List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(STUDENT_EMAIL);
+
+        // Assert
+        assert interviews.size() == 1;
+
+        InterviewStudentResponseDTO first = interviews.getFirst();
+        assert Long.valueOf(30L).equals(first.id());
+        assert Long.valueOf(20L).equals(first.applicationId());
+        assert "Company Name".equals(first.employerName());
+        assert "Software Developer".equals(first.internshipTitle());
+        assert "Please come to our office".equals(first.message());
+        assert "PENDING".equals(first.studentDecision());
+        assert interviewDate.toString().equals(first.interviewDate());
+        assert "IN_PERSON".equals(first.meetingType());
+        assert "123 Main St".equals(first.meetingDetails());
+        assert "SCHEDULED".equals(first.interviewStatus());
     }
 
     // ---------- Helpers ----------

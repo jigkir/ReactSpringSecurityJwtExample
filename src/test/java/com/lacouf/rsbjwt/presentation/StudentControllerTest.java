@@ -675,4 +675,18 @@ public class StudentControllerTest {
                         .principal(authentication))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void shouldReturnStudentInterviewsSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getInterviews(STUDENT_EMAIL))
+                .thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/student/interviews")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(0));
+    }
 }
