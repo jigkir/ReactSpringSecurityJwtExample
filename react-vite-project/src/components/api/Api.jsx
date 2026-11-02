@@ -124,34 +124,9 @@ export async function getMaxCvSize() {
     return handleResponse(response);
 }
 
-// Uploads a PDF (multipart). Do NOT set Content-Type: the browser adds the multipart boundary.
-// Throws an Error with .status on failure.
-export async function uploadCv(file) {
-    const form = new FormData();
-    form.append("file", file);
-    const response = await fetcher(`student/cvs`, {
-        method: "POST",
-        headers: {Accept: "application/json"},
-        body: form,
-    });
-    return handleEmpty(response);
-}
-
 export async function getStudentCvs() {
     const response = await fetcher(`student/cvs`, {method: "GET"});
     return handleResponse(response);
-}
-
-// Returns {id, fileName, content (Base64)}
-export async function getStudentCvFile(cvId) {
-    const response = await fetcher(`student/cvs/${cvId}`, {method: "GET"});
-    return handleResponse(response);
-}
-
-// Soft-delete: the backend sets the CV to invisible
-export async function hideCv(cvId) {
-    const response = await fetcher(`student/cvs/${cvId}/hide`, {method: "PUT"});
-    return handleEmpty(response);
 }
 
 //endregion

@@ -3,7 +3,7 @@ import {getApplicationCv, getApplications, getEmployerInternships} from "../../a
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../../styles/Button.jsx";
-import {base64ToBlobUrl} from "../cv/cvUtils.js";
+import {base64ToBlobUrl} from "../../../utils/documents.js";
 import {sortApplication} from "../../../utils/Sort.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../utils/usePolling.js";

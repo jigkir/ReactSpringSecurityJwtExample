@@ -1,6 +1,6 @@
 import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
-import CvPreview from "../cv/CvPreview.jsx";
+import PdfPreview from "../../documents/PdfPreview.jsx";
 import {useTranslation} from "react-i18next";
 import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
@@ -121,7 +121,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                 {/* Inline Preview Container — forced underneath with a top border */}
                 {isPreviewOpen && (
                     <div className="w-full pt-4 mt-4">
-                        <CvPreview
+                        <PdfPreview
                             doc={{id: application.id, fileName: cvFileName}}
                             dark={dark}
                             getUrl={getUrl}

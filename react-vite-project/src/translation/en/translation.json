@@ -215,14 +215,11 @@
     "nursing": "Nursing"
   },
   "cvDocuments": {
-    "title": "Uploaded documents",
     "titleManager": "CVs to review",
-    "addBtn": "Add a CV",
-    "docType": "Curriculum vitae",
     "uploadedOn": "uploaded on",
     "viewBtn": "Preview",
     "hideBtn": "Delete",
-    "hideAsk": "Delete this CV? It will no longer appear in this list.",
+    "hideAsk": "Delete this document? It will no longer appear in this list.",
     "confirmBtn": "Confirm",
     "cancelBtn": "Cancel",
     "approveBtn": "Approve",
@@ -237,12 +234,10 @@
     "statusRefused": "Rejected",
     "filterPending": "Pending",
     "alreadyReviewed": "This CV has already been reviewed by a manager.",
-    "empty": "No documents uploaded yet.",
     "emptyManager": "No CVs pending validation.",
     "loadError": "Unable to load your documents.",
     "retryBtn": "Retry",
     "errorAction": "The action failed. Please try again.",
-    "previewError": "Preview unavailable (missing content).",
     "searchPlaceholder": "Search name, email, student ID…",
     "searchAria": "Search",
     "clearSearchAria": "Clear search",
@@ -256,44 +251,10 @@
     "sortNameAsc": "Student A → Z",
     "sortNameDesc": "Student Z → A"
   },
-  "cvUpload": {
-    "validation": {
-      "noFile": "No file selected.",
-      "invalidFormat": "Invalid file format. Please select a PDF file.",
-      "tooLarge": "Your file is too large. The maximum allowed size is {{mb}} MB."
-    },
-    "pageTitle": "Upload your CV",
-    "pageSubtitle": "Your CV is required to access your dashboard and apply to internship offers.",
-    "uploadBtn": "Upload my CV",
-    "replaceBtn": "Add a CV",
-    "cancelBtn": "Cancel",
-    "deleteBtn": "Delete",
-    "retryBtn": "Retry",
-    "continueBtn": "Go to my dashboard",
-    "viewDocsBtn": "View my documents",
-    "uploadingLabel": "Uploading…",
-    "successMsg": "Your CV was uploaded successfully.",
-    "dragHint": "Drag and drop your CV here or",
-    "orBrowse": "browse",
-    "acceptedFormats": "Accepted format: PDF",
-    "replaceFile": "Replace",
-    "maxSize": "Maximum size: {{mb}} MB",
-    "selectedFileAria": "Selected file",
-    "replaceFileAria": "Replace the selected file",
-    "deleteFileAria": "Delete the selected file",
-    "dropzoneAria": "Drop zone. Click or drag a PDF."
-  },
   "cvPreview": {
     "loading": "Loading document…",
     "error": "Unable to display this document.",
-    "newTabBtn": "Open in a new tab",
     "closeBtn": "Close"
-  },
-  "cv": {
-    "goToDashboard": "Go to my dashboard",
-    "uploadFailed": "The upload failed. Please try again.",
-    "fileTooLarge": "Your file is too large. The maximum allowed size is {{mb}} MB.",
-    "fileInvalid": "The file appears to be corrupted or invalid. Please select another one."
   },
   "portfolio": {
     "title": "My portfolio",
@@ -302,19 +263,42 @@
       "COVER_LETTER": "Cover letters",
       "TRANSCRIPT": "Transcripts"
     },
-    "titles": {
-      "COVER_LETTER": "Cover letters",
-      "TRANSCRIPT": "Academic transcripts"
-    },
-    "add": "Add files",
+    "allTab": "All",
+    "noMatch": "No documents match this filter.",
+    "upload": "Upload files",
+    "close": "Close",
     "empty": "No documents yet.",
-    "chooseFiles": "Choose files",
+    "dropHint": "Drag and drop your PDFs here or",
+    "browse": "browse",
+    "dropzoneAria": "Drop zone. Click or drag PDF files.",
     "multiHint": "You can select several PDFs at once and set each one's type.",
+    "formatHint": "PDF only · maximum {{mb}} MB per file",
     "typeAria": "Document type",
     "removeAria": "Remove this file",
-    "close": "Close",
+    "uploadFailed": "The upload failed. Please try again.",
+    "validation": {
+      "noFile": "No file selected.",
+      "invalidFormat": "Invalid file format. Please select a PDF file.",
+      "tooLarge": "Your file is too large. The maximum allowed size is {{mb}} MB."
+    },
     "uploadN_one": "Upload {{count}} file",
-    "uploadN_other": "Upload {{count}} files"
+    "uploadN_other": "Upload {{count}} files",
+    "changeType": {
+      "btn": "Change type",
+      "ask": "Move this file to:",
+      "aria": "New document type",
+      "cvHint": "A CV must be approved by a manager.",
+      "failed": "Unable to change the document type."
+    },
+    "onboarding": {
+      "title": "Welcome! Let's set up your portfolio",
+      "intro": "Before you can apply to internships, we need a few documents from you.",
+      "requiredLabel": "Required",
+      "requiredFile": "Your CV",
+      "requiredHint": "A manager must approve it before you can apply to offers.",
+      "optionalLabel": "Optional",
+      "optionalHint": "These can improve your applications. You can add them now or later."
+    }
   },
   "home": {
     "welcome": "Welcome",

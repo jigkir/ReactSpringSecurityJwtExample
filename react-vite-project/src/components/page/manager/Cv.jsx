@@ -1,6 +1,5 @@
 /**
  * Manager page: review student CVs pending validation.
- * Reuses CvDocuments in manager mode (preview / approve / refuse / status).
  *
  * <Cv />          full page (route /manager/cvs)
  * <Cv preview />  Home page block: the latest CVs still waiting for review, no filters
@@ -10,19 +9,19 @@
  */
 
 import {useOutletContext} from 'react-router-dom';
-import CvDocuments from '../cv/CvDocuments.jsx';
+import CvReviewList from './CvReviewList.jsx';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 
 const Cv = ({preview = false}) => {
     const {dark} = useOutletContext();
     const {pageClass} = getAuthClasses(dark);
 
-    if (preview) return <CvDocuments mode="manager" dark={dark} preview/>;
+    if (preview) return <CvReviewList dark={dark} preview/>;
 
     return (
         <div className={pageClass}>
             <div className="w-full max-w-4xl">
-                <CvDocuments mode="manager" dark={dark}/>
+                <CvReviewList dark={dark}/>
             </div>
         </div>
     );

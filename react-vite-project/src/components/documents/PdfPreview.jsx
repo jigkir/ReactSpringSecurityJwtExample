@@ -1,5 +1,5 @@
 /**
- * CvPreview.jsx — Shows a CV directly in the page.
+ * PdfPreview.jsx — Shows a stored PDF (CV, cover letter, transcript…) directly in the page.
  *
  * Fetches the PDF as a blob URL, handles its lifecycle and the loading / error
  * states, then lets PdfViewer draw it.
@@ -7,15 +7,15 @@
  * Props
  *   doc      { id, fileName }
  *   dark     boolean
- *   getUrl   (cvId: number) => Promise<string>   returns a blob: URL
+ *   getUrl   (id: number) => Promise<string>   returns a blob: URL. Must be a stable reference.
  */
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {getCvPreviewClasses} from '../../../styles/AppStyles.jsx';
+import {getCvPreviewClasses} from '../../styles/AppStyles.jsx';
 import PdfViewer from './PdfViewer.jsx';
 
-const CvPreview = ({doc, dark, getUrl}) => {
+const PdfPreview = ({doc, dark, getUrl}) => {
     const {t} = useTranslation();
     const [url, setUrl] = useState(null);
     const [error, setError] = useState(false);
@@ -59,8 +59,6 @@ const CvPreview = ({doc, dark, getUrl}) => {
 
     return (
         <div className={cls.dialog}>
-
-            {/* Body */}
             <div className={cls.body}>
                 {error ? (
                     <p className={cls.muted} role="alert">{t("cvPreview.error")}</p>
@@ -74,4 +72,4 @@ const CvPreview = ({doc, dark, getUrl}) => {
     );
 };
 
-export default CvPreview;
+export default PdfPreview;

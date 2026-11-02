@@ -1,14 +1,4 @@
-// ─── Upload-state machine ─────────────────────────────────────────────────────
-
-export const STATE = {
-    LOADING_CV: "LOADING_CV",
-    IDLE: "IDLE",
-    EXISTING: "EXISTING",
-    FILE_READY: "FILE_READY",
-    UPLOADING: "UPLOADING",
-    SUCCESS: "SUCCESS",
-    ERROR: "ERROR",
-};
+// File helpers shared by the portfolio, the manager CV review and the employer pages.
 
 // ─── File constraints ─────────────────────────────────────────────────────────
 
@@ -19,16 +9,14 @@ export const ACCEPTED_EXT = ".pdf";
 /** Bytes → whole megabytes, as a NUMBER (never a string). */
 export const bytesToMb = (bytes) => Math.round(bytes / (1024 * 1024));
 
-// ─── File validation ──────────────────────────────────────────────────────────
-
 /** Returns { key, options } for t() when the file is invalid, or null when acceptable. */
 export function validateFile(file, maxBytes = FALLBACK_MAX_BYTES) {
-    if (!file) return {key: "cvUpload.validation.noFile"};
+    if (!file) return {key: "portfolio.validation.noFile"};
     if (file.type !== ACCEPTED_MIME && !file.name.toLowerCase().endsWith(ACCEPTED_EXT)) {
-        return {key: "cvUpload.validation.invalidFormat"};
+        return {key: "portfolio.validation.invalidFormat"};
     }
     if (file.size > maxBytes) {
-        return {key: "cvUpload.validation.tooLarge", options: {mb: bytesToMb(maxBytes)}};
+        return {key: "portfolio.validation.tooLarge", options: {mb: bytesToMb(maxBytes)}};
     }
     return null;
 }
@@ -49,10 +37,25 @@ export const formatDate = (iso) => new Date(iso).toLocaleDateString("en-CA");
 
 // ─── Blob / PDF helpers ───────────────────────────────────────────────────────
 
-/** Caller must call URL.revokeObjectURL(url) when done. */
-export function base64ToBlobUrl(b64) {
+function base64ToBytes(b64) {
     const binary = atob(b64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return URL.createObjectURL(new Blob([bytes], {type: ACCEPTED_MIME}));
+    return bytes;
+}
+
+/** Caller must call URL.revokeObjectURL(url) when done. */
+export function base64ToBlobUrl(b64) {
+    return URL.createObjectURL(new Blob([base64ToBytes(b64)], {type: ACCEPTED_MIME}));
+}
+
+/** Base64 PDF → File (used to re-upload a stored document under another type). */
+export function base64ToFile(b64, fileName) {
+    return new File([base64ToBytes(b64)], fileName, {type: ACCEPTED_MIME});
+}
+
+/** API file {content: Base64} → blob: URL. Throws when the content is missing. */
+export function blobUrlFromFile(file) {
+    if (!file?.content) throw new Error("missing content");
+    return base64ToBlobUrl(file.content);
 }

@@ -7,7 +7,7 @@
  * render     (user) => the page component in `preview` mode
  */
 
-import Cv from '../page/student/Cv.jsx';
+import PortfolioPreview from '../page/portfolio/PortfolioPreview.jsx';
 import StudentInternships from '../page/student/Internships.jsx';
 import ManagerCv from '../page/manager/Cv.jsx';
 import ManagerInternships from '../page/manager/Internships.jsx';
@@ -16,7 +16,7 @@ import Applications from '../page/application/Applications.jsx';
 
 export const PREVIEWS_BY_ROLE = {
     STUDENT: [
-        {to: "/portfolio", titleKey: "home.studentCvLink", render: () => <Cv preview/>},
+        {to: "/portfolio", titleKey: "home.studentCvLink", render: () => <PortfolioPreview/>},
         {to: "/internship", titleKey: "home.studentInternshipsLink", render: () => <StudentInternships preview/>},
     ],
     EMPLOYER: [

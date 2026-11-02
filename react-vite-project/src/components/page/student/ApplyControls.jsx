@@ -4,7 +4,7 @@ import {useTranslation} from "react-i18next";
 import Button from "../../../styles/Button.jsx";
 import Icon from "../../../styles/Icon.jsx";
 import {applyForInternship, updateApplicationCV, uploadDocument} from "../../api/Api.jsx";
-import {validateFile} from "../cv/cvUtils.js";
+import {validateFile} from "../../../utils/documents.js";
 
 const HTTP_CONFLICT = 409;
 const READ_BY_EMPLOYER = "READ";

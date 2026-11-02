@@ -16,7 +16,7 @@ import ApplicationCard from './ApplicationCard.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {getApplicationCv, getApplications, getEmployerInternships} from '../../api/Api.jsx';
-import {base64ToBlobUrl} from '../cv/cvUtils.js';
+import {base64ToBlobUrl} from '../../../utils/documents.js';
 import {matchesSearch, toNum} from '../../../utils/Sort.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';

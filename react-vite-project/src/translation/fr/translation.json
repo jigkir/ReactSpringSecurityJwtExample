@@ -215,14 +215,11 @@
     "nursing": "Soins infirmiers"
   },
   "cvDocuments": {
-    "title": "Documents déposés",
     "titleManager": "CVs à valider",
-    "addBtn": "Ajouter un CV",
-    "docType": "Curriculum vitae",
     "uploadedOn": "déposé le",
     "viewBtn": "Aperçu",
     "hideBtn": "Supprimer",
-    "hideAsk": "Supprimer ce CV ? Il n'apparaîtra plus dans cette liste.",
+    "hideAsk": "Supprimer ce document ? Il n'apparaîtra plus dans cette liste.",
     "confirmBtn": "Confirmer",
     "cancelBtn": "Annuler",
     "approveBtn": "Approuver",
@@ -237,12 +234,10 @@
     "statusRefused": "Refusé",
     "filterPending": "En attente",
     "alreadyReviewed": "Ce CV a déjà été traité par un gestionnaire.",
-    "empty": "Aucun document déposé pour l'instant.",
     "emptyManager": "Aucun CV en attente de validation.",
     "loadError": "Impossible de charger vos documents.",
     "retryBtn": "Réessayer",
     "errorAction": "L'action a échoué. Veuillez réessayer.",
-    "previewError": "Aperçu indisponible (contenu manquant).",
     "searchPlaceholder": "Rechercher nom, courriel, matricule…",
     "searchAria": "Rechercher",
     "clearSearchAria": "Effacer la recherche",
@@ -256,44 +251,10 @@
     "sortNameAsc": "Étudiant A → Z",
     "sortNameDesc": "Étudiant Z → A"
   },
-  "cvUpload": {
-    "validation": {
-      "noFile": "Aucun fichier sélectionné.",
-      "invalidFormat": "Format de fichier invalide. Veuillez sélectionner un fichier PDF.",
-      "tooLarge": "Votre fichier est trop volumineux. La taille maximale autorisée est de {{mb}} Mo."
-    },
-    "pageTitle": "Téléverser votre CV",
-    "pageSubtitle": "Votre CV est nécessaire pour accéder à votre tableau de bord et postuler à des offres de stage.",
-    "uploadBtn": "Téléverser mon CV",
-    "replaceBtn": "Ajouter un CV",
-    "cancelBtn": "Annuler",
-    "deleteBtn": "Supprimer",
-    "retryBtn": "Réessayer",
-    "continueBtn": "Accéder à mon tableau de bord",
-    "viewDocsBtn": "Voir mes documents",
-    "uploadingLabel": "Téléversement…",
-    "successMsg": "Votre CV a été téléversé avec succès.",
-    "dragHint": "Glissez-déposez votre CV ici ou",
-    "orBrowse": "parcourir",
-    "acceptedFormats": "Format accepté : PDF",
-    "replaceFile": "Remplacer",
-    "maxSize": "Taille maximale : {{mb}} Mo",
-    "selectedFileAria": "Fichier sélectionné",
-    "replaceFileAria": "Remplacer le fichier sélectionné",
-    "deleteFileAria": "Supprimer le fichier sélectionné",
-    "dropzoneAria": "Zone de dépôt. Cliquez ou glissez un PDF."
-  },
   "cvPreview": {
     "loading": "Chargement du document…",
     "error": "Impossible d'afficher ce document.",
-    "newTabBtn": "Ouvrir dans un nouvel onglet",
     "closeBtn": "Fermer"
-  },
-  "cv": {
-    "goToDashboard": "Accéder à mon tableau de bord",
-    "uploadFailed": "Le téléversement a échoué. Veuillez réessayer.",
-    "fileTooLarge": "Votre fichier est trop volumineux. La taille maximale autorisée est de {{mb}} Mo.",
-    "fileInvalid": "Le fichier semble corrompu ou invalide. Veuillez en sélectionner un autre."
   },
   "home": {
     "welcome": "Bienvenue",
@@ -504,19 +465,42 @@
       "COVER_LETTER": "Lettres de motivation",
       "TRANSCRIPT": "Relevés de notes"
     },
-    "titles": {
-      "COVER_LETTER": "Lettres de motivation",
-      "TRANSCRIPT": "Relevés de notes"
-    },
-    "add": "Ajouter des fichiers",
+    "allTab": "Tous",
+    "noMatch": "Aucun document ne correspond à ce filtre.",
+    "upload": "Téléverser des fichiers",
+    "close": "Fermer",
     "empty": "Aucun document pour l'instant.",
-    "chooseFiles": "Choisir des fichiers",
+    "dropHint": "Glissez-déposez vos PDF ici ou",
+    "browse": "parcourir",
+    "dropzoneAria": "Zone de dépôt. Cliquez ou glissez des PDF.",
     "multiHint": "Vous pouvez sélectionner plusieurs PDF à la fois et choisir le type de chacun.",
+    "formatHint": "PDF seulement · maximum {{mb}} Mo par fichier",
     "typeAria": "Type de document",
     "removeAria": "Retirer ce fichier",
-    "close": "Fermer",
+    "uploadFailed": "Le téléversement a échoué. Veuillez réessayer.",
+    "validation": {
+      "noFile": "Aucun fichier sélectionné.",
+      "invalidFormat": "Format de fichier invalide. Veuillez sélectionner un fichier PDF.",
+      "tooLarge": "Votre fichier est trop volumineux. La taille maximale autorisée est de {{mb}} Mo."
+    },
     "uploadN_one": "Téléverser {{count}} fichier",
-    "uploadN_other": "Téléverser {{count}} fichiers"
+    "uploadN_other": "Téléverser {{count}} fichiers",
+    "changeType": {
+      "btn": "Changer le type",
+      "ask": "Déplacer ce fichier vers :",
+      "aria": "Nouveau type de document",
+      "cvHint": "Un CV doit être approuvé par un gestionnaire.",
+      "failed": "Impossible de changer le type du document."
+    },
+    "onboarding": {
+      "title": "Bienvenue! Configurons votre portfolio",
+      "intro": "Avant de pouvoir postuler à des stages, nous avons besoin de quelques documents.",
+      "requiredLabel": "Obligatoire",
+      "requiredFile": "Votre CV",
+      "requiredHint": "Un gestionnaire doit l'approuver avant que vous puissiez postuler aux offres.",
+      "optionalLabel": "Facultatif",
+      "optionalHint": "Ces documents peuvent améliorer vos candidatures. Vous pouvez les ajouter maintenant ou plus tard."
+    }
   },
   "applicationCard": {
     "coverLetter": "Lettre de motivation"

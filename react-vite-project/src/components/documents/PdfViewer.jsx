@@ -11,9 +11,9 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {getCvPreviewClasses} from '../../../styles/AppStyles.jsx';
-import {usePdfDocument} from '../../../utils/pdf/usePdfDocument.js';
-import {useCtrlZoom} from '../../../utils/pdf/useCtrlZoom.js';
+import {getCvPreviewClasses} from '../../styles/AppStyles.jsx';
+import {usePdfDocument} from '../../utils/pdf/usePdfDocument.js';
+import {useCtrlZoom} from '../../utils/pdf/useCtrlZoom.js';
 
 const FIRST_PAGE = 1;
 const NATURAL_SCALE = 1;
