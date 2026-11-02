@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;

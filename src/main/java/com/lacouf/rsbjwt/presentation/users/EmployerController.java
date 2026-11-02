@@ -2,6 +2,8 @@ package com.lacouf.rsbjwt.presentation.users;
 
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;

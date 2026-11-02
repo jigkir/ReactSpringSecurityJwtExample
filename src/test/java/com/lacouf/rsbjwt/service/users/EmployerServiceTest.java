@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;

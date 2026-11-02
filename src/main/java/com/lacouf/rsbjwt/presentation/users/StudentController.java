@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.EmptyFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
