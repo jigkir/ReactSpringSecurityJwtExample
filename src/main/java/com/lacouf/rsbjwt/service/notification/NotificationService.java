@@ -26,10 +26,6 @@ public class NotificationService {
                 .toList();
     }
 
-    public long countUnread(String email, NotificationType notificationType) {
-        return notificationRepository.countByUser_Credentials_EmailAndStatusAndNotificationType(email, NotificationStatus.UNREAD, notificationType);
-    }
-
     public void markAllAsReadByTargetType(String email, TargetType targetType) {
         notificationRepository.markAllAsReadByEmailAndTargetType(email, targetType);
     }
@@ -49,5 +45,13 @@ public class NotificationService {
 
     public void closeNotificationsOfTarget(TargetType targetType, long targetId) {
         notificationRepository.markAllAsReadByTargetTypeAndTargetId(targetType, targetId);
+    }
+
+    public void closeNotificationsOfType(NotificationType notificationType, long targetId) {
+        notificationRepository.markAllAsReadByNotificationTypeAndTargetId(notificationType, targetId);
+    }
+
+    public void closeNotificationOfRecipient(NotificationType notificationType, long targetId, UserApp recipient) {
+        notificationRepository.markAsReadByUserAndNotificationTypeAndTargetId(recipient, notificationType, targetId);
     }
 }

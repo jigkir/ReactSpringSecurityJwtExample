@@ -3,15 +3,16 @@ package com.lacouf.rsbjwt.presentation;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
-import com.lacouf.rsbjwt.exception.cv.CvNotFoundException;
+import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.presentation.users.ManagerController;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
-import com.lacouf.rsbjwt.service.dto.response.cv.CvFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.ManagerCvResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.cv.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,34 +45,12 @@ public class ManagerControllerTest {
     private ReactSpringSecurityJwtApplication application;
 
     private static final String REJECTION_BODY = "{\"comment\": \"CV too detailed\"}";
+    private static final String INTERNSHIP_BODY = """
+            {"title": "Développeur backend", "description": "Stage en développement backend", "requiredSkills": "Java, Spring Boot",
+             "durationInWeeks": 16, "location": "Montréal", "workMode": "HYBRID", "startDate": "2027-01-10",
+             "applicationDeadline": "2026-12-01", "compensationAmount": 27.00, "compensationNegotiable": false}
+            """;
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
-
-    private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
-        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
-    }
-
-    private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {
-        return new InternshipResponseDto(
-                1L,
-                "Développeur logiciel",
-                "Stage en développement logiciel",
-                "Java, Spring Boot",
-                16,
-                "Montréal",
-                WorkMode.HYBRID,
-                LocalDate.of(2027, 1, 10),
-                LocalDate.of(2026, 12, 1),
-                new BigDecimal("25.00"),
-                false,
-                status,
-                comment,
-                1L,
-                "employer@example.com",
-                Discipline.COMPUTER_SCIENCE,
-                LocalDateTime.of(2026, 9, 1, 10, 0),
-                false
-        );
-    }
 
     @Test
     void shouldReturnAllVisibleCvs() throws Exception {
@@ -117,7 +96,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenApprovingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.approveCv(99L)).thenThrow(new CvNotFoundException(99L));
+        when(managerService.approveCv(99L)).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/approve"))
@@ -127,7 +106,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenRejectingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.rejectCv(99L, "CV too detailed")).thenThrow(new CvNotFoundException(99L));
+        when(managerService.rejectCv(99L, "CV too detailed")).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
@@ -148,7 +127,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingUnknownCv() throws Exception {
         // Arrange
-        when(managerService.getCv(99L)).thenThrow(new CvNotFoundException(99L));
+        when(managerService.getCv(99L)).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/99"))
@@ -158,7 +137,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnCvFile() throws Exception {
         // Arrange
-        when(managerService.getCvFile(1L)).thenReturn(new CvFileResponseDto(1L, "cv.pdf", "pdf".getBytes()));
+        when(managerService.getCvFile(1L)).thenReturn(new DocumentFileResponseDto(1L, "cv.pdf", "pdf".getBytes()));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/1/file"))
@@ -169,7 +148,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingFileOfUnknownCv() throws Exception {
         // Arrange
-        when(managerService.getCvFile(99L)).thenThrow(new CvNotFoundException(99L));
+        when(managerService.getCvFile(99L)).thenThrow(new DocumentNotFoundException(99L));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs/99/file"))
@@ -303,5 +282,46 @@ public class ManagerControllerTest {
                 .content("{\"comment\": \"   \"}")).andExpect(status().isBadRequest());
 
         verifyNoInteractions(managerService);
+    }
+
+    @Test
+    void shouldReturnOkWhenManagerUpdatesInternship() throws Exception {
+        // Arrange
+        when(managerService.updateInternship(eq(1L), any(InternshipRequestDto.class))).thenReturn(internshipWith(ReviewStatus.APPROVED, null));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internships/1").contentType(MediaType.APPLICATION_JSON).content(INTERNSHIP_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        verify(managerService).updateInternship(eq(1L), any(InternshipRequestDto.class));
+    }
+
+    // ---------- Helpers ----------
+    
+    private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
+        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
+    }
+
+    private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {
+        return new InternshipResponseDto(
+                1L,
+                "Développeur logiciel",
+                "Stage en développement logiciel",
+                "Java, Spring Boot",
+                16,
+                "Montréal",
+                WorkMode.HYBRID,
+                LocalDate.of(2027, 1, 10),
+                LocalDate.of(2026, 12, 1),
+                new BigDecimal("25.00"),
+                false,
+                status,
+                comment,
+                1L,
+                "employer@example.com",
+                Discipline.COMPUTER_SCIENCE,
+                LocalDateTime.of(2026, 9, 1, 10, 0)
+        );
     }
 }

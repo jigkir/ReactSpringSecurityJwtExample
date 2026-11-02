@@ -1,5 +1,4 @@
 import fetcher from '../../utils/fetcher.js';
-import employer from "../page/auth/signup/Employer.jsx";
 
 // region Shared response handling
 // Maps an HTTP status to a translation KEY (translated at render time, never here).
@@ -222,8 +221,13 @@ export async function deleteInternship(internshipId) {
 
 // region Student internships
 // Returns ResponseEntity.ok("Application submitted successfully");
-export async function applyForInternship(internshipId, cvId) {
-    const response = await fetcher(`student/internship/${internshipId}/apply/${cvId}`, {method: "POST"});
+// Optional cover letter: sent as ?coverLetterId=
+const withLetter = (path, coverLetterId) =>
+    coverLetterId ? `${path}?coverLetterId=${coverLetterId}` : path;
+
+export async function applyForInternship(internshipId, cvId, coverLetterId) {
+    const response = await fetcher(
+        withLetter(`student/internship/${internshipId}/apply/${cvId}`, coverLetterId), {method: "POST"});
     return handleEmpty(response);
 }
 
@@ -247,8 +251,9 @@ export async function getStudentAppliedInternships() {
     return handleResponse(response);
 }
 
-export async function updateApplicationCV(applicationId, cvId) {
-    const response = await fetcher(`student/applications/${applicationId}/${cvId}`, {method: "PUT"});
+export async function updateApplicationCV(applicationId, cvId, coverLetterId) {
+    const response = await fetcher(
+        withLetter(`student/applications/${applicationId}/${cvId}`, coverLetterId), {method: "PUT"});
     return handleEmpty(response);
 }
 
@@ -278,16 +283,45 @@ export async function rejectInternship(internshipId, comment) {
     return handleResponse(response);
 }
 
+// The manager corrects an offer (same payload as the employer edit). Returns the updated InternshipResponseDto.
+export async function updateManagerInternship(internshipId, internship) {
+    const response = await fetcher(`manager/internships/${internshipId}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(internship),
+    });
+    return handleResponse(response);
+}
+
 // endregion
+
+//region Manager Interviews
+
+export async function updateInterview(applicationId, date, message) {
+    const response = await fetcher("employer/internship", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(internship),
+    });
+    return handleResponse(response);
+}
+
+
+export async function createInterview(applicationId, interviewRequest) {
+    console.log("interviewRequest");
+    const response = await fetcher(`employer/applications/${applicationId}/interview`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(interviewRequest),
+    });
+    return handleResponse(response);
+}
+
+//endregion
 
 //region Notifications
 export async function getNotifications() {
     const response = await fetcher("notifications", {method: "GET"});
-    return handleResponse(response);
-}
-
-export async function getUnreadNotificationCount(notificationType) {
-    const response = await fetcher(`notifications/unread/count/${notificationType}`, {method: "GET"});
     return handleResponse(response);
 }
 
@@ -324,3 +358,41 @@ export async function getStudentInterviews() {
 }
 
 //endregion
+
+// region Student documents (generic: CV, cover letters, transcripts)
+const DOC_PATH = {
+    CV: "cvs",
+    COVER_LETTER: "cover-letters",
+    TRANSCRIPT: "academic-transcripts",
+};
+
+export async function uploadDocument(type, file) {
+    const form = new FormData();
+    form.append("file", file);
+    const response = await fetcher(`student/${DOC_PATH[type]}`, {
+        method: "POST",
+        headers: {Accept: "application/json"},
+        body: form,
+    });
+    return handleEmpty(response);
+}
+
+// CV -> StudentCvResponseDto[], others -> DocumentResponseDto[] {id, fileName, sizeBytes, uploadedAt}
+export async function getDocuments(type) {
+    return handleResponse(await fetcher(`student/${DOC_PATH[type]}`, {method: "GET"}));
+}
+
+// Returns {id, fileName, content (Base64)}
+export async function getDocumentFile(type, id) {
+    return handleResponse(await fetcher(`student/${DOC_PATH[type]}/${id}`, {method: "GET"}));
+}
+
+export async function hideDocument(type, id) {
+    return handleEmpty(await fetcher(`student/${DOC_PATH[type]}/${id}/hide`, {method: "PUT"}));
+}
+
+// Employer side. Assumes a new backend endpoint.
+export async function getApplicationCoverLetter(applicationId) {
+    return handleResponse(await fetcher(`employer/applications/${applicationId}/cover-letter`, {method: "GET"}));
+}
+// endregion

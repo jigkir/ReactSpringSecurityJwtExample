@@ -85,7 +85,7 @@ const Login = ({user, setError}) => {
                 const count = await getCvCount();
                 hasCv = count > 0;
             } catch { /* fallback: send to /cv */ }
-            navigate(hasCv ? "/home" : "/cv");
+            navigate(hasCv ? "/home" : "/portfolio");
         } else {
             navigate("/home");
         }

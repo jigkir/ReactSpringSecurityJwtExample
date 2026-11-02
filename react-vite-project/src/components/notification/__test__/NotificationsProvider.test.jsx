@@ -1,5 +1,5 @@
 import React from 'react';
-import {render, screen, waitFor, fireEvent} from '@testing-library/react';
+import {render, screen, waitFor} from '@testing-library/react';
 import {BrowserRouter, MemoryRouter} from 'react-router-dom';
 import {NotificationsProvider, useNotifications} from '../NotificationsProvider';
 import * as api from '../../api/Api.jsx';
@@ -8,18 +8,16 @@ import {REFRESH_INTERVAL_MS} from "../../../utils/usePolling.js";
 vi.mock('../../api/Api.jsx', () => ({
     getNotifications: vi.fn(),
     markNotificationsAsRead: vi.fn(),
-    getUnreadNotificationCount: vi.fn(),
 }));
 
 function TestNotificationConsumer() {
-    const {items, clearInternships} = useNotifications();
+    const {items} = useNotifications();
     const internshipItem = items.find(item => item.id === 'internshipPosted');
 
     return (
         <div>
             <span data-testid="internship-count">{internshipItem?.count}</span>
             <span data-testid="internship-label">{internshipItem?.labelKey}</span>
-            <button onClick={clearInternships} data-testid="clear-btn">Clear Internships</button>
         </div>
     );
 }
@@ -66,36 +64,25 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
         expect(api.getNotifications).toHaveBeenCalledTimes(1);
     });
 
-    it('should clear internship notifications when clearInternships is called', async () => {
+    it('should close internship notifications when manager opens the internships page', async () => {
         // Arrange
-        const mockNotifications = [
-            {id: 10, notificationType: 'INTERNSHIP_SUBMITTED_FOR_REVIEW'}
-        ];
-        api.getNotifications.mockResolvedValueOnce(mockNotifications);
-        api.markNotificationsAsRead.mockResolvedValueOnce({});
-        const managerUser = {id: 1, role: 'MANAGER'};
+        api.getNotifications.mockResolvedValueOnce([
+            {id: 10, notificationType: 'INTERNSHIP_SUBMITTED_FOR_REVIEW', targetType: 'INTERNSHIP_OFFER'}
+        ]);
+        api.markNotificationsAsRead.mockResolvedValueOnce();
 
         // Act
         render(
-            <BrowserRouter>
-                <NotificationsProvider user={managerUser}>
+            <MemoryRouter initialEntries={['/manager/internships']}>
+                <NotificationsProvider user={{id: 1, role: 'MANAGER'}}>
                     <TestNotificationConsumer/>
                 </NotificationsProvider>
-            </BrowserRouter>
+            </MemoryRouter>
         );
 
-        await waitFor(() => {
-            expect(screen.getByTestId('internship-count').textContent).toBe('1');
-        });
-
-        fireEvent.click(screen.getByTestId('clear-btn'));
-
         // Assert
-        await waitFor(() => {
-            expect(screen.getByTestId('internship-count').textContent).toBe('0');
-        });
-
-        expect(api.markNotificationsAsRead).toHaveBeenCalledWith('INTERNSHIP_OFFER');
+        await waitFor(() => expect(api.markNotificationsAsRead).toHaveBeenCalledWith('INTERNSHIP_OFFER'));
+        await waitFor(() => expect(screen.getByTestId('internship-count').textContent).toBe('0'));
     });
 
     it('should display a count of 1 when there is a single internship notification', async () => {
@@ -128,6 +115,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
 
 const EMPLOYER = {id: 2, role: 'EMPLOYER'};
 const INTERNSHIPS_PAGE_PATH = '/internships';
+const APPLICATIONS_PAGE_PATH = '/applications';
 const NEW_INTERNSHIP_APPLICATION = 'NEW_INTERNSHIP_APPLICATION';
 
 function NewInternshipApplicationNotificationDisplay() {
@@ -238,5 +226,20 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
         await waitFor(() => {
             expect(screen.getByTestId('new-application-count').textContent).toBe('2');
         });
+    });
+
+    it('should close new internship application notifications when employer opens applications page', async () => {
+        // Arrange
+        api.getNotifications.mockResolvedValueOnce([
+            {id: 20, notificationType: NEW_INTERNSHIP_APPLICATION, targetType: 'INTERNSHIP_APPLICATION'}
+        ]);
+        api.markNotificationsAsRead.mockResolvedValueOnce();
+
+        // Act
+        renderEmployerNotificationsAt(APPLICATIONS_PAGE_PATH);
+
+        // Assert
+        await waitFor(() => expect(api.markNotificationsAsRead).toHaveBeenCalledWith('INTERNSHIP_APPLICATION'));
+        await waitFor(() => expect(screen.getByTestId('new-application-count').textContent).toBe('0'));
     });
 });

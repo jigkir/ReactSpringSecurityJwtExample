@@ -1,6 +1,5 @@
 package com.lacouf.rsbjwt.exception;
 
-import com.lacouf.rsbjwt.exception.cv.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;

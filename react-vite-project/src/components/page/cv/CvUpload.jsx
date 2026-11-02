@@ -15,6 +15,7 @@
 import {getAuthClasses, getCvUploadClasses} from '../../../styles/AppStyles.jsx';
 import {formatBytes} from './cvUtils.js';
 import {useTranslation} from 'react-i18next';
+import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
 
@@ -23,7 +24,6 @@ const UploadIcon = ({className = ""}) => <Icon name="upload_file" size={40} clas
 const CheckIcon = ({className = ""}) => <Icon name="check_circle" size={56} className={className}/>;
 const SpinnerIcon = ({className = ""}) => <Icon name="progress_activity" size={16}
                                                 className={`animate-spin ${className}`}/>;
-const TrashIcon = ({className = ""}) => <Icon name="delete" size={16} className={className}/>;
 
 const CvUpload = ({
                       dark, uploadState, selectedFile, fileError, serverError,
@@ -34,7 +34,7 @@ const CvUpload = ({
                       maxFileSizeMb = 2, acceptedExt = ".pdf",
                   }) => {
     const {t, i18n} = useTranslation();
-    const {cardClass, titleClass, submitClass, serverErrorClass} = getAuthClasses(dark);
+    const {cardClass, titleClass, serverErrorClass} = getAuthClasses(dark);
     const u = getCvUploadClasses(dark, isDragging);
 
     const hiddenInput = (
@@ -53,9 +53,12 @@ const CvUpload = ({
                     <CheckIcon/>
                     <p className="text-lg font-semibold">{t("cvUpload.successMsg")}</p>
                 </div>
-                <button onClick={onGoToList} className={submitClass} autoFocus>{t("cvUpload.viewDocsBtn")}</button>
-                <button onClick={onGoToDashboard}
-                        className={`${u.ghostBtn} mt-3 w-full text-center`}>{t("cvUpload.continueBtn")}</button>
+                <Button tone="primary" size="lg" dark={dark} onClick={onGoToList} autoFocus className="w-full">
+                    {t("cvUpload.viewDocsBtn")}
+                </Button>
+                <Button tone="ghost" dark={dark} onClick={onGoToDashboard} className="mt-3 w-full">
+                    {t("cvUpload.continueBtn")}
+                </Button>
             </div>
         );
     }
@@ -83,13 +86,14 @@ const CvUpload = ({
                     </div>
                     {!isUploading && (
                         <div className="flex flex-col gap-1 shrink-0">
-                            <button onClick={onOpenFilePicker} className={u.ghostBtn}
-                                    aria-label={t("cvUpload.replaceFileAria")}>{t("cvUpload.replaceFile")}
-                            </button>
-                            <button onClick={onClearFile} className={u.dangerBtn}
+                            <Button tone="ghost" dark={dark} onClick={onOpenFilePicker}
+                                    aria-label={t("cvUpload.replaceFileAria")}>
+                                {t("cvUpload.replaceFile")}
+                            </Button>
+                            <Button tone="danger" dark={dark} icon="delete" onClick={onClearFile}
                                     aria-label={t("cvUpload.deleteFileAria")}>
-                                <span className="flex items-center gap-1.5"><TrashIcon/>{t("cvUpload.deleteBtn")}</span>
-                            </button>
+                                {t("cvUpload.deleteBtn")}
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -98,22 +102,25 @@ const CvUpload = ({
                 <div className="mt-6 flex flex-col gap-3">
                     {hasError ? (
                         <>
-                            <button onClick={onRetry} className={submitClass}>{t("cvUpload.retryBtn")}</button>
-                            <button onClick={onClearFile}
-                                    className={`${u.ghostBtn} text-center`}>{t("cvUpload.cancelBtn")}</button>
+                            <Button tone="primary" size="lg" dark={dark} onClick={onRetry}>
+                                {t("cvUpload.retryBtn")}
+                            </Button>
+                            <Button tone="ghost" dark={dark} onClick={onClearFile}>
+                                {t("cvUpload.cancelBtn")}
+                            </Button>
                         </>
                     ) : (
                         <>
-                            <button onClick={onUpload} disabled={isUploading} className={submitClass}
-                                    aria-busy={isUploading}>
+                            <Button tone="primary" size="lg" dark={dark} onClick={onUpload}
+                                    disabled={isUploading} aria-busy={isUploading}>
                                 {isUploading
-                                    ? <span
-                                        className="flex items-center justify-center gap-2"><SpinnerIcon/>{t("cvUpload.uploadingLabel")}</span>
+                                    ? <><SpinnerIcon/>{t("cvUpload.uploadingLabel")}</>
                                     : t("cvUpload.uploadBtn")}
-                            </button>
+                            </Button>
                             {!isUploading && (
-                                <button onClick={onClearFile}
-                                        className={`${u.ghostBtn} text-center`}>{t("cvUpload.cancelBtn")}</button>
+                                <Button tone="ghost" dark={dark} onClick={onClearFile}>
+                                    {t("cvUpload.cancelBtn")}
+                                </Button>
                             )}
                         </>
                     )}
@@ -159,14 +166,15 @@ const CvUpload = ({
                 </div>
             </div>
 
-            <button onClick={onOpenFilePicker} className={`${submitClass} mt-6`} type="button">
+            <Button type="button" tone="primary" size="lg" dark={dark} onClick={onOpenFilePicker}
+                    className="mt-6 w-full">
                 {isReplacing ? t("cvUpload.replaceBtn") : t("cvUpload.uploadBtn")}
-            </button>
+            </Button>
 
             {isReplacing && (
-                <button onClick={onCancelReplacing} className={`${u.ghostBtn} mt-3 w-full text-center`} type="button">
+                <Button type="button" tone="ghost" dark={dark} onClick={onCancelReplacing} className="mt-3 w-full">
                     {t("cvUpload.cancelBtn")}
-                </button>
+                </Button>
             )}
         </div>
     );

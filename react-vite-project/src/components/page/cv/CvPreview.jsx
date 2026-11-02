@@ -1,20 +1,19 @@
 /**
- * CvPreview.jsx — In-app PDF viewer modal.
+ * CvPreview.jsx — Shows a CV directly in the page.
  *
- * Rendered by CvDocuments when the student clicks "Aperçu".
- * Handles Escape-to-close, body-scroll-lock, blob-URL lifecycle,
- * and the loading / error states of the iframe.
+ * Fetches the PDF as a blob URL, handles its lifecycle and the loading / error
+ * states, then lets PdfViewer draw it.
  *
  * Props
  *   doc      { id, fileName }
  *   dark     boolean
  *   getUrl   (cvId: number) => Promise<string>   returns a blob: URL
- *   onClose  () => void
  */
 
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {getCvPreviewClasses} from '../../../styles/AppStyles.jsx';
+import PdfViewer from './PdfViewer.jsx';
 
 const CvPreview = ({doc, dark, getUrl}) => {
     const {t} = useTranslation();
@@ -64,11 +63,11 @@ const CvPreview = ({doc, dark, getUrl}) => {
             {/* Body */}
             <div className={cls.body}>
                 {error ? (
-                    <p className={`${cls.muted} pt-16`} role="alert">{t("cvPreview.error")}</p>
+                    <p className={cls.muted} role="alert">{t("cvPreview.error")}</p>
                 ) : !url ? (
-                    <p className={`${cls.muted} pt-16`} aria-busy="true">{t("cvPreview.loading")}</p>
+                    <p className={cls.muted} aria-busy="true">{t("cvPreview.loading")}</p>
                 ) : (
-                    <iframe src={url} title={doc.fileName} className="h-full w-full border-0 bg-white"/>
+                    <PdfViewer url={url} title={doc.fileName} dark={dark}/>
                 )}
             </div>
         </div>

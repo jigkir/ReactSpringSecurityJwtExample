@@ -74,17 +74,4 @@ class NotificationControllerTest {
 
         verify(notificationService).getUnreadNotifications("student@example.com");
     }
-
-    @Test
-    void shouldReturnUnreadCountWhenCountingByType() throws Exception {
-        // Arrange
-        when(notificationService.countUnread("student@example.com", NotificationType.NEW_INTERNSHIP_OFFER)).thenReturn(3L);
-
-        // Act + Assert
-        mockMvc.perform(get("/api/notifications/unread/count/NEW_INTERNSHIP_OFFER").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string("3"));
-
-        verify(notificationService).countUnread("student@example.com", NotificationType.NEW_INTERNSHIP_OFFER);
-    }
 }

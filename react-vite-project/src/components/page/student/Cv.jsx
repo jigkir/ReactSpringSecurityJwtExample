@@ -1,8 +1,12 @@
 /**
- * Cv.jsx — Parent / state machine for the student CV flow.
+ * Cv.jsx — Student CV page.
  * Location: src/components/page/student/Cv.jsx
  *
- * Owns all shared state and decides which child to render:
+ * <Cv user={user} />   full page (route /cv): upload flow + documents list (state machine below).
+ * <Cv preview />       compact block for the Home page: the student's latest CVs with the inline
+ *                      PDF preview. No upload flow, no loading checks.
+ *
+ * Full page state machine:
  *   LOADING_CV                → skeleton
  *   IDLE / FILE_READY /
  *   UPLOADING / ERROR /
@@ -19,6 +23,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {useNavigate, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import CvUpload from '../cv/CvUpload.jsx';
 import CvDocuments from '../cv/CvDocuments.jsx';
 import {getCvCount, getMaxCvSize, uploadCv} from '../../api/Api.jsx';
@@ -42,9 +47,18 @@ async function hasResume() {
     }
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Preview (Home page) ─────────────────────────────────────────────────────
 
-const Cv = ({user}) => {
+const CvHomePreview = () => {
+    const {dark} = useOutletContext();
+
+    // CvDocuments (student mode) loads, polls and previews the PDF inline by itself
+    return <CvDocuments dark={dark} preview/>;
+};
+
+// ─── Full page ───────────────────────────────────────────────────────────────
+
+const CvPage = ({user}) => {
     const navigate = useNavigate();
     const {dark} = useOutletContext();
     const {t} = useTranslation();
@@ -211,15 +225,9 @@ const Cv = ({user}) => {
                         dark={dark}
                         onAddClick={startReplacing}
                     />
-                    <button
-                        onClick={goToDashboard}
-                        className={`self-center text-sm font-medium px-3 py-1.5 rounded-lg transition-colors
-                            ${dark
-                            ? "text-slate-300 hover:text-white hover:bg-slate-700"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
-                    >
+                    <Button tone="ghost" dark={dark} onClick={goToDashboard} className="self-center">
                         {t("cv.goToDashboard")}
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
@@ -255,5 +263,10 @@ const Cv = ({user}) => {
         </div>
     );
 };
+
+// ─── Entry point ─────────────────────────────────────────────────────────────
+
+// Two separate components so the page's hooks never run in preview mode
+const Cv = ({user, preview = false}) => (preview ? <CvHomePreview/> : <CvPage user={user}/>);
 
 export default Cv;
