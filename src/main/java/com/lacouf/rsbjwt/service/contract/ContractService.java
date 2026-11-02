@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.contract.ContractStatus;
 import com.lacouf.rsbjwt.model.contract.StudentConsent;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
@@ -36,6 +37,14 @@ public class ContractService {
     @Transactional(readOnly = true)
     public List<ContractResponseDto> getContractsOfStudent(Student student) {
         return contractRepository.findByInternshipApplication_Student(student).stream()
+                .filter(contract -> !contract.getInternshipApplication().getInternship().isDeleted())
+                .map(ContractResponseDto::of)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContractResponseDto> getContractsOfEmployer(Employer employer) {
+        return contractRepository.findByInternshipApplication_Internship_PostedBy(employer).stream()
                 .filter(contract -> !contract.getInternshipApplication().getInternship().isDeleted())
                 .map(ContractResponseDto::of)
                 .toList();

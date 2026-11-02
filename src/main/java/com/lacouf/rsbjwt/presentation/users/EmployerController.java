@@ -18,6 +18,7 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -137,6 +138,12 @@ public class EmployerController {
     public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
         employerService.offerContracts(applicationIds, authentication.getName());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/contracts")
+    public ResponseEntity<List<ContractResponseDto>> getContracts(Authentication authentication) throws UserNotFoundException {
+        List<ContractResponseDto> contracts = employerService.getContractsOfEmployer(authentication.getName());
+        return ResponseEntity.ok(contracts);
     }
 }
 

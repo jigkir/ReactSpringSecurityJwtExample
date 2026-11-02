@@ -35,6 +35,7 @@ import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -303,6 +304,13 @@ public class EmployerService {
         for (Long applicationId : new LinkedHashSet<>(applicationIds)) {
             hire(findReceivedInternshipApplication(applicationId, email));
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContractResponseDto> getContractsOfEmployer(String email) throws UserNotFoundException {
+        Employer employer = employerRepository.findByCredentialsEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+        return contractService.getContractsOfEmployer(employer);
     }
 
     private void hire(InternshipApplication application) throws StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {

@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service.dto.response.contracts;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.user.Student;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,11 +21,14 @@ public record ContractResponseDto(
         BigDecimal compensationAmount,
         boolean compensationNegotiable,
         String contractStatus,
-        String studentConsent
+        String studentConsent,
+        String studentName,
+        String studentEmail
 ) {
     public static ContractResponseDto of(Contract contract) {
         InternshipApplication application = contract.getInternshipApplication();
         Internship internship = application.getInternship();
+        Student student = application.getStudent();
 
         return new ContractResponseDto(
                 contract.getId(),
@@ -39,7 +43,9 @@ public record ContractResponseDto(
                 internship.getCompensationAmount(),
                 internship.isCompensationNegotiable(),
                 contract.getContractStatus().name(),
-                contract.getStudentConsent().name()
+                contract.getStudentConsent().name(),
+                student.getFirstName() + " " + student.getLastName(),
+                student.getCredentials().getEmail()
         );
     }
 }
