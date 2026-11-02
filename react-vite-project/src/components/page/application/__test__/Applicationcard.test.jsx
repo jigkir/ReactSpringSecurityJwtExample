@@ -1,11 +1,16 @@
-import {render, screen, fireEvent} from '@testing-library/react';
-import {describe, it, expect, vi, beforeEach} from 'vitest';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {getEmployerInterviewsByApplicationId} from '../../../api/Api.jsx';
 
-
-vi.mock('../../cv/CvPreview.jsx', () => ({
-    default: () => <div data-testid="cv-preview">CvPreview Component</div>
+vi.mock('../../../api/Api.jsx', () => ({
+    getEmployerInterviewsByApplicationId: vi.fn(),
+    createInterview: vi.fn(),
+    updateInterview: vi.fn(),
 }));
 
+vi.mock('../../../documents/PdfPreview.jsx', () => ({
+    default: () => <div data-testid="cv-preview">PdfPreview Component</div>
+}));
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
@@ -15,13 +20,6 @@ vi.mock('react-i18next', () => ({
             };
             return translations[key] || key;
         }
-    })
-}));
-
-
-vi.mock('../../../../styles/AppStyles.jsx', () => ({
-    getApplicationCardClasses: () => ({
-        card: 'mock-card', title: 'mock-title', description: 'mock-desc', fileName: 'mock-file'
     })
 }));
 
@@ -35,26 +33,34 @@ import ApplicationCard from '../ApplicationCard';
 describe('ApplicationCard Component', () => {
     const mockApplication = {
         id: 1, student: {
-            firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com'
+            id: 7, firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com'
         }, cvFileName: 'resume.pdf'
     };
 
     const mockTogglePreview = vi.fn();
     const mockGetUrl = vi.fn();
 
+    const renderCard = (props = {}) => render(<ApplicationCard
+        application={mockApplication}
+        dark={false}
+        isNew={false}
+        isPreviewOpen={false}
+        onTogglePreview={mockTogglePreview}
+        getUrl={mockGetUrl}
+        {...props}
+    />);
+
+    const waitForInterviewLoad = () =>
+        waitFor(() => expect(getEmployerInterviewsByApplicationId).toHaveBeenCalledWith(mockApplication.id));
+
     beforeEach(() => {
         vi.clearAllMocks();
+        getEmployerInterviewsByApplicationId.mockResolvedValue([]);
     });
 
-    it('renders student information and CV file name correctly', () => {
-        render(<ApplicationCard
-            application={mockApplication}
-            dark={false}
-            isNew={false}
-            isPreviewOpen={false}
-            onTogglePreview={mockTogglePreview}
-            getUrl={mockGetUrl}
-        />);
+    it('renders student information and CV file name correctly', async () => {
+        renderCard();
+        await waitForInterviewLoad();
 
         expect(screen.getByText('John Doe')).toBeInTheDocument();
         expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
@@ -63,46 +69,49 @@ describe('ApplicationCard Component', () => {
         expect(screen.queryByTestId('cv-preview')).not.toBeInTheDocument();
     });
 
-    it('shows "New" badge when isNew is true', () => {
-        render(<ApplicationCard
-            application={mockApplication}
-            dark={false}
-            isNew={true}
-            isPreviewOpen={false}
-            onTogglePreview={mockTogglePreview}
-            getUrl={mockGetUrl}
-        />);
+    it('shows "New" badge when isNew is true', async () => {
+        renderCard({isNew: true});
+        await waitForInterviewLoad();
 
         expect(screen.getByText('New')).toBeInTheDocument();
     });
 
-    it('calls onTogglePreview when view button is clicked using fireEvent', () => {
-        render(<ApplicationCard
-            application={mockApplication}
-            dark={false}
-            isNew={false}
-            isPreviewOpen={false}
-            onTogglePreview={mockTogglePreview}
-            getUrl={mockGetUrl}
-        />);
+    it('calls onTogglePreview when view button is clicked using fireEvent', async () => {
+        renderCard();
+        await waitForInterviewLoad();
 
-        const button = screen.getByRole('button', {name: /View CV/i});
-        fireEvent.click(button);
+        fireEvent.click(screen.getByRole('button', {name: /View CV/i}));
 
         expect(mockTogglePreview).toHaveBeenCalledTimes(1);
     });
 
-    it('renders CvPreview component and close button when isPreviewOpen is true', () => {
-        render(<ApplicationCard
-            application={mockApplication}
-            dark={false}
-            isNew={false}
-            isPreviewOpen={true}
-            onTogglePreview={mockTogglePreview}
-            getUrl={mockGetUrl}
-        />);
+    it('renders the PDF preview and close button when isPreviewOpen is true', async () => {
+        renderCard({isPreviewOpen: true});
+        await waitForInterviewLoad();
 
         expect(screen.getByText('Close Preview')).toBeInTheDocument();
         expect(screen.getByTestId('cv-preview')).toBeInTheDocument();
+    });
+
+    it('offers to schedule an interview when the application has none', async () => {
+        renderCard();
+        await waitForInterviewLoad();
+
+        expect(screen.getByText('employerInternship.openInterviewPicker')).toBeInTheDocument();
+    });
+
+    it('offers to edit the interview request when one already exists', async () => {
+        getEmployerInterviewsByApplicationId.mockResolvedValue([{id: 5, message: 'Hello'}]);
+        renderCard();
+
+        expect(await screen.findByText('employerInternship.editInterviewPicker')).toBeInTheDocument();
+    });
+
+    it('falls back to "schedule an interview" when the interviews fail to load', async () => {
+        getEmployerInterviewsByApplicationId.mockRejectedValue(new Error('boom'));
+        renderCard();
+        await waitForInterviewLoad();
+
+        expect(screen.getByText('employerInternship.openInterviewPicker')).toBeInTheDocument();
     });
 });

@@ -6,7 +6,6 @@ import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
 import {
     createInterview,
-    getEmployerInterviews,
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../api/Api.jsx";
@@ -23,16 +22,18 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const interviewLabel =
         isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker")) ;
 
-    const getInterviewFromApplication = useCallback( async (application) => {
-        let Interviews = await getEmployerInterviewsByApplicationId(application.id);
-        let a = ["a","b"];
-        setInterview(Interviews.findLast(() => true));
-        //console.log(Interviews.findLast(() => true));
+    const getInterviewFromApplication = useCallback(async (application) => {
+        try {
+            const interviews = await getEmployerInterviewsByApplicationId(application.id);
+            setInterview(Array.isArray(interviews) ? (interviews.at(-1) ?? null) : null);
+        } catch {
+            setInterview(null);
+        }
     }, []);
 
 
     useEffect(() => {
-        getInterviewFromApplication(application);
+        void getInterviewFromApplication(application);
     }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
