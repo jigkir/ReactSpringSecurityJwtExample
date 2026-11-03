@@ -526,6 +526,7 @@
     }
   },
   "applicationCard": {
-    "coverLetter": "Lettre de motivation"
+    "coverLetter": "Lettre de motivation",
+    "transcript": "Relevé de notes"
   }
 }

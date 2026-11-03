@@ -7,10 +7,18 @@ import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
 import {
     createInterview,
+    getApplicationCoverLetter,
+    getApplicationTranscript,
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../api/Api.jsx";
+import {blobUrlFromFile} from "../../../utils/documents.js";
 
+const COVER_LETTER = "COVER_LETTER";
+const TRANSCRIPT = "TRANSCRIPT";
+
+const getCoverLetterUrl = async (applicationId) => blobUrlFromFile(await getApplicationCoverLetter(applicationId));
+const getTranscriptUrl = async (applicationId) => blobUrlFromFile(await getApplicationTranscript(applicationId));
 
 
 function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
@@ -20,8 +28,12 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
+    const [openDoc, setOpenDoc] = useState(null); // null | COVER_LETTER | TRANSCRIPT
     const interviewLabel =
         isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker")) ;
+
+    const hasCoverLetter = application.coverLetterId != null;
+    const hasTranscript = application.transcriptId != null;
 
     const getInterviewFromApplication = useCallback(async (application) => {
         try {
@@ -38,6 +50,8 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
+
+    const toggleDoc = (doc) => setOpenDoc((current) => (current === doc ? null : doc));
 
     const handleSendOffer = async (payload) => {
         try {
@@ -79,17 +93,38 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         </span>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button
                             tone={isInterviewSelectOpen ? "danger" : "accent"}
                             dark={dark}
                             icon={isInterviewSelectOpen ? "close" : "visibility"}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
-                            className="mr-4"
                         >
                             {interviewLabel}
                         </Button>
+                        {hasCoverLetter && (
+                            <Button
+                                tone={openDoc === COVER_LETTER ? "danger" : "accent"}
+                                dark={dark}
+                                icon={openDoc === COVER_LETTER ? "close" : "visibility"}
+                                onClick={() => toggleDoc(COVER_LETTER)}
+                                aria-expanded={openDoc === COVER_LETTER}
+                            >
+                                {t("applicationCard.coverLetter")}
+                            </Button>
+                        )}
+                        {hasTranscript && (
+                            <Button
+                                tone={openDoc === TRANSCRIPT ? "danger" : "accent"}
+                                dark={dark}
+                                icon={openDoc === TRANSCRIPT ? "close" : "visibility"}
+                                onClick={() => toggleDoc(TRANSCRIPT)}
+                                aria-expanded={openDoc === TRANSCRIPT}
+                            >
+                                {t("applicationCard.transcript")}
+                            </Button>
+                        )}
                         <Button
                             tone={isPreviewOpen ? "danger" : "accent"}
                             dark={dark}
@@ -111,6 +146,28 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             onClose={() => setIsInterviewSelectOpen(false)}
                             onSendOffer={handleSendOffer}
                             interview={interview}
+                        />
+                    </div>
+                )}
+
+                {/* Inline cover letter preview */}
+                {hasCoverLetter && openDoc === COVER_LETTER && (
+                    <div className="w-full pt-4 mt-4">
+                        <PdfPreview
+                            doc={{id: application.id, fileName: application.coverLetterFileName}}
+                            dark={dark}
+                            getUrl={getCoverLetterUrl}
+                        />
+                    </div>
+                )}
+
+                {/* Inline transcript preview */}
+                {hasTranscript && openDoc === TRANSCRIPT && (
+                    <div className="w-full pt-4 mt-4">
+                        <PdfPreview
+                            doc={{id: application.id, fileName: application.transcriptFileName}}
+                            dark={dark}
+                            getUrl={getTranscriptUrl}
                         />
                     </div>
                 )}

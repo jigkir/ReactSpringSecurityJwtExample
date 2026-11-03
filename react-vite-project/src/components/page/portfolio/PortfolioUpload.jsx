@@ -9,6 +9,8 @@
  * Props
  *   dark        boolean
  *   maxBytes    number    max size of one file
+ *   types       string[]  optional, document types offered (default: all). The guessed type
+ *                         falls back to the first one when it is not allowed.
  *   onUploaded  function  called after every upload attempt (parent reloads its lists)
  *   onClose     function  called when everything was uploaded, or when the Close button is clicked
  */
@@ -26,7 +28,7 @@ import {translateWarning} from '../../../utils/CommonFields.jsx';
 
 const canUpload = (item) => item.status === "ready" || item.status === "failed";
 
-export default function PortfolioUpload({dark, maxBytes, onUploaded, onClose}) {
+export default function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, onUploaded, onClose}) {
     const {t} = useTranslation();
     const inputRef = useRef(null);
     const nextKey = useRef(0);
@@ -43,10 +45,11 @@ export default function PortfolioUpload({dark, maxBytes, onUploaded, onClose}) {
     const addFiles = (fileList) => {
         const added = Array.from(fileList ?? []).map((file) => {
             const error = validateFile(file, maxBytes);
+            const guess = guessDocType(file.name);
             return {
                 key: nextKey.current++,
                 file,
-                type: guessDocType(file.name),
+                type: types.includes(guess) ? guess : types[0],
                 status: error ? "invalid" : "ready",
                 error,
             };
@@ -145,7 +148,7 @@ export default function PortfolioUpload({dark, maxBytes, onUploaded, onClose}) {
                             <select value={i.type} disabled={busy || i.status === "done" || i.status === "invalid"}
                                     onChange={(e) => patch(i.key, {type: e.target.value})}
                                     className={selectClass} aria-label={t("portfolio.typeAria")}>
-                                {DOC_TYPE_KEYS.map((k) => (
+                                {types.map((k) => (
                                     <option key={k} value={k}>{t(DOC_TYPES[k].labelKey)}</option>
                                 ))}
                             </select>

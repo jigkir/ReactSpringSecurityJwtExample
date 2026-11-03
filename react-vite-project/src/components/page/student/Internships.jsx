@@ -30,6 +30,7 @@ function StudentInternships({preview = false}) {
     const [appliedInternships, setAppliedInternships] = useState([]);
     const [cvs, setCvs] = useState(null);
     const [letters, setLetters] = useState([]);
+    const [transcripts, setTranscripts] = useState([]);
     const appliedIds = useMemo(
         () => new Set(appliedInternships.map((application) => application.internshipId)),
         [appliedInternships]);
@@ -96,9 +97,22 @@ function StudentInternships({preview = false}) {
         }
     }, []);
 
+    const loadTranscripts = useCallback(async () => {
+        try {
+            const list = await getDocuments("TRANSCRIPT");
+            const safe = Array.isArray(list) ? list : [];
+            setTranscripts(safe);
+            return safe;
+        } catch {
+            return [];
+        }
+    }, []);
+
     const load = useCallback(async () => {
-        await Promise.all([loadInternships(), loadAppliedInternships(), loadCvs(), loadLetters()]);
-    }, [loadInternships, loadAppliedInternships, loadCvs, loadLetters]);
+        await Promise.all([
+            loadInternships(), loadAppliedInternships(), loadCvs(), loadLetters(), loadTranscripts()
+        ]);
+    }, [loadInternships, loadAppliedInternships, loadCvs, loadLetters, loadTranscripts]);
 
     // Applying closes the offer's notification, even from the Home preview
     const handleApplicationChanged = useCallback(async () => {
@@ -128,10 +142,12 @@ function StudentInternships({preview = false}) {
                 dark={dark}
                 cvs={cvs}
                 letters={letters}
+                transcripts={transcripts}
                 internshipId={internship.id}
                 application={application}
                 onChanged={handleApplicationChanged}
                 onLettersChanged={loadLetters}
+                onTranscriptsChanged={loadTranscripts}
             />)}
         />);
     });

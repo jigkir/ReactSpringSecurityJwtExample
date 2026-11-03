@@ -195,14 +195,19 @@ export async function deleteInternship(internshipId) {
 // endregion
 
 // region Student internships
-// Returns ResponseEntity.ok("Application submitted successfully");
-// Optional cover letter: sent as ?coverLetterId=
-const withLetter = (path, coverLetterId) =>
-    coverLetterId ? `${path}?coverLetterId=${coverLetterId}` : path;
+// Optional documents sent with an application: ?coverLetterId=&transcriptId=
+const withDocs = (path, coverLetterId, transcriptId) => {
+    const params = new URLSearchParams();
+    if (coverLetterId) params.set("coverLetterId", coverLetterId);
+    if (transcriptId) params.set("transcriptId", transcriptId);
+    const query = params.toString();
+    return query ? `${path}?${query}` : path;
+};
 
-export async function applyForInternship(internshipId, cvId, coverLetterId) {
+export async function applyForInternship(internshipId, cvId, coverLetterId, transcriptId) {
     const response = await fetcher(
-        withLetter(`student/internship/${internshipId}/apply/${cvId}`, coverLetterId), {method: "POST"});
+        withDocs(`student/internship/${internshipId}/apply/${cvId}`, coverLetterId, transcriptId),
+        {method: "POST"});
     return handleEmpty(response);
 }
 
@@ -226,9 +231,10 @@ export async function getStudentAppliedInternships() {
     return handleResponse(response);
 }
 
-export async function updateApplicationCV(applicationId, cvId, coverLetterId) {
+export async function updateApplicationCV(applicationId, cvId, coverLetterId, transcriptId) {
     const response = await fetcher(
-        withLetter(`student/applications/${applicationId}/${cvId}`, coverLetterId), {method: "PUT"});
+        withDocs(`student/applications/${applicationId}/${cvId}`, coverLetterId, transcriptId),
+        {method: "PUT"});
     return handleEmpty(response);
 }
 
@@ -371,9 +377,13 @@ export async function hideDocument(type, id) {
     return handleEmpty(await fetcher(`student/${DOC_PATH[type]}/${id}/hide`, {method: "PUT"}));
 }
 
-// Employer side. Assumes a new backend endpoint.
+// Employer side: the cover letter / transcript sent with an application. Returns {id, fileName, content (Base64)}
 export async function getApplicationCoverLetter(applicationId) {
     return handleResponse(await fetcher(`employer/applications/${applicationId}/cover-letter`, {method: "GET"}));
+}
+
+export async function getApplicationTranscript(applicationId) {
+    return handleResponse(await fetcher(`employer/applications/${applicationId}/transcript`, {method: "GET"}));
 }
 
 // endregion
