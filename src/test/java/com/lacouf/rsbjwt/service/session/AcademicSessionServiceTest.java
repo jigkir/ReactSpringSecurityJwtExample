@@ -63,6 +63,21 @@ class AcademicSessionServiceTest {
     }
 
     @Test
+    void shouldCreateSessionContainingDateWhenItDoesNotExistYet() {
+        // Arrange
+        LocalDate startDate = LocalDate.of(2027, 1, 18);
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, 2027)).thenReturn(Optional.empty());
+        when(academicSessionRepository.save(any(AcademicSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        AcademicSession session = academicSessionService.getSessionContaining(startDate);
+
+        // Assert
+        assert ("H2027").equals(session.getName());
+    }
+
+    @Test
     void shouldCreateCurrentSessionWhenItDoesNotExistYet() {
         // Arrange
         when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.empty());

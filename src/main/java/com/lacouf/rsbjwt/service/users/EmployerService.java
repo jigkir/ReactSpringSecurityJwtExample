@@ -118,7 +118,7 @@ public class EmployerService {
                 internshipDto.compensationAmount(),
                 internshipDto.compensationNegotiable(),
                 employer,
-                academicSessionService.getCurrentSession()
+                academicSessionService.getSessionContaining(internshipDto.startDate())
         );
 
         internshipRepository.save(internship);
@@ -134,7 +134,7 @@ public class EmployerService {
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
-        internshipService.updateDetails(internship, dto);
+        internshipService.updateDetails(internship, dto, academicSessionService.getSessionContaining(dto.startDate()));
         internship.resubmitForReview();
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);

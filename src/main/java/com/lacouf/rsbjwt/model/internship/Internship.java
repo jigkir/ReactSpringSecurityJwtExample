@@ -92,7 +92,7 @@ public class Internship {
 
     public void update(String title, String description, String requiredSkills, int durationInWeeks,
                        String location, WorkMode workMode, LocalDate startDate, LocalDate applicationDeadline,
-                       BigDecimal compensationAmount, boolean compensationNegotiable) {
+                       BigDecimal compensationAmount, boolean compensationNegotiable, AcademicSession session) {
         this.title = title;
         this.description = description;
         this.requiredSkills = requiredSkills;
@@ -103,6 +103,7 @@ public class Internship {
         this.applicationDeadline = applicationDeadline;
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
+        this.session = session;
     }
 
     public void resubmitForReview() {

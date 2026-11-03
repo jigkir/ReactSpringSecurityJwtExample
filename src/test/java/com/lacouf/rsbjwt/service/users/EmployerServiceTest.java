@@ -200,10 +200,10 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldSaveInternship() throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
+    void shouldSaveInternshipInSessionOfItsStartDate() throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
         // Arrange
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
-        when(academicSessionService.getCurrentSession()).thenReturn(currentSession);
+        when(academicSessionService.getSessionContaining(internshipRequestDto.startDate())).thenReturn(currentSession);
         when(internshipRepository.save(any(Internship.class)))
                 .thenAnswer(invocation -> {
                     Internship internship = invocation.getArgument(0);
@@ -371,6 +371,21 @@ public class EmployerServiceTest {
         verify(internshipRepository).save(internship);
         verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
         verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
+    }
+
+    @Test
+    void shouldMoveInternshipToSessionOfItsStartDateWhenUpdated() throws Exception {
+        // Arrange
+        AcademicSession nextSession = new AcademicSession(Season.WINTER, 2027);
+
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(academicSessionService.getSessionContaining(internshipRequestDto.startDate())).thenReturn(nextSession);
+
+        // Act
+        employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL);
+
+        // Assert
+        assert (nextSession).equals(internship.getSession());
     }
 
     @Test

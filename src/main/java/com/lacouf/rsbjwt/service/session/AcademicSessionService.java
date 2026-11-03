@@ -19,9 +19,12 @@ public class AcademicSessionService {
     }
 
     public AcademicSession getCurrentSession() {
-        LocalDate today = LocalDate.now();
-        Season season = Season.of(today);
-        int year = today.getYear();
+        return getSessionContaining(LocalDate.now());
+    }
+
+    public AcademicSession getSessionContaining(LocalDate date) {
+        Season season = Season.of(date);
+        int year = date.getYear();
 
         return academicSessionRepository.findBySeasonAndSessionYear(season, year)
                 .orElseGet(() -> academicSessionRepository.save(new AcademicSession(season, year)));
