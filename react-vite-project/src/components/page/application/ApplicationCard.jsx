@@ -17,7 +17,9 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const s = getApplicationCardClasses(dark);
     const {t} = useTranslation();
     const {student, cvFileName} = application;
-    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCVBtn");
+    const [isCoverLetterPreviewOpen, setIsCoverLetterPreviewOpen] = useState(false);
+    const coverViewLabel = isCoverLetterPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCoverBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
     const interviewLabel =
@@ -38,6 +40,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
+    const onToggleCoverLetterPreview = () => setIsCoverLetterPreviewOpen(!isCoverLetterPreviewOpen);
 
     const handleSendOffer = async (payload) => {
         try {
@@ -81,9 +84,9 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
 
                     <div className="flex items-center">
                         <Button
-                            tone={isInterviewSelectOpen ? "danger" : "accent"}
+                            tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
                             dark={dark}
-                            icon={isInterviewSelectOpen ? "close" : "visibility"}
+                            icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
                             className="mr-4"
@@ -96,8 +99,18 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             icon={isPreviewOpen ? "close" : "visibility"}
                             onClick={onTogglePreview}
                             aria-expanded={isPreviewOpen}
+                            className="mr-4"
                         >
                             {viewLabel}
+                        </Button>
+                        <Button
+                            tone={isCoverLetterPreviewOpen ? "danger" : "accent"}
+                            dark={dark}
+                            icon={isCoverLetterPreviewOpen ? "close" : "visibility"}
+                            onClick={onToggleCoverLetterPreview}
+                            aria-expanded={isPreviewOpen}
+                        >
+                            {coverViewLabel}
                         </Button>
                     </div>
                 </div>
@@ -117,6 +130,17 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
 
                 {/* Inline Preview Container — forced underneath with a top border */}
                 {isPreviewOpen && (
+                    <div className="w-full pt-4 mt-4">
+                        <PdfPreview
+                            doc={{id: application.id, fileName: cvFileName}}
+                            dark={dark}
+                            getUrl={getUrl}
+                        />
+                    </div>
+                )}
+
+                {/* Inline Preview Container — forced underneath with a top border */}
+                {isCoverLetterPreviewOpen && (
                     <div className="w-full pt-4 mt-4">
                         <PdfPreview
                             doc={{id: application.id, fileName: cvFileName}}
