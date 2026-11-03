@@ -63,7 +63,7 @@ const NOTIFICATION_ITEMS = {
             id:"accountExpired",
             notificationType: NOTIFICATION_TYPE.STUDENT_ACCESS_REQUESTED,
             targetType: TARGET_TYPE.STUDENT_ACCOUNT,
-            labelKey: "{{amount}} user acces to review",
+            labelKey: "navbar.pendingUserNotification",
             to:  PAGE.MANAGER_USERS
         }
     ],

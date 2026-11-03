@@ -80,7 +80,8 @@
     "internshipSubmittedForReviewNotification": "{{amount}} nouvelle(s) offre(s) de stage à valider",
     "newInternshipApplicationNotification": "{{amount}} nouvelle(s) candidature(s) reçue(s)",
     "notificationLoadError": "Impossible de charger les notifications. Elles s'actualiseront automatiquement.",
-    "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues. Veuillez réessayer."
+    "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues. Veuillez réessayer.",
+    "pendingUserNotification": "{{amount}} accès utilisateur à vérifier"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",
