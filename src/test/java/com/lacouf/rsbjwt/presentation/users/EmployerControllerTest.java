@@ -6,8 +6,6 @@ import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyHiredException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
@@ -22,6 +20,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchErrorDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
@@ -685,55 +684,83 @@ public class EmployerControllerTest {
     }
 
     @Test
-    void shouldReturnNotFoundWhenOfferingContractForUnknownApplication() throws Exception {
+    void shouldReturnErrorWhenOfferingContractForUnknownApplication() throws Exception {
         // Arrange
-        doThrow(new InternshipApplicationNotFoundException(20L))
-                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+        BatchHireResponseDto responseDto = new BatchHireResponseDto(
+                List.of(),
+                List.of(new BatchErrorDto(20L, "Internship application not found with id: 20"))
+        );
+        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
 
         // Act + Assert
         mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[20]"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
+
+        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
     }
 
     @Test
-    void shouldReturnConflictWhenOfferingContractToStudentAlreadyEmployed() throws Exception {
+    void shouldReturnErrorWhenOfferingContractToStudentAlreadyEmployed() throws Exception {
         // Arrange
-        doThrow(new StudentAlreadyEmployedException(3L))
-                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+        BatchHireResponseDto responseDto = new BatchHireResponseDto(
+                List.of(),
+                List.of(new BatchErrorDto(20L, "Student is already employed"))
+        );
+        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
 
         // Act + Assert
         mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[20]"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
+
+        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
     }
 
     @Test
-    void shouldReturnConflictWhenContractAlreadyExists() throws Exception {
+    void shouldReturnErrorWhenContractAlreadyExists() throws Exception {
         // Arrange
-        doThrow(new ContractAlreadyExistsException(20L))
-                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+        BatchHireResponseDto responseDto = new BatchHireResponseDto(
+                List.of(),
+                List.of(new BatchErrorDto(20L, "Contract already exists"))
+        );
+        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
 
         // Act + Assert
         mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[20]"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
+
+        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
     }
 
     @Test
-    void shouldReturnConflictWhenOfferingContractForRejectedApplication() throws Exception {
+    void shouldReturnErrorWhenOfferingContractForRejectedApplication() throws Exception {
         // Arrange
-        doThrow(new ApplicationRejectedException(20L))
-                .when(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+        BatchHireResponseDto responseDto = new BatchHireResponseDto(
+                List.of(),
+                List.of(new BatchErrorDto(20L, "Application has been rejected"))
+        );
+        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
 
         // Act + Assert
         mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[20]"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors.length()").value(1))
+                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
+
+        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
     }
 
     @Test

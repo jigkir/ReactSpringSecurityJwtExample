@@ -48,6 +48,7 @@ import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
@@ -832,20 +833,22 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldThrowWhenOfferingContractForUnknownApplication() {
+    void shouldReturnErrorWhenOfferingContractForUnknownApplication() {
         // Arrange
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(20L, EMPLOYER_EMAIL))
                 .thenReturn(Optional.empty());
 
-        // Act + Assert
-        assertThrows(InternshipApplicationNotFoundException.class,
-                () -> employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL));
+        // Act
+        BatchHireResponseDto response = employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL);
 
-        verifyNoInteractions(contractService);
+        // Assert
+        assertEquals(0, response.successfulApplicationIds().size());
+        assertEquals(1, response.errors().size());
+        assertEquals(20L, response.errors().getFirst().applicationId());
     }
 
     @Test
-    void shouldThrowWhenContractCannotBeCreatedBecauseStudentIsAlreadyEmployed() throws Exception {
+    void shouldReturnErrorWhenContractCannotBeCreatedBecauseStudentIsAlreadyEmployed() throws Exception {
         // Arrange
         InternshipApplication application = receivedInternshipApplication();
 
@@ -853,13 +856,17 @@ public class EmployerServiceTest {
                 .thenReturn(Optional.of(application));
         doThrow(new StudentAlreadyEmployedException(3L)).when(contractService).createContract(application);
 
-        // Act + Assert
-        assertThrows(StudentAlreadyEmployedException.class,
-                () -> employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL));
+        // Act
+        BatchHireResponseDto response = employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(0, response.successfulApplicationIds().size());
+        assertEquals(1, response.errors().size());
+        assertEquals(20L, response.errors().getFirst().applicationId());
     }
 
     @Test
-    void shouldThrowWhenContractAlreadyExistsForApplication() throws Exception {
+    void shouldReturnErrorWhenContractAlreadyExistsForApplication() throws Exception {
         // Arrange
         InternshipApplication application = receivedInternshipApplication();
 
@@ -867,9 +874,13 @@ public class EmployerServiceTest {
                 .thenReturn(Optional.of(application));
         doThrow(new ContractAlreadyExistsException(20L)).when(contractService).createContract(application);
 
-        // Act + Assert
-        assertThrows(ContractAlreadyExistsException.class,
-                () -> employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL));
+        // Act
+        BatchHireResponseDto response = employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(0, response.successfulApplicationIds().size());
+        assertEquals(1, response.errors().size());
+        assertEquals(20L, response.errors().getFirst().applicationId());
     }
 
 // ---------- Rejecting an application that has a contract ----------
