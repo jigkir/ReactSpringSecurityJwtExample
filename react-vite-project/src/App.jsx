@@ -23,6 +23,7 @@ import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {ACCOUNT_STATUS} from "./utils/AccountStatus.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
+import Users from "./components/page/Users.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -130,6 +131,7 @@ function App() {
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
                         <Route path="/expired" element={<ExpiredUser user={user}/>}/>
+                        <Route path="/users" element={<Users user={user}/>}/>
                     </Route>
                 </Routes>
             </div>

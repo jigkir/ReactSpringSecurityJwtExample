@@ -398,4 +398,16 @@ export async function checkUserStatus() {
     return handleResponse(await fetcher("users/status", {method: "GET"}));
 }
 
+export async function getUsers(){
+    return handleResponse(await fetcher("manager/students",{method: "GET"}));
+}
+
+export async function reactivateUser(studentId){
+    return handleResponse(await fetcher(`manager/students/${studentId}/reactivate`, {method:"PUT"}));
+}
+
+export async function denyUser(studentId){
+    return handleResponse(await fetcher(`manager/students/${studentId}/deny`, {method:"PUT"}));
+}
+
 //endregion

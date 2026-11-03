@@ -18,6 +18,7 @@ const NAV_BY_ROLE = {
     MANAGER: [
         {to: "/manager/cvs", labelKey: "navbar.cv"},
         {to: "/manager/internships", labelKey: "navbar.internships"},
+        {to: "/users", labelKey: "Users"}
     ],
     EMPLOYER: [
         {to: "/internships", labelKey: "navbar.postInternship"},
