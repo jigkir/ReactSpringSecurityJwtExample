@@ -218,6 +218,8 @@
     "titleManager": "CVs to review",
     "uploadedOn": "uploaded on",
     "viewBtn": "Preview",
+    "viewCVBtn": "Preview CV",
+    "viewCoverBtn": "Preview cover letter",
     "hideBtn": "Delete",
     "hideAsk": "Delete this document? It will no longer appear in this list.",
     "confirmBtn": "Confirm",

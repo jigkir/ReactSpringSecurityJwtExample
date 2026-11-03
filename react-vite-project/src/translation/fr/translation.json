@@ -218,6 +218,8 @@
     "titleManager": "CVs à valider",
     "uploadedOn": "déposé le",
     "viewBtn": "Aperçu",
+    "viewCVBtn": "Aperçu de CV",
+    "viewCoverBtn": "Aperçu de la lettre de présentation ",
     "hideBtn": "Supprimer",
     "hideAsk": "Supprimer ce document ? Il n'apparaîtra plus dans cette liste.",
     "confirmBtn": "Confirmer",
