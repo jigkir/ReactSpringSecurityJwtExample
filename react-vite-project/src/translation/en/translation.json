@@ -432,6 +432,7 @@
     "saveApplication": "Save my application",
     "cancelApplication": "Cancel changes",
     "applicationSent": "Application sent. The employer will be notified.",
+    "applied": "Application submitted successfully.",
     "viewedError": "Unable to record that you viewed this offer.",
     "alreadyApplied": "You have already applied to this offer.",
     "applyFailed": "Unable to send your application. Please try again.",

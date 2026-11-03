@@ -432,6 +432,7 @@
     "saveApplication": "Enregistrer ma candidature",
     "cancelApplication": "Annuler les modifications",
     "applicationSent": "Candidature envoyée. L'employeur sera avisé.",
+    "applied": "Candidature envoyée avec succès.",
     "viewedError": "Impossible d'enregistrer la consultation de cette offre.",
     "alreadyApplied": "Vous avez déjà postulé à cette offre.",
     "applyFailed": "Impossible d'envoyer votre candidature. Veuillez réessayer.",
