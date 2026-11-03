@@ -443,9 +443,6 @@
     "letterInvalid": "La lettre doit être un PDF respectant la taille maximale.",
     "letterUploadFailed": "Impossible de téléverser la lettre de motivation. Veuillez réessayer."
   },
-  "sentDocuments": {
-    "title": "Documents envoyés avec votre candidature"
-  },
   "employerInternship": {
     "openInterviewPicker": "Convoquer en entrevue",
     "editInterviewPicker": "Modifier la convocation",

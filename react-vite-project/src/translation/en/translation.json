@@ -443,9 +443,6 @@
     "letterInvalid": "The cover letter must be a PDF within the size limit.",
     "letterUploadFailed": "Unable to upload the cover letter. Please try again."
   },
-  "sentDocuments": {
-    "title": "Documents sent with your application"
-  },
   "employerInternship": {
     "openInterviewPicker": "Invite to an interview",
     "editInterviewPicker": "Edit interview invitation",
