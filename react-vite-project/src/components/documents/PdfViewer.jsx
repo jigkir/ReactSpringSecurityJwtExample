@@ -64,17 +64,27 @@ function PdfViewer({url, title, dark}) {
     useEffect(() => {
         if (!pdf) return;
         let alive = true;
+        let pageWidth = null;
+        const container = containerRef.current;
 
-        // Fit the pages to the viewer width; keep their natural size while the viewer has no width yet
+        const update = () => {
+            if (!alive || !pageWidth) return;
+            const viewerWidth = container.clientWidth;
+            setFitWidthScale(viewerWidth > 0 ? viewerWidth / pageWidth : NATURAL_SCALE);
+        };
+
         pdf.getPage(FIRST_PAGE).then((page) => {
             if (!alive) return;
-            const viewerWidth = containerRef.current.clientWidth;
-            const pageWidth = page.getViewport({scale: NATURAL_SCALE}).width;
-            setFitWidthScale(viewerWidth > 0 ? viewerWidth / pageWidth : NATURAL_SCALE);
+            pageWidth = page.getViewport({scale: NATURAL_SCALE}).width;
+            update();
         });
+
+        const observer = new ResizeObserver(update);
+        observer.observe(container);
 
         return () => {
             alive = false;
+            observer.disconnect();
             setFitWidthScale(null);
         };
     }, [pdf]);

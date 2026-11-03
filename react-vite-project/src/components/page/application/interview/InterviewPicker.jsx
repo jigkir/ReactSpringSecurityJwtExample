@@ -146,10 +146,11 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
 
                 {/* Footer */}
                 <div className={s.footer}>
-                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}>
+                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}
+                            className="w-full sm:w-auto">
                         {t("interview.cancelBtn")}
                     </Button>
-                    <Button type="submit" tone="primary" size="lg" dark={dark}>
+                    <Button type="submit" tone="primary" size="lg" dark={dark} className="w-full sm:w-auto">
                         {isEdit ? t("interview.saveChanges") : t("interview.submitBtn")}
                     </Button>
                 </div>

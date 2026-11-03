@@ -13,7 +13,7 @@ function UserCard({ studentid, firstname, lastname, status, dark, onReactivate, 
     const badgeKey = val === "approved" || val === "rejected" ? val : "pending";
 
     return (
-        <div className={`p-4 rounded-lg border ${dark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"} shadow-sm flex items-center justify-between gap-4`}>
+        <div className={`p-4 rounded-lg border ${dark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"} shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4`}>
             {/* Left: User Info & Status Badge */}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -30,7 +30,7 @@ function UserCard({ studentid, firstname, lastname, status, dark, onReactivate, 
             </div>
 
             {/* Right: Conditional Action Buttons */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
                 {val === "pending" && (
                     <>
                         <Button dark={dark} icon="check" onClick={onReactivate}>

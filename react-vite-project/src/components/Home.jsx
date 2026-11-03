@@ -79,7 +79,7 @@ const Home = () => {
                 {previews.map(({to, titleKey, render}) => (
                     <section key={to} aria-label={t(titleKey)} className="min-w-0">
                         <Button as={Link} to={to} tone="primary" size="lg" dark={dark}
-                                className="relative mb-4 w-full px-12 py-3 text-xl font-semibold">
+                                className="relative mb-4 w-full px-10 py-3 text-base font-semibold whitespace-normal! sm:px-12 sm:text-xl">
                             {t(titleKey)}
                             <Icon name="arrow_forward" size={24}
                                   className="absolute right-4 transition-transform group-hover:translate-x-1"/>

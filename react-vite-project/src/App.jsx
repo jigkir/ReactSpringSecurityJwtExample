@@ -21,7 +21,6 @@ import Applications from "./components/page/application/Applications.jsx";
 import Interviews from "./components/page/student/Interviews.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
-import {ACCOUNT_STATUS} from "./utils/AccountStatus.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
 import Users from "./components/page/Users.jsx";
 
@@ -89,7 +88,7 @@ function App() {
 
     return (
         <SessionProvider>
-            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
+            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-dvh`}>
                 <Routes>
                     <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
                                                 toggleDark={toggleDark}/>}>

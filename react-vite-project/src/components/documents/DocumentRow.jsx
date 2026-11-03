@@ -38,6 +38,12 @@ const STATUS_KEY = {
     REJECTED: "cvDocuments.statusRefused",
 };
 
+const MANAGER_STATUS_KEY = {
+    PENDING: "managerStatus.pending",
+    APPROVED: "managerStatus.approved",
+    REJECTED: "managerStatus.rejected",
+};
+
 const STATUS_ICON = {
     PENDING: "schedule",
     APPROVED: "check_circle",
@@ -54,22 +60,24 @@ export const getRowListClass = (dark, {preview = false, bordered = false} = {}) 
 export default function DocumentRow({
                                         doc, dark, status, leading, details, actions, busy = false,
                                         isOpen, onToggle, getUrl, preview = false, bordered = false,
+                                        audience = "student",
                                     }) {
     const {t} = useTranslation();
     const th = getCvDocumentsClasses(dark);
+    const statusKeys = audience === "manager" ? MANAGER_STATUS_KEY : STATUS_KEY;
     const previewKey = doc.docType ? `portfolio.actions.preview.${doc.docType}` : "cvDocuments.viewBtn";
     const viewLabel = isOpen ? t("cvPreview.closeBtn") : t(previewKey);
 
     const columns = status
-        ? "md:grid-cols-[minmax(12rem,1fr)_auto_auto]"
-        : "md:grid-cols-[minmax(12rem,1fr)_auto]";
-    const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 ${columns} md:items-center md:gap-6 transition-colors duration-150 ${
+        ? "@2xl:grid-cols-[minmax(12rem,1fr)_auto_auto]"
+        : "@2xl:grid-cols-[minmax(12rem,1fr)_auto]";
+    const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 ${columns} @2xl:items-center @2xl:gap-6 transition-colors duration-150 ${
         dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
     }`;
 
-    let itemClass;
-    if (preview) itemClass = `${th.card} overflow-hidden`;
-    else if (bordered) itemClass = `rounded-xl border-2 ${getStatusBorder(status, dark) ?? ""}`;
+    let itemClass = "@container";
+    if (preview) itemClass += ` ${th.card} overflow-hidden`;
+    else if (bordered) itemClass += ` rounded-xl border-2 ${getStatusBorder(status, dark) ?? ""}`;
 
     return (
         <li aria-busy={busy} className={itemClass}>
@@ -91,16 +99,16 @@ export default function DocumentRow({
 
                 {/* Status pill */}
                 {status && (
-                    <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
+                    <div className="flex flex-wrap items-center gap-2 @2xl:flex-col @2xl:items-start">
                         <span className={`${th.pillBase} ${th.statusPill(status)} gap-1`}>
                             <Icon name={STATUS_ICON[status] ?? STATUS_ICON.PENDING} size={14}/>
-                            {t(STATUS_KEY[status] ?? STATUS_KEY.PENDING)}
+                            {t(statusKeys[status] ?? statusKeys.PENDING)}
                         </span>
                     </div>
                 )}
 
                 {/* Actions: one vertical stack, every button the same width */}
-                <div className="flex flex-col items-stretch gap-2 md:min-w-44 md:justify-self-end">
+                <div className="flex flex-col items-stretch gap-2 @2xl:min-w-44 @2xl:justify-self-end">
                     {/* Preview stays available in every state (also while rejecting / deleting) */}
                     <Button tone="accent" lockTone dark={dark}
                             icon={isOpen ? "close" : "visibility"}

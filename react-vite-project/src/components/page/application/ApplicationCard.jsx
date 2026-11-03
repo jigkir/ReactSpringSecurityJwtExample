@@ -82,7 +82,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                                 </h3>
                                 {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
                             </div>
-                            <p className={s.description}>
+                            <p className={`${s.description} min-w-0 break-all`}>
                                 {student?.email}
                             </p>
                             {internshipTitle && (

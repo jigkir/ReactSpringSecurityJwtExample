@@ -217,6 +217,11 @@
     "marketing": "Marketing",
     "nursing": "Nursing"
   },
+  "managerStatus": {
+    "pending": "Pending review",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
   "cvDocuments": {
     "titleManager": "CVs to review",
     "uploadedOn": "uploaded on",
@@ -290,11 +295,11 @@
     "uploadN_one": "Upload {{count}} file",
     "uploadN_other": "Upload {{count}} files",
     "changeType": {
-      "btn": "Edit document",
+      "btn": "Edit the document",
       "ask": "Move this file to:",
       "aria": "New document type",
       "modeAria": "What do you want to do with this document?",
-      "modeMove": "Change type",
+      "modeMove": "Change the type",
       "modeReplace": "Replace file",
       "replaceFailed": "Unable to replace the document. Please try again.",
       "cvHint": "A CV must be approved by a manager before you can apply with it.",

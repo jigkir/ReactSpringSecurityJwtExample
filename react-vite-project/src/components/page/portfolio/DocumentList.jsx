@@ -162,7 +162,7 @@ export default function DocumentList({
         if (confirmKey === key) {
             return (
                 <>
-                    <span className={`${th.confirmText} md:text-right`}>{t("cvDocuments.hideAsk")}</span>
+                    <span className={`${th.confirmText} @2xl:text-right`}>{t("cvDocuments.hideAsk")}</span>
                     <Button tone="danger" dark={dark} icon="check_circle" disabled={busy} autoFocus
                             className={ROW_BTN} onClick={() => remove(doc)}>
                         {t("portfolio.actions.confirmDelete")}

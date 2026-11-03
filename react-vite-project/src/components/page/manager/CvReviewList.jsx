@@ -110,7 +110,7 @@ export default function CvReviewList({dark, preview = false}) {
         if (confirmId === doc.id) {
             return (
                 <>
-                    <span className={`${th.confirmText} md:text-right`}>
+                    <span className={`${th.confirmText} @2xl:text-right`}>
                         {t(isRejected ? "cvDocuments.editRefuseAsk" : "cvDocuments.refuseAsk")}
                     </span>
                     <AutoResizeTextarea
@@ -176,9 +176,9 @@ export default function CvReviewList({dark, preview = false}) {
             <select value={filters.status} onChange={(e) => filters.setStatus(e.target.value)}
                     className={statusSelectClass} aria-label={t("cvDocuments.statusAria")}>
                 <option value="ALL">{t("cvDocuments.allStatuses")}</option>
-                <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
-                <option value="PENDING">{t("cvDocuments.filterPending")}</option>
-                <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
+                <option value="REJECTED">{t("managerStatus.rejected")}</option>
+                <option value="PENDING">{t("managerStatus.pending")}</option>
+                <option value="APPROVED">{t("managerStatus.approved")}</option>
             </select>
             <select value={filters.discipline} onChange={(e) => filters.setDiscipline(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
@@ -211,6 +211,7 @@ export default function CvReviewList({dark, preview = false}) {
                         dark={dark}
                         preview={preview}
                         bordered={bordered}
+                        audience="manager"
                         status={status}
                         busy={busy}
                         isOpen={previews.has(doc.id)}

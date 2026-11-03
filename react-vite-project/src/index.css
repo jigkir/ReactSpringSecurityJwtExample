@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+    overflow-x: clip;
+}
+
 @theme {
     --animate-fade-in-down: fade-in-down 0.6s ease-out both;
 

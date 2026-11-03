@@ -102,7 +102,7 @@ export function getAuthClasses(dark) {
         ].join(" "),
 
         cardClass: [
-            "w-full max-w-md p-8 rounded-2xl shadow-lg",
+            "w-full max-w-md p-5 sm:p-8 rounded-2xl shadow-lg",
             BORDER,
             dark ? card.dark : card.light,
         ].join(" "),
@@ -297,7 +297,7 @@ export function getInternshipFormClasses(dark) {
         textarea: `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-gray-300 text-gray-900"}`,
         hint: `text-xs mt-1 ${dark ? "text-slate-400" : "text-gray-500"}`,
         grid2: "grid grid-cols-1 md:grid-cols-2 gap-4",
-        footer: `flex items-center justify-end space-x-3 pt-6 border-t mt-6 ${dark ? "border-slate-700" : "border-gray-200"}`,
+        footer: `flex flex-col-reverse gap-3 pt-6 border-t mt-6 sm:flex-row sm:items-center sm:justify-end ${dark ? "border-slate-700" : "border-gray-200"}`,
     };
 }
 
@@ -305,7 +305,7 @@ export function getInternshipFormClasses(dark) {
 
 // region Button
 export const CV_BUTTON_BASE =
-    "group inline-flex items-center justify-center gap-1.5 rounded-lg border whitespace-nowrap " +
+    "group inline-flex items-center justify-center gap-1.5 rounded-lg border " +
     "transition duration-200 not-disabled:active:scale-95 motion-reduce:not-disabled:active:scale-100 " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
     "disabled:opacity-40 disabled:cursor-not-allowed";
@@ -356,7 +356,7 @@ export function getCvDocumentsClasses(dark) {
         rejectionText: `mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`,
 
         error: `px-4 py-3 rounded-lg text-sm border ${dark ? "bg-red-900/30 border-red-700 text-red-300" : "bg-red-50 border-red-300 text-red-700"}`,
-        pillBase: "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap",
+        pillBase: "inline-flex max-w-full items-center rounded-full px-3 py-1 text-xs font-medium",
         pillPublic: dark ? "bg-amber-500/20 text-amber-200" : "bg-amber-100 text-amber-800",
         pillPrivate: dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700",
         confirmText: `text-sm ${dark ? "text-slate-300" : "text-gray-700"}`,

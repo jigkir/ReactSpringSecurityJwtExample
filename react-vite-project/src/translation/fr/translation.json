@@ -217,6 +217,11 @@
     "marketing": "Marketing",
     "nursing": "Soins infirmiers"
   },
+  "managerStatus": {
+    "pending": "En attente de validation",
+    "approved": "Approuvé",
+    "rejected": "Refusé"
+  },
   "cvDocuments": {
     "titleManager": "CV à valider",
     "uploadedOn": "déposé le",

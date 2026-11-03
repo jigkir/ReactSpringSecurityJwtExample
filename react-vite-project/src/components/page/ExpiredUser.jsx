@@ -36,7 +36,7 @@ function ExpiredUser({user}) {
     }
 
     return (
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-4">
+        <div className="flex-1 flex items-center justify-center p-4">
             <div
                 className={`max-w-md w-full border ${dark ? "bg-slate-900/60 border-slate-800" : "bg-indigo-500 border-indigo-400"} rounded-2xl p-8 text-center shadow-xl backdrop-blur-sm`}>
 

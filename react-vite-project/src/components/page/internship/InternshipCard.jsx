@@ -12,6 +12,12 @@ const STATUS_KEY_MAP = {
     REJECTED: "internshipCard.status.rejected",
 };
 
+const MANAGER_STATUS_KEY_MAP = {
+    PENDING: "managerStatus.pending",
+    APPROVED: "managerStatus.approved",
+    REJECTED: "managerStatus.rejected",
+};
+
 const STATUS_ICON = {
     PENDING: "schedule",
     APPROVED: "check_circle",
@@ -37,13 +43,15 @@ export default function InternshipCard({
                                            viewed = false,
                                            application = null,
                                            applicationCount,
-                                           showStatusBorder = false
+                                           showStatusBorder = false,
+                                           audience = "employer"
                                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark, !hideStatus && showStatusBorder ? internship.status : null);
+    const keyMap = audience === "manager" ? MANAGER_STATUS_KEY_MAP : STATUS_KEY_MAP;
 
-    const statusLabel = STATUS_KEY_MAP[internship.status]
-        ? t(STATUS_KEY_MAP[internship.status])
+    const statusLabel = keyMap[internship.status]
+        ? t(keyMap[internship.status])
         : internship.status;
 
     const skills = parseSkills(internship.requiredSkills);

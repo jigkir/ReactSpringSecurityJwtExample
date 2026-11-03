@@ -211,6 +211,7 @@ const ManagerInternships = ({preview = false}) => {
             internship={internship}
             dark={dark}
             showEmployer
+            audience="manager"
             showStatusBorder={filters.status !== "ALL"}
             footer={renderActions(internship)}
         />
