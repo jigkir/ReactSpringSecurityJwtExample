@@ -120,6 +120,7 @@ function App() {
                         <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
                             <Route path="/manager/cvs" element={<ManagerCv/>}/>
                             <Route path="/manager/internships" element={<ManagerInternships/>}/>
+                            <Route path="/users" element={<Users user={user}/>}/>
                         </Route>
 
                         {/* Employer */}
@@ -131,7 +132,6 @@ function App() {
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
                         <Route path="/expired" element={<ExpiredUser user={user}/>}/>
-                        <Route path="/users" element={<Users user={user}/>}/>
                     </Route>
                 </Routes>
             </div>
