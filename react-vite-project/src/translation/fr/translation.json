@@ -468,6 +468,30 @@
       "IN_PERSON": "En personne"
     }
   },
+
+  "studentInterviews": {
+    "title": "Mes entrevues",
+    "loading": "Chargement des entrevues...",
+    "loadError": "Impossible de charger les entrevues.",
+    "empty": "Vous n'avez aucune convocation d'entrevue pour le moment.",
+    "date": "Date et heure",
+    "invalidDate": "Date non disponible",
+    "type": "Type de rencontre",
+    "details": "Détails de la rencontre",
+    "message": "Message de l'employeur",
+    "openLink": "Rejoindre la rencontre",
+    "notProvided": "Non précisé",
+    "statuses": {
+      "upcoming": "À venir",
+      "past": "Passée",
+      "cancelled": "Annulée"
+    },
+    "types": {
+      "ONLINE": "En ligne",
+      "IN_PERSON": "En personne",
+      "PHONE": "Par téléphone"
+    }
+  },
   "viewApplication": {
     "loadError": "Impossible de charger les candidatures",
     "new": "Nouveau"

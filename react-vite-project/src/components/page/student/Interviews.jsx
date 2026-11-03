@@ -25,8 +25,8 @@ function sortInterviews(interviews) {
 
         if (groupA !== groupB) return groupA - groupB;
 
-        const dateA = new Date(a.scheduledAt).getTime() || 0;
-        const dateB = new Date(b.scheduledAt).getTime() || 0;
+        const dateA = new Date(a.interviewDate).getTime() || 0;
+        const dateB = new Date(b.interviewDate).getTime() || 0;
 
         return groupA === 0 ? dateA - dateB : dateB - dateA;
     });
@@ -110,7 +110,7 @@ function Interviews() {
                     )}
 
                     {!loading && !error && visibleInterviews.map(interview => {
-                        const date = new Date(interview.scheduledAt);
+                        const date = new Date(interview.interviewDate);
                         const validDate = !Number.isNaN(date.getTime());
                         const cancelled = isCancelled(interview);
                         const past = validDate && date.getTime() < Date.now()
