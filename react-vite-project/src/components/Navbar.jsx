@@ -13,7 +13,8 @@ import {useSession} from "../utils/useSession.js";
 const NAV_BY_ROLE = {
     STUDENT: [
         {to: "/portfolio", labelKey: "navbar.portfolio"},
-        {to: "/internship", labelKey: "navbar.internships"}
+        {to: "/internship", labelKey: "navbar.internships"},
+        {to: "/interviews", labelKey: "navbar.interviews"}
     ],
     MANAGER: [
         {to: "/manager/cvs", labelKey: "navbar.cv"},

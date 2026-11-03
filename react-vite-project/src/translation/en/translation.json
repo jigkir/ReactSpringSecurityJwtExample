@@ -81,7 +81,8 @@
     "newInternshipApplicationNotification": "{{amount}} new application(s) received",
     "notificationLoadError": "Unable to load notifications. They will refresh automatically.",
     "notificationMarkAsReadError": "Unable to mark notifications as read. Please try again.",
-    "pendingUserNotification": "{{amount}} user acces to review"
+    "pendingUserNotification": "{{amount}} user acces to review",
+    "interviews": "Interviews"
   },
   "managerPage": {
     "pageInfo": "Manager home page",

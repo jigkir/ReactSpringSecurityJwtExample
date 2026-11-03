@@ -81,7 +81,8 @@
     "newInternshipApplicationNotification": "{{amount}} nouvelle(s) candidature(s) reçue(s)",
     "notificationLoadError": "Impossible de charger les notifications. Elles s'actualiseront automatiquement.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues. Veuillez réessayer.",
-    "pendingUserNotification": "{{amount}} accès utilisateur à vérifier"
+    "pendingUserNotification": "{{amount}} accès utilisateur à vérifier",
+    "interviews": "Entrevues"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",
