@@ -12,6 +12,12 @@ const STATUS_KEY_MAP = {
     REJECTED: "internshipCard.status.rejected",
 };
 
+const MANAGER_STATUS_KEY_MAP = {
+    PENDING: "managerStatus.pending",
+    APPROVED: "managerStatus.approved",
+    REJECTED: "managerStatus.rejected",
+};
+
 const STATUS_ICON = {
     PENDING: "schedule",
     APPROVED: "check_circle",
@@ -24,26 +30,28 @@ const parseSkills = (raw) =>
         .map((skill) => skill.trim())
         .filter(Boolean);
 
-export default function InternshipCard({
-                                           internship,
-                                           OnDelete,
-                                           OnEdit,
-                                           footer,
-                                           bottomFooter,
-                                           dark,
-                                           hideStatus = false,
-                                           showEmployer = false,
-                                           showPreview = false,
-                                           viewed = false,
-                                           application = null,
-                                           applicationCount,
-                                           showStatusBorder = false
-                                       }) {
+function InternshipCard({
+                            internship,
+                            OnDelete,
+                            OnEdit,
+                            footer,
+                            bottomFooter,
+                            dark,
+                            hideStatus = false,
+                            showEmployer = false,
+                            showPreview = false,
+                            viewed = false,
+                            application = null,
+                            applicationCount,
+                            showStatusBorder = false,
+                            audience = "employer"
+                        }) {
     const {t} = useTranslation();
     const s = getInternshipCardClasses(dark, !hideStatus && showStatusBorder ? internship.status : null);
+    const keyMap = audience === "manager" ? MANAGER_STATUS_KEY_MAP : STATUS_KEY_MAP;
 
-    const statusLabel = STATUS_KEY_MAP[internship.status]
-        ? t(STATUS_KEY_MAP[internship.status])
+    const statusLabel = keyMap[internship.status]
+        ? t(keyMap[internship.status])
         : internship.status;
 
     const skills = parseSkills(internship.requiredSkills);
@@ -200,7 +208,8 @@ export default function InternshipCard({
                             <span className={countBadge}>
                                 <Icon name="send" size={18}/>
                                 <span>{t("internshipCard.applicationCount")}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-sky-400 text-slate-900" : "bg-sky-600 text-white"}`}>
+                                <span
+                                    className={`px-2 py-0.5 rounded-full text-xs font-bold ${dark ? "bg-sky-400 text-slate-900" : "bg-sky-600 text-white"}`}>
                                     {totalApplications}
                                 </span>
                             </span>
@@ -274,3 +283,5 @@ export default function InternshipCard({
         </div>
     );
 }
+
+export default InternshipCard;

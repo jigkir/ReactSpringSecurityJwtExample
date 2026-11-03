@@ -1,7 +1,8 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {useLocation} from 'react-router-dom';
+import {useLocation, useOutletContext} from 'react-router-dom';
 import {getNotifications, markNotificationsAsRead} from '../api/Api.jsx';
 import {usePolling} from "../../utils/usePolling.js";
+import {ACCOUNT_STATUS} from "../../utils/AccountStatus.js";
 
 const ROLE = {
     MANAGER: "MANAGER",
@@ -20,12 +21,15 @@ const NOTIFICATION_TYPE = {
     NEW_INTERNSHIP_OFFER: "NEW_INTERNSHIP_OFFER",
 
     NEW_INTERNSHIP_APPLICATION: "NEW_INTERNSHIP_APPLICATION",
+
+    STUDENT_ACCESS_REQUESTED:"STUDENT_ACCESS_REQUESTED"
 };
 
 const TARGET_TYPE = {
     CV: "CV",
     INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
     INTERNSHIP_APPLICATION: "INTERNSHIP_APPLICATION",
+    STUDENT_ACCOUNT: "STUDENT_ACCOUNT"
 };
 
 const PAGE = {
@@ -33,6 +37,7 @@ const PAGE = {
     STUDENT_INTERNSHIPS: "/internship",
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
+    MANAGER_USERS:"/users",
     EMPLOYER_INTERNSHIPS: "/internships",
     EMPLOYER_APPLICATIONS: "/applications",
 };
@@ -54,6 +59,13 @@ const NOTIFICATION_ITEMS = {
             labelKey: "navbar.internshipSubmittedForReviewNotification",
             to: PAGE.MANAGER_INTERNSHIPS
         },
+        {
+            id:"accountExpired",
+            notificationType: NOTIFICATION_TYPE.STUDENT_ACCESS_REQUESTED,
+            targetType: TARGET_TYPE.STUDENT_ACCOUNT,
+            labelKey: "navbar.pendingUserNotification",
+            to:  PAGE.MANAGER_USERS
+        }
     ],
     [ROLE.STUDENT]: [
         {
@@ -131,7 +143,7 @@ const NotificationsContext = createContext({
  * items: [{id, count, labelKey, to, notificationType, targetType}] — labels are translated by the consumer,
  * so they follow the language switch without refetching.
  */
-export function NotificationsProvider({user, children}) {
+export function NotificationsProvider({user, children, accountStatus}) {
     const {pathname} = useLocation();
     const role = normalizeRole(user);
     const userId = user?.id;
@@ -168,7 +180,7 @@ export function NotificationsProvider({user, children}) {
     }, [refresh, pathname]);
 
     // Keeps counts up to date while the user stays on the same page
-    usePolling(refresh, Boolean(userId));
+    usePolling(refresh, Boolean(userId) && accountStatus === ACCOUNT_STATUS.APPROVED);
 
     const items = useMemo(() => roleItems.map((item) => ({
         ...item,

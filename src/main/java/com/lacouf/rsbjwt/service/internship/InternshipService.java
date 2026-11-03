@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service.internship;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,7 @@ public class InternshipService {
         validateCompensation(internshipRequestDto.compensationAmount(), internshipRequestDto.compensationNegotiable());
     }
 
-    public void updateDetails(Internship internship, InternshipRequestDto internshipRequestDto) throws InvalidInternshipDateException, InvalidCompensationException {
+    public void updateDetails(Internship internship, InternshipRequestDto internshipRequestDto, AcademicSession session) throws InvalidInternshipDateException, InvalidCompensationException {
         LocalDate startDate = internshipRequestDto.startDate();
         LocalDate applicationDeadline = internshipRequestDto.applicationDeadline();
 
@@ -44,7 +45,8 @@ public class InternshipService {
                 internshipRequestDto.startDate(),
                 internshipRequestDto.applicationDeadline(),
                 internshipRequestDto.compensationAmount(),
-                internshipRequestDto.compensationNegotiable()
+                internshipRequestDto.compensationNegotiable(),
+                session
         );
     }
 

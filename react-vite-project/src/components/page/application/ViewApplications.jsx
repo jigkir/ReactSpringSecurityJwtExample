@@ -1,14 +1,18 @@
 import {useCallback, useEffect, useState} from "react";
-import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../../styles/Button.jsx";
 import {base64ToBlobUrl} from "../../../utils/documents.js";
 import {sortApplication} from "../../../utils/Sort.jsx";
+import {translateWarning} from "../../../utils/CommonFields.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
+import {useNewApplications} from "../../../utils/useNewApplications.js";
 
 function ViewApplications({user}) {
+    const {t} = useTranslation();
     const [applications, setApplications] = useState([]);
     const [internshipTitle, setInternshipTitle] = useState("");
     const {id} = useParams();
@@ -19,6 +23,7 @@ function ViewApplications({user}) {
     const Nid = parseInt(id, 10);
 
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
+    const {register, isNew, clear: clearNew} = useNewApplications();
 
     const {refresh} = useNotifications();
     const isLoggedIn = Boolean(user?.isLoggedIn);
@@ -46,14 +51,16 @@ function ViewApplications({user}) {
 
     const loadApplications = useCallback(async () => {
         try {
-            setApplications(sortApplication(await getApplications(), Nid));
+            const list = sortApplication(await getApplications(), Nid);
+            register(list);
+            setApplications(list);
             setError("");
         } catch {
             setError({key: "viewApplication.loadError"});
         } finally {
             setLoading(false);
         }
-    }, [Nid]);
+    }, [Nid, register]);
 
     useEffect(() => {
         if (isLoggedIn && allowed) void loadApplications();
@@ -69,27 +76,36 @@ function ViewApplications({user}) {
         );
     };
 
+    // Opening the CV marks the application as read on the server (and closes its notification),
+    // but the "New" badge stays until the invitation is sent or the page is left.
     const getUrl = useCallback(async (appId) => {
         const cv = await getApplicationCv(appId);
         if (!cv?.content) throw new Error("missing content");
-
-        // Optimistically update local state so the "New" sticker disappears instantly when viewed
-        setApplications((prevApps) =>
-            prevApps.map((app) =>
-                app.id === appId && app.internshipApplicationStatus === "UNREAD"
-                    ? {...app, internshipApplicationStatus: "READ"}
-                    : app
-            )
-        );
 
         void refresh();
 
         return base64ToBlobUrl(cv.content);
     }, [refresh]);
 
+    // Interview invitation sent: the badge goes away right now
+    const handleInterviewSent = useCallback((appId) => {
+        clearNew(appId);
+        void refresh();
+    }, [clearNew, refresh]);
+
     if (allowed === false) return <Navigate to="/internships" replace/>;
-    if (loading || allowed === null) return <div className="p-6 text-center">Loading...</div>;
-    if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
+
+    if (error) {
+        return (
+            <div className="p-6 text-center text-red-500" role="alert">
+                {translateWarning(t, error)}
+            </div>
+        );
+    }
+
+    if (loading || allowed === null) {
+        return <div className="p-6 text-center" aria-busy="true">{t("viewApplication.loading")}</div>;
+    }
 
     const hasItems = applications.length > 0;
 
@@ -98,7 +114,7 @@ function ViewApplications({user}) {
             {/* Header Section */}
             <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
                 <Button as={NavLink} to="/internships" tone="primary" dark={dark} icon="arrow_back" className="w-fit">
-                    Back to Internships
+                    {t("viewApplication.backBtn")}
                 </Button>
                 <h1 className={`text-4xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
                     {internshipTitle}
@@ -109,24 +125,24 @@ function ViewApplications({user}) {
             <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
                 {hasItems ? (
                     applications.map((application) => {
-                        const isNew = application.internshipApplicationStatus === "UNREAD";
                         const isPreviewOpen = openPreviewIds.includes(application.id);
 
                         return (
                             <ApplicationCard
                                 key={application.id}
                                 application={application}
-                                isNew={isNew}
+                                isNew={isNew(application)}
                                 dark={dark}
                                 isPreviewOpen={isPreviewOpen}
                                 onTogglePreview={() => togglePreview(application.id)}
                                 getUrl={getUrl}
+                                onInterviewSent={handleInterviewSent}
                             />
                         );
                     })
                 ) : (
                     <p className={`text-sm py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`}>
-                        No applications found for this internship.
+                        {t("viewApplication.empty")}
                     </p>
                 )}
             </div>

@@ -3,6 +3,7 @@ import { getUsers, reactivateUser, denyUser } from "../api/Api.jsx";
 import UserCard from "./UserCard.jsx";
 import { useOutletContext } from "react-router-dom";
 import { usePolling } from "../../utils/usePolling.js";
+import { getPostInternshipClasses } from "../../styles/AppStyles.jsx";
 
 const getStatusPriority = (status) => {
     const val = (status || "").toLowerCase();
@@ -16,6 +17,7 @@ function Users({ user }) {
     const [users, setUsers] = useState([]);
     const isLoggedIn = Boolean(user?.isLoggedIn);
     const { dark } = useOutletContext();
+    const s = getPostInternshipClasses(dark);
 
     const load = useCallback(async () => {
         try {
@@ -66,9 +68,9 @@ function Users({ user }) {
     }, [users]);
 
     return (
-        <div className="mt-3 space-y-3">
-            {sortedUsers.map((u) => {
-                return (
+        <div className={s.page}>
+            <div className={`${s.listSection} space-y-3`}>
+                {sortedUsers.map((u) => (
                     <UserCard
                         key={u.id}
                         firstname={u.firstName}
@@ -79,8 +81,8 @@ function Users({ user }) {
                         onReactivate={() => handleReactivate(u.id)}
                         onDeny={() => handleDeny(u.id)}
                     />
-                );
-            })}
+                ))}
+            </div>
         </div>
     );
 }

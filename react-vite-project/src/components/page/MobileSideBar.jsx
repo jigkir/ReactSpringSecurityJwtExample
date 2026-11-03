@@ -21,13 +21,13 @@ const MobileSidebar = forwardRef(function MobileSidebar({
         <>
             {/* Backdrop Overlay */}
             <div
-                className="fixed inset-0 h-screen w-screen bg-black/75 backdrop-blur-sm z-50 animate-fade-in"
+                className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 animate-fade-in"
                 onClick={onClose}
             />
 
             {/* Slide-out Panel */}
             <div ref={ref}
-                 className={`fixed inset-y-0 left-0  w-[50vw] z-50 shadow-2xl flex flex-col overflow-hidden animate-slide-in ${dark ? "bg-blue-950" : "bg-violet-100"}`}>
+                 className={`fixed inset-y-0 left-0 w-[80vw] max-w-xs z-50 shadow-2xl flex flex-col overflow-hidden animate-slide-in ${dark ? "bg-blue-950" : "bg-violet-100"}`}>
                 {/* Header inside side menu */}
                 <div
                     className={`flex items-center justify-between pb-4 mb-4 -mx-1 -mt-1 pl-5 pt-4 ${dark ? "bg-slate-800/95" : "bg-indigo-600"}`}>
@@ -53,7 +53,7 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                     <button
                         onClick={onClose}
                         className="p-1.5 rounded-lg text-red-600"
-                        aria-label="Close menu"
+                        aria-label={t("navbar.closeMenu")}
                     >
                         <Icon name="close" size={24}/>
                     </button>
@@ -76,7 +76,7 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                     {isLoggedIn && isAccessGranted && (
                         <div className={`pt-10`}>
                             <select
-                                value={selectedSession.name}
+                                value={selectedSession?.name ?? ""}
                                 onChange={(e) => {
                                     const matchedSession = sessions.find(s => s.name === e.target.value);
                                     setSelectedSession(matchedSession);

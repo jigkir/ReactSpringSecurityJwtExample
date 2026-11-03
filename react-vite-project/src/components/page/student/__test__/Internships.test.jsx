@@ -116,6 +116,17 @@ describe("StudentInternships displays available internship offers", () => {
         expect(titles[1]).toHaveTextContent("Développeur Java");
     });
 
+    it("shouldShowLoadingMessageWhileInternshipsLoad", () => {
+        // Arrange
+        getStudentInternships.mockReturnValue(new Promise(() => {}));
+
+        // Act
+        renderStudentInternships();
+
+        // Assert
+        expect(screen.getByText(i18n.t("studentInternship.loading"))).toBeInTheDocument();
+    });
+
     it("shouldShowEmptyMessageWhenNoInternshipsExist", async () => {
         // Arrange
         getStudentInternships.mockResolvedValue([]);
@@ -124,9 +135,7 @@ describe("StudentInternships displays available internship offers", () => {
         renderStudentInternships();
 
         // Assert
-        expect(await screen.findByText(
-            "No internships are currently available."
-        )).toBeInTheDocument();
+        expect(await screen.findByText(i18n.t("studentInternship.empty"))).toBeInTheDocument();
     });
 
     it("shouldShowErrorWhenInternshipsFailToLoad", async () => {
@@ -137,9 +146,7 @@ describe("StudentInternships displays available internship offers", () => {
         renderStudentInternships();
 
         // Assert
-        expect(await screen.findByText(
-            "Failed to load internships."
-        )).toBeInTheDocument();
+        expect(await screen.findByText(i18n.t("studentInternship.loadError"))).toBeInTheDocument();
     });
 });
 

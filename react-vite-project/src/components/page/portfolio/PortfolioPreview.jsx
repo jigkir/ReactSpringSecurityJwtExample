@@ -6,7 +6,9 @@
 import {useOutletContext} from 'react-router-dom';
 import DocumentList from './DocumentList.jsx';
 
-export default function PortfolioPreview() {
+function PortfolioPreview() {
     const {dark} = useOutletContext();
     return <DocumentList type="CV" dark={dark} preview/>;
 }
+
+export default PortfolioPreview;

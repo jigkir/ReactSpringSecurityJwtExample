@@ -163,8 +163,11 @@ export async function rejectCv(cvId, comment) {
 // endregion
 
 // region Internship
-export async function getEmployerInternships() {
-    const response = await fetcher(`employer/internships`, {});
+// Without a session, the backend returns the offers of the current session
+const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
+
+export async function getEmployerInternships(sessionId) {
+    const response = await fetcher(withSession("employer/internships", sessionId), {});
     return handleResponse(response);
 }
 
@@ -243,8 +246,8 @@ export async function updateApplicationCV(applicationId, cvId, coverLetterId, tr
 
 // region Manager internships
 // Returns InternshipResponseDto[] (ALL statuses: pending, approved, rejected)
-export async function getManagerInternships() {
-    const response = await fetcher("manager/internships", {method: "GET"});
+export async function getManagerInternships(sessionId) {
+    const response = await fetcher(withSession("manager/internships", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 
@@ -398,16 +401,16 @@ export async function checkUserStatus() {
     return handleResponse(await fetcher("users/status", {method: "GET"}));
 }
 
-export async function getUsers(){
-    return handleResponse(await fetcher("manager/students",{method: "GET"}));
+export async function getUsers() {
+    return handleResponse(await fetcher("manager/students", {method: "GET"}));
 }
 
-export async function reactivateUser(studentId){
-    return handleResponse(await fetcher(`manager/students/${studentId}/reactivate`, {method:"PUT"}));
+export async function reactivateUser(studentId) {
+    return handleResponse(await fetcher(`manager/students/${studentId}/reactivate`, {method: "PUT"}));
 }
 
-export async function denyUser(studentId){
-    return handleResponse(await fetcher(`manager/students/${studentId}/deny`, {method:"PUT"}));
+export async function denyUser(studentId) {
+    return handleResponse(await fetcher(`manager/students/${studentId}/deny`, {method: "PUT"}));
 }
 
 //endregion

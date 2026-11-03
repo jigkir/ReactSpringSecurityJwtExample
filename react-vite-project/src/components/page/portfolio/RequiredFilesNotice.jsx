@@ -10,7 +10,7 @@
 import {useTranslation} from 'react-i18next';
 import Icon from '../../../styles/Icon.jsx';
 
-export default function RequiredFilesNotice({dark}) {
+function RequiredFilesNotice({dark}) {
     const {t} = useTranslation();
     const muted = dark ? "text-slate-300" : "text-gray-700";
 
@@ -28,7 +28,8 @@ export default function RequiredFilesNotice({dark}) {
 
             <div className="grid gap-3 md:grid-cols-2">
                 {/* Mandatory */}
-                <div className={`rounded-lg border p-3 ${dark ? "border-red-500/40 bg-red-500/10" : "border-red-200 bg-red-50"}`}>
+                <div
+                    className={`rounded-lg border p-3 ${dark ? "border-red-500/40 bg-red-500/10" : "border-red-200 bg-red-50"}`}>
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                         {t("portfolio.onboarding.requiredLabel")}
                     </p>
@@ -37,7 +38,8 @@ export default function RequiredFilesNotice({dark}) {
                 </div>
 
                 {/* Optional */}
-                <div className={`rounded-lg border p-3 ${dark ? "border-slate-600 bg-slate-700/40" : "border-gray-200 bg-white"}`}>
+                <div
+                    className={`rounded-lg border p-3 ${dark ? "border-slate-600 bg-slate-700/40" : "border-gray-200 bg-white"}`}>
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-slate-300" : "text-gray-600"}`}>
                         {t("portfolio.onboarding.optionalLabel")}
                     </p>
@@ -51,3 +53,5 @@ export default function RequiredFilesNotice({dark}) {
         </section>
     );
 }
+
+export default RequiredFilesNotice;

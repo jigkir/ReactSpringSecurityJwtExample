@@ -4,6 +4,7 @@ import {BrowserRouter, MemoryRouter} from 'react-router-dom';
 import {NotificationsProvider, useNotifications} from '../NotificationsProvider';
 import * as api from '../../api/Api.jsx';
 import {REFRESH_INTERVAL_MS} from "../../../utils/usePolling.js";
+import {ACCOUNT_STATUS} from "../../../utils/AccountStatus.js";
 
 vi.mock('../../api/Api.jsx', () => ({
     getNotifications: vi.fn(),
@@ -133,7 +134,7 @@ function NewInternshipApplicationNotificationDisplay() {
 
 const renderEmployerNotificationsAt = (path = '/') => render(
     <MemoryRouter initialEntries={[path]}>
-        <NotificationsProvider user={EMPLOYER}>
+        <NotificationsProvider user={EMPLOYER} accountStatus={ACCOUNT_STATUS.APPROVED}>
             <NewInternshipApplicationNotificationDisplay/>
         </NotificationsProvider>
     </MemoryRouter>

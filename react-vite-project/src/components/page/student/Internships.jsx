@@ -165,16 +165,16 @@ function StudentInternships({preview = false}) {
 
     const list = (
         <div className={s.scrollArea}>
-            {loading && (<p className={s.loadingText}>
-                Loading internships...
+            {loading && (<p className={s.loadingText} aria-busy="true">
+                {t("studentInternship.loading")}
             </p>)}
 
-            {error && (<p className={s.errorText}>
-                Failed to load internships.
+            {error && (<p className={s.errorText} role="alert">
+                {t("studentInternship.loadError")}
             </p>)}
 
             {!loading && !error && internships.length === 0 && (<p className={s.emptyText}>
-                No internships are currently available.
+                {t("studentInternship.empty")}
             </p>)}
 
             {!loading && !error && internships.length > 0 && visible.length === 0 && (

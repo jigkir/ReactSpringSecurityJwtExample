@@ -7,6 +7,7 @@ import {
     getEmployerInterviewsByApplicationId,
     getEmployerInternships
 } from '../../../api/Api.jsx';
+import {SessionProvider} from '../../../../utils/SessionContext.jsx';
 
 vi.mock('../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
@@ -39,7 +40,9 @@ vi.mock('react-i18next', () => ({
 
 const MockApplications = ({user = {isLoggedIn: true}}) => (
     <BrowserRouter>
-        <Applications user={user}/>
+        <SessionProvider>
+            <Applications user={user}/>
+        </SessionProvider>
     </BrowserRouter>
 );
 
@@ -88,7 +91,8 @@ beforeEach(() => {
 describe('Applications page loading and errors', () => {
     it('shouldShowLoadingStateInitially', () => {
         // Arrange
-        getApplications.mockReturnValue(new Promise(() => {}));
+        getApplications.mockReturnValue(new Promise(() => {
+        }));
         getEmployerInternships.mockResolvedValue([]);
 
         // Act
@@ -295,7 +299,7 @@ describe('Applications page filters', () => {
 });
 
 describe('Applications page CV preview', () => {
-    it('shouldLoadCvAndMarkApplicationAsReadWhenPreviewIsOpened', async () => {
+    it('shouldLoadCvAndKeepNewBadgeWhileOnThePageWhenPreviewIsOpened', async () => {
         // Arrange
         getApplicationCv.mockResolvedValue({content: 'base64'});
         await renderLoaded([bob], INTERNSHIPS);
@@ -303,13 +307,26 @@ describe('Applications page CV preview', () => {
         expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
 
         // Act
-        fireEvent.click(within(dataSection).getByRole('button', {name: 'cvDocuments.viewBtn'}));
+        fireEvent.click(within(dataSection).getByRole('button', {name: 'cvDocuments.viewCVBtn'}));
 
         // Assert
         await waitFor(() => expect(getApplicationCv).toHaveBeenCalledWith(2));
-        await waitFor(() => {
-            expect(screen.queryByText('viewApplication.new')).not.toBeInTheDocument();
-        });
-        expect(screen.queryByText('applicationsPage.unreadCount')).not.toBeInTheDocument();
+        expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
+        expect(screen.getByText('applicationsPage.unreadCount')).toBeInTheDocument();
+    });
+
+    it('shouldKeepNewBadgeEvenWhenServerReportsTheApplicationAsReadAfterPreview', async () => {
+        // Arrange: first load is UNREAD
+        getApplicationCv.mockResolvedValue({content: 'base64'});
+        await renderLoaded([bob], INTERNSHIPS);
+        const dataSection = await screen.findByRole('region', {name: 'Data Intern'});
+
+        // Act: the page was already rendered with the frozen "new" state, a later refresh says READ
+        getApplications.mockResolvedValue([{...bob, internshipApplicationStatus: 'READ'}]);
+        fireEvent.click(within(dataSection).getByRole('button', {name: 'cvDocuments.viewCVBtn'}));
+        await waitFor(() => expect(getApplicationCv).toHaveBeenCalledWith(2));
+
+        // Assert
+        expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
     });
 });

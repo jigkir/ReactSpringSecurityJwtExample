@@ -5,7 +5,9 @@
  * - One section per internship (title + number of applications, unread count).
  * - A dropdown lets the employer pick which internship to look at ("All internships" by default).
  * - Search by student / email / CV name.
- * - Previewing a CV marks the application as read (same behaviour as ViewApplications).
+ * - "New" badge: frozen while the employer is on the page (previewing a CV does not remove it).
+ *   It is removed when the interview invitation is sent, and when the page is left
+ *   (see useNewApplications).
  * Access control: <RequireRole roles={["EMPLOYER"]}/> in App.jsx + backend.
  */
 
@@ -22,14 +24,13 @@ import {matchesSearch, toNum} from '../../../utils/Sort.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
 import {useSession} from "../../../utils/useSession.js";
+import {useNewApplications} from "../../../utils/useNewApplications.js";
 
 const ALL = "ALL";
 
-const isUnread = (a) => a.internshipApplicationStatus === "UNREAD";
-
-// Unread first, then newest (highest id) first
-const compareApplications = (a, b) =>
-    Number(isUnread(b)) - Number(isUnread(a)) || (toNum(b.id) ?? 0) - (toNum(a.id) ?? 0);
+// New first (state frozen at first appearance), then newest (highest id) first
+const compareApplications = (isNew) => (a, b) =>
+    Number(isNew(b)) - Number(isNew(a)) || (toNum(b.id) ?? 0) - (toNum(a.id) ?? 0);
 
 function Applications({user}) {
     const {dark} = useOutletContext();
@@ -39,6 +40,7 @@ function Applications({user}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const { selectedSession } = useSession();
+    const {register, isNew: isNewApp, clear: clearNew, version: newVersion} = useNewApplications();
 
     const [applications, setApplications] = useState(null); // null = loading
     const [internships, setInternships] = useState([]);
@@ -80,6 +82,10 @@ function Applications({user}) {
 
     const sessionFilteredApps = useMemo(() => {
         if (!applications) return [];
+
+        // Freeze the "new" state the first time an application is seen
+        register(applications);
+
         if (selectedSession?.startDate && selectedSession?.endDate) {
             const start = new Date(selectedSession.startDate).getTime();
             const end = new Date(selectedSession.endDate).getTime();
@@ -92,13 +98,13 @@ function Applications({user}) {
             });
         }
         return applications;
-    }, [applications, selectedSession]);
+    }, [applications, selectedSession, register]);
 
     // One group per internship that has at least one application: [{id, title, apps, unread}]
     const groups = useMemo(() => {
-        if (!sessionFilteredApps) return []; // <-- Changed from applications to sessionFilteredApps
+        if (!sessionFilteredApps) return [];
         const byInternship = new Map();
-        for (const app of sessionFilteredApps) { // <-- Changed here too
+        for (const app of sessionFilteredApps) {
             if (!byInternship.has(app.internshipId)) byInternship.set(app.internshipId, []);
             byInternship.get(app.internshipId).push(app);
         }
@@ -107,11 +113,11 @@ function Applications({user}) {
                 id,
                 title: titleOf(apps[0]),
                 total: apps.length,
-                unread: apps.filter(isUnread).length,
+                unread: apps.filter(isNewApp).length,
                 apps,
             }))
             .sort((a, b) => Number(b.unread > 0) - Number(a.unread > 0) || a.title.localeCompare(b.title));
-    }, [sessionFilteredApps, titleOf]);
+    }, [sessionFilteredApps, titleOf, isNewApp, newVersion]);
 
     // Apply the internship filter + search, then drop empty groups
     const visibleGroups = useMemo(() => groups
@@ -123,25 +129,30 @@ function Applications({user}) {
                     [a.student?.firstName, a.student?.lastName, a.student?.email, a.cvFileName],
                     search,
                 ))
-                .sort(compareApplications),
+                .sort(compareApplications(isNewApp)),
         }))
         .filter((g) => g.apps.length > 0),
-    [groups, internshipFilter, search]);
+    [groups, internshipFilter, search, isNewApp, newVersion]);
 
     const togglePreview = (id) =>
         setOpenPreviewIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
 
+    // Opening the CV marks the application as read on the server (and closes its notification),
+    // but the "New" badge stays until the invitation is sent or the page is left.
     const getUrl = useCallback(async (appId) => {
         const cv = await getApplicationCv(appId);
         if (!cv?.content) throw new Error("missing content");
 
-        // Optimistic update: the "New" sticker disappears as soon as the CV is viewed
-        setApplications((prev) => prev?.map((app) =>
-            app.id === appId && isUnread(app) ? {...app, internshipApplicationStatus: "READ"} : app));
         void refresh();
 
         return base64ToBlobUrl(cv.content);
     }, [refresh]);
+
+    // Interview invitation sent: the badge goes away right now
+    const handleInterviewSent = useCallback((appId) => {
+        clearNew(appId);
+        void refresh();
+    }, [clearNew, refresh]);
 
     const headerText = dark ? "text-white" : "text-gray-900";
     const mutedText = dark ? "text-slate-400" : "text-gray-500";
@@ -186,11 +197,12 @@ function Applications({user}) {
                     <ApplicationCard
                         key={application.id}
                         application={application}
-                        isNew={isUnread(application)}
+                        isNew={isNewApp(application)}
                         dark={dark}
                         isPreviewOpen={openPreviewIds.includes(application.id)}
                         onTogglePreview={() => togglePreview(application.id)}
                         getUrl={getUrl}
+                        onInterviewSent={handleInterviewSent}
                     />
                 ))}
             </section>

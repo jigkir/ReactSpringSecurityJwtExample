@@ -46,7 +46,7 @@ const getUrl = async (id) => blobUrlFromFile(await getManagerCvFile(id));
 const statusOf = (doc) => doc.status ?? "PENDING";
 const isPending = (doc) => statusOf(doc) === "PENDING";
 
-export default function CvReviewList({dark, preview = false}) {
+function CvReviewList({dark, preview = false}) {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const th = getCvDocumentsClasses(dark);
@@ -110,7 +110,7 @@ export default function CvReviewList({dark, preview = false}) {
         if (confirmId === doc.id) {
             return (
                 <>
-                    <span className={`${th.confirmText} md:text-right`}>
+                    <span className={`${th.confirmText} @2xl:text-right`}>
                         {t(isRejected ? "cvDocuments.editRefuseAsk" : "cvDocuments.refuseAsk")}
                     </span>
                     <AutoResizeTextarea
@@ -164,7 +164,8 @@ export default function CvReviewList({dark, preview = false}) {
     // ── Toolbar (full page only, once the list is loaded) ─────────────────────
 
     const toolbar = !preview && docs !== null && !failed && (
-        <div className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+        <div
+            className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
             <SearchInput
                 dark={dark}
                 value={filters.search}
@@ -176,9 +177,9 @@ export default function CvReviewList({dark, preview = false}) {
             <select value={filters.status} onChange={(e) => filters.setStatus(e.target.value)}
                     className={statusSelectClass} aria-label={t("cvDocuments.statusAria")}>
                 <option value="ALL">{t("cvDocuments.allStatuses")}</option>
-                <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
-                <option value="PENDING">{t("cvDocuments.filterPending")}</option>
-                <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
+                <option value="REJECTED">{t("managerStatus.rejected")}</option>
+                <option value="PENDING">{t("managerStatus.pending")}</option>
+                <option value="APPROVED">{t("managerStatus.approved")}</option>
             </select>
             <select value={filters.discipline} onChange={(e) => filters.setDiscipline(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
@@ -207,10 +208,11 @@ export default function CvReviewList({dark, preview = false}) {
                 return (
                     <DocumentRow
                         key={doc.id}
-                        doc={doc}
+                        doc={{...doc, docType: "CV"}}
                         dark={dark}
                         preview={preview}
                         bordered={bordered}
+                        audience="manager"
                         status={status}
                         busy={busy}
                         isOpen={previews.has(doc.id)}
@@ -254,3 +256,5 @@ export default function CvReviewList({dark, preview = false}) {
         </DocumentListShell>
     );
 }
+
+export default CvReviewList;

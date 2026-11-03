@@ -25,63 +25,61 @@ const MESSAGE_MIN = 2;
 const MESSAGE_MAX = 500;
 const DETAILS_MAX = 255;
 
+const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
-function buildPayload(formData, internship) {
+function buildPayload(formData, interview) {
     const tomorrow = getTomorrow();
     const isPastDate = (value, original) => value < tomorrow && value !== original;
 
     const message = formData.message.trim();
     const meetingDetails = formData.meetingDetails.trim();
 
-    if (isPastDate(formData.interviewDate, internship?.interviewDate)) {
-        return {error: {key: "internshipModal.errorDate"}};
+    if (isPastDate(formData.interviewDate, interview?.interviewDate)) {
+        return {error: {key: "interview.errorDate"}};
     }
 
-    if (isPastDate(MEETINGTYPE.includes(formData.meetingType))) {
-        return {error: {key: "internshipModal.errorMeetingType"}};
+    if (!MEETINGTYPE.includes(formData.meetingType)) {
+        return {error: {key: "interview.errorMeetingType"}};
     }
 
     if (message.length < MESSAGE_MIN || meetingDetails.length < 1) {
-        return {error: {key: "internshipModal.errorTooShort"}};
+        return {error: {key: "interview.errorTooShort"}};
     }
 
     if (message.length > MESSAGE_MAX || meetingDetails.length > DETAILS_MAX) {
-        return {error: {key: "internshipModal.errorTooLong"}};
+        return {error: {key: "interview.errorTooLong"}};
     }
 
     return {
         payload: {
-            message: message,
+            message,
             interviewDate: formData.interviewDate,
             meetingType: formData.meetingType,
-            meetingDetails: meetingDetails,
+            meetingDetails,
         },
     };
 }
 
-const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
-
-function InterviewPicker({application = null, dark, onClose, onSendOffer, interview}) {
+function InterviewPicker({dark, onClose, onSendOffer, interview}) {
     const s = getInternshipFormClasses(dark);
     const {t} = useTranslation();
     const [error, setError] = useState(null);
-    const tomorrow = getTomorrow();
-    const [formData, setFormData] = useState(toForm(interview));
-    const minDate = tomorrow;
-    const isEdit = useState(interview !== undefined && interview != null);
+    const minDate = getTomorrow();
+    const [formData, setFormData] = useState(() => toForm(interview));
+    const isEdit = Boolean(interview);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
 
-        const {error: validationError, payload} = buildPayload(formData, application);
+        const {error: validationError, payload} = buildPayload(formData, interview);
         if (validationError) return setError(validationError);
 
         const result = await onSendOffer(payload);
 
         // Failure: keep everything the user typed so nothing is lost
-        if (!result?.success) return setError(result?.message || {key: "postInternship.createError"});
+        if (!result?.success) return setError(result?.message || {key: "postInternship.createGenericError"});
 
         // Success: close (the parent unmounts the form, which resets it)
         onClose();
@@ -121,7 +119,6 @@ function InterviewPicker({application = null, dark, onClose, onSendOffer, interv
                             min={minDate} onChange={handleChange}
                             className={s.input} required
                         />
-
                     </Field>
                 </div>
 
@@ -149,16 +146,17 @@ function InterviewPicker({application = null, dark, onClose, onSendOffer, interv
 
                 {/* Footer */}
                 <div className={s.footer}>
-                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}>
+                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}
+                            className="w-full sm:w-auto">
                         {t("interview.cancelBtn")}
                     </Button>
-                    <Button type="submit" tone="primary" size="lg" dark={dark}>
+                    <Button type="submit" tone="primary" size="lg" dark={dark} className="w-full sm:w-auto">
                         {isEdit ? t("interview.saveChanges") : t("interview.submitBtn")}
                     </Button>
                 </div>
             </form>
         </section>
-    )
+    );
 }
 
 export default InterviewPicker;

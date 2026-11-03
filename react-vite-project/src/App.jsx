@@ -21,7 +21,6 @@ import Applications from "./components/page/application/Applications.jsx";
 import Interviews from "./components/page/student/Interviews.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
-import {ACCOUNT_STATUS} from "./utils/AccountStatus.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
 import Users from "./components/page/Users.jsx";
 
@@ -85,11 +84,11 @@ function App() {
     }, [user?.email, fetchStatus]);
 
     // Keep checking until access is granted: the manager can still reactivate a refused account
-    usePolling(fetchStatus, Boolean(user?.email) && accountStatus !== ACCOUNT_STATUS.APPROVED);
+    usePolling(fetchStatus, Boolean(user?.email));
 
     return (
         <SessionProvider>
-            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
+            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-dvh`}>
                 <Routes>
                     <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
                                                 toggleDark={toggleDark}/>}>
@@ -120,6 +119,7 @@ function App() {
                         <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
                             <Route path="/manager/cvs" element={<ManagerCv/>}/>
                             <Route path="/manager/internships" element={<ManagerInternships/>}/>
+                            <Route path="/users" element={<Users user={user}/>}/>
                         </Route>
 
                         {/* Employer */}
@@ -131,7 +131,6 @@ function App() {
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
                         <Route path="/expired" element={<ExpiredUser user={user}/>}/>
-                        <Route path="/users" element={<Users user={user}/>}/>
                     </Route>
                 </Routes>
             </div>

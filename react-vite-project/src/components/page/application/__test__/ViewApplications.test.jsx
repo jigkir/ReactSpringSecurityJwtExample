@@ -11,9 +11,11 @@ vi.mock('../../../api/Api.jsx', () => ({
     getEmployerInterviewsByApplicationId: vi.fn(),
     createInterview: vi.fn(),
     updateInterview: vi.fn(),
+    getApplicationCoverLetter: vi.fn(),
+    getApplicationTranscript: vi.fn(),
 }));
 
-vi.mock('../../../utils/usePolling.js', () => ({
+vi.mock('../../../../utils/usePolling.js', () => ({
     usePolling: vi.fn()
 }));
 
@@ -27,6 +29,7 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
+// t returns the key, so assertions check translation keys, not any language
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({t: (key) => key})
 }));
@@ -51,10 +54,10 @@ describe('ViewApplications Component', () => {
 
         render(<MockViewApplications user={loggedInUser}/>);
 
-        expect(screen.getByText('Loading...')).toBeInTheDocument();
+        expect(screen.getByText('viewApplication.loading')).toBeInTheDocument();
     });
 
-    it('renders applications list and internship title successfully', async () => {
+    it('renders applications list, internship title and the translated back button', async () => {
         const mockInternships = [{id: 10, title: 'Software Engineering Intern', status: 'APPROVED'}];
         const mockApplications = [{
             id: 1,
@@ -74,6 +77,7 @@ describe('ViewApplications Component', () => {
             expect(screen.getByText('Alice Smith')).toBeInTheDocument();
             expect(screen.getByText('cv_alice.pdf')).toBeInTheDocument();
         });
+        expect(screen.getByText('viewApplication.backBtn')).toBeInTheDocument();
     });
 
     it('renders empty message when no applications are found', async () => {
@@ -83,8 +87,27 @@ describe('ViewApplications Component', () => {
         render(<MockViewApplications user={loggedInUser}/>);
 
         await waitFor(() => {
-            expect(screen.getByText('No applications found for this internship.')).toBeInTheDocument();
+            expect(screen.getByText('viewApplication.empty')).toBeInTheDocument();
         });
+    });
+
+    it('shows the translated error instead of crashing when applications fail to load', async () => {
+        getEmployerInternships.mockResolvedValue([{id: 10, title: 'Internship X', status: 'APPROVED'}]);
+        getApplications.mockRejectedValue(new Error('boom'));
+
+        render(<MockViewApplications user={loggedInUser}/>);
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('viewApplication.loadError');
+    });
+
+    it('shows the translated error instead of loading forever when the internships fail to load', async () => {
+        getEmployerInternships.mockRejectedValue(new Error('boom'));
+        getApplications.mockResolvedValue([]);
+
+        render(<MockViewApplications user={loggedInUser}/>);
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('postInternship.loadError');
+        expect(screen.queryByText('viewApplication.loading')).not.toBeInTheDocument();
     });
 
     it('redirects to internships when the internship does not belong to the employer', async () => {
@@ -96,7 +119,7 @@ describe('ViewApplications Component', () => {
         await waitFor(() => {
             expect(window.location.pathname).toBe('/internships');
         });
-        expect(screen.queryByText('No applications found for this internship.')).not.toBeInTheDocument();
+        expect(screen.queryByText('viewApplication.empty')).not.toBeInTheDocument();
     });
 
     it('redirects to internships when the internship is not approved yet', async () => {

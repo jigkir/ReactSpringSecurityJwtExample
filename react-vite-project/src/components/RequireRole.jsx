@@ -13,7 +13,7 @@ import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
  * child routes. Without `context={ctx}`, children calling useOutletContext()
  * get `undefined` and crash.
  */
-export default function RequireRole({user, roles}) {
+function RequireRole({user, roles}) {
     const ctx = useOutletContext();
 
     if (!localStorage.getItem("token")) return <Navigate to="/login" replace/>;
@@ -28,3 +28,5 @@ export default function RequireRole({user, roles}) {
 
     return <Outlet context={ctx}/>;
 }
+
+export default RequireRole;

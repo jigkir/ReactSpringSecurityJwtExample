@@ -146,36 +146,19 @@ export function useInternshipFilters(list, appliedIds = null) {
     const [applied, setApplied] = useState("ALL");
     const [sort, setSort] = useState("NEWEST");
 
-    const {selectedSession} = useSession();
-
     // "Viewed" state of each offer the first time it appears. Lives as long as the page
     // (reset on page change), so previewing an offer never reorders the list.
     const viewedAtLoad = useRef(new Map());
 
-    const sessionFilteredList = useMemo(() => {
-        if (!list) return [];
-        if (selectedSession?.startDate && selectedSession?.endDate) {
-            const start = new Date(selectedSession.startDate).getTime();
-            const end = new Date(selectedSession.endDate).getTime();
-
-            return list.filter(item => {
-                if (!item.uploadedAt) return false;
-                const uploaded = new Date(item.uploadedAt).getTime();
-                return uploaded >= start && uploaded <= end;
-            });
-        }
-        return list;
-    }, [list, selectedSession]);
-
-    const disciplines = useMemo(() => getInternshipDisciplines(sessionFilteredList), [sessionFilteredList]);
+    const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
     const visible = useMemo(() => {
-        for (const i of sessionFilteredList ?? []) {
+        for (const i of list ?? []) {
             if (!viewedAtLoad.current.has(i.id)) viewedAtLoad.current.set(i.id, Boolean(i.viewed));
         }
-        return applyInternshipFilters(sessionFilteredList, {
+        return applyInternshipFilters(list, {
             search, status, discipline, sort, applied, appliedIds, viewedAtLoad: viewedAtLoad.current,
         });
-    }, [sessionFilteredList, search, status, discipline, sort, applied, appliedIds]);
+    }, [list, search, status, discipline, sort, applied, appliedIds]);
 
     return {
         search, setSearch, status, setStatus, discipline, setDiscipline, sort, setSort,

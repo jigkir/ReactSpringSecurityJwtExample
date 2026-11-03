@@ -276,16 +276,15 @@ public class StudentService {
                 .toList();
     }
 
-    public List<StudentInternshipResponseDto> getInternships(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
+    public List<StudentInternshipResponseDto> getInternships(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
 
         Set<Long> viewedInternshipIds = studentRepository.findViewedInternshipIds(student);
         Set<Long> hiddenInternshipIds = studentRepository.findHiddenInternshipIds(student);
         Set<Long> favoriteInternshipIds = studentRepository.findFavoriteInternshipIds(student);
         Set<Long> appliedInternshipIds = applicationRepository.findInternshipIdsByStudent(student);
 
-        List<Internship> internships = findInternships(student, session);
+        List<Internship> internships = findInternshipsOfCurrentAndUpcomingSessions(student);
         List<StudentInternshipResponseDto> internshipResponses = new ArrayList<>();
 
         for (Internship internship : internships) {
@@ -464,7 +463,7 @@ public class StudentService {
         if (documentId == null) {
             return null;
         }
-        
+
         return documentRepository.findByIdAndUser_Credentials_EmailAndVisibility(documentId, email, DocumentVisibility.VISIBLE)
                 .orElseThrow(() -> new DocumentNotFoundException(documentId));
     }
@@ -475,7 +474,10 @@ public class StudentService {
                 .orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }
 
-    private List<Internship> findInternships(Student student, AcademicSession session) {
-        return internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(student.getDiscipline(), session);
+    private List<Internship> findInternshipsOfCurrentAndUpcomingSessions(Student student) {
+        AcademicSession currentSession = academicSessionService.getCurrentSession();
+        LocalDate currentSessionStartDate = currentSession.getStartDate();
+
+        return internshipRepository.findByPostedBy_DisciplineAndSession_StartDateGreaterThanEqualAndDeletedIsFalse(student.getDiscipline(), currentSessionStartDate);
     }
 }

@@ -24,7 +24,7 @@ import {usePolling} from '../../../utils/usePolling.js';
 
 const TABS = ["ALL", ...DOC_TYPE_KEYS];
 
-export default function Portfolio() {
+function Portfolio() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {pageClass} = getAuthClasses(dark);
@@ -58,8 +58,8 @@ export default function Portfolio() {
     const tabLabel = (k) => t(k === "ALL" ? "portfolio.allTab" : DOC_TYPES[k].labelKey);
 
     return (
-        <div className={pageClass}>
-            <div className="w-full max-w-4xl flex flex-col gap-4">
+        <div className={`${pageClass} items-start`}>
+            <div className="w-full max-w-4xl min-w-0 flex flex-col gap-4">
                 <h1 className={`text-3xl font-bold ${dark ? "text-white" : "text-gray-900"}`}>
                     {t("portfolio.title")}
                 </h1>
@@ -94,3 +94,5 @@ export default function Portfolio() {
         </div>
     );
 }
+
+export default Portfolio;

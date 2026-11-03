@@ -3,9 +3,6 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
@@ -20,7 +17,6 @@ import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -558,7 +554,7 @@ public class StudentControllerTest {
         //Arrange
         InternshipResponseDto internship = new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
 
-        when(studentService.getInternships(STUDENT_EMAIL, null)).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
+        when(studentService.getInternships(STUDENT_EMAIL)).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
 
         //Act + Assert
         mockMvc.perform(get("/api/student/internship")
@@ -573,7 +569,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingInternshipsForNonExistentStudent() throws Exception {
         //Arrange
-        when(studentService.getInternships(STUDENT_EMAIL, null))
+        when(studentService.getInternships(STUDENT_EMAIL))
                 .thenThrow(new UserNotFoundException());
 
         //Act + Assert

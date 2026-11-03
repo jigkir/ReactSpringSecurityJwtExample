@@ -6,17 +6,23 @@ vi.mock('../../../api/Api.jsx', () => ({
     getEmployerInterviewsByApplicationId: vi.fn(),
     createInterview: vi.fn(),
     updateInterview: vi.fn(),
+    getApplicationCoverLetter: vi.fn(),
+    getApplicationTranscript: vi.fn(),
 }));
 
 vi.mock('../../../documents/PdfPreview.jsx', () => ({
-    default: () => <div data-testid="cv-preview">PdfPreview Component</div>
+    default: ({doc}) => <div data-testid="pdf-preview">{doc.fileName}</div>
 }));
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key) => {
             const translations = {
-                "viewApplication.new": "New", "cvPreview.closeBtn": "Close Preview", "cvDocuments.viewBtn": "View CV"
+                "viewApplication.new": "New",
+                "cvPreview.closeBtn": "Close Preview",
+                "cvDocuments.viewCVBtn": "View CV",
+                "applicationCard.coverLetter": "Cover letter",
+                "applicationCard.transcript": "Transcript",
             };
             return translations[key] || key;
         }
@@ -66,7 +72,14 @@ describe('ApplicationCard Component', () => {
         expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
         expect(screen.getByText('resume.pdf')).toBeInTheDocument();
         expect(screen.getByText('View CV')).toBeInTheDocument();
-        expect(screen.queryByTestId('cv-preview')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('pdf-preview')).not.toBeInTheDocument();
+    });
+
+    it('shows a translated placeholder when the application has no CV file name', async () => {
+        renderCard({application: {...mockApplication, cvFileName: undefined}});
+        await waitForInterviewLoad();
+
+        expect(screen.getByText('applicationCard.noCv')).toBeInTheDocument();
     });
 
     it('shows "New" badge when isNew is true', async () => {
@@ -90,7 +103,44 @@ describe('ApplicationCard Component', () => {
         await waitForInterviewLoad();
 
         expect(screen.getByText('Close Preview')).toBeInTheDocument();
-        expect(screen.getByTestId('cv-preview')).toBeInTheDocument();
+        expect(screen.getByTestId('pdf-preview')).toHaveTextContent('resume.pdf');
+    });
+
+    it('shows no cover letter or transcript button when the application has none', async () => {
+        renderCard();
+        await waitForInterviewLoad();
+
+        expect(screen.queryByText('Cover letter')).not.toBeInTheDocument();
+        expect(screen.queryByText('Transcript')).not.toBeInTheDocument();
+    });
+
+    it('shows exactly one cover letter button and previews the cover letter, not the CV', async () => {
+        renderCard({application: {...mockApplication, coverLetterId: 5, coverLetterFileName: 'letter.pdf'}});
+        await waitForInterviewLoad();
+
+        const coverButtons = screen.getAllByText('Cover letter');
+        expect(coverButtons).toHaveLength(1);
+
+        fireEvent.click(coverButtons[0]);
+
+        expect(screen.getByTestId('pdf-preview')).toHaveTextContent('letter.pdf');
+        expect(screen.getByText('Cover letter').closest('button')).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByText('View CV').closest('button')).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('opens one document preview at a time', async () => {
+        renderCard({application: {
+            ...mockApplication,
+            coverLetterId: 5, coverLetterFileName: 'letter.pdf',
+            transcriptId: 6, transcriptFileName: 'transcript.pdf',
+        }});
+        await waitForInterviewLoad();
+
+        fireEvent.click(screen.getByText('Cover letter'));
+        fireEvent.click(screen.getByText('Transcript'));
+
+        expect(screen.getAllByTestId('pdf-preview')).toHaveLength(1);
+        expect(screen.getByTestId('pdf-preview')).toHaveTextContent('transcript.pdf');
     });
 
     it('offers to schedule an interview when the application has none', async () => {

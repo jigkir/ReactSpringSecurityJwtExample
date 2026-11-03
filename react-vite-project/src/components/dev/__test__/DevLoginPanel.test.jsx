@@ -2,6 +2,7 @@ import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import DevLoginPanel, {roleHeader} from '../DevLoginPanel.jsx';
 import {getDevUsers} from '../../api/DevApi.jsx';
+import i18n from '../../../i18next.jsx';
 
 vi.mock('../../api/DevApi.jsx', () => ({
     getDevUsers: vi.fn(),
@@ -22,6 +23,10 @@ const MIXED_USERS = [
     {id: 6, email: 'bob@x.com', firstName: 'Bob', lastName: 'Baker', role: 'STUDENT', discipline: 'COMPUTER_SCIENCE'},
     {id: 7, email: 'emp2@x.com', firstName: 'Eva', lastName: 'Employer', role: 'EMPLOYER', discipline: 'COMPUTER_SCIENCE'},
 ];
+
+// Every visible text goes through i18n, so these tests survive any rewording of the translations
+const tr = (key) => i18n.t(key);
+const discipline = (key) => i18n.t(`disciplines.${key}`);
 
 const renderPanel = (onSelect = vi.fn()) => {
     render(
@@ -72,7 +77,7 @@ describe('DevLoginPanel loading and display', () => {
 
         renderPanel();
 
-        expect(screen.getByRole('region', {name: 'Mode Dev : remplir la connexion'})).toBeInTheDocument();
+        expect(screen.getByRole('region', {name: tr('dev.panelTitle')})).toBeInTheDocument();
         await screen.findByRole('combobox');
     });
 
@@ -83,7 +88,7 @@ describe('DevLoginPanel loading and display', () => {
 
         expect(await screen.findByRole('option', {name: 'Alex Tremblay'})).toBeInTheDocument();
         expect(screen.getByRole('option', {name: 'Sarah Lin'})).toBeInTheDocument();
-        expect(screen.getByRole('option', {name: '-- Sélectionnez un utilisateur --'})).toBeInTheDocument();
+        expect(screen.getByRole('option', {name: tr('dev.selectPlaceholder')})).toBeInTheDocument();
         expect(groupLabels()).toEqual([roleHeader('MANAGER'), roleHeader('STUDENT')]);
     });
 
@@ -92,7 +97,7 @@ describe('DevLoginPanel loading and display', () => {
 
         renderPanel();
 
-        expect(await screen.findByText('Aucun utilisateur fictif disponible.')).toBeInTheDocument();
+        expect(await screen.findByText(tr('dev.empty'))).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     });
 });
@@ -117,9 +122,9 @@ describe('DevLoginPanel grouping by role, sorted by discipline', () => {
 
         renderPanel();
 
-        expect(await screen.findByRole('option', {name: 'Amy Adams (Informatique)'})).toBeInTheDocument();
-        expect(screen.getByRole('option', {name: 'Zed Zimmer (Soins infirmiers)'})).toBeInTheDocument();
-        expect(screen.getByRole('option', {name: 'Emp Loyer (Génie civil)'})).toBeInTheDocument();
+        expect(await screen.findByRole('option', {name: `Amy Adams (${discipline('computer_science')})`})).toBeInTheDocument();
+        expect(screen.getByRole('option', {name: `Zed Zimmer (${discipline('nursing')})`})).toBeInTheDocument();
+        expect(screen.getByRole('option', {name: `Emp Loyer (${discipline('civil_engineering')})`})).toBeInTheDocument();
     });
 
     it('shouldKeepUsersOfTheSameDisciplineTogetherInsideARole', async () => {
@@ -131,9 +136,9 @@ describe('DevLoginPanel grouping by role, sorted by discipline', () => {
         const students = screen.getByRole('group', {name: roleHeader('STUDENT')});
         const names = Array.from(students.querySelectorAll('option')).map((o) => o.textContent);
         expect(names).toEqual([
-            'Amy Adams (Informatique)',
-            'Bob Baker (Informatique)',
-            'Zed Zimmer (Soins infirmiers)',
+            `Amy Adams (${discipline('computer_science')})`,
+            `Bob Baker (${discipline('computer_science')})`,
+            `Zed Zimmer (${discipline('nursing')})`,
         ]);
     });
 
@@ -145,14 +150,14 @@ describe('DevLoginPanel grouping by role, sorted by discipline', () => {
 
         const labels = screen.getAllByRole('option').map((o) => o.textContent);
         expect(labels).toEqual([
-            '-- Sélectionnez un utilisateur --',
+            tr('dev.selectPlaceholder'),
             'John Doe',
-            'Amy Adams (Informatique)',
-            'Bob Baker (Informatique)',
-            'Zed Zimmer (Soins infirmiers)',
-            'Teach Er (Marketing)',
-            'Emp Loyer (Génie civil)',
-            'Eva Employer (Informatique)',
+            `Amy Adams (${discipline('computer_science')})`,
+            `Bob Baker (${discipline('computer_science')})`,
+            `Zed Zimmer (${discipline('nursing')})`,
+            `Teach Er (${discipline('marketing')})`,
+            `Emp Loyer (${discipline('civil_engineering')})`,
+            `Eva Employer (${discipline('computer_science')})`,
         ]);
     });
 
@@ -218,8 +223,8 @@ describe('DevLoginPanel errors', () => {
 
         renderPanel();
 
-        expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de charger les utilisateurs fictifs.');
-        expect(screen.getByRole('button', {name: 'Réessayer'})).toBeInTheDocument();
+        expect(await screen.findByRole('alert')).toHaveTextContent(tr('dev.loadError'));
+        expect(screen.getByRole('button', {name: tr('dev.retryBtn')})).toBeInTheDocument();
     });
 
     it('shouldReloadUsersWhenRetryIsClicked', async () => {
@@ -227,7 +232,7 @@ describe('DevLoginPanel errors', () => {
             .mockRejectedValueOnce(new Error('boom'))
             .mockResolvedValueOnce(USERS);
         renderPanel();
-        fireEvent.click(await screen.findByRole('button', {name: 'Réessayer'}));
+        fireEvent.click(await screen.findByRole('button', {name: tr('dev.retryBtn')}));
 
         expect(await screen.findByRole('option', {name: 'Alex Tremblay'})).toBeInTheDocument();
 

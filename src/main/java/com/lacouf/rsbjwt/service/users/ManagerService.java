@@ -170,7 +170,7 @@ public class ManagerService {
         Internship internship = findInternship(internshipId);
         boolean wasAlreadyApproved = internship.getStatus() == ReviewStatus.APPROVED;
 
-        internshipService.updateDetails(internship, internshipRequestDto);
+        internshipService.updateDetails(internship, internshipRequestDto, academicSessionService.getSessionContaining(internshipRequestDto.startDate()));
         internship.approve();
         internshipRepository.save(internship);
 

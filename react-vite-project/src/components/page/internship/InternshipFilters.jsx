@@ -7,13 +7,13 @@ export {useInternshipFilters};
 
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
-export default function InternshipFilters({
-                                              dark,
-                                              filters,
-                                              showStatus = true,
-                                              showDiscipline = false,
-                                              showApplied = false
-                                          }) {
+function InternshipFilters({
+                               dark,
+                               filters,
+                               showStatus = true,
+                               showDiscipline = false,
+                               showApplied = false
+                           }) {
     const {t} = useTranslation();
     const {
         search, setSearch, status, setStatus, discipline, setDiscipline, disciplines = [],
@@ -94,3 +94,5 @@ export default function InternshipFilters({
         </div>
     );
 }
+
+export default InternshipFilters;

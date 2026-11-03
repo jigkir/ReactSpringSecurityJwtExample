@@ -34,11 +34,14 @@ import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
+import {useSession} from "../../../utils/useSession.js";
 
 const ManagerInternships = ({preview = false}) => {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
+    const {selectedSession} = useSession();
+    const sessionId = selectedSession?.id;
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -65,11 +68,11 @@ const ManagerInternships = ({preview = false}) => {
     const load = useCallback(async () => {
         setLoadFailed(false);
         try {
-            setInternships(await getManagerInternships());
+            setInternships(await getManagerInternships(sessionId));
         } catch {
             setLoadFailed(true);
         }
-    }, []);
+    }, [sessionId]);
 
     useEffect(() => {
         load();
@@ -211,6 +214,7 @@ const ManagerInternships = ({preview = false}) => {
             internship={internship}
             dark={dark}
             showEmployer
+            audience="manager"
             showStatusBorder={filters.status !== "ALL"}
             footer={renderActions(internship)}
         />

@@ -1,9 +1,9 @@
+import {useCallback, useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
 import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
 import Badge from "../../../styles/Badge.jsx";
 import PdfPreview from "../../documents/PdfPreview.jsx";
-import {useTranslation} from "react-i18next";
-import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
 import {
     createInterview,
@@ -21,18 +21,27 @@ const getCoverLetterUrl = async (applicationId) => blobUrlFromFile(await getAppl
 const getTranscriptUrl = async (applicationId) => blobUrlFromFile(await getApplicationTranscript(applicationId));
 
 
-function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
+function ApplicationCard({
+                             application,
+                             dark,
+                             isNew,
+                             isPreviewOpen,
+                             onTogglePreview,
+                             getUrl,
+                             internshipTitle,
+                             onInterviewSent
+                         }) {
     const s = getApplicationCardClasses(dark);
     const {t} = useTranslation();
     const {student, cvFileName} = application;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCVBtn");
-    const [isCoverLetterPreviewOpen, setIsCoverLetterPreviewOpen] = useState(false);
-    const coverViewLabel = isCoverLetterPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCoverBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
     const [openDoc, setOpenDoc] = useState(null); // null | COVER_LETTER | TRANSCRIPT
     const interviewLabel =
-        isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker")) ;
+        isInterviewSelectOpen
+            ? t("employerInternship.closeInterviewPicker")
+            : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker"));
 
     const hasCoverLetter = application.coverLetterId != null;
     const hasTranscript = application.transcriptId != null;
@@ -52,7 +61,6 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
-    const onToggleCoverLetterPreview = () => setIsCoverLetterPreviewOpen(!isCoverLetterPreviewOpen);
 
     const toggleDoc = (doc) => setOpenDoc((current) => (current === doc ? null : doc));
 
@@ -63,6 +71,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
             } else {
                 await createInterview(application.id, payload);
             }
+            onInterviewSent?.(application.id);
             return {success: true};
         } catch (err) {
             return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
@@ -83,7 +92,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                                 </h3>
                                 {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
                             </div>
-                            <p className={s.description}>
+                            <p className={`${s.description} min-w-0 break-all`}>
                                 {student?.email}
                             </p>
                             {internshipTitle && (
@@ -92,14 +101,15 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         </div>
 
                         <span className={s.fileName} title={cvFileName}>
-                            {cvFileName || "No CV uploaded"}
+                            {cvFileName || t("applicationCard.noCv")}
                         </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col items-stretch gap-2 sm:min-w-52">
                         <Button
                             tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
                             dark={dark}
+                            className="w-full"
                             icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
@@ -110,6 +120,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             <Button
                                 tone={openDoc === COVER_LETTER ? "danger" : "accent"}
                                 dark={dark}
+                                className="w-full"
                                 icon={openDoc === COVER_LETTER ? "close" : "visibility"}
                                 onClick={() => toggleDoc(COVER_LETTER)}
                                 aria-expanded={openDoc === COVER_LETTER}
@@ -121,6 +132,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             <Button
                                 tone={openDoc === TRANSCRIPT ? "danger" : "accent"}
                                 dark={dark}
+                                className="w-full"
                                 icon={openDoc === TRANSCRIPT ? "close" : "visibility"}
                                 onClick={() => toggleDoc(TRANSCRIPT)}
                                 aria-expanded={openDoc === TRANSCRIPT}
@@ -131,30 +143,21 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         <Button
                             tone={isPreviewOpen ? "danger" : "accent"}
                             dark={dark}
+                            className="w-full"
                             icon={isPreviewOpen ? "close" : "visibility"}
                             onClick={onTogglePreview}
                             aria-expanded={isPreviewOpen}
-                            className="mr-4"
                         >
                             {viewLabel}
-                        </Button>
-                        <Button
-                            tone={isCoverLetterPreviewOpen ? "danger" : "accent"}
-                            dark={dark}
-                            icon={isCoverLetterPreviewOpen ? "close" : "visibility"}
-                            onClick={onToggleCoverLetterPreview}
-                            aria-expanded={isPreviewOpen}
-                        >
-                            {coverViewLabel}
                         </Button>
                     </div>
                 </div>
 
-                {/* Inline Interview Time Selector — forced underneath with a top border */}
+                {/* Inline Interview Time Selector */}
                 {isInterviewSelectOpen && (
                     <div className="w-full pt-4 mt-4">
                         <InterviewPicker
-                            applicationId={application.student.id}
+                            application={application}
                             dark={dark}
                             onClose={() => setIsInterviewSelectOpen(false)}
                             onSendOffer={handleSendOffer}
@@ -185,19 +188,8 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                     </div>
                 )}
 
-                {/* Inline Preview Container — forced underneath with a top border */}
+                {/* Inline CV preview */}
                 {isPreviewOpen && (
-                    <div className="w-full pt-4 mt-4">
-                        <PdfPreview
-                            doc={{id: application.id, fileName: cvFileName}}
-                            dark={dark}
-                            getUrl={getUrl}
-                        />
-                    </div>
-                )}
-
-                {/* Inline Preview Container — forced underneath with a top border */}
-                {isCoverLetterPreviewOpen && (
                     <div className="w-full pt-4 mt-4">
                         <PdfPreview
                             doc={{id: application.id, fileName: cvFileName}}
