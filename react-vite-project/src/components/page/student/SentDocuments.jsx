@@ -36,13 +36,7 @@ function SentDocuments({application, dark}) {
     const muted = dark ? "text-slate-400" : "text-gray-500";
 
     return (
-        <section className="flex w-full flex-col gap-3 text-left" aria-label={t("sentDocuments.title")}>
-            <p className={`flex items-center gap-1.5 text-sm font-semibold ${dark ? "text-green-300" : "text-green-700"}`}
-               role="status">
-                <Icon name="check_circle" size={18}/>
-                {t("sentDocuments.title")}
-            </p>
-
+        <section className="flex w-full flex-col gap-3 text-left">
             <ul className="flex flex-col gap-3">
                 {docs.map(({type, doc}) => {
                     const key = `${type}-${doc.id}`;
