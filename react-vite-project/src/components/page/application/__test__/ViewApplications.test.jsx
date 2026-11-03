@@ -1,11 +1,16 @@
 import {render, screen, waitFor} from '@testing-library/react';
 import {BrowserRouter} from 'react-router-dom';
 import ViewApplications from '../ViewApplications';
-import {getApplications, getEmployerInternships} from '../../../api/Api.jsx';
+import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from '../../../api/Api.jsx';
 
 
 vi.mock('../../../api/Api.jsx', () => ({
-    getApplications: vi.fn(), getEmployerInternships: vi.fn(), getApplicationCv: vi.fn(),
+    getApplications: vi.fn(),
+    getEmployerInternships: vi.fn(),
+    getApplicationCv: vi.fn(),
+    getEmployerInterviewsByApplicationId: vi.fn(),
+    createInterview: vi.fn(),
+    updateInterview: vi.fn(),
 }));
 
 vi.mock('../../../utils/usePolling.js', () => ({
@@ -35,6 +40,7 @@ describe('ViewApplications Component', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        getEmployerInterviewsByApplicationId.mockResolvedValue([]);
         window.history.pushState({}, '', '/application/10');
     });
 

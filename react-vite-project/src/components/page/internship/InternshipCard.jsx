@@ -3,12 +3,19 @@ import {NavLink} from "react-router-dom";
 import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
+import Badge from '../../../styles/Badge.jsx';
 import {formatDate} from '../../../utils/documents.js';
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
     APPROVED: "internshipCard.status.approved",
     REJECTED: "internshipCard.status.rejected",
+};
+
+const STATUS_TONE = {
+    PENDING: "warning",
+    APPROVED: "success",
+    REJECTED: "danger",
 };
 
 const STATUS_ICON = {
@@ -33,9 +40,8 @@ export default function InternshipCard({
                                            hideStatus = false,
                                            showEmployer = false,
                                            showPreview = false,
-                                           onPreview,
-                                           expanded = false,
                                            viewed = false,
+                                           application = null,
                                            applicationCount,
                                            showStatusBorder = false
                                        }) {
@@ -73,11 +79,12 @@ export default function InternshipCard({
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
     const statusBadge = !hideStatus && (
-        <span className={s.statusBadge(internship.status)}>
-            <Icon name={STATUS_ICON[internship.status] ?? "close"} size={16}/>
+        <Badge tone={STATUS_TONE[internship.status] ?? "danger"} icon={STATUS_ICON[internship.status] ?? "close"} dark={dark}>
             {statusLabel}
-        </span>
+        </Badge>
     );
+
+    const hasFooter = Boolean(footer) || showEmployer;
 
     return (
         <div className={s.card}>
@@ -93,21 +100,23 @@ export default function InternshipCard({
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                         <h3 className={s.title}>{internship.title}</h3>
-
-                        {/* New / Viewed badge (student view) */}
-                        {showPreview && (
-                            <span
-                                className={`rounded-full px-2 py-1 text-xs font-medium ${viewed
-                                    ? dark ? "bg-slate-700 text-slate-300" : "bg-gray-100 text-gray-600"
-                                    : dark ? "bg-indigo-900 text-indigo-200" : "bg-indigo-100 text-indigo-700"}`}>
-                                {viewed ? t("studentInternship.viewed") : t("studentInternship.new")}
+                    </div>
+                    {/* The description is always visible */}
+                    <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>
+                </div>
+                {((showPreview && !viewed) || application) && (
+                    <div className="shrink-0 flex flex-col items-end gap-2">
+                        {showPreview && !viewed && (
+                            <Badge tone="new">{t("studentInternship.new")}</Badge>
+                        )}
+                        {application && (
+                            <span className={s.statusBadge("APPROVED")}>
+                                <Icon name="check_circle" size={18}/>
+                                {t("studentInternship.appliedBadge")}
                             </span>
                         )}
                     </div>
-                    {(!showPreview || expanded) && (
-                        <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>
-                    )}
-                </div>
+                )}
                 {/* DESKTOP ONLY: Status badge aligned on top-right */}
                 {statusBadge && (
                     <div className="hidden md:block">
@@ -234,7 +243,7 @@ export default function InternshipCard({
             )}
 
             {/* Footer */}
-            {(footer || showEmployer || showPreview) && (
+            {hasFooter && (
                 <div
                     className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
                     {showEmployer && (
@@ -251,27 +260,13 @@ export default function InternshipCard({
                         </div>
                     )}
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
-
-                    {showPreview && (
-                        <Button
-                            type="button"
-                            tone="primary"
-                            dark={dark}
-                            onClick={() => onPreview(internship.id)}
-                            className="ml-auto"
-                        >
-                            {expanded ? t("studentInternship.hide") : t("studentInternship.preview")}
-                        </Button>
-                    )}
                 </div>
             )}
             {/* Bottom row: always the last thing in the card */}
             {bottomFooter && (
                 <div
-                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 ${
-                        footer || showEmployer || showPreview
-                            ? ""
-                            : `border-t ${dark ? "border-slate-700" : "border-gray-100"}`
+                    className={`flex flex-wrap items-center justify-end gap-2 pt-3 border-t ${
+                        dark ? "border-slate-700" : "border-gray-100"
                     }`}>
                     {bottomFooter}
                 </div>

@@ -7,9 +7,18 @@ export {useInternshipFilters};
 
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
-export default function InternshipFilters({dark, filters, showStatus = true, showDiscipline = false}) {
+export default function InternshipFilters({
+                                              dark,
+                                              filters,
+                                              showStatus = true,
+                                              showDiscipline = false,
+                                              showApplied = false
+                                          }) {
     const {t} = useTranslation();
-    const {search, setSearch, status, setStatus, discipline, setDiscipline, disciplines = [], sort, setSort} = filters;
+    const {
+        search, setSearch, status, setStatus, discipline, setDiscipline, disciplines = [],
+        applied, setApplied, sort, setSort
+    } = filters;
 
     const selectBase = "rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
     const selectClass = `${selectBase} border ${
@@ -64,6 +73,15 @@ export default function InternshipFilters({dark, filters, showStatus = true, sho
                             {t(`disciplines.${d.toLowerCase()}`, {defaultValue: d})}
                         </option>
                     ))}
+                </select>
+            )}
+
+            {showApplied && (
+                <select value={applied} onChange={(e) => setApplied(e.target.value)}
+                        className={selectClass} aria-label={t("internshipFilters.appliedAria")}>
+                    <option value="ALL">{t("internshipFilters.allApplications")}</option>
+                    <option value="NOT_APPLIED">{t("internshipFilters.notApplied")}</option>
+                    <option value="APPLIED">{t("internshipFilters.applied")}</option>
                 </select>
             )}
 

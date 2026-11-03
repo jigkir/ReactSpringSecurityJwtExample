@@ -28,9 +28,14 @@ function ApplyControls({internshipId, cvs, letters = [], dark, application, onCh
 
     if (cvs.length === 0) {
         return (
-            <span className={`text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
-                {t("studentInternship.noApprovedCv")}{" "}
-                <Link to="/portfolio" className="text-indigo-500 hover:underline">
+            <span
+                role="note"
+                className={`inline-flex flex-wrap items-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-semibold ${
+                    dark ? "border-red-500 bg-red-900/30 text-red-200" : "border-red-500 bg-red-50 text-red-700"
+                }`}>
+                <Icon name="error" size={20}/>
+                {t("studentInternship.noApprovedCv")}
+                <Link to="/portfolio" className="font-bold underline underline-offset-2 hover:opacity-80">
                     {t("studentInternship.goToCv")}
                 </Link>
             </span>

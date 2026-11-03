@@ -14,6 +14,7 @@ import {NavLink, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import ApplicationCard from './ApplicationCard.jsx';
 import Icon from '../../../styles/Icon.jsx';
+import Badge from '../../../styles/Badge.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {getApplicationCv, getApplications, getEmployerInternships} from '../../api/Api.jsx';
 import {base64ToBlobUrl} from '../../../utils/documents.js';
@@ -153,9 +154,7 @@ function Applications({user}) {
                         {t("applicationsPage.applicationCount", {count: group.total})}
                     </span>
                     {group.unread > 0 && (
-                        <span className="rounded-full bg-indigo-500 px-3 py-1 text-sm font-bold text-white">
-                            {t("applicationsPage.unreadCount", {count: group.unread})}
-                        </span>
+                        <Badge tone="new">{t("applicationsPage.unreadCount", {count: group.unread})}</Badge>
                     )}
                     <NavLink
                         to={`/application/${group.id}`}

@@ -1,12 +1,12 @@
 import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
+import Badge from "../../../styles/Badge.jsx";
 import PdfPreview from "../../documents/PdfPreview.jsx";
 import {useTranslation} from "react-i18next";
 import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
 import {
     createInterview,
-    getEmployerInterviews,
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../api/Api.jsx";
@@ -23,16 +23,18 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const interviewLabel =
         isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker")) ;
 
-    const getInterviewFromApplication = useCallback( async (application) => {
-        let Interviews = await getEmployerInterviewsByApplicationId(application.id);
-        let a = ["a","b"];
-        setInterview(Interviews.findLast(() => true));
-        //console.log(Interviews.findLast(() => true));
+    const getInterviewFromApplication = useCallback(async (application) => {
+        try {
+            const interviews = await getEmployerInterviewsByApplicationId(application.id);
+            setInterview(Array.isArray(interviews) ? (interviews.at(-1) ?? null) : null);
+        } catch {
+            setInterview(null);
+        }
     }, []);
 
 
     useEffect(() => {
-        getInterviewFromApplication(application);
+        void getInterviewFromApplication(application);
     }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
@@ -62,12 +64,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                                 <h3 className={s.title}>
                                     {student?.firstName} {student?.lastName}
                                 </h3>
-                                {isNew && (
-                                    <span
-                                        className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500 text-white rounded-full animate-bounce">
-                                        {t("viewApplication.new")}
-                                    </span>
-                                )}
+                                {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
                             </div>
                             <p className={s.description}>
                                 {student?.email}

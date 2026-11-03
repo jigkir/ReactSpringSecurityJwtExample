@@ -1,12 +1,20 @@
 import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {BrowserRouter} from 'react-router-dom';
 import Applications from '../Applications';
-import {getApplicationCv, getApplications, getEmployerInternships} from '../../../api/Api.jsx';
+import {
+    getApplicationCv,
+    getApplications,
+    getEmployerInterviewsByApplicationId,
+    getEmployerInternships
+} from '../../../api/Api.jsx';
 
 vi.mock('../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),
+    getEmployerInterviewsByApplicationId: vi.fn(),
+    createInterview: vi.fn(),
+    updateInterview: vi.fn(),
 }));
 
 vi.mock('../../../../utils/usePolling.js', () => ({
@@ -73,6 +81,7 @@ const renderLoaded = async (applications = [alice, bob, carol], internships = IN
 
 beforeEach(() => {
     vi.clearAllMocks();
+    getEmployerInterviewsByApplicationId.mockResolvedValue([]);
     URL.revokeObjectURL = vi.fn();
 });
 
