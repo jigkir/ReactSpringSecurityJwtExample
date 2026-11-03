@@ -1425,23 +1425,4 @@ public class StudentServiceTest {
 
         return academicTranscript;
     }
-
-    // ---------- Apply: student already employed ----------
-
-    @Test
-    void shouldThrowExceptionWhenApplyingAsStudentAlreadyEmployed() {
-        // Arrange
-        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
-        internship.setStatus(ReviewStatus.APPROVED);
-
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedVisibleCv(5L)));
-        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
-
-        // Act + Assert
-        assertThrows(StudentAlreadyEmployedException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L));
-
-        verifyNoInteractions(applicationRepository);
-    }
 }

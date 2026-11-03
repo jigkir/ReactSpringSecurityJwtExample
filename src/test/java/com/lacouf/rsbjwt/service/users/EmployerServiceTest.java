@@ -3,7 +3,6 @@ package com.lacouf.rsbjwt.service.users;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyHiredException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
-import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
