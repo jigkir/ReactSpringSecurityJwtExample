@@ -32,7 +32,8 @@ function PostInternship({user, preview = false}) {
     const [loading, setLoading] = useState(true);
     const [applicationCount, setApplicationCount] = useState({})
     const formRef = useRef(null);
-    const { selectedSession } = useSession();
+    const {selectedSession} = useSession();
+    const sessionId = selectedSession?.id;
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -43,14 +44,14 @@ function PostInternship({user, preview = false}) {
 
     const load = useCallback(async () => {
         try {
-            setInternships(await getEmployerInternships());
+            setInternships(await getEmployerInternships(sessionId));
             setError("");
         } catch {
             setError({key: "postInternship.loadError"});
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [sessionId]);
 
     const fetchApplicationCount = useCallback(async () => {
         try {
@@ -78,16 +79,6 @@ function PostInternship({user, preview = false}) {
     useEffect(() => {
         if (formOpen) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
     }, [formOpen, editing]);
-
-
-
-    useEffect(() => {
-        if (selectedSession) {
-            console.log("Current session in page:", selectedSession);
-            // Fetch page data for the selected session, e.g.:
-            // fetchInternshipsBySession(selectedSession);
-        }
-    }, [selectedSession]);
 
     const openCreate = () => {
         setEditing(null);
