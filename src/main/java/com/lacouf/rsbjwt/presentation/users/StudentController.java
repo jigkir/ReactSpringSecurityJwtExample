@@ -221,22 +221,4 @@ public class StudentController {
         List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
     }
-
-    @GetMapping("/contracts")
-    public ResponseEntity<List<ContractResponseDto>> getContracts(Authentication authentication) throws UserNotFoundException {
-        List<ContractResponseDto> contracts = studentService.getContracts(authentication.getName());
-        return ResponseEntity.ok(contracts);
-    }
-
-    @PutMapping("/contracts/{contractId}/accept")
-    public ResponseEntity<Void> acceptContract(@PathVariable long contractId, Authentication authentication) throws ContractNotFoundException, ContractNotPendingException, StudentAlreadyEmployedException {
-        studentService.acceptContract(contractId, authentication.getName());
-        return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/contracts/{contractId}/reject")
-    public ResponseEntity<Void> rejectContract(@PathVariable long contractId, Authentication authentication) throws ContractNotPendingException, ContractNotFoundException {
-        studentService.rejectContract(contractId, authentication.getName());
-        return ResponseEntity.noContent().build();
-    }
 }
