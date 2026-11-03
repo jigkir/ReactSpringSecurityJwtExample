@@ -327,6 +327,18 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnExpiredStudentAccessesWhenManagerAsksForExpiredAccounts() throws Exception {
+        // Arrange
+        when(accountAccessService.getExpiredStudentAccesses()).thenReturn(List.of(studentAccessWith(AccountStatus.PENDING)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/students/expired"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
+    }
+
+    @Test
     void shouldReturnOkWhenStudentIsReactivated() throws Exception {
         // Arrange
         when(accountAccessService.reactivateStudentAccess(2L)).thenReturn(studentAccessWith(AccountStatus.APPROVED));

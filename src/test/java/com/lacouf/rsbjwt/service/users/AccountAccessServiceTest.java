@@ -29,8 +29,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -218,6 +216,25 @@ class AccountAccessServiceTest {
         assert (Integer.valueOf(1)).equals(studentAccesses.size());
         assert (STUDENT_EMAIL).equals(studentAccesses.getFirst().email());
         assert (AccountStatus.PENDING).equals(studentAccesses.getFirst().status());
+    }
+
+    @Test
+    void shouldReturnOnlyExpiredStudentsWhenGettingExpiredStudentAccesses() {
+        // Arrange
+        Student activeStudent = new Student("Luc", "Gagnon", "3234567", Credentials.builder().email("luc@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, currentSession);
+        activeStudent.setId(3L);
+        student.grantAccess(pastSession);
+
+        when(studentRepository.findAll()).thenReturn(List.of(student, activeStudent));
+        when(academicSessionService.isCurrent(pastSession)).thenReturn(false);
+        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+
+        // Act
+        List<StudentAccessResponseDto> expiredStudentAccesses = accountAccessService.getExpiredStudentAccesses();
+
+        // Assert
+        assert (Integer.valueOf(1)).equals(expiredStudentAccesses.size());
+        assert (STUDENT_EMAIL).equals(expiredStudentAccesses.getFirst().email());
     }
 
     @Test

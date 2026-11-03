@@ -9,6 +9,7 @@
  *   doc        {id, fileName, rejectionComment?}
  *   dark       boolean
  *   status     "PENDING" | "APPROVED" | "REJECTED" | undefined   (no pill when undefined)
+ *   leading    node     optional, shown before the file name (e.g. a checkbox)
  *   details    node     extra lines under the file name
  *   actions    node     buttons under the preview toggle (give them className={ROW_BTN})
  *   busy       boolean  disables the row while an action runs
@@ -48,7 +49,7 @@ export const getRowListClass = (dark, {preview = false, bordered = false} = {}) 
 };
 
 export default function DocumentRow({
-                                        doc, dark, status, details, actions, busy = false,
+                                        doc, dark, status, leading, details, actions, busy = false,
                                         isOpen, onToggle, getUrl, preview = false, bordered = false,
                                     }) {
     const {t} = useTranslation();
@@ -70,15 +71,18 @@ export default function DocumentRow({
         <li aria-busy={busy} className={itemClass}>
             <div className={rowClass}>
                 {/* Identity */}
-                <div className="min-w-0">
-                    <p className={th.name}>{doc.fileName}</p>
-                    {details}
-                    {status === "REJECTED" && doc.rejectionComment && (
-                        <div className={th.rejectionBox} role="note">
-                            <p className={th.rejectionLabel}>{t("cvDocuments.rejectionComment")} :</p>
-                            <p className={`${th.rejectionText} whitespace-pre-wrap`}>{doc.rejectionComment}</p>
-                        </div>
-                    )}
+                <div className="flex min-w-0 items-start gap-3">
+                    {leading}
+                    <div className="min-w-0 flex-1">
+                        <p className={th.name}>{doc.fileName}</p>
+                        {details}
+                        {status === "REJECTED" && doc.rejectionComment && (
+                            <div className={th.rejectionBox} role="note">
+                                <p className={th.rejectionLabel}>{t("cvDocuments.rejectionComment")} :</p>
+                                <p className={`${th.rejectionText} whitespace-pre-wrap`}>{doc.rejectionComment}</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Status pill */}

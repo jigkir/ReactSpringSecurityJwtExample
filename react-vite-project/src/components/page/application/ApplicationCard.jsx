@@ -7,21 +7,35 @@ import {useCallback, useEffect, useState} from "react";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
 import {
     createInterview,
+    getApplicationCoverLetter,
+    getApplicationTranscript,
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../api/Api.jsx";
+import {blobUrlFromFile} from "../../../utils/documents.js";
 
+const COVER_LETTER = "COVER_LETTER";
+const TRANSCRIPT = "TRANSCRIPT";
+
+const getCoverLetterUrl = async (applicationId) => blobUrlFromFile(await getApplicationCoverLetter(applicationId));
+const getTranscriptUrl = async (applicationId) => blobUrlFromFile(await getApplicationTranscript(applicationId));
 
 
 function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
     const s = getApplicationCardClasses(dark);
     const {t} = useTranslation();
     const {student, cvFileName} = application;
-    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+    const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCVBtn");
+    const [isCoverLetterPreviewOpen, setIsCoverLetterPreviewOpen] = useState(false);
+    const coverViewLabel = isCoverLetterPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCoverBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
+    const [openDoc, setOpenDoc] = useState(null); // null | COVER_LETTER | TRANSCRIPT
     const interviewLabel =
         isInterviewSelectOpen ? t("employerInternship.closeInterviewPicker") : (interview == null ? t("employerInternship.openInterviewPicker") : t("employerInternship.editInterviewPicker")) ;
+
+    const hasCoverLetter = application.coverLetterId != null;
+    const hasTranscript = application.transcriptId != null;
 
     const getInterviewFromApplication = useCallback(async (application) => {
         try {
@@ -38,13 +52,16 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     }, [isInterviewSelectOpen]);
 
     const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
+    const onToggleCoverLetterPreview = () => setIsCoverLetterPreviewOpen(!isCoverLetterPreviewOpen);
+
+    const toggleDoc = (doc) => setOpenDoc((current) => (current === doc ? null : doc));
 
     const handleSendOffer = async (payload) => {
         try {
             if (interview !== null) {
-                const updated = await updateInterview(interview.id, payload);
+                await updateInterview(interview.id, payload);
             } else {
-                const saved = await createInterview(application.id, payload);
+                await createInterview(application.id, payload);
             }
             return {success: true};
         } catch (err) {
@@ -79,25 +96,56 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         </span>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button
-                            tone={isInterviewSelectOpen ? "danger" : "accent"}
+                            tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
                             dark={dark}
-                            icon={isInterviewSelectOpen ? "close" : "visibility"}
+                            icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
-                            className="mr-4"
                         >
                             {interviewLabel}
                         </Button>
+                        {hasCoverLetter && (
+                            <Button
+                                tone={openDoc === COVER_LETTER ? "danger" : "accent"}
+                                dark={dark}
+                                icon={openDoc === COVER_LETTER ? "close" : "visibility"}
+                                onClick={() => toggleDoc(COVER_LETTER)}
+                                aria-expanded={openDoc === COVER_LETTER}
+                            >
+                                {t("applicationCard.coverLetter")}
+                            </Button>
+                        )}
+                        {hasTranscript && (
+                            <Button
+                                tone={openDoc === TRANSCRIPT ? "danger" : "accent"}
+                                dark={dark}
+                                icon={openDoc === TRANSCRIPT ? "close" : "visibility"}
+                                onClick={() => toggleDoc(TRANSCRIPT)}
+                                aria-expanded={openDoc === TRANSCRIPT}
+                            >
+                                {t("applicationCard.transcript")}
+                            </Button>
+                        )}
                         <Button
                             tone={isPreviewOpen ? "danger" : "accent"}
                             dark={dark}
                             icon={isPreviewOpen ? "close" : "visibility"}
                             onClick={onTogglePreview}
                             aria-expanded={isPreviewOpen}
+                            className="mr-4"
                         >
                             {viewLabel}
+                        </Button>
+                        <Button
+                            tone={isCoverLetterPreviewOpen ? "danger" : "accent"}
+                            dark={dark}
+                            icon={isCoverLetterPreviewOpen ? "close" : "visibility"}
+                            onClick={onToggleCoverLetterPreview}
+                            aria-expanded={isPreviewOpen}
+                        >
+                            {coverViewLabel}
                         </Button>
                     </div>
                 </div>
@@ -115,8 +163,41 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                     </div>
                 )}
 
+                {/* Inline cover letter preview */}
+                {hasCoverLetter && openDoc === COVER_LETTER && (
+                    <div className="w-full pt-4 mt-4">
+                        <PdfPreview
+                            doc={{id: application.id, fileName: application.coverLetterFileName}}
+                            dark={dark}
+                            getUrl={getCoverLetterUrl}
+                        />
+                    </div>
+                )}
+
+                {/* Inline transcript preview */}
+                {hasTranscript && openDoc === TRANSCRIPT && (
+                    <div className="w-full pt-4 mt-4">
+                        <PdfPreview
+                            doc={{id: application.id, fileName: application.transcriptFileName}}
+                            dark={dark}
+                            getUrl={getTranscriptUrl}
+                        />
+                    </div>
+                )}
+
                 {/* Inline Preview Container — forced underneath with a top border */}
                 {isPreviewOpen && (
+                    <div className="w-full pt-4 mt-4">
+                        <PdfPreview
+                            doc={{id: application.id, fileName: cvFileName}}
+                            dark={dark}
+                            getUrl={getUrl}
+                        />
+                    </div>
+                )}
+
+                {/* Inline Preview Container — forced underneath with a top border */}
+                {isCoverLetterPreviewOpen && (
                     <div className="w-full pt-4 mt-4">
                         <PdfPreview
                             doc={{id: application.id, fileName: cvFileName}}

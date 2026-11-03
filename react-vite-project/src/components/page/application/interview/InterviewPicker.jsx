@@ -48,22 +48,7 @@ function buildPayload(formData, internship) {
     if (message.length > MESSAGE_MAX || meetingDetails.length > DETAILS_MAX) {
         return {error: {key: "internshipModal.errorTooLong"}};
     }
-/*
-@NotBlank
-@Size(min = 2, max = 500)
-    String message,
 
-    @NotNull
-    @FutureOrPresent
-    LocalDateTime interviewDate,
-
-    @NotNull
-    MeetingType meetingType,
-
-    @NotNull
-    @Size(max = 255)
-    String meetingDetails
-*/
     return {
         payload: {
             message: message,
@@ -84,7 +69,7 @@ function InterviewPicker({application = null, dark, onClose, onSendOffer, interv
     const tomorrow = getTomorrow();
     const [formData, setFormData] = useState(toForm(interview));
     const minDate = tomorrow;
-    const [isEdit, setIsEdit] = useState(interview !== undefined && interview != null);
+    const isEdit = useState(interview !== undefined && interview != null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -129,7 +114,6 @@ function InterviewPicker({application = null, dark, onClose, onSendOffer, interv
                     />
                 </Field>
 
-                {/* Date TODO: Add in time selectruion*/}
                 <div className={s.grid2}>
                     <Field id="interviewDate" label={t("interview.meetingTimeLabel")} labelClass={s.label}>
                         <input

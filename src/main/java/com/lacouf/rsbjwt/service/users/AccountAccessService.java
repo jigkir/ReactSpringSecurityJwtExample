@@ -77,6 +77,12 @@ public class AccountAccessService {
                 .toList();
     }
 
+    public List<StudentAccessResponseDto> getExpiredStudentAccesses() {
+        return getStudentAccesses().stream()
+                .filter(studentAccess -> studentAccess.status() == AccountStatus.PENDING)
+                .toList();
+    }
+
     @Transactional
     public StudentAccessResponseDto reactivateStudentAccess(long studentId) throws UserNotFoundException {
         Student student = findStudent(studentId);
