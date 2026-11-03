@@ -2,6 +2,10 @@ package com.lacouf.rsbjwt.presentation.users;
 
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -14,6 +18,8 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -100,7 +106,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/reject")
-    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ContractAlreadyExistsException, ContractAlreadyActiveException {
         employerService.rejectInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -140,9 +146,15 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<Void> acceptStudentsToInternship(@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationAlreadyHiredException {
-        employerService.hireStudentsToInternship(applicationIds, authentication.getName());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BatchHireResponseDto> offerContractsToStudents (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
+        BatchHireResponseDto result = employerService.offerContracts(applicationIds, authentication.getName());
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/contracts")
+    public ResponseEntity<List<ContractResponseDto>> getContracts(Authentication authentication) throws UserNotFoundException {
+        List<ContractResponseDto> contracts = employerService.getContractsOfEmployer(authentication.getName());
+        return ResponseEntity.ok(contracts);
     }
 }
 

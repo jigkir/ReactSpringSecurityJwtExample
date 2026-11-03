@@ -2,7 +2,7 @@ package com.lacouf.rsbjwt.model.application;
 
 public enum EmployerDecision {
     INTERVIEW_OFFERED,
-    HIRED,
+    INTERNSHIP_OFFERED,
     ACCEPTED,
     REJECTED,
     PENDING

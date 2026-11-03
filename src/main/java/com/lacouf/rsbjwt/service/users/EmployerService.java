@@ -1,6 +1,10 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -24,15 +28,17 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchErrorDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -62,8 +68,9 @@ public class EmployerService {
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
+    private final ContractService contractService;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService, ContractService contractService) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
@@ -73,6 +80,7 @@ public class EmployerService {
         this.interviewRepository = interviewRepository;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
+        this.contractService = contractService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -214,7 +222,7 @@ public class EmployerService {
             throw new ApplicationRejectedException(applicationId);
         }
 
-        if (internshipApplication.getEmployerDecision() == EmployerDecision.HIRED) {
+        if (internshipApplication.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
             throw new ApplicationAlreadyHiredException(applicationId);
         }
 
@@ -244,7 +252,7 @@ public class EmployerService {
         if (application.getEmployerDecision() == EmployerDecision.REJECTED) {
             throw new ApplicationRejectedException(applicationId);
         }
-        if (application.getEmployerDecision() == EmployerDecision.HIRED) {
+        if (application.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
             throw new ApplicationAlreadyHiredException(applicationId);
         }
 
@@ -252,12 +260,10 @@ public class EmployerService {
     }
 
     @Transactional
-    public void rejectInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationAlreadyHiredException {
+    public void rejectInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException, ContractAlreadyActiveException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
-        if (internshipApplication.getEmployerDecision() == EmployerDecision.HIRED) {
-            throw new ApplicationAlreadyHiredException(applicationId);
-        }
+        contractService.terminateForRejection(internshipApplication);
 
         rejectApplication(internshipApplication);
     }
@@ -311,49 +317,34 @@ public class EmployerService {
     }
 
     @Transactional
-    public void hireStudentsToInternship(List<Long> applicationIds, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, StudentAlreadyEmployedException, ApplicationAlreadyHiredException {
-        List<InternshipApplication> applications = new ArrayList<>();
-        Set<Long> studentIds = new HashSet<>();
+    public BatchHireResponseDto offerContracts(List<Long> applicationIds, String email) {
+        List<Long> successful = new ArrayList<>();
+        List<BatchErrorDto> errors = new ArrayList<>();
 
         for (Long applicationId : new LinkedHashSet<>(applicationIds)) {
-            InternshipApplication application = findReceivedInternshipApplication(applicationId, email);
-            validateCanHire(application);
-
-            Student student = application.getStudent();
-            if (!studentIds.add(student.getId())) {
-                throw new StudentAlreadyEmployedException(student.getId());
+            try {
+                InternshipApplication app = findReceivedInternshipApplication(applicationId, email);
+                hire(app);
+                successful.add(applicationId);
+            } catch (Exception e) {
+                errors.add(new BatchErrorDto(applicationId, e.getMessage()));
             }
-
-            applications.add(application);
         }
 
-        applications.forEach(this::hire);
+        return new BatchHireResponseDto(successful, errors);
     }
 
-    private void validateCanHire(InternshipApplication application) throws ApplicationRejectedException, StudentAlreadyEmployedException, ApplicationAlreadyHiredException {
-        EmployerDecision decision = application.getEmployerDecision();
-
-        if (decision == EmployerDecision.REJECTED) {
-            throw new ApplicationRejectedException(application.getId());
-        }
-        if (decision == EmployerDecision.HIRED) {
-            throw new ApplicationAlreadyHiredException(application.getId());
-        }
-
-        Student student = application.getStudent();
-        if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
-            throw new StudentAlreadyEmployedException(student.getId());
-        }
+    @Transactional(readOnly = true)
+    public List<ContractResponseDto> getContractsOfEmployer(String email) throws UserNotFoundException {
+        Employer employer = employerRepository.findByCredentialsEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+        return contractService.getContractsOfEmployer(employer);
     }
 
-    private void hire(InternshipApplication application) {
-        application.updateEmployerDecision(EmployerDecision.HIRED);
-        setStudentAsEmployed(application.getStudent());
+    private void hire(InternshipApplication application) throws StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
+        contractService.createContract(application);
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
         internshipApplicationRepository.save(application);
-    }
-
-    private void setStudentAsEmployed(Student student) {
-        student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
     }
 
     private Interview findModifiableInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewAlreadyPassedException, InterviewCancelledException {
