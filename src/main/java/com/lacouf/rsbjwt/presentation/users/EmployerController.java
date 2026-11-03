@@ -78,6 +78,16 @@ public class EmployerController {
         return ResponseEntity.ok(employerService.openReceivedInternshipApplicationCv(applicationId, authentication.getName()));
     }
 
+    @GetMapping("/applications/{applicationId}/cover-letter")
+    public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationCoverLetter(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
+        return ResponseEntity.ok(employerService.getReceivedInternshipApplicationCoverLetter(applicationId, authentication.getName()));
+    }
+
+    @GetMapping("/applications/{applicationId}/transcript")
+    public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationAcademicTranscript(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
+        return ResponseEntity.ok(employerService.getReceivedInternshipApplicationAcademicTranscript(applicationId, authentication.getName()));
+    }
+
     @GetMapping("/applications/count")
     public ResponseEntity<Map<Long, Long>> countReceivedInternshipApplicationsByInternship(Authentication authentication) {
         return ResponseEntity.ok(employerService.countReceivedInternshipApplicationsByInternship(authentication.getName()));
@@ -130,7 +140,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<Void> acceptStudentsToInternship (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> acceptStudentsToInternship(@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationAlreadyHiredException {
         employerService.hireStudentsToInternship(applicationIds, authentication.getName());
         return ResponseEntity.ok().build();
     }

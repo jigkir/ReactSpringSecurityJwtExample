@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.application.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
@@ -11,6 +12,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.Interview;
@@ -380,6 +382,36 @@ public class EmployerServiceTest {
         assert (STUDENT_EMAIL).equals(internshipApplication.student().email());
         assert (Discipline.COMPUTER_SCIENCE).equals(internshipApplication.student().discipline());
         assert (InternshipApplicationStatus.UNREAD).equals(internshipApplication.internshipApplicationStatus());
+    }
+
+    @Test
+    void shouldReturnCoverLetterWhenApplicationHasOne() throws Exception {
+        // Arrange
+        CoverLetter coverLetter = new CoverLetter();
+        coverLetter.setId(7L);
+        coverLetter.setFileName("lettre.pdf");
+
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+        internshipApplication.attachDocuments(coverLetter, null);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+
+        // Act
+        DocumentFileResponseDto coverLetterFile = employerService.getReceivedInternshipApplicationCoverLetter(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assert ("lettre.pdf").equals(coverLetterFile.fileName());
+    }
+
+    @Test
+    void shouldThrowApplicationDocumentNotFoundWhenApplicationHasNoAcademicTranscript() {
+        // Arrange
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(receivedInternshipApplication()));
+
+        // Act + Assert
+        assertThrows(ApplicationDocumentNotFoundException.class, () -> employerService.getReceivedInternshipApplicationAcademicTranscript(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL));
     }
 
     @Test
