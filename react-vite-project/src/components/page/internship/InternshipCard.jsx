@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {NavLink} from "react-router-dom";
-import {getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
+import {getCvDocumentsClasses, getInternshipCardClasses} from '../../../styles/AppStyles.jsx';
 import Button from '../../../styles/Button.jsx';
 import Icon from '../../../styles/Icon.jsx';
 import Badge from '../../../styles/Badge.jsx';
@@ -10,12 +10,6 @@ const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
     APPROVED: "internshipCard.status.approved",
     REJECTED: "internshipCard.status.rejected",
-};
-
-const STATUS_TONE = {
-    PENDING: "warning",
-    APPROVED: "success",
-    REJECTED: "danger",
 };
 
 const STATUS_ICON = {
@@ -78,10 +72,16 @@ export default function InternshipCard({
     }`;
 
     // Extract status badge element to easily reuse between mobile and desktop layouts
+    // Same pill as the student's CV status (see DocumentRow)
+    const th = getCvDocumentsClasses(dark);
+    // Larger than the CV-row pill: "!" wins over the size classes inside pillBase
+    const bigPill = "text-sm! px-3.5! py-1.5! gap-2!";
+    const pillStatus = STATUS_ICON[internship.status] ? internship.status : "REJECTED";
     const statusBadge = !hideStatus && (
-        <Badge tone={STATUS_TONE[internship.status] ?? "danger"} icon={STATUS_ICON[internship.status] ?? "close"} dark={dark}>
+        <span className={`${th.pillBase} ${th.statusPill(pillStatus)} ${bigPill}`}>
+            <Icon name={STATUS_ICON[pillStatus]} size={18}/>
             {statusLabel}
-        </Badge>
+        </span>
     );
 
     const hasFooter = Boolean(footer) || showEmployer;
@@ -110,7 +110,7 @@ export default function InternshipCard({
                             <Badge tone="new">{t("studentInternship.new")}</Badge>
                         )}
                         {application && (
-                            <span className={s.statusBadge("APPROVED")}>
+                            <span className={`${th.pillBase} ${th.statusPill("APPROVED")} ${bigPill}`}>
                                 <Icon name="check_circle" size={18}/>
                                 {t("studentInternship.appliedBadge")}
                             </span>

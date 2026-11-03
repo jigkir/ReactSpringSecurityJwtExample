@@ -19,6 +19,10 @@
  * `preview` (Home page): no card shell, only the first MAX_PREVIEW_ITEMS documents,
  * each one its own card.
  *
+ * `selection` ("pick" mode, used when applying to an internship): only APPROVED CVs are listed,
+ * no status pill or status filter, no Change type / Delete; CVs, cover letters and transcripts
+ * get a checkbox.
+ *
  * `actionError` stores a translation KEY (not text) so it follows the language switch live.
  * `getUrl` only depends on `type`, so an open PDF preview is not reloaded on a language change.
  *
@@ -26,6 +30,8 @@
  *   type           "ALL" | "CV" | "COVER_LETTER" | "TRANSCRIPT"
  *   dark           boolean
  *   preview        boolean   optional, compact Home version
+ *   selection      object    optional {cvId, letterId, transcriptId, onPickCv(id), onPickLetter(id),
+ *                            onPickTranscript(id), disabled}
  *   reloadToken    number    optional, change it to refetch the list silently
  *   onTypeChanged  function  optional, shows "Change type" and is called once a file was moved
  *   uploadOpen     boolean   the upload panel is open (button shows "Close")
@@ -64,24 +70,26 @@ const urlGetters = {};
 const getUrlFor = (type) => (urlGetters[type] ??= async (id) => blobUrlFromFile(await getDocumentFile(type, id)));
 
 export default function DocumentList({
-                                         type, dark, preview = false, reloadToken = 0, onTypeChanged,
+                                         type, dark, preview = false, selection = null, reloadToken = 0, onTypeChanged,
                                          uploadOpen = false, onAddClick, onCloseClick,
                                      }) {
     const {t, i18n} = useTranslation();
     const th = getCvDocumentsClasses(dark);
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isAll = type === ALL;
-    const hasStatusFilter = type === "CV" && !preview;
+    const picking = Boolean(selection);
+    const hasStatusFilter = type === "CV" && !preview && !picking;
 
     // ALL: every type merged → rejected, then pending, then the rest; newest first inside each group.
     // Otherwise: rejected → pending → approved, newest first.
+    // Pick mode: only approved CVs.
     const fetchDocs = useCallback(async () => {
         const types = type === ALL ? DOC_TYPE_KEYS : [type];
         const lists = await Promise.all(types.map(async (k) =>
             (await getDocuments(k)).filter(isVisible).map((d) => ({...d, docType: k}))));
-        const merged = lists.flat();
+        const merged = lists.flat().filter((d) => !picking || d.docType !== "CV" || d.status === "APPROVED");
         return type === ALL ? merged.sort(byStatusThenNewest) : sortCvsNewest(merged);
-    }, [type]);
+    }, [type, picking]);
     const {items: docs, failed, reload} = useLoadedList(fetchDocs);
 
     // Silent refetch when the parent asks for it (after an upload / a type change)
@@ -121,7 +129,30 @@ export default function DocumentList({
         }
     };
 
+    const renderCheckbox = (doc) => {
+        if (!picking) return undefined;
+
+        const picks = {
+            CV: {checked: selection.cvId === doc.id, onPick: selection.onPickCv},
+            COVER_LETTER: {checked: selection.letterId === doc.id, onPick: selection.onPickLetter},
+            TRANSCRIPT: {checked: selection.transcriptId === doc.id, onPick: selection.onPickTranscript},
+        };
+        const pick = picks[doc.docType];
+        if (!pick?.onPick) return undefined;
+
+        return (
+            <input type="checkbox"
+                   className="mt-1 h-4 w-4 shrink-0 accent-indigo-500"
+                   checked={Boolean(pick.checked)}
+                   disabled={selection.disabled}
+                   onChange={() => pick.onPick(doc.id)}
+                   aria-label={doc.fileName}/>
+        );
+    };
+
     const renderActions = (doc, busy) => {
+        if (picking) return null; // only Preview (added by DocumentRow)
+
         const key = keyOf(doc);
 
         if (confirmKey === key) {
@@ -172,7 +203,8 @@ export default function DocumentList({
                         dark={dark}
                         preview={preview}
                         bordered={bordered}
-                        status={doc.status ?? (hasStatusFilter ? "PENDING" : undefined)}
+                        status={picking ? undefined : (doc.status ?? (hasStatusFilter ? "PENDING" : undefined))}
+                        leading={renderCheckbox(doc)}
                         busy={busy}
                         isOpen={previews.has(key)}
                         onToggle={() => previews.toggle(key)}

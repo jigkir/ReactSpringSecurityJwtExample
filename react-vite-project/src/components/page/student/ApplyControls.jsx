@@ -1,30 +1,35 @@
-import {useRef, useState} from "react";
+import {useState} from "react";
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import Button from "../../../styles/Button.jsx";
 import Icon from "../../../styles/Icon.jsx";
-import {applyForInternship, updateApplicationCV, uploadDocument} from "../../api/Api.jsx";
-import {validateFile} from "../../../utils/documents.js";
+import PortfolioPanel from "../portfolio/PortfolioPanel.jsx";
+import {applyForInternship, updateApplicationCV} from "../../api/Api.jsx";
 
 const HTTP_CONFLICT = 409;
 const READ_BY_EMPLOYER = "READ";
+
+const UPLOAD_TYPES = ["COVER_LETTER", "TRANSCRIPT"];
 
 const SUCCESS_KEY = {
     applied: "studentInternship.applied",
     cvUpdated: "studentInternship.cvUpdated",
 };
 
-function ApplyControls({internshipId, cvs, letters = [], dark, application, onChanged, onLettersChanged}) {
+const newestOf = (list) => list.reduce((a, b) => (b.id > (a?.id ?? -1) ? b : a), null);
+const maxId = (list) => list.reduce((max, d) => Math.max(max, d.id), -1);
+
+function ApplyControls({
+                           internshipId, cvs, letters = [], transcripts = [], dark, application,
+                           onChanged, onLettersChanged, onTranscriptsChanged
+                       }) {
     const {t} = useTranslation();
-    const fileRef = useRef(null);
+    const [open, setOpen] = useState(false);
     const [cvId, setCvId] = useState(null);
     const [letterId, setLetterId] = useState(null); // "" = no letter
+    const [transcriptId, setTranscriptId] = useState(null);
     const [status, setStatus] = useState("idle"); // idle | sending | applied | cvUpdated | error
     const [errorKey, setErrorKey] = useState(null);
-
-    const selectClass = `rounded-lg border px-2 py-1.5 text-sm max-w-[14rem] focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-        dark ? "bg-slate-700 border-slate-600 text-white" : "bg-white border-gray-300 text-gray-900"
-    }`;
 
     if (cvs.length === 0) {
         return (
@@ -55,10 +60,24 @@ function ApplyControls({internshipId, cvs, letters = [], dark, application, onCh
 
     // The CV picked by the student, otherwise the CV already sent, otherwise the first approved CV
     const selectedCvId = cvId ?? application?.cv.id ?? cvs[0].id;
+
     const sentLetterId = application?.coverLetter?.id != null ? String(application.coverLetter.id) : "";
     const selectedLetterId = letterId ?? sentLetterId;
     const letterArg = selectedLetterId ? Number(selectedLetterId) : undefined;
-    const unchanged = selectedCvId === application?.cv.id && selectedLetterId === sentLetterId;
+
+    const sentTranscriptId = application?.academicTranscript?.id != null ? String(application.academicTranscript.id) : "";
+    const selectedTranscriptId = transcriptId ?? sentTranscriptId;
+    const transcriptArg = selectedTranscriptId ? Number(selectedTranscriptId) : undefined;
+
+    const unchanged = selectedCvId === application?.cv.id
+        && selectedLetterId === sentLetterId
+        && selectedTranscriptId === sentTranscriptId;
+    const sending = status === "sending";
+
+    const resetFeedback = () => {
+        setStatus("idle");
+        setErrorKey(null);
+    };
 
     const submit = async (send, successStatus, conflictKey) => {
         setStatus("sending");
@@ -67,50 +86,35 @@ function ApplyControls({internshipId, cvs, letters = [], dark, application, onCh
             await send();
             await onChanged?.();
             setStatus(successStatus);
+            setOpen(false);
         } catch (err) {
             setErrorKey(err.status === HTTP_CONFLICT ? conflictKey : "studentInternship.applyFailed");
             setStatus("error");
         }
     };
 
-    const resetFeedback = () => {
-        setStatus("idle");
-        setErrorKey(null);
+    const handleSubmit = () => application
+        ? submit(() => updateApplicationCV(application.id, selectedCvId, letterArg, transcriptArg),
+            "cvUpdated", "studentInternship.alreadyReadByEmployer")
+        : submit(() => applyForInternship(internshipId, selectedCvId, letterArg, transcriptArg),
+            "applied", "studentInternship.alreadyApplied");
+
+    // After an upload: reload the letters and transcripts, and tick the new ones
+    const handleUploaded = async () => {
+        const [lettersBefore, transcriptsBefore] = [maxId(letters), maxId(transcripts)];
+        const [letterList, transcriptList] = await Promise.all([
+            onLettersChanged?.() ?? [],
+            onTranscriptsChanged?.() ?? [],
+        ]);
+
+        const newestLetter = newestOf(letterList ?? []);
+        if (newestLetter && newestLetter.id > lettersBefore) setLetterId(String(newestLetter.id));
+
+        const newestTranscript = newestOf(transcriptList ?? []);
+        if (newestTranscript && newestTranscript.id > transcriptsBefore) setTranscriptId(String(newestTranscript.id));
     };
 
-    const handleApply = () => submit(
-        () => applyForInternship(internshipId, selectedCvId, letterArg),
-        "applied", "studentInternship.alreadyApplied");
-
-    const handleUpdate = () => submit(
-        () => updateApplicationCV(application.id, selectedCvId, letterArg),
-        "cvUpdated", "studentInternship.alreadyReadByEmployer");
-
-    // Upload a new cover letter without leaving the page, then select it
-    const handleLetterFile = async (e) => {
-        const file = e.target.files?.[0];
-        e.target.value = "";
-        if (!file) return;
-        if (validateFile(file)) {
-            setErrorKey("studentInternship.letterInvalid");
-            setStatus("error");
-            return;
-        }
-        setStatus("sending");
-        setErrorKey(null);
-        try {
-            await uploadDocument("COVER_LETTER", file);
-            const list = (await onLettersChanged?.()) ?? [];
-            const newest = list.reduce((a, b) => (b.id > (a?.id ?? -1) ? b : a), null);
-            if (newest) setLetterId(String(newest.id));
-            setStatus("idle");
-        } catch {
-            setErrorKey("studentInternship.letterUploadFailed");
-            setStatus("error");
-        }
-    };
-
-    return (
+    const messages = (
         <>
             {status === "error" && (
                 <span className={`text-sm ${dark ? "text-red-300" : "text-red-600"}`} role="alert">
@@ -122,59 +126,65 @@ function ApplyControls({internshipId, cvs, letters = [], dark, application, onCh
                     {t(SUCCESS_KEY[status])}
                 </span>
             )}
-
-            <select
-                value={selectedCvId}
-                onChange={(e) => {
-                    setCvId(Number(e.target.value));
-                    resetFeedback();
-                }}
-                disabled={status === "sending"}
-                className={selectClass}
-                aria-label={t("studentInternship.chooseCv")}
-            >
-                {cvs.map((cv) => (
-                    <option key={cv.id} value={cv.id}>{cv.fileName}</option>
-                ))}
-            </select>
-
-            <select
-                value={selectedLetterId}
-                onChange={(e) => {
-                    setLetterId(e.target.value);
-                    resetFeedback();
-                }}
-                disabled={status === "sending"}
-                className={selectClass}
-                aria-label={t("studentInternship.chooseLetter")}
-            >
-                <option value="">{t("studentInternship.noLetter")}</option>
-                {letters.map((l) => (
-                    <option key={l.id} value={l.id}>{l.fileName}</option>
-                ))}
-            </select>
-
-            <input ref={fileRef} type="file" accept=".pdf" className="sr-only" tabIndex={-1}
-                   aria-hidden="true" onChange={handleLetterFile}/>
-            <Button tone="accent" lockTone dark={dark} icon="upload_file" disabled={status === "sending"}
-                    onClick={() => fileRef.current?.click()}>
-                {t("studentInternship.uploadLetter")}
-            </Button>
-
-            {application ? (
-                <Button tone="success" dark={dark} icon="send"
-                        disabled={status === "sending" || unchanged}
-                        onClick={handleUpdate}>
-                    {t("studentInternship.updateCV")}
-                </Button>
-            ) : (
-                <Button tone="success" dark={dark} icon="send"
-                        disabled={status === "sending" || status === "applied"}
-                        onClick={handleApply}>
-                    {t("studentInternship.apply")}
-                </Button>
-            )}
         </>
+    );
+
+    if (!open) {
+        return (
+            <>
+                {messages}
+                <Button tone="success" dark={dark} icon="send" onClick={() => {
+                    resetFeedback();
+                    setOpen(true);
+                }}>
+                    {t(application ? "studentInternship.updateCV" : "studentInternship.apply")}
+                </Button>
+            </>
+        );
+    }
+
+    return (
+        <div className="flex w-full flex-col gap-4 text-left">
+            {messages}
+
+            {/* The portfolio view, without its title: pick one CV (approved only), and optionally one letter and one transcript */}
+            <PortfolioPanel
+                dark={dark}
+                uploadTypes={UPLOAD_TYPES}
+                onUploaded={handleUploaded}
+                selection={{
+                    cvId: selectedCvId,
+                    letterId: selectedLetterId ? Number(selectedLetterId) : null,
+                    transcriptId: selectedTranscriptId ? Number(selectedTranscriptId) : null,
+                    disabled: sending,
+                    onPickCv: (id) => {
+                        setCvId(id);
+                        resetFeedback();
+                    },
+                    // Ticking the ticked letter again removes it
+                    onPickLetter: (id) => {
+                        setLetterId(selectedLetterId === String(id) ? "" : String(id));
+                        resetFeedback();
+                    },
+                    // Ticking the ticked transcript again removes it
+                    onPickTranscript: (id) => {
+                        setTranscriptId(selectedTranscriptId === String(id) ? "" : String(id));
+                        resetFeedback();
+                    },
+                }}
+            />
+
+            <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button tone="neutral" dark={dark} icon="close" disabled={sending}
+                        onClick={() => setOpen(false)}>
+                    {t("cvDocuments.cancelBtn")}
+                </Button>
+                <Button tone="success" dark={dark} icon="send" disabled={sending || (application && unchanged)}
+                        onClick={handleSubmit}>
+                    {t(application ? "interview.saveChanges" : "interview.submitBtn")}
+                </Button>
+            </div>
+        </div>
     );
 }
 

@@ -342,7 +342,8 @@
     "openInternship": "View all candidates"
   },
   "applicationCard": {
-    "coverLetter": "Cover letter"
+    "coverLetter": "Cover letter",
+    "transcript": "Transcript"
   },
   "postInternship": {
     "pageTitle": "Offer management",

@@ -529,11 +529,5 @@
   },
   "applicationCard": {
     "coverLetter": "Lettre de motivation"
-  },
-  "studentInterviews": {
-    "title": "Mes entrevues",
-    "loading": "Chargement des entrevues...",
-    "loadError": "Impossible de charger les entrevues.",
-    "empty": "Vous n'avez aucune convocation d'entrevue pour le moment."
   }
 }
