@@ -53,7 +53,7 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                     <button
                         onClick={onClose}
                         className="p-1.5 rounded-lg text-red-600"
-                        aria-label="Close menu"
+                        aria-label={t("navbar.closeMenu")}
                     >
                         <Icon name="close" size={24}/>
                     </button>
@@ -76,7 +76,7 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                     {isLoggedIn && isAccessGranted && (
                         <div className={`pt-10`}>
                             <select
-                                value={selectedSession.name}
+                                value={selectedSession?.name ?? ""}
                                 onChange={(e) => {
                                     const matchedSession = sessions.find(s => s.name === e.target.value);
                                     setSelectedSession(matchedSession);

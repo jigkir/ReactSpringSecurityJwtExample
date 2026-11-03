@@ -1,14 +1,17 @@
 import {useCallback, useEffect, useState} from "react";
-import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../../styles/Button.jsx";
 import {base64ToBlobUrl} from "../../../utils/documents.js";
 import {sortApplication} from "../../../utils/Sort.jsx";
+import {translateWarning} from "../../../utils/CommonFields.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 
 function ViewApplications({user}) {
+    const {t} = useTranslation();
     const [applications, setApplications] = useState([]);
     const [internshipTitle, setInternshipTitle] = useState("");
     const {id} = useParams();
@@ -88,8 +91,18 @@ function ViewApplications({user}) {
     }, [refresh]);
 
     if (allowed === false) return <Navigate to="/internships" replace/>;
-    if (loading || allowed === null) return <div className="p-6 text-center">Loading...</div>;
-    if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
+
+    if (error) {
+        return (
+            <div className="p-6 text-center text-red-500" role="alert">
+                {translateWarning(t, error)}
+            </div>
+        );
+    }
+
+    if (loading || allowed === null) {
+        return <div className="p-6 text-center" aria-busy="true">{t("viewApplication.loading")}</div>;
+    }
 
     const hasItems = applications.length > 0;
 
@@ -98,7 +111,7 @@ function ViewApplications({user}) {
             {/* Header Section */}
             <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
                 <Button as={NavLink} to="/internships" tone="primary" dark={dark} icon="arrow_back" className="w-fit">
-                    Back to Internships
+                    {t("viewApplication.backBtn")}
                 </Button>
                 <h1 className={`text-4xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
                     {internshipTitle}
@@ -126,7 +139,7 @@ function ViewApplications({user}) {
                     })
                 ) : (
                     <p className={`text-sm py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`}>
-                        No applications found for this internship.
+                        {t("viewApplication.empty")}
                     </p>
                 )}
             </div>

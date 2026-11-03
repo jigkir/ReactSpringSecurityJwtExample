@@ -3,6 +3,7 @@ import {BrowserRouter} from "react-router-dom";
 import NotificationMenu from "../NotificationMenu.jsx";
 import {NotificationsProvider} from "../NotificationsProvider.jsx";
 import {getNotifications, markNotificationsAsRead} from "../../api/Api.jsx";
+import i18n from "../../../i18next.jsx";
 
 vi.mock("../../api/Api.jsx", () => ({
     getNotifications: vi.fn(),
@@ -10,6 +11,10 @@ vi.mock("../../api/Api.jsx", () => ({
 }));
 
 const EMPLOYER = {id: 1, role: "EMPLOYER"};
+
+// Labels come from the translations, so rewording them never breaks these tests
+const approvedLabel = (amount) => i18n.t("navbar.internshipApprovedNotification", {amount});
+const rejectedLabel = (amount) => i18n.t("navbar.internshipRejectedNotification", {amount});
 
 const MockNotificationMenu = () => (
     <BrowserRouter future={{v7_startTransition: true, v7_relativeSplatPath: true}}>
@@ -42,8 +47,8 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         openMenu();
 
         // Assert
-        expect(screen.getByRole("link", {name: "1 offre(s) de stage approuvée(s)"})).toBeInTheDocument();
-        expect(screen.getByRole("link", {name: "2 offre(s) de stage refusée(s)"})).toBeInTheDocument();
+        expect(screen.getByRole("link", {name: approvedLabel(1)})).toBeInTheDocument();
+        expect(screen.getByRole("link", {name: rejectedLabel(2)})).toBeInTheDocument();
     });
 
     it("shouldShowNoNotificationsWhenEmployerHasNoReviewDecision", async () => {
@@ -56,7 +61,7 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         openMenu();
 
         // Assert
-        expect(screen.getByText("Vous n'avez pas de nouvelles notifications")).toBeInTheDocument();
+        expect(screen.getByText(i18n.t("navbar.noNotifications"))).toBeInTheDocument();
         expect(screen.queryByRole("link")).not.toBeInTheDocument();
     });
 
@@ -71,7 +76,7 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         openMenu();
 
         // Act
-        fireEvent.click(screen.getByRole("link", {name: "1 offre(s) de stage approuvée(s)"}));
+        fireEvent.click(screen.getByRole("link", {name: approvedLabel(1)}));
 
         // Assert
         await waitFor(() => expect(screen.queryByText("1")).not.toBeInTheDocument());
@@ -91,6 +96,6 @@ describe("NotificationMenu handles employer notification errors", () => {
         openMenu();
 
         // Assert
-        expect(await screen.findByRole("alert")).toHaveTextContent("Impossible de charger les notifications.");
+        expect(await screen.findByRole("alert")).toHaveTextContent(i18n.t("navbar.notificationLoadError"));
     });
 });

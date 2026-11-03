@@ -5,8 +5,11 @@
  * Below md everything stacks vertically. The Preview / Close toggle is always the first
  * action; the inline PDF preview opens under the row.
  *
+ * The Preview label names the document: "Preview CV", "Preview cover letter", "Preview transcript"
+ * (from doc.docType). Without a docType (manager CV page) it falls back to the generic label.
+ *
  * Props
- *   doc        {id, fileName, rejectionComment?}
+ *   doc        {id, fileName, docType?, rejectionComment?}
  *   dark       boolean
  *   status     "PENDING" | "APPROVED" | "REJECTED" | undefined   (no pill when undefined)
  *   leading    node     optional, shown before the file name (e.g. a checkbox)
@@ -54,7 +57,8 @@ export default function DocumentRow({
                                     }) {
     const {t} = useTranslation();
     const th = getCvDocumentsClasses(dark);
-    const viewLabel = isOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewBtn");
+    const previewKey = doc.docType ? `portfolio.actions.preview.${doc.docType}` : "cvDocuments.viewBtn";
+    const viewLabel = isOpen ? t("cvPreview.closeBtn") : t(previewKey);
 
     const columns = status
         ? "md:grid-cols-[minmax(12rem,1fr)_auto_auto]"
@@ -96,7 +100,7 @@ export default function DocumentRow({
                 )}
 
                 {/* Actions: one vertical stack, every button the same width */}
-                <div className="flex flex-col items-stretch gap-2 md:min-w-[11rem] md:justify-self-end">
+                <div className="flex flex-col items-stretch gap-2 md:min-w-44 md:justify-self-end">
                     {/* Preview stays available in every state (also while rejecting / deleting) */}
                     <Button tone="accent" lockTone dark={dark}
                             icon={isOpen ? "close" : "visibility"}

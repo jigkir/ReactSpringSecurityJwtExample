@@ -5,18 +5,24 @@ import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import {getStudentInterviews} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 
+const getInterviewTime = (interview) => {
+    const raw = interview.scheduledAt ?? interview.interviewDate;
+    const time = new Date(raw).getTime();
+    return Number.isNaN(time) ? null : time;
+};
+
 function isCancelled(interview) {
     return interview.status === "CANCELLED";
 }
 
+// Groups: 0 = upcoming (soonest first), 1 = past (most recent first), 2 = cancelled
 function sortInterviews(interviews) {
     const now = Date.now();
 
     const getGroup = (interview) => {
         if (isCancelled(interview)) return 2;
-
-        const date = new Date(interview.interviewDate).getTime();
-        return date >= now ? 0 : 1;
+        const time = getInterviewTime(interview);
+        return time !== null && time >= now ? 0 : 1;
     };
 
     return [...interviews].sort((a, b) => {
@@ -25,10 +31,10 @@ function sortInterviews(interviews) {
 
         if (groupA !== groupB) return groupA - groupB;
 
-        const dateA = new Date(a.scheduledAt).getTime() || 0;
-        const dateB = new Date(b.scheduledAt).getTime() || 0;
+        const timeA = getInterviewTime(a) ?? 0;
+        const timeB = getInterviewTime(b) ?? 0;
 
-        return groupA === 0 ? dateA - dateB : dateB - dateA;
+        return groupA === 0 ? timeA - timeB : timeB - timeA;
     });
 }
 
@@ -110,16 +116,16 @@ function Interviews() {
                     )}
 
                     {!loading && !error && visibleInterviews.map(interview => {
-                        const date = new Date(interview.scheduledAt);
-                        const validDate = !Number.isNaN(date.getTime());
+                        const time = getInterviewTime(interview);
+                        const validDate = time !== null;
                         const cancelled = isCancelled(interview);
-                        const past = validDate && date.getTime() < Date.now()
+                        const past = validDate && time < Date.now();
                         const status = cancelled ? "cancelled" : past ? "past" : "upcoming";
 
                         const formattedDate = validDate ? new Intl.DateTimeFormat(locale, {
                             dateStyle: "long",
                             timeStyle: "short"
-                        }).format(date) : t("studentInterviews.invalidDate");
+                        }).format(new Date(time)) : t("studentInterviews.invalidDate");
 
                         const meetingUrl = interview.meetingType === "ONLINE" ? getMeetingUrl(interview.meetingDetails) : null;
 

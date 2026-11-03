@@ -4,8 +4,10 @@
  * CVs also carry a review status (pill + rejection reason), the other types do not:
  * the row simply shows a pill when the document has a `status`.
  *
- * Actions: Preview | Change type (full page only) | Delete (hide, with confirmation).
- * The card header shows the type title and the "Upload files" / "Close" button (full page only).
+ * Actions: Preview CV / cover letter / transcript | Change document type (full page only) |
+ * Delete CV / cover letter / transcript (hide, with confirmation).
+ * The card header shows the type title and the "Upload documents" / "Close upload panel" button
+ * (full page only).
  * The list is refreshed automatically by useLoadedList (polling), and silently when
  * `reloadToken` changes (the old rows stay on screen until the new ones arrive).
  *
@@ -33,8 +35,8 @@
  *   selection      object    optional {cvId, letterId, transcriptId, onPickCv(id), onPickLetter(id),
  *                            onPickTranscript(id), disabled}
  *   reloadToken    number    optional, change it to refetch the list silently
- *   onTypeChanged  function  optional, shows "Change type" and is called once a file was moved
- *   uploadOpen     boolean   the upload panel is open (button shows "Close")
+ *   onTypeChanged  function  optional, shows "Change document type" and is called once a file was moved
+ *   uploadOpen     boolean   the upload panel is open (button shows "Close upload panel")
  *   onAddClick     function  opens the upload panel
  *   onCloseClick   function  closes the upload panel
  */
@@ -154,6 +156,8 @@ export default function DocumentList({
         if (picking) return null; // only Preview (added by DocumentRow)
 
         const key = keyOf(doc);
+        // "Delete CV" / "Delete cover letter" / "Delete transcript"
+        const deleteLabel = t(`portfolio.actions.delete.${doc.docType}`);
 
         if (confirmKey === key) {
             return (
@@ -161,7 +165,7 @@ export default function DocumentList({
                     <span className={`${th.confirmText} md:text-right`}>{t("cvDocuments.hideAsk")}</span>
                     <Button tone="danger" dark={dark} icon="check_circle" disabled={busy} autoFocus
                             className={ROW_BTN} onClick={() => remove(doc)}>
-                        {t("cvDocuments.confirmBtn")}
+                        {t("portfolio.actions.confirmDelete")}
                     </Button>
                     <Button tone="neutral" dark={dark} icon="close" disabled={busy}
                             className={ROW_BTN} onClick={() => setConfirmKey(null)}>
@@ -183,8 +187,8 @@ export default function DocumentList({
                 {typeEditKey !== key && (
                     <Button tone="danger" dark={dark} icon="delete" disabled={busy} className={ROW_BTN}
                             onClick={() => setConfirmKey(key)}
-                            aria-label={`${t("cvDocuments.hideBtn")} : ${doc.fileName}`}>
-                        {t("cvDocuments.hideBtn")}
+                            aria-label={`${deleteLabel} : ${doc.fileName}`}>
+                        {deleteLabel}
                     </Button>
                 )}
             </>
@@ -237,7 +241,7 @@ export default function DocumentList({
         </div>
     );
 
-    // Title on the left, "Upload files" / "Close" on the right
+    // Title on the left, "Upload documents" / "Close upload panel" on the right
     const headerAction = onAddClick && (
         uploadOpen && onCloseClick ? (
             <Button tone="ghost" dark={dark} icon="close" onClick={onCloseClick}>
