@@ -28,7 +28,7 @@ import {translateWarning} from '../../../utils/CommonFields.jsx';
 
 const canUpload = (item) => item.status === "ready" || item.status === "failed";
 
-export default function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, onUploaded, onClose}) {
+function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, onUploaded, onClose}) {
     const {t} = useTranslation();
     const inputRef = useRef(null);
     const nextKey = useRef(0);
@@ -184,3 +184,5 @@ export default function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, 
         </section>
     );
 }
+
+export default PortfolioUpload;

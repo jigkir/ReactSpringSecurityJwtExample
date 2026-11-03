@@ -32,7 +32,7 @@ import {translateWarning} from '../../../utils/CommonFields.jsx';
 
 const MODE = {MOVE: "move", REPLACE: "replace"};
 
-export default function ChangeDocType({type, id, dark, open, onOpen, onClose, onChanged, className = ""}) {
+function ChangeDocType({type, id, dark, open, onOpen, onClose, onChanged, className = ""}) {
     const {t} = useTranslation();
     const options = DOC_TYPE_KEYS.filter((k) => k !== type);
     const inputRef = useRef(null);
@@ -186,3 +186,5 @@ export default function ChangeDocType({type, id, dark, open, onOpen, onClose, on
         </>
     );
 }
+
+export default ChangeDocType;

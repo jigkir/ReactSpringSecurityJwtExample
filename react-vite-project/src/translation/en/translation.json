@@ -424,7 +424,6 @@
     "viewed": "Viewed",
     "noApprovedCv": "You need an approved CV before you can apply. Upload one in your portfolio and wait for a manager to approve it.",
     "goToCv": "Go to my portfolio",
-    "applied": "Application sent: the employer has seen your CV",
     "appliedBadge": "Applied",
     "chooseCv": "Choose a CV",
     "apply": "Apply to this internship",
@@ -443,6 +442,9 @@
     "uploadLetter": "Upload a cover letter",
     "letterInvalid": "The cover letter must be a PDF within the size limit.",
     "letterUploadFailed": "Unable to upload the cover letter. Please try again."
+  },
+  "sentDocuments": {
+    "title": "Documents sent with your application"
   },
   "employerInternship": {
     "openInterviewPicker": "Invite to an interview",

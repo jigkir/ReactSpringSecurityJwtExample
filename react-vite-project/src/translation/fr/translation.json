@@ -424,7 +424,6 @@
     "viewed": "Consulté",
     "noApprovedCv": "Vous devez avoir un CV approuvé pour postuler. Téléversez-en un dans votre portfolio et attendez l'approbation d'un gestionnaire.",
     "goToCv": "Accéder à mon portfolio",
-    "applied": "Candidature envoyée : l'employeur a consulté votre CV",
     "appliedBadge": "Postulé",
     "chooseCv": "Choisissez un CV",
     "apply": "Postuler à ce stage",
@@ -443,6 +442,9 @@
     "uploadLetter": "Téléverser une lettre de motivation",
     "letterInvalid": "La lettre doit être un PDF respectant la taille maximale.",
     "letterUploadFailed": "Impossible de téléverser la lettre de motivation. Veuillez réessayer."
+  },
+  "sentDocuments": {
+    "title": "Documents envoyés avec votre candidature"
   },
   "employerInternship": {
     "openInterviewPicker": "Convoquer en entrevue",

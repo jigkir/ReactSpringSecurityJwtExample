@@ -5,6 +5,7 @@ import Button from "../../../styles/Button.jsx";
 import Icon from "../../../styles/Icon.jsx";
 import PortfolioPanel from "../portfolio/PortfolioPanel.jsx";
 import {applyForInternship, updateApplicationCV} from "../../api/Api.jsx";
+import SentDocuments from "./SentDocuments.jsx";
 
 const HTTP_CONFLICT = 409;
 const READ_BY_EMPLOYER = "READ";
@@ -48,14 +49,7 @@ function ApplyControls({
     }
 
     if (application?.internshipApplicationStatus === READ_BY_EMPLOYER) {
-        return (
-            <span
-                className={`inline-flex items-center gap-1.5 text-sm font-medium ${dark ? "text-green-300" : "text-green-700"}`}
-                role="status">
-                <Icon name="check_circle" size={18}/>
-                {t("studentInternship.applied")}
-            </span>
-        );
+        return <SentDocuments application={application} dark={dark}/>;
     }
 
     // The CV picked by the student, otherwise the CV already sent, otherwise the first approved CV
@@ -132,6 +126,7 @@ function ApplyControls({
     if (!open) {
         return (
             <>
+                {application && <SentDocuments application={application} dark={dark}/>}
                 {messages}
                 <Button tone="success" dark={dark} icon="send" onClick={() => {
                     resetFeedback();

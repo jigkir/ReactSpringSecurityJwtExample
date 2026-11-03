@@ -23,7 +23,7 @@ import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
 
 const TABS = ["ALL", ...DOC_TYPE_KEYS];
 
-export default function PortfolioPanel({dark, selection = null, uploadTypes = DOC_TYPE_KEYS, onUploaded}) {
+function PortfolioPanel({dark, selection = null, uploadTypes = DOC_TYPE_KEYS, onUploaded}) {
     const {t} = useTranslation();
     const [tab, setTab] = useState("ALL");
     const [uploadOpen, setUploadOpen] = useState(false);
@@ -72,3 +72,5 @@ export default function PortfolioPanel({dark, selection = null, uploadTypes = DO
         </div>
     );
 }
+
+export default PortfolioPanel;

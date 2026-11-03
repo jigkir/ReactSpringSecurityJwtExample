@@ -46,7 +46,7 @@ const getUrl = async (id) => blobUrlFromFile(await getManagerCvFile(id));
 const statusOf = (doc) => doc.status ?? "PENDING";
 const isPending = (doc) => statusOf(doc) === "PENDING";
 
-export default function CvReviewList({dark, preview = false}) {
+function CvReviewList({dark, preview = false}) {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const th = getCvDocumentsClasses(dark);
@@ -256,3 +256,5 @@ export default function CvReviewList({dark, preview = false}) {
         </DocumentListShell>
     );
 }
+
+export default CvReviewList;

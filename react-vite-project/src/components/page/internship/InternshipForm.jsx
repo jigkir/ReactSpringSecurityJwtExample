@@ -114,7 +114,7 @@ function buildPayload(formData, selection, internship) {
     };
 }
 
-export default function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) {
+function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) {
     const {t} = useTranslation();
     const s = getInternshipFormClasses(dark);
     const isEdit = Boolean(internship);
@@ -293,3 +293,5 @@ export default function InternshipForm({onClose, onSubmitInternship, internship 
         </section>
     );
 }
+
+export default InternshipForm;

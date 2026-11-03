@@ -24,7 +24,7 @@ import {usePolling} from '../../../utils/usePolling.js';
 
 const TABS = ["ALL", ...DOC_TYPE_KEYS];
 
-export default function Portfolio() {
+function Portfolio() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {pageClass} = getAuthClasses(dark);
@@ -94,3 +94,5 @@ export default function Portfolio() {
         </div>
     );
 }
+
+export default Portfolio;

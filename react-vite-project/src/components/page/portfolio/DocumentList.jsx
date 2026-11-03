@@ -71,10 +71,10 @@ const byStatusThenNewest = (a, b) => allViewRank(a) - allViewRank(b) || byNewest
 const urlGetters = {};
 const getUrlFor = (type) => (urlGetters[type] ??= async (id) => blobUrlFromFile(await getDocumentFile(type, id)));
 
-export default function DocumentList({
-                                         type, dark, preview = false, selection = null, reloadToken = 0, onTypeChanged,
-                                         uploadOpen = false, onAddClick, onCloseClick,
-                                     }) {
+function DocumentList({
+                          type, dark, preview = false, selection = null, reloadToken = 0, onTypeChanged,
+                          uploadOpen = false, onAddClick, onCloseClick,
+                      }) {
     const {t, i18n} = useTranslation();
     const th = getCvDocumentsClasses(dark);
     const lang = i18n.resolvedLanguage ?? i18n.language;
@@ -229,7 +229,8 @@ export default function DocumentList({
 
     // Status filter (CV tab only). The border takes the colour of the chosen status.
     const toolbar = hasStatusFilter && docs !== null && !failed && (
-        <div className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+        <div
+            className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
             <select value={status} onChange={(e) => setStatus(e.target.value)}
                     className={getSelectClass(dark, getStatusBorder(status, dark))}
                     aria-label={t("cvDocuments.statusAria")}>
@@ -274,3 +275,5 @@ export default function DocumentList({
         </DocumentListShell>
     );
 }
+
+export default DocumentList;
