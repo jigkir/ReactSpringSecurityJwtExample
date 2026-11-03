@@ -529,5 +529,11 @@
     "loadError": "Unable to load mock users.",
     "retryBtn": "Retry",
     "empty": "No mock users available."
+  },
+  "studentInterviews": {
+    "title": "My Interviews",
+    "loading": "Loading interviews...",
+    "loadError": "Unable to load interviews.",
+    "empty": "You have no interview invitations at the moment."
   }
 }

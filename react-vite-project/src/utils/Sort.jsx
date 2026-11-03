@@ -18,6 +18,7 @@
  */
 
 import {useMemo, useRef, useState} from 'react';
+import {useSession} from "./useSession.js";
 
 // ─── 1. Generic helpers ───────────────────────────────────────────────────────
 
@@ -145,19 +146,36 @@ export function useInternshipFilters(list, appliedIds = null) {
     const [applied, setApplied] = useState("ALL");
     const [sort, setSort] = useState("NEWEST");
 
+    const {selectedSession} = useSession();
+
     // "Viewed" state of each offer the first time it appears. Lives as long as the page
     // (reset on page change), so previewing an offer never reorders the list.
     const viewedAtLoad = useRef(new Map());
 
-    const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
+    const sessionFilteredList = useMemo(() => {
+        if (!list) return [];
+        if (selectedSession?.startDate && selectedSession?.endDate) {
+            const start = new Date(selectedSession.startDate).getTime();
+            const end = new Date(selectedSession.endDate).getTime();
+
+            return list.filter(item => {
+                if (!item.uploadedAt) return false;
+                const uploaded = new Date(item.uploadedAt).getTime();
+                return uploaded >= start && uploaded <= end;
+            });
+        }
+        return list;
+    }, [list, selectedSession]);
+
+    const disciplines = useMemo(() => getInternshipDisciplines(sessionFilteredList), [sessionFilteredList]);
     const visible = useMemo(() => {
-        for (const i of list ?? []) {
+        for (const i of sessionFilteredList ?? []) {
             if (!viewedAtLoad.current.has(i.id)) viewedAtLoad.current.set(i.id, Boolean(i.viewed));
         }
-        return applyInternshipFilters(list, {
+        return applyInternshipFilters(sessionFilteredList, {
             search, status, discipline, sort, applied, appliedIds, viewedAtLoad: viewedAtLoad.current,
         });
-    }, [list, search, status, discipline, sort, applied, appliedIds]);
+    }, [sessionFilteredList, search, status, discipline, sort, applied, appliedIds]);
 
     return {
         search, setSearch, status, setStatus, discipline, setDiscipline, sort, setSort,
@@ -220,10 +238,28 @@ export function useCvFilters(docs) {
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("DATE_DESC");
 
-    const disciplines = useMemo(() => getCvDisciplines(docs), [docs]);
+    const {selectedSession} = useSession();
+
+    const sessionFilteredDocs = useMemo(() => {
+        if (!docs) return [];
+        if (selectedSession?.startDate && selectedSession?.endDate) {
+            const start = new Date(selectedSession.startDate).getTime();
+            const end = new Date(selectedSession.endDate).getTime();
+
+            return docs.filter(item => {
+                const dateField = item.uploadedAt;
+                if (!dateField) return false;
+                const itemDate = new Date(dateField).getTime();
+                return itemDate >= start && itemDate <= end;
+            });
+        }
+        return docs;
+    }, [docs, selectedSession]);
+
+    const disciplines = useMemo(() => getCvDisciplines(sessionFilteredDocs), [sessionFilteredDocs]);
     const visible = useMemo(
-        () => applyCvFilters(docs, {status, discipline, search, sort}),
-        [docs, status, discipline, search, sort],
+        () => applyCvFilters(sessionFilteredDocs, {status, discipline, search, sort}),
+        [sessionFilteredDocs, status, discipline, search, sort],
     );
 
     return {

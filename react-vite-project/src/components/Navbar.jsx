@@ -7,6 +7,7 @@ import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
 import {getSessions} from "./api/Api.jsx";
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
+import {useSession} from "../utils/useSession.js";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
@@ -32,7 +33,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const location = useLocation();
     const theme = getNavbarClasses(dark);
     const [sessions, setSessions] = useState([]);
-    const [selectedSession, setSelectedSession] = useState("");
+    const {selectedSession, setSelectedSession} = useSession();
 
     // Mobile dropdowns
     const [menuOpen, setMenuOpen] = useState(false);
@@ -76,16 +77,21 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const isLoggedIn = user?.isLoggedIn ?? false;
     const homePath = isLoggedIn ? "/home" : "/";
 
+
     useEffect(() => {
         if (isLoggedIn) {
             getSessions().then((data) => {
-                setSessions(data.sessions);
-                if (data.sessions.length > 0) {
-                    setSelectedSession(data.sessions[0].name);
+                setSessions(data.sessions || []);
+                if (data.sessions && data.sessions.length > 0) {
+                    // Only set default if no session is currently selected in context
+                    if (!selectedSession) {
+                        const currentSession = data.sessions.find(session => session.current === true);
+                        setSelectedSession(currentSession);
+                    }
                 }
             });
         }
-    }, [isLoggedIn]);
+    }, [isLoggedIn, selectedSession, setSelectedSession]);
 
     const isAccessGranted = accountStatus === ACCOUNT_STATUS.APPROVED;
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
@@ -123,6 +129,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         }`;
 
     const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
+
 
     return (
         <>
@@ -209,12 +216,15 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                         {/*Center section*/}
                         {isLoggedIn && isAccessGranted &&
-                            (<div className="hidden md:flex justify-center flex-1">
+                            (<div className="hidden lg:flex justify-center flex-1">
                                 <form>
                                     <select
                                         value={selectedSession}
-                                        onChange={(e) => setSelectedSession(e.target.value)}
-                                        className={`px-3 py-1 rounded-lg text-sm border text-white ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300"}`}
+                                        onChange={(e) => {
+                                            const matchedSession = sessions.find(s => s.name === e.target.value);
+                                            setSelectedSession(matchedSession);
+                                        }}
+                                        className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
                                     >
                                         {sessions.map((session) => (
                                             <option key={session.name} value={session.name}>

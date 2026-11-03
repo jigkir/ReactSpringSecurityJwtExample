@@ -22,6 +22,7 @@ import Interviews from "./components/page/student/Interviews.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {ACCOUNT_STATUS} from "./utils/AccountStatus.js";
+import {SessionProvider} from "./utils/SessionContext.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -86,50 +87,53 @@ function App() {
     usePolling(fetchStatus, Boolean(user?.email) && accountStatus !== ACCOUNT_STATUS.APPROVED);
 
     return (
-        <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
-            <Routes>
-                <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
-                                            toggleDark={toggleDark}/>}>
+        <SessionProvider>
+            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-screen`}>
+                <Routes>
+                    <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
+                                                toggleDark={toggleDark}/>}>
 
-                    {/* Public: Home shows the landing page when logged out, the role home when logged in */}
-                    <Route path="/" element={<Home/>}/>
-                    <Route path="/about" element={<About/>}/>
-                    <Route path="/login" element={<Login user={user} setError={setError}/>}/>
-                    <Route path="/signup" element={<Signup/>}/>
-                    <Route path="/logout" element={<Logout setUser={setUser}/>}/>
-                    <Route path="/error" element={<ErrorPage error={error}/>}/>
+                        {/* Public: Home shows the landing page when logged out, the role home when logged in */}
+                        <Route path="/" element={<Home/>}/>
+                        <Route path="/about" element={<About/>}/>
+                        <Route path="/login" element={<Login user={user} setError={setError}/>}/>
+                        <Route path="/signup" element={<Signup/>}/>
+                        <Route path="/logout" element={<Logout setUser={setUser}/>}/>
+                        <Route path="/error" element={<ErrorPage error={error}/>}/>
 
-                    {/* Any logged-in role */}
-                    <Route element={<RequireRole user={user} roles={["STUDENT", "TEACHER", "EMPLOYER", "MANAGER"]}/>}>
-                        <Route path="/home" element={<Home/>}/>
+                        {/* Any logged-in role */}
+                        <Route
+                            element={<RequireRole user={user} roles={["STUDENT", "TEACHER", "EMPLOYER", "MANAGER"]}/>}>
+                            <Route path="/home" element={<Home/>}/>
+                        </Route>
+
+                        {/* Student */}
+                        <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
+                            <Route path="/portfolio" element={<Portfolio/>}/>
+                            <Route path="/cv" element={<Navigate to="/portfolio" replace/>}/>
+                            <Route path="/internship" element={<StudentInternships/>}/>
+                            <Route path="/interviews" element={<Interviews/>}/>
+                        </Route>
+
+                        {/* Manager */}
+                        <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
+                            <Route path="/manager/cvs" element={<ManagerCv/>}/>
+                            <Route path="/manager/internships" element={<ManagerInternships/>}/>
+                        </Route>
+
+                        {/* Employer */}
+                        <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
+                            <Route path="/internships" element={<PostInternship user={user}/>}/>
+                            <Route path="/applications" element={<Applications user={user}/>}/>
+                            <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
+                        </Route>
+
+                        <Route path="*" element={<Navigate to="/" replace/>}/>
+                        <Route path="/expired" element={<ExpiredUser user={user}/>}/>
                     </Route>
-
-                    {/* Student */}
-                    <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
-                        <Route path="/portfolio" element={<Portfolio/>}/>
-                        <Route path="/cv" element={<Navigate to="/portfolio" replace/>}/>
-                        <Route path="/internship" element={<StudentInternships/>}/>
-                        <Route path="/interviews" element={<Interviews/>}/>
-                    </Route>
-
-                    {/* Manager */}
-                    <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
-                        <Route path="/manager/cvs" element={<ManagerCv/>}/>
-                        <Route path="/manager/internships" element={<ManagerInternships/>}/>
-                    </Route>
-
-                    {/* Employer */}
-                    <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
-                        <Route path="/internships" element={<PostInternship user={user}/>}/>
-                        <Route path="/applications" element={<Applications user={user}/>}/>
-                        <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
-                    </Route>
-
-                    <Route path="*" element={<Navigate to="/" replace/>}/>
-                    <Route path="/expired" element={<ExpiredUser user={user}/>}/>
-                </Route>
-            </Routes>
-        </div>
+                </Routes>
+            </div>
+        </SessionProvider>
     );
 }
 
