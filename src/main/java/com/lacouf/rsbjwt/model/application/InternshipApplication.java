@@ -1,5 +1,7 @@
 package com.lacouf.rsbjwt.model.application;
 
+import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTranscript;
+import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -23,6 +25,12 @@ public class InternshipApplication {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private CV cv;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CoverLetter coverLetter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private AcademicTranscript academicTranscript;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Student student;
@@ -56,6 +64,11 @@ public class InternshipApplication {
 
     public void changeCv(CV cv) {
         this.cv = cv;
+    }
+
+    public void attachDocuments(CoverLetter coverLetter, AcademicTranscript academicTranscript) {
+        this.coverLetter = coverLetter;
+        this.academicTranscript = academicTranscript;
     }
 
     public void updateEmployerDecision(EmployerDecision decision) {

@@ -325,7 +325,7 @@ public class StudentServiceTest {
         });
 
         // Act
-        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L);
+        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
 
         // Assert
         verify(notificationService).notifyIfAbsent(NotificationType.NEW_INTERNSHIP_APPLICATION, 20L, internship.getPostedBy());
@@ -907,7 +907,7 @@ public class StudentServiceTest {
         });
 
         // Act
-        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L);
+        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
 
         // Assert
         verify(applicationRepository).save(applicationArgumentCaptor.capture());
@@ -916,6 +916,65 @@ public class StudentServiceTest {
         assert savedApplication.getStudent().equals(dummyStudent);
         assert savedApplication.getCv().equals(approvedCv);
         assert savedApplication.getInternship().equals(internship);
+    }
+
+    @Test
+    void shouldAttachCoverLetterAndAcademicTranscriptWhenApplyingWithThem() throws Exception {
+        // Arrange
+        CV approvedCv = new CV();
+        approvedCv.setId(5L);
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+        approvedCv.setVisibility(DocumentVisibility.VISIBLE);
+        approvedCv.setStudent(dummyStudent);
+
+        CoverLetter coverLetter = new CoverLetter();
+        coverLetter.setId(7L);
+
+        AcademicTranscript academicTranscript = new AcademicTranscript();
+        academicTranscript.setId(8L);
+
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(coverLetterRepository.findByIdAndUser_Credentials_EmailAndVisibility(7L, STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(coverLetter));
+        when(academicTranscriptRepository.findByIdAndUser_Credentials_EmailAndVisibility(8L, STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(academicTranscript));
+        when(internshipRepository.findById(10L)).thenReturn(Optional.of(internship));
+        when(applicationRepository.existsByStudentAndInternship(dummyStudent, internship)).thenReturn(false);
+        when(applicationRepository.save(any(InternshipApplication.class))).thenAnswer(invocation -> {
+            InternshipApplication application = invocation.getArgument(0);
+            application.setId(20L);
+            return application;
+        });
+
+        // Act
+        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, 7L, 8L);
+
+        // Assert
+        verify(applicationRepository).save(applicationArgumentCaptor.capture());
+        InternshipApplication savedApplication = applicationArgumentCaptor.getValue();
+
+        assert (coverLetter).equals(savedApplication.getCoverLetter());
+        assert (academicTranscript).equals(savedApplication.getAcademicTranscript());
+    }
+
+    @Test
+    void shouldThrowDocumentNotFoundWhenApplyingWithHiddenCoverLetter() {
+        // Arrange
+        CV approvedCv = new CV();
+        approvedCv.setId(5L);
+        approvedCv.setStatus(ReviewStatus.APPROVED);
+        approvedCv.setVisibility(DocumentVisibility.VISIBLE);
+        approvedCv.setStudent(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(cvRepository.findByIdAndUser_Credentials_Email(5L, STUDENT_EMAIL)).thenReturn(Optional.of(approvedCv));
+        when(coverLetterRepository.findByIdAndUser_Credentials_EmailAndVisibility(7L, STUDENT_EMAIL, DocumentVisibility.VISIBLE)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(DocumentNotFoundException.class, () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, 7L, null));
+
+        verifyNoInteractions(applicationRepository);
     }
 
     @Test
@@ -934,7 +993,7 @@ public class StudentServiceTest {
         // Act & Assert
         assertThrows(
                 CVNotApprovedException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null)
         );
 
         verifyNoInteractions(applicationRepository, internshipRepository);
@@ -963,7 +1022,7 @@ public class StudentServiceTest {
         });
 
         // Act
-        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L);
+        studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
 
         // Assert
         verify(notificationService).closeNotificationOfRecipient(NotificationType.NEW_INTERNSHIP_OFFER, 10L, dummyStudent);
@@ -988,7 +1047,7 @@ public class StudentServiceTest {
         // Act & Assert
         assertThrows(
                 ApplicationAlreadyExistsException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null)
         );
 
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
@@ -1013,7 +1072,7 @@ public class StudentServiceTest {
         // Act & Assert
         assertThrows(
                 DeadlineAlreadyPassedException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null)
         );
 
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
@@ -1062,7 +1121,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(newCv));
 
         // Act
-        studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId);
+        studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId, null, null);
 
         // Assert
         assert application.getCv().equals(newCv);
@@ -1091,7 +1150,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(CVNotApprovedException.class, () ->
-                studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
+                studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId, null, null)
         );
 
         assert application.getCv().equals(oldCv); // unchanged
@@ -1113,7 +1172,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(ApplicationAlreadyReadException.class, () ->
-                studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
+                studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId, null, null)
         );
 
         verifyNoInteractions(cvRepository);
@@ -1131,7 +1190,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(InternshipApplicationNotFoundException.class, () ->
-                studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
+                studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId, null, null)
         );
 
         verifyNoInteractions(cvRepository);
@@ -1151,7 +1210,7 @@ public class StudentServiceTest {
         // Act & Assert
         assertThrows(
                 CVNotVisibleException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L)
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null)
         );
 
         verifyNoInteractions(applicationRepository, internshipRepository);
@@ -1171,7 +1230,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(InternshipNotFoundException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L));
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null));
 
         verifyNoInteractions(applicationRepository);
     }
@@ -1187,7 +1246,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(InternshipNotFoundException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L));
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null));
 
         verifyNoInteractions(applicationRepository);
     }
@@ -1210,7 +1269,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(InternshipNotFoundException.class,
-                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L));
+                () -> studentService.applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null));
 
         verifyNoInteractions(applicationRepository);
     }
@@ -1237,7 +1296,7 @@ public class StudentServiceTest {
         // Act & Assert
         assertThrows(
                 CVNotVisibleException.class,
-                () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
+                () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId, null, null)
         );
 
         assert application.getCv().equals(oldCv);
@@ -1262,7 +1321,7 @@ public class StudentServiceTest {
         // Act & Assert
         assertThrows(
                 DeadlineAlreadyPassedException.class,
-                () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId)
+                () -> studentService.updateInternshipApplication(STUDENT_EMAIL, applicationId, newCvId, null, null)
         );
 
         verifyNoInteractions(cvRepository);
@@ -1279,7 +1338,7 @@ public class StudentServiceTest {
 
         // Act & Assert
         assertThrows(InternshipApplicationNotFoundException.class,
-                () -> studentService.updateInternshipApplication(intruderEmail, 1L, 2L));
+                () -> studentService.updateInternshipApplication(intruderEmail, 1L, 2L, null, null));
 
         verify(applicationRepository, never()).save(any());
         verifyNoInteractions(cvRepository);
