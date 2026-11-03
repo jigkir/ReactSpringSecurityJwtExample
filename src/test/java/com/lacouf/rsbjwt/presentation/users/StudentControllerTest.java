@@ -584,21 +584,33 @@ public class StudentControllerTest {
     @Test
     void shouldApplyForInternshipSuccessfully() throws Exception {
         // Arrange
-        doNothing().when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+        doNothing().when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
         // Act & Assert
         mockMvc.perform(post("/api/student/internship/10/apply/5")
                         .principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Application submitted successfully"));
 
-        verify(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+        verify(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
+    }
+
+    @Test
+    void shouldPassCoverLetterAndTranscriptWhenApplyingWithThem() throws Exception {
+        // Act + Assert
+        mockMvc.perform(post("/api/student/internship/10/apply/5")
+                        .param("coverLetterId", "7")
+                        .param("transcriptId", "8")
+                        .principal(authentication))
+                .andExpect(status().isOk());
+
+        verify(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L, 7L, 8L);
     }
 
     @Test
     void shouldReturnNotFoundWhenApplyingForNonExistentInternship() throws Exception {
         // Arrange
         doThrow(new InternshipNotFoundException(10L))
-                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
 
         // Act & Assert
         mockMvc.perform(post("/api/student/internship/10/apply/5")
@@ -610,7 +622,7 @@ public class StudentControllerTest {
     void shouldReturnNotFoundWhenApplyingWithNonExistentCv() throws Exception {
         // Arrange
         doThrow(new DocumentNotFoundException(10L))
-                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
 
         // Act & Assert
         mockMvc.perform(post("/api/student/internship/10/apply/5")
@@ -622,7 +634,7 @@ public class StudentControllerTest {
     void shouldReturnBadRequestWhenApplyingWithUnapprovedCv() throws Exception {
         // Arrange
         doThrow(new CVNotApprovedException())
-                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L);
+                .when(studentService).applyToInternship(STUDENT_EMAIL, 5L, 10L, null, null);
 
         // Act & Assert
         mockMvc.perform(post("/api/student/internship/10/apply/5")
@@ -652,14 +664,14 @@ public class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Application CV updated successfully"));
 
-        verify(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L);
+        verify(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L, null, null);
     }
 
     @Test
     void shouldReturnBadRequestWhenUpdatingWithUnapprovedCv() throws Exception {
         // Arrange
         doThrow(new CVNotApprovedException())
-                .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L);
+                .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 1L, 2L, null, null);
 
         // Act & Assert
         mockMvc.perform(put("/api/student/applications/1/2")
@@ -671,7 +683,7 @@ public class StudentControllerTest {
     void shouldReturnNotFoundWhenUpdatingNonExistentApplication() throws Exception {
         // Arrange
         doThrow(new InternshipApplicationNotFoundException(99L))
-                .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 99L, 2L);
+                .when(studentService).updateInternshipApplication(STUDENT_EMAIL, 99L, 2L, null, null);
 
         // Act & Assert
         mockMvc.perform(put("/api/student/applications/99/2")

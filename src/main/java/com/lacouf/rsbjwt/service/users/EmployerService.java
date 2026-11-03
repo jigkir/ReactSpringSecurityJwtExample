@@ -19,6 +19,7 @@ import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
@@ -188,6 +189,20 @@ public class EmployerService {
         closeNewInternshipApplicationNotification(applicationId);
 
         return DocumentFileResponseDto.of(internshipApplication.getCv());
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentFileResponseDto getReceivedInternshipApplicationCoverLetter(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        return toAttachedDocumentFile(internshipApplication.getCoverLetter(), applicationId);
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentFileResponseDto getReceivedInternshipApplicationAcademicTranscript(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
+        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
+
+        return toAttachedDocumentFile(internshipApplication.getAcademicTranscript(), applicationId);
     }
 
     public Map<Long, Long> countReceivedInternshipApplicationsByInternship(String email) {
@@ -367,6 +382,13 @@ public class EmployerService {
     private void notifyManagersOfSubmittedInternship(Internship internship) {
         managerRepository.findAll()
                 .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, internship.getId(), manager));
+    }
+
+    private DocumentFileResponseDto toAttachedDocumentFile(Document document, long applicationId) throws ApplicationDocumentNotFoundException {
+        if (document == null) {
+            throw new ApplicationDocumentNotFoundException(applicationId);
+        }
+        return DocumentFileResponseDto.of(document);
     }
 
     private InternshipApplication findReceivedInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {

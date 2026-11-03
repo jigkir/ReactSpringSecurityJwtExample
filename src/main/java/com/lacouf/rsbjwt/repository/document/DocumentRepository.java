@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface DocumentRepository<T extends Document> extends JpaRepository<T, Long> {
 
     Optional<T> findByIdAndUser_Credentials_Email(long id, String email);
+    
+    Optional<T> findByIdAndUser_Credentials_EmailAndVisibility(long id, String email, DocumentVisibility visibility);
 
     List<T> findByUser_Credentials_EmailAndVisibility(String email, DocumentVisibility visibility);
 }

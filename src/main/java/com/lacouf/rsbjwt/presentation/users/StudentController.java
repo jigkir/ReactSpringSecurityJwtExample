@@ -167,8 +167,8 @@ public class StudentController {
     }
 
     @PostMapping("/internship/{internshipId}/apply/{cvId}")
-    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
-        studentService.applyToInternship(authentication.getName(), cvId, internshipId);
+    public ResponseEntity<String> applyForInternship(Authentication authentication, @PathVariable long internshipId, @PathVariable long cvId, @RequestParam(required = false) Long coverLetterId, @RequestParam(required = false) Long transcriptId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, ApplicationAlreadyExistsException, CVNotApprovedException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
+        studentService.applyToInternship(authentication.getName(), cvId, internshipId, coverLetterId, transcriptId);
         return ResponseEntity.ok("Application submitted successfully");
     }
 
@@ -181,8 +181,8 @@ public class StudentController {
     }
 
     @PutMapping("/applications/{applicationId}/{cvId}")
-    public ResponseEntity<String> updateApplicationCV(Authentication authentication, @PathVariable long applicationId, @PathVariable long cvId) throws DocumentNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
-        studentService.updateInternshipApplication(authentication.getName(), applicationId, cvId);
+    public ResponseEntity<String> updateApplicationCV(Authentication authentication, @PathVariable long applicationId, @PathVariable long cvId, @RequestParam(required = false) Long coverLetterId, @RequestParam(required = false) Long transcriptId) throws DocumentNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
+        studentService.updateInternshipApplication(authentication.getName(), applicationId, cvId, coverLetterId, transcriptId);
         return ResponseEntity.ok("Application CV updated successfully");
     }
 

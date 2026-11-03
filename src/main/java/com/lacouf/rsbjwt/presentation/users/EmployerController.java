@@ -83,6 +83,16 @@ public class EmployerController {
         return ResponseEntity.ok(employerService.openReceivedInternshipApplicationCv(applicationId, authentication.getName()));
     }
 
+    @GetMapping("/applications/{applicationId}/cover-letter")
+    public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationCoverLetter(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
+        return ResponseEntity.ok(employerService.getReceivedInternshipApplicationCoverLetter(applicationId, authentication.getName()));
+    }
+
+    @GetMapping("/applications/{applicationId}/transcript")
+    public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationAcademicTranscript(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
+        return ResponseEntity.ok(employerService.getReceivedInternshipApplicationAcademicTranscript(applicationId, authentication.getName()));
+    }
+
     @GetMapping("/applications/count")
     public ResponseEntity<Map<Long, Long>> countReceivedInternshipApplicationsByInternship(Authentication authentication) {
         return ResponseEntity.ok(employerService.countReceivedInternshipApplicationsByInternship(authentication.getName()));

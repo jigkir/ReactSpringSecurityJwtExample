@@ -15,6 +15,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTranscript;
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
@@ -26,6 +27,7 @@ import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
 import com.lacouf.rsbjwt.repository.document.student.coverletter.CoverLetterRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
@@ -220,10 +222,12 @@ public class StudentService {
     }
 
     @Transactional
-    public void applyToInternship(String email, long cvId, long internshipId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
+    public void applyToInternship(String email, long cvId, long internshipId, Long coverLetterId, Long academicTranscriptId) throws UserNotFoundException, DocumentNotFoundException, InternshipNotFoundException, CVNotApprovedException, ApplicationAlreadyExistsException, DeadlineAlreadyPassedException, CVNotVisibleException, StudentAlreadyEmployedException {
         Student student = findByEmail(email);
 
         CV cv = validateCVForApplication(email, cvId);
+        CoverLetter coverLetter = findOptionalVisibleDocument(email, coverLetterId, coverLetterRepository);
+        AcademicTranscript academicTranscript = findOptionalVisibleDocument(email, academicTranscriptId, academicTranscriptRepository);
 
         Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
 
@@ -236,6 +240,7 @@ public class StudentService {
         }
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
+        application.attachDocuments(coverLetter, academicTranscript);
         applicationRepository.save(application);
 
         student.markViewed(internship);
@@ -247,12 +252,15 @@ public class StudentService {
     }
 
     @Transactional
-    public void updateInternshipApplication(String email, long applicationId, long newCvId) throws DocumentNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
+    public void updateInternshipApplication(String email, long applicationId, long newCvId, Long coverLetterId, Long academicTranscriptId) throws DocumentNotFoundException, CVNotApprovedException, InternshipApplicationNotFoundException, ApplicationAlreadyReadException, CVNotVisibleException, DeadlineAlreadyPassedException {
         InternshipApplication application = validateInternshipApplicationForUpdate(email, applicationId);
 
         CV newCv = validateCVForApplication(email, newCvId);
+        CoverLetter coverLetter = findOptionalVisibleDocument(email, coverLetterId, coverLetterRepository);
+        AcademicTranscript academicTranscript = findOptionalVisibleDocument(email, academicTranscriptId, academicTranscriptRepository);
 
         application.changeCv(newCv);
+        application.attachDocuments(coverLetter, academicTranscript);
 
         applicationRepository.save(application);
     }
@@ -450,6 +458,15 @@ public class StudentService {
 
     private AcademicTranscript findStudentAcademicTranscript(String email, long academicTranscriptId) throws DocumentNotFoundException {
         return academicTranscriptRepository.findByIdAndUser_Credentials_Email(academicTranscriptId, email).orElseThrow(() -> new DocumentNotFoundException(academicTranscriptId));
+    }
+
+    private <T extends Document> T findOptionalVisibleDocument(String email, Long documentId, DocumentRepository<T> documentRepository) throws DocumentNotFoundException {
+        if (documentId == null) {
+            return null;
+        }
+        
+        return documentRepository.findByIdAndUser_Credentials_EmailAndVisibility(documentId, email, DocumentVisibility.VISIBLE)
+                .orElseThrow(() -> new DocumentNotFoundException(documentId));
     }
 
     private Internship findInternshipVisibleTo(Student student, long internshipId) throws InternshipNotFoundException {

@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
+import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
@@ -356,7 +357,7 @@ public class EmployerControllerTest {
     void shouldReturnReceivedInternshipApplications() throws Exception {
         // Arrange
         StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
-        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
+        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", null, null, null, null, LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
 
         when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL, null)).thenReturn(List.of(receivedInternshipApplication));
 
@@ -376,6 +377,27 @@ public class EmployerControllerTest {
         mockMvc.perform(get("/api/employer/applications/20/cv").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileName").value("cv.pdf"));
+    }
+
+    @Test
+    void shouldReturnCoverLetterWhenEmployerOpensApplicationCoverLetter() throws Exception {
+        // Arrange
+        when(employerService.getReceivedInternshipApplicationCoverLetter(20L, EMPLOYER_EMAIL)).thenReturn(new DocumentFileResponseDto(7L, "lettre.pdf", new byte[]{1}));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/applications/20/cover-letter").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("lettre.pdf"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenApplicationHasNoTranscript() throws Exception {
+        // Arrange
+        when(employerService.getReceivedInternshipApplicationAcademicTranscript(20L, EMPLOYER_EMAIL)).thenThrow(new ApplicationDocumentNotFoundException(20L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/applications/20/transcript").principal(authentication))
+                .andExpect(status().isNotFound());
     }
 
     @Test
