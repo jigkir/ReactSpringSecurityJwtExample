@@ -21,6 +21,7 @@ import {base64ToBlobUrl} from '../../../utils/documents.js';
 import {matchesSearch, toNum} from '../../../utils/Sort.jsx';
 import {useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
+import {useSession} from "../../../utils/useSession.js";
 
 const ALL = "ALL";
 
@@ -36,6 +37,8 @@ function Applications({user}) {
     const {refresh} = useNotifications();
     const s = getPostInternshipClasses(dark);
     const isLoggedIn = Boolean(user?.isLoggedIn);
+
+    const { selectedSession } = useSession();
 
     const [applications, setApplications] = useState(null); // null = loading
     const [internships, setInternships] = useState([]);
@@ -75,11 +78,27 @@ function Applications({user}) {
         [titleById, t],
     );
 
+    const sessionFilteredApps = useMemo(() => {
+        if (!applications) return [];
+        if (selectedSession?.startDate && selectedSession?.endDate) {
+            const start = new Date(selectedSession.startDate).getTime();
+            const end = new Date(selectedSession.endDate).getTime();
+
+            return applications.filter(app => {
+                const dateField = app.applicationDate;
+                if (!dateField) return false;
+                const appDate = new Date(dateField).getTime();
+                return appDate >= start && appDate <= end;
+            });
+        }
+        return applications;
+    }, [applications, selectedSession]);
+
     // One group per internship that has at least one application: [{id, title, apps, unread}]
     const groups = useMemo(() => {
-        if (!applications) return [];
+        if (!sessionFilteredApps) return []; // <-- Changed from applications to sessionFilteredApps
         const byInternship = new Map();
-        for (const app of applications) {
+        for (const app of sessionFilteredApps) { // <-- Changed here too
             if (!byInternship.has(app.internshipId)) byInternship.set(app.internshipId, []);
             byInternship.get(app.internshipId).push(app);
         }
@@ -91,9 +110,8 @@ function Applications({user}) {
                 unread: apps.filter(isUnread).length,
                 apps,
             }))
-            // Internships with unread applications first, then alphabetical
             .sort((a, b) => Number(b.unread > 0) - Number(a.unread > 0) || a.title.localeCompare(b.title));
-    }, [applications, titleOf]);
+    }, [sessionFilteredApps, titleOf]);
 
     // Apply the internship filter + search, then drop empty groups
     const visibleGroups = useMemo(() => groups

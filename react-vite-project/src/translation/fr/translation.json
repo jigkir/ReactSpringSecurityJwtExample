@@ -218,6 +218,8 @@
     "titleManager": "CVs à valider",
     "uploadedOn": "déposé le",
     "viewBtn": "Aperçu",
+    "viewCVBtn": "Aperçu de CV",
+    "viewCoverBtn": "Aperçu de la lettre de présentation ",
     "hideBtn": "Supprimer",
     "hideAsk": "Supprimer ce document ? Il n'apparaîtra plus dans cette liste.",
     "confirmBtn": "Confirmer",
@@ -528,5 +530,11 @@
   "applicationCard": {
     "coverLetter": "Lettre de motivation",
     "transcript": "Relevé de notes"
+  },
+  "studentInterviews": {
+    "title": "Mes entrevues",
+    "loading": "Chargement des entrevues...",
+    "loadError": "Impossible de charger les entrevues.",
+    "empty": "Vous n'avez aucune convocation d'entrevue pour le moment."
   }
 }

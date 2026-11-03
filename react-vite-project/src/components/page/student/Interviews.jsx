@@ -6,7 +6,7 @@ import {getStudentInterviews} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 
 function isCancelled(interview) {
-    return interview.status === "CANCELLED" || interview.internshipDeleted === true;
+    return interview.status === "CANCELLED";
 }
 
 function sortInterviews(interviews) {
@@ -15,7 +15,7 @@ function sortInterviews(interviews) {
     const getGroup = (interview) => {
         if (isCancelled(interview)) return 2;
 
-        const date = new Date(interview.scheduledAt).getTime();
+        const date = new Date(interview.interviewDate).getTime();
         return date >= now ? 0 : 1;
     };
 
@@ -138,7 +138,7 @@ function Interviews() {
                                             {interview.internshipTitle}
                                         </h2>
                                         <p className={labelClasses}>
-                                            {interview.companyName}
+                                            {interview.employerName}
                                         </p>
                                     </div>
 
