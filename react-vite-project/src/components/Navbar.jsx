@@ -18,6 +18,7 @@ const NAV_BY_ROLE = {
     MANAGER: [
         {to: "/manager/cvs", labelKey: "navbar.cv"},
         {to: "/manager/internships", labelKey: "navbar.internships"},
+        {to: "/users", labelKey: "Users"}
     ],
     EMPLOYER: [
         {to: "/internships", labelKey: "navbar.postInternship"},
@@ -134,14 +135,14 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     return (
         <>
             <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
-                <div className="w-full mx-auto px-2 sm:px-6 lg:px-8">
+                <div className="w-full mx-auto px-2 sm:px-6 md:px-8">
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6 min-w-0 flex-1 justify-start">
+                        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6 min-w-0 flex-1 justify-start">
                             {/* Desktop brand */}
                             <Link to={homePath}
-                                  className={`hidden lg:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
+                                  className={`hidden md:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
                                 <div
                                     className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
                                     {/* Always light text for dark-colored navbars */}
@@ -161,7 +162,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </Link>
 
                             {/* Desktop nav (bell always visible) */}
-                            <nav className="hidden lg:flex items-center gap-1">
+                            <nav className="hidden md:flex items-center gap-1">
                                 {navItems.map(({to, label, end}) => (
                                     <NavLink key={to} to={to} end={end} className={linkClass}>
                                         {label}
@@ -171,7 +172,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </nav>
 
                             {/* Mobile: app name doubles as the pages dropdown button */}
-                            <div ref={menuRef} className="lg:hidden">
+                            <div ref={menuRef} className="md:hidden">
                                 <div
                                     className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-1 sm:gap-2 ${theme.brand}`}>
                                     {/* Burger Button - added flex items-center */}
@@ -209,14 +210,14 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                             </div>
                             {/* Mobile bell (always visible, in the top bar) */}
-                            <div className="lg:hidden">
+                            <div className="md:hidden">
                                 {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </div>
                         </div>
 
                         {/*Center section*/}
                         {isLoggedIn && isAccessGranted &&
-                            (<div className="hidden lg:flex justify-center flex-1">
+                            (<div className="hidden md:flex justify-center flex-1">
                                 <form>
                                     <select
                                         value={selectedSession}
@@ -237,7 +238,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                         {/* ───────── Right side ───────── */}
                         <div
-                            className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 ml-auto shrink-0 flex-1 justify-end">
+                            className="flex items-center gap-1.5 sm:gap-2 md:gap-3 ml-auto shrink-0 flex-1 justify-end">
 
                             <button onClick={toggleLang}
                                     className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
@@ -255,17 +256,17 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </button>
 
                             {/* Desktop greeting + auth */}
-                            <div className="hidden lg:flex items-center gap-3 ml-2">
+                            <div className="hidden md:flex items-center gap-3 ml-2">
                                 {isLoggedIn && (
                                     <div
                                         className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
-                                        <span className="hidden lg:inline">{t("navbar.hello")}</span>
+                                        <span className="hidden md:inline">{t("navbar.hello")}</span>
                                         <span className={`font-semibold ${theme.greetingName}`}>
                                         {user.firstName} {user.lastName}
                                     </span>
                                         {role && (
                                             <span
-                                                className={`hidden lg:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
+                                                className={`hidden md:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
                                             {formatRole(role)}
                                         </span>
                                         )}
@@ -287,7 +288,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </div>
 
                             {/* Mobile account dropdown */}
-                            <div ref={authRef} className="relative lg:hidden">
+                            <div ref={authRef} className="relative md:hidden">
                                 {isLoggedIn ? (
                                     <button
                                         type="button"
