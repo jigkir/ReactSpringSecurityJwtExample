@@ -45,9 +45,9 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
     const handleSendOffer = async (payload) => {
         try {
             if (interview !== null) {
-                const updated = await updateInterview(interview.id, payload);
+                await updateInterview(interview.id, payload);
             } else {
-                const saved = await createInterview(application.id, payload);
+                await createInterview(application.id, payload);
             }
             return {success: true};
         } catch (err) {
