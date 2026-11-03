@@ -17,6 +17,7 @@ import {
 import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
+import {useSession} from "../../../utils/useSession.js";
 
 // <PostInternship user />          full page (route /internships)
 // <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
@@ -31,6 +32,7 @@ function PostInternship({user, preview = false}) {
     const [loading, setLoading] = useState(true);
     const [applicationCount, setApplicationCount] = useState({})
     const formRef = useRef(null);
+    const { selectedSession } = useSession();
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -76,6 +78,16 @@ function PostInternship({user, preview = false}) {
     useEffect(() => {
         if (formOpen) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
     }, [formOpen, editing]);
+
+
+
+    useEffect(() => {
+        if (selectedSession) {
+            console.log("Current session in page:", selectedSession);
+            // Fetch page data for the selected session, e.g.:
+            // fetchInternshipsBySession(selectedSession);
+        }
+    }, [selectedSession]);
 
     const openCreate = () => {
         setEditing(null);
