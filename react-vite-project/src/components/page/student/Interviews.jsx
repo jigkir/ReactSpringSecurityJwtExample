@@ -6,7 +6,7 @@ import {getStudentInterviews} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 
 function isCancelled(interview) {
-    return interview.status === "CANCELLED";
+    return interview.interviewStatus === "CANCELLED";
 }
 
 function sortInterviews(interviews) {
