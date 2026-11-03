@@ -84,7 +84,7 @@ function App() {
     }, [user?.email, fetchStatus]);
 
     // Keep checking until access is granted: the manager can still reactivate a refused account
-    usePolling(fetchStatus);
+    usePolling(fetchStatus, Boolean(user?.email));
 
     return (
         <SessionProvider>
