@@ -36,6 +36,8 @@ import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchErrorDto;
+import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
@@ -314,11 +316,22 @@ public class EmployerService {
         return InterviewEmployerResponseDTO.of(interview);
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public void offerContracts(List<Long> applicationIds, String email) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
+    @Transactional
+    public BatchHireResponseDto offerContracts(List<Long> applicationIds, String email) {
+        List<Long> successful = new ArrayList<>();
+        List<BatchErrorDto> errors = new ArrayList<>();
+
         for (Long applicationId : new LinkedHashSet<>(applicationIds)) {
-            hire(findReceivedInternshipApplication(applicationId, email));
+            try {
+                InternshipApplication app = findReceivedInternshipApplication(applicationId, email);
+                hire(app);
+                successful.add(applicationId);
+            } catch (Exception e) {
+                errors.add(new BatchErrorDto(applicationId, e.getMessage()));
+            }
         }
+
+        return new BatchHireResponseDto(successful, errors);
     }
 
     @Transactional(readOnly = true)
