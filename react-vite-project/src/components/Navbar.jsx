@@ -139,7 +139,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-4 justify-start">
+                        <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-1 justify-start">
                             {/* Desktop brand */}
                             <Link to={homePath}
                                   className={`hidden xl:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -217,27 +217,25 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                         {/*Center section*/}
                         {isLoggedIn && isAccessGranted &&
-                            (<div className="hidden xl:flex justify-center flex-1 ">
-                                    <select
-                                        value={selectedSession?.name}
-                                        onChange={(e) => {
-                                            const matchedSession = sessions.find(s => s.name === e.target.value);
-                                            setSelectedSession(matchedSession);
-                                        }}
-                                        className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
-                                    >
-                                        {sessions.map((session) => (
-                                            <option key={session.name} value={session.name}>
-                                                {session.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                            (<div className="hidden xl:flex justify-center shrink-0">
+                                <select
+                                    value={selectedSession?.name}
+                                    onChange={(e) => {
+                                        const matchedSession = sessions.find(s => s.name === e.target.value);
+                                        setSelectedSession(matchedSession);
+                                    }}
+                                    className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
+                                >
+                                    {sessions.map((session) => (
+                                        <option key={session.name} value={session.name}>
+                                            {session.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>)}
 
                         {/* ───────── Right side ───────── */}
-                        <div
-                            className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 ml-auto shrink-0 flex-2 justify-end">
-
+                        <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 flex-1 justify-end">
                             <button onClick={toggleLang}
                                     className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
                                     aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
