@@ -85,7 +85,7 @@ class AccountAccessServiceTest {
         // Arrange
         student.grantAccess(currentSession);
 
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+        when(academicSessionService.isInCurrentAcademicYear(currentSession)).thenReturn(true);
 
         // Act + Assert
         assert (AccountStatus.APPROVED).equals(accountAccessService.getAccountStatus(student));
@@ -96,7 +96,7 @@ class AccountAccessServiceTest {
         // Arrange
         student.grantAccess(pastSession);
 
-        when(academicSessionService.isCurrent(pastSession)).thenReturn(false);
+        when(academicSessionService.isInCurrentAcademicYear(pastSession)).thenReturn(false);
 
         // Act + Assert
         assert (AccountStatus.PENDING).equals(accountAccessService.getAccountStatus(student));
@@ -107,7 +107,7 @@ class AccountAccessServiceTest {
         // Arrange
         student.denyAccess(currentSession);
 
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+        when(academicSessionService.isInCurrentAcademicYear(currentSession)).thenReturn(true);
 
         // Act + Assert
         assert (AccountStatus.REJECTED).equals(accountAccessService.getAccountStatus(student));
@@ -119,7 +119,7 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(userAppRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isCurrent(pastSession)).thenReturn(false);
+        when(academicSessionService.isInCurrentAcademicYear(pastSession)).thenReturn(false);
 
         // Act
         AccountStatusResponseDto response = accountAccessService.getAccountStatus(STUDENT_EMAIL);
@@ -133,7 +133,7 @@ class AccountAccessServiceTest {
         // Arrange
         student.grantAccess(currentSession);
 
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+        when(academicSessionService.isInCurrentAcademicYear(currentSession)).thenReturn(true);
 
         // Act + Assert
         assert (student.getAuthorities()).equals(accountAccessService.getAuthorities(student));
@@ -148,7 +148,7 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isCurrent(pastSession)).thenReturn(false);
+        when(academicSessionService.isInCurrentAcademicYear(pastSession)).thenReturn(false);
         when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
 
         // Act
@@ -165,7 +165,7 @@ class AccountAccessServiceTest {
         student.grantAccess(currentSession);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+        when(academicSessionService.isInCurrentAcademicYear(currentSession)).thenReturn(true);
 
         // Act
         accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
@@ -180,7 +180,7 @@ class AccountAccessServiceTest {
         student.denyAccess(currentSession);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+        when(academicSessionService.isInCurrentAcademicYear(currentSession)).thenReturn(true);
 
         // Act
         accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
@@ -207,7 +207,7 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(studentRepository.findAll()).thenReturn(List.of(student));
-        when(academicSessionService.isCurrent(pastSession)).thenReturn(false);
+        when(academicSessionService.isInCurrentAcademicYear(pastSession)).thenReturn(false);
 
         // Act
         List<StudentAccessResponseDto> studentAccesses = accountAccessService.getStudentAccesses();
@@ -226,8 +226,8 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(studentRepository.findAll()).thenReturn(List.of(student, activeStudent));
-        when(academicSessionService.isCurrent(pastSession)).thenReturn(false);
-        when(academicSessionService.isCurrent(currentSession)).thenReturn(true);
+        when(academicSessionService.isInCurrentAcademicYear(pastSession)).thenReturn(false);
+        when(academicSessionService.isInCurrentAcademicYear(currentSession)).thenReturn(true);
 
         // Act
         List<StudentAccessResponseDto> expiredStudentAccesses = accountAccessService.getExpiredStudentAccesses();

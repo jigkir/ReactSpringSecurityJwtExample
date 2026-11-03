@@ -50,7 +50,7 @@ public class AccountAccessService {
             return AccountStatus.APPROVED;
         }
 
-        if (!academicSessionService.isCurrent(student.getAccessSession())) {
+        if (!academicSessionService.isInCurrentAcademicYear(student.getAccessSession())) {
             return AccountStatus.PENDING;
         }
 

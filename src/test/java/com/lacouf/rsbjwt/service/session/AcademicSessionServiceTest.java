@@ -119,30 +119,49 @@ class AcademicSessionServiceTest {
     }
 
     @Test
-    void shouldBeCurrentWhenSessionIsTheCurrentOne() {
+    void shouldBeInCurrentAcademicYearWhenSessionIsTheCurrentOne() {
         // Arrange
         when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
 
         // Act + Assert
-        assert academicSessionService.isCurrent(currentSession);
+        assert academicSessionService.isInCurrentAcademicYear(currentSession);
     }
 
     @Test
-    void shouldNotBeCurrentWhenSessionIsPast() {
+    void shouldBeInCurrentAcademicYearWhenSessionIsTheFallThatStartedIt() {
         // Arrange
+        AcademicSession fallSession = new AcademicSession(Season.FALL, currentSession.getAcademicYear());
+
         when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
 
         // Act + Assert
-        assert !academicSessionService.isCurrent(pastSession());
+        assert academicSessionService.isInCurrentAcademicYear(fallSession);
     }
 
     @Test
-    void shouldNotBeCurrentWhenStudentHasNoSessionYet() {
+    void shouldNotBeInCurrentAcademicYearWhenSessionIsTheSummerBeforeIt() {
+        // Arrange
+        AcademicSession summerSession = new AcademicSession(Season.SUMMER, currentSession.getAcademicYear());
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
+
+        // Act + Assert
+        assert !academicSessionService.isInCurrentAcademicYear(summerSession);
+    }
+
+    @Test
+    void shouldNotBeInCurrentAcademicYearWhenSessionIsPast() {
         // Arrange
         when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
 
         // Act + Assert
-        assert !academicSessionService.isCurrent(null);
+        assert !academicSessionService.isInCurrentAcademicYear(pastSession());
+    }
+
+    @Test
+    void shouldNotBeInCurrentAcademicYearWhenStudentHasNoSessionYet() {
+        // Act + Assert
+        assert !academicSessionService.isInCurrentAcademicYear(null);
     }
 
     @Test

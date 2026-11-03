@@ -35,8 +35,12 @@ public class AcademicSessionService {
         return academicSessionRepository.findById(sessionId).orElseThrow(() -> new AcademicSessionNotFoundException(sessionId));
     }
 
-    public boolean isCurrent(AcademicSession session) {
-        return isSameSession(session, getCurrentSession());
+    public boolean isInCurrentAcademicYear(AcademicSession session) {
+        if (session == null) {
+            return false;
+        }
+
+        return session.getAcademicYear() == getCurrentSession().getAcademicYear();
     }
 
     public List<AcademicSessionResponseDto> getSessions() {
@@ -51,7 +55,7 @@ public class AcademicSessionService {
         if (session == null) {
             return false;
         }
-        
+
         Long sessionId = session.getId();
         Long otherSessionId = otherSession.getId();
 
