@@ -164,7 +164,8 @@ export default function CvReviewList({dark, preview = false}) {
     // ── Toolbar (full page only, once the list is loaded) ─────────────────────
 
     const toolbar = !preview && docs !== null && !failed && (
-        <div className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+        <div
+            className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
             <SearchInput
                 dark={dark}
                 value={filters.search}
@@ -207,7 +208,7 @@ export default function CvReviewList({dark, preview = false}) {
                 return (
                     <DocumentRow
                         key={doc.id}
-                        doc={doc}
+                        doc={{...doc, docType: "CV"}}
                         dark={dark}
                         preview={preview}
                         bordered={bordered}

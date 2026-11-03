@@ -21,7 +21,16 @@ const getCoverLetterUrl = async (applicationId) => blobUrlFromFile(await getAppl
 const getTranscriptUrl = async (applicationId) => blobUrlFromFile(await getApplicationTranscript(applicationId));
 
 
-function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePreview, getUrl, internshipTitle}) {
+function ApplicationCard({
+                             application,
+                             dark,
+                             isNew,
+                             isPreviewOpen,
+                             onTogglePreview,
+                             getUrl,
+                             internshipTitle,
+                             onInterviewSent
+                         }) {
     const s = getApplicationCardClasses(dark);
     const {t} = useTranslation();
     const {student, cvFileName} = application;
@@ -62,6 +71,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
             } else {
                 await createInterview(application.id, payload);
             }
+            onInterviewSent?.(application.id);
             return {success: true};
         } catch (err) {
             return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
@@ -95,10 +105,11 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col items-stretch gap-2 sm:min-w-52">
                         <Button
                             tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
                             dark={dark}
+                            className="w-full"
                             icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
                             onClick={onToggleInterviewPicker}
                             aria-expanded={isInterviewSelectOpen}
@@ -109,6 +120,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             <Button
                                 tone={openDoc === COVER_LETTER ? "danger" : "accent"}
                                 dark={dark}
+                                className="w-full"
                                 icon={openDoc === COVER_LETTER ? "close" : "visibility"}
                                 onClick={() => toggleDoc(COVER_LETTER)}
                                 aria-expanded={openDoc === COVER_LETTER}
@@ -120,6 +132,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                             <Button
                                 tone={openDoc === TRANSCRIPT ? "danger" : "accent"}
                                 dark={dark}
+                                className="w-full"
                                 icon={openDoc === TRANSCRIPT ? "close" : "visibility"}
                                 onClick={() => toggleDoc(TRANSCRIPT)}
                                 aria-expanded={openDoc === TRANSCRIPT}
@@ -130,6 +143,7 @@ function ApplicationCard({application, dark, isNew, isPreviewOpen, onTogglePrevi
                         <Button
                             tone={isPreviewOpen ? "danger" : "accent"}
                             dark={dark}
+                            className="w-full"
                             icon={isPreviewOpen ? "close" : "visibility"}
                             onClick={onTogglePreview}
                             aria-expanded={isPreviewOpen}
