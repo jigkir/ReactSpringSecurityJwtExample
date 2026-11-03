@@ -92,6 +92,11 @@ public class ManagerController {
         return ResponseEntity.ok(accountAccessService.getStudentAccesses());
     }
 
+    @GetMapping("/students/expired")
+    public ResponseEntity<List<StudentAccessResponseDto>> getExpiredStudentAccesses() {
+        return ResponseEntity.ok(accountAccessService.getExpiredStudentAccesses());
+    }
+
     @PutMapping("/students/{studentId}/reactivate")
     public ResponseEntity<StudentAccessResponseDto> reactivateStudentAccess(@PathVariable long studentId) throws UserNotFoundException {
         return ResponseEntity.ok(accountAccessService.reactivateStudentAccess(studentId));
