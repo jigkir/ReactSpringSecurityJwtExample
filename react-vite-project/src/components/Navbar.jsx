@@ -135,14 +135,14 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     return (
         <>
             <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
-                <div className="w-full mx-auto px-2 sm:px-6 md:px-8">
+                <div className="w-full mx-auto px-2 sm:px-6 xl:px-8">
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6 min-w-0 flex-1 justify-start">
+                        <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-4 justify-start">
                             {/* Desktop brand */}
                             <Link to={homePath}
-                                  className={`hidden md:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
+                                  className={`hidden xl:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
                                 <div
                                     className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
                                     {/* Always light text for dark-colored navbars */}
@@ -162,7 +162,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </Link>
 
                             {/* Desktop nav (bell always visible) */}
-                            <nav className="hidden md:flex items-center gap-1">
+                            <nav className="hidden xl:flex items-center gap-1">
                                 {navItems.map(({to, label, end}) => (
                                     <NavLink key={to} to={to} end={end} className={linkClass}>
                                         {label}
@@ -172,7 +172,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </nav>
 
                             {/* Mobile: app name doubles as the pages dropdown button */}
-                            <div ref={menuRef} className="md:hidden">
+                            <div ref={menuRef} className="xl:hidden">
                                 <div
                                     className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-1 sm:gap-2 ${theme.brand}`}>
                                     {/* Burger Button - added flex items-center */}
@@ -210,17 +210,16 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                             </div>
                             {/* Mobile bell (always visible, in the top bar) */}
-                            <div className="md:hidden">
+                            <div className="xl:hidden">
                                 {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </div>
                         </div>
 
                         {/*Center section*/}
                         {isLoggedIn && isAccessGranted &&
-                            (<div className="hidden md:flex justify-center flex-1">
-                                <form>
+                            (<div className="hidden xl:flex justify-center flex-1 ">
                                     <select
-                                        value={selectedSession}
+                                        value={selectedSession?.name}
                                         onChange={(e) => {
                                             const matchedSession = sessions.find(s => s.name === e.target.value);
                                             setSelectedSession(matchedSession);
@@ -233,12 +232,11 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                             </option>
                                         ))}
                                     </select>
-                                </form>
                             </div>)}
 
                         {/* ───────── Right side ───────── */}
                         <div
-                            className="flex items-center gap-1.5 sm:gap-2 md:gap-3 ml-auto shrink-0 flex-1 justify-end">
+                            className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 ml-auto shrink-0 flex-2 justify-end">
 
                             <button onClick={toggleLang}
                                     className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
@@ -256,17 +254,17 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </button>
 
                             {/* Desktop greeting + auth */}
-                            <div className="hidden md:flex items-center gap-3 ml-2">
+                            <div className="hidden xl:flex items-center gap-3 ml-2">
                                 {isLoggedIn && (
                                     <div
                                         className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
-                                        <span className="hidden md:inline">{t("navbar.hello")}</span>
+                                        <span className="hidden xl:inline">{t("navbar.hello")}</span>
                                         <span className={`font-semibold ${theme.greetingName}`}>
                                         {user.firstName} {user.lastName}
                                     </span>
                                         {role && (
                                             <span
-                                                className={`hidden md:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
+                                                className={`hidden xl:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
                                             {formatRole(role)}
                                         </span>
                                         )}
@@ -288,7 +286,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </div>
 
                             {/* Mobile account dropdown */}
-                            <div ref={authRef} className="relative md:hidden">
+                            <div ref={authRef} className="relative xl:hidden">
                                 {isLoggedIn ? (
                                     <button
                                         type="button"

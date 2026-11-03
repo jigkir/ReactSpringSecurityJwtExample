@@ -6,7 +6,7 @@ import {NotificationsProvider} from './notification/NotificationsProvider.jsx';
 
 function PageLayout({user, accountStatus, dark, toggleDark}) {
     return (
-        <NotificationsProvider user={user}>
+        <NotificationsProvider user={user} accountStatus={accountStatus}>
             <div className="flex flex-col flex-1">
                 <Navbar user={user} accountStatus={accountStatus} dark={dark} toggleDark={toggleDark}/>
                 <Outlet context={{dark, user, accountStatus}}/>
