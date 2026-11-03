@@ -290,9 +290,13 @@
     "uploadN_one": "Téléverser {{count}} fichier",
     "uploadN_other": "Téléverser {{count}} fichiers",
     "changeType": {
-      "btn": "Changer le type de document",
+      "btn": "Modifier le document",
       "ask": "Déplacer ce fichier vers :",
       "aria": "Nouveau type de document",
+      "modeAria": "Que voulez-vous faire avec ce document ?",
+      "modeMove": "Changer le type",
+      "modeReplace": "Remplacer le fichier",
+      "replaceFailed": "Impossible de remplacer le document. Veuillez réessayer.",
       "cvHint": "Un CV doit être approuvé par un gestionnaire avant que vous puissiez postuler avec.",
       "failed": "Impossible de changer le type du document. Veuillez réessayer."
     },

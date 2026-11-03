@@ -290,9 +290,13 @@
     "uploadN_one": "Upload {{count}} file",
     "uploadN_other": "Upload {{count}} files",
     "changeType": {
-      "btn": "Change document type",
+      "btn": "Edit document",
       "ask": "Move this file to:",
       "aria": "New document type",
+      "modeAria": "What do you want to do with this document?",
+      "modeMove": "Change type",
+      "modeReplace": "Replace file",
+      "replaceFailed": "Unable to replace the document. Please try again.",
       "cvHint": "A CV must be approved by a manager before you can apply with it.",
       "failed": "Unable to change the document type. Please try again."
     },
