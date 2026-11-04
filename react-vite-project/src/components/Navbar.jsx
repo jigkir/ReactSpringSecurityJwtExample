@@ -195,7 +195,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                         </div>
 
                         {/*Center section*/}
-                        {isLoggedIn && isAccessGranted && (<div className="flex flex-1 justify-center shrink-0">
+                        {isLoggedIn && isAccessGranted && (<div className="hidden sm:flex flex-1 justify-center shrink-0">
                             <select
                                 value={selectedSession?.name}
                                 onChange={(e) => {
@@ -312,6 +312,9 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                 mobileLinkClass={mobileLinkClass}
                 isLoggedIn={isLoggedIn}
                 isAccessGranted={isAccessGranted}
+                sessions={sessions}
+                selectedSession={selectedSession}
+                setSelectedSession={setSelectedSession}
             />
         </>);
 }
