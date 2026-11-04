@@ -28,6 +28,9 @@ apply samuel.gagnon@claurendeau.qc.ca 'Samuel2026!' "Stagiaire DevOps" CV_Samuel
 apply samuel.gagnon@claurendeau.qc.ca 'Samuel2026!' "Soutien informatique aux utilisateurs" CV_Samuel_Gagnon.pdf
 apply emma.lavoie@claurendeau.qc.ca 'Emma2026!' "Assistant chargé de projet" CV_Emma_Lavoie.pdf \
       "" Releve_Emma_Lavoie.pdf
+# Candidature d'Emma pour la démo eq3-18 : l'étape 12 la convoque en entrevue
+apply emma.lavoie@claurendeau.qc.ca 'Emma2026!' "Stagiaire en estimation de coûts" CV_Emma_Lavoie.pdf \
+      "" Releve_Emma_Lavoie.pdf
 apply chloe.bergeron@claurendeau.qc.ca 'Chloe2026!' "Stagiaire en marketing numérique" CV_Chloe_Bergeron.pdf \
       Lettre_Chloe_Bergeron_Crea_Media.pdf
 apply gabriel.morin@claurendeau.qc.ca 'Gabriel2026!' "Externat en soins infirmiers" CV_Gabriel_Morin.pdf

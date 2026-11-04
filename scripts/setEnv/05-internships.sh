@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Étape 5 : offres de stage (toutes PENDING)
 # La session d'une offre est celle de sa date de début :
-#   automne 2026 (session en cours) : Stagiaire DevOps, Externat en soins infirmiers
+#   automne 2026 (session en cours) : Stagiaire DevOps, Externat en soins infirmiers,
+#                                     Stagiaire en estimation de coûts
 #   hiver 2027 : les autres offres ; été 2027 : Développeur web (stage d'été)
 #   Soutien informatique est déplacée dans la session d'été passée à l'étape 10
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -81,6 +82,18 @@ JSON
 )"
 
 T=$(login julie.gauthier@constructionrivesud.com 'Julie123@')
+# Offre de la session d'automne 2026 : Emma y postule (étape 9) et est convoquée en entrevue (étape 12)
+internship "$T" "$(cat <<'JSON'
+{
+  "title": "Stagiaire en estimation de coûts",
+  "description": "Construction Rive-Sud prépare ses soumissions pour des projets résidentiels de l'hiver 2027.\n\nTâches :\n- Faire des relevés de quantités à partir des plans\n- Préparer des estimations de coûts dans Excel\n- Participer aux visites de chantier avec l'estimateur\n\nProfil recherché : rigueur, aisance avec la lecture de plans et les chiffriers.",
+  "requiredSkills": "Lecture de plans, Excel, AutoCAD, Estimation",
+  "durationInWeeks": 8, "location": "Brossard", "workMode": "IN_PERSON",
+  "startDate": "2026-12-07", "applicationDeadline": "2026-11-27",
+  "compensationAmount": 22.00, "compensationNegotiable": false
+}
+JSON
+)"
 internship "$T" "$(cat <<'JSON'
 {
   "title": "Assistant chargé de projet",
