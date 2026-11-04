@@ -1,5 +1,5 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {useLocation, useOutletContext} from 'react-router-dom';
+import {useLocation} from 'react-router-dom';
 import {getNotifications, markNotificationsAsRead} from '../api/Api.jsx';
 import {usePolling} from "../../utils/usePolling.js";
 import {ACCOUNT_STATUS} from "../../utils/AccountStatus.js";
@@ -22,22 +22,27 @@ const NOTIFICATION_TYPE = {
 
     NEW_INTERNSHIP_APPLICATION: "NEW_INTERNSHIP_APPLICATION",
 
-    STUDENT_ACCESS_REQUESTED:"STUDENT_ACCESS_REQUESTED"
+    STUDENT_ACCESS_REQUESTED: "STUDENT_ACCESS_REQUESTED",
+
+    INTERVIEW_CONVOCATION: "INTERVIEW_CONVOCATION",
+    INTERVIEW_UPDATED: "INTERVIEW_UPDATED",
 };
 
 const TARGET_TYPE = {
     CV: "CV",
     INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
     INTERNSHIP_APPLICATION: "INTERNSHIP_APPLICATION",
-    STUDENT_ACCOUNT: "STUDENT_ACCOUNT"
+    STUDENT_ACCOUNT: "STUDENT_ACCOUNT",
+    INTERVIEW: "INTERVIEW",
 };
 
 const PAGE = {
     STUDENT_CVS: "/portfolio",
     STUDENT_INTERNSHIPS: "/internship",
+    STUDENT_INTERVIEWS: "/interviews",
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
-    MANAGER_USERS:"/users",
+    MANAGER_USERS: "/users",
     EMPLOYER_INTERNSHIPS: "/internships",
     EMPLOYER_APPLICATIONS: "/applications",
 };
@@ -60,11 +65,11 @@ const NOTIFICATION_ITEMS = {
             to: PAGE.MANAGER_INTERNSHIPS
         },
         {
-            id:"accountExpired",
+            id: "accountExpired",
             notificationType: NOTIFICATION_TYPE.STUDENT_ACCESS_REQUESTED,
             targetType: TARGET_TYPE.STUDENT_ACCOUNT,
             labelKey: "navbar.pendingUserNotification",
-            to:  PAGE.MANAGER_USERS
+            to: PAGE.MANAGER_USERS
         }
     ],
     [ROLE.STUDENT]: [
@@ -88,6 +93,22 @@ const NOTIFICATION_ITEMS = {
             targetType: TARGET_TYPE.CV,
             labelKey: "navbar.cvRejectedNotification",
             to: PAGE.STUDENT_CVS
+        },
+        {
+            id: "interviewConvocation",
+            notificationType: NOTIFICATION_TYPE.INTERVIEW_CONVOCATION,
+            targetType: TARGET_TYPE.INTERVIEW,
+            labelKey: "navbar.interviewConvocationNotification",
+            to: PAGE.STUDENT_INTERVIEWS,
+            detailed: true, // one menu line per convocation (company, title, date)
+        },
+        {
+            id: "interviewUpdated",
+            notificationType: NOTIFICATION_TYPE.INTERVIEW_UPDATED,
+            targetType: TARGET_TYPE.INTERVIEW,
+            labelKey: "navbar.interviewUpdatedNotification",
+            to: PAGE.STUDENT_INTERVIEWS,
+            detailed: true,
         },
     ],
     [ROLE.EMPLOYER]: [
@@ -131,6 +152,7 @@ const NOTIFICATION_ERROR = {
 
 const NotificationsContext = createContext({
     items: [],
+    notifications: [],
     errorKey: null,
     refresh: () => {
     },
@@ -211,9 +233,10 @@ export function NotificationsProvider({user, children, accountStatus}) {
 
     const value = useMemo(() => ({
         items,
+        notifications,
         errorKey,
         refresh
-    }), [items, errorKey, refresh]);
+    }), [items, notifications, errorKey, refresh]);
 
     return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }

@@ -82,7 +82,10 @@
     "notificationLoadError": "Impossible de charger les notifications. Elles s'actualiseront automatiquement.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues. Veuillez réessayer.",
     "pendingUserNotification": "{{amount}} accès utilisateur à vérifier",
-    "interviews": "Entrevues"
+    "interviews": "Entrevues",
+    "interviewConvocationNotification": "Nouvelle convocation en entrevue",
+    "interviewUpdatedNotification": "Convocation en entrevue modifiée",
+    "interviewNotificationDetail": "{{company}} — {{title}}, le {{date}}"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",

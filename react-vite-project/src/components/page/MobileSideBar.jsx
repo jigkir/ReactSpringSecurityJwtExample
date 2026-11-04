@@ -9,9 +9,6 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                                                             dark,
                                                             t,
                                                             mobileLinkClass,
-                                                            sessions,
-                                                            selectedSession,
-                                                            setSelectedSession,
                                                             isLoggedIn,
                                                             isAccessGranted
                                                         }, ref) {
@@ -73,24 +70,6 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                             </NavLink>
                         ))}
                     </nav>
-                    {isLoggedIn && isAccessGranted && (
-                        <div className={`pt-10`}>
-                            <select
-                                value={selectedSession?.name ?? ""}
-                                onChange={(e) => {
-                                    const matchedSession = sessions.find(s => s.name === e.target.value);
-                                    setSelectedSession(matchedSession);
-                                }}
-                                className={`w-full px-3 py-1.5 rounded-lg border text-center ${dark ? "bg-indigo-800 border-slate-700 text-white" : "bg-white border-gray-300 text-gray-700"}`}
-                            >
-                                {sessions.map((session) => (
-                                    <option key={session.name} value={session.name}>
-                                        {session.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
                 </div>
             </div>
         </>

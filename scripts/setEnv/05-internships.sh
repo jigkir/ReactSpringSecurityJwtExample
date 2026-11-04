@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Étape 5 : offres de stage (toutes PENDING)
+# La session d'une offre est celle de sa date de début :
+#   automne 2026 (session en cours) : Stagiaire DevOps, Externat en soins infirmiers
+#   hiver 2027 : les autres offres ; été 2027 : Développeur web (stage d'été)
+#   Soutien informatique est déplacée dans la session d'été passée à l'étape 10
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 log "Offres de stage"
@@ -22,7 +26,7 @@ internship "$T" "$(cat <<'JSON'
   "description": "Tu rejoindras l'équipe Plateforme qui maintient nos environnements de test et de production.\n\nTâches :\n- Automatiser les pipelines CI/CD avec GitHub Actions\n- Conteneuriser nos services avec Docker\n- Mettre en place des tableaux de bord de surveillance (Grafana)\n\nProfil recherché : intérêt pour Linux, l'automatisation et l'infonuagique.",
   "requiredSkills": "Docker, GitHub Actions, Linux, Bash",
   "durationInWeeks": 12, "location": "Longueuil", "workMode": "REMOTE",
-  "startDate": "2027-01-18", "applicationDeadline": "2026-11-27",
+  "startDate": "2026-12-07", "applicationDeadline": "2026-11-27",
   "compensationAmount": 23.00, "compensationNegotiable": false
 }
 JSON
@@ -39,6 +43,18 @@ internship "$T" "$(cat <<'JSON'
 }
 JSON
 )"
+# Soutien informatique : déplacée dans la session d'été passée à l'étape 10
+internship "$T" "$(cat <<'JSON'
+{
+  "title": "Soutien informatique aux utilisateurs",
+  "description": "Tu aideras l'équipe TI de Tech Quebec à accompagner les 120 employés du siège social.\n\nTâches :\n- Répondre aux demandes de soutien dans notre outil de billets\n- Préparer et configurer les nouveaux postes de travail\n- Rédiger des guides pour les utilisateurs\n\nProfil recherché : patience, sens du service et bonne communication.",
+  "requiredSkills": "Windows 11, Microsoft 365, Active Directory, Service à la clientèle",
+  "durationInWeeks": 10, "location": "Montréal", "workMode": "IN_PERSON",
+  "startDate": "2027-06-14", "applicationDeadline": "2027-05-14",
+  "compensationAmount": 20.00, "compensationNegotiable": false
+}
+JSON
+)"
 
 T=$(login marc.bouchard@logiciellaval.com 'Marc123@')
 internship "$T" "$(cat <<'JSON'
@@ -49,6 +65,17 @@ internship "$T" "$(cat <<'JSON'
   "durationInWeeks": 15, "location": "Laval", "workMode": "IN_PERSON",
   "startDate": "2027-01-11", "applicationDeadline": "2026-12-01",
   "compensationAmount": 21.00, "compensationNegotiable": false
+}
+JSON
+)"
+internship "$T" "$(cat <<'JSON'
+{
+  "title": "Développeur web (stage d'été)",
+  "description": "Logiciel Laval refait le site de réservation de ses clients pour l'été 2027.\n\nTâches :\n- Intégrer les nouvelles maquettes en React\n- Brancher les formulaires de réservation sur notre API REST\n- Corriger les problèmes d'accessibilité signalés par les utilisateurs\n\nProfil recherché : à l'aise avec JavaScript et curieux d'apprendre.",
+  "requiredSkills": "React, JavaScript, HTML, CSS, REST",
+  "durationInWeeks": 12, "location": "Laval", "workMode": "HYBRID",
+  "startDate": "2027-06-07", "applicationDeadline": "2027-04-30",
+  "compensationAmount": 22.00, "compensationNegotiable": false
 }
 JSON
 )"
@@ -99,7 +126,7 @@ internship "$T" "$(cat <<'JSON'
   "description": "La Clinique Santé Longueuil offre des soins de première ligne à plus de 8 000 patients.\n\nTâches :\n- Accueillir les patients et prendre les signes vitaux\n- Assister l'infirmière clinicienne lors des prélèvements et des vaccinations\n- Faire l'enseignement de base au patient\n\nProfil recherché : étudiant(e) en soins infirmiers ayant complété ses stages en milieu hospitalier.",
   "requiredSkills": "Signes vitaux, Prévention des infections, RCR, Communication",
   "durationInWeeks": 8, "location": "Longueuil", "workMode": "IN_PERSON",
-  "startDate": "2027-01-11", "applicationDeadline": "2026-12-04",
+  "startDate": "2026-12-07", "applicationDeadline": "2026-12-04",
   "compensationAmount": 21.00, "compensationNegotiable": false
 }
 JSON

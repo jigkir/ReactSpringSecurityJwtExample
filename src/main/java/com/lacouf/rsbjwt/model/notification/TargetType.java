@@ -4,5 +4,6 @@ public enum TargetType {
     CV,
     INTERNSHIP_OFFER,
     INTERNSHIP_APPLICATION,
-    STUDENT_ACCOUNT
+    STUDENT_ACCOUNT,
+    INTERVIEW
 }

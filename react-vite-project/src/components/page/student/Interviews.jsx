@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState} from "react";
-import {useOutletContext} from "react-router-dom";
+import {useLocation, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getInternshipCardClasses, getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import Icon from "../../../styles/Icon.jsx";
@@ -57,6 +57,7 @@ function Interviews() {
     const [interviews, setInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const {hash} = useLocation();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [typeFilter, setTypeFilter] = useState("ALL");
@@ -106,21 +107,28 @@ function Interviews() {
 
         return matchesSearch && matchesStatus && matchesType;
     });
+    // Arriving from a notification: /interviews#interview-12
+    useEffect(() => {
+        if (loading || !hash) return;
+        document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
+    }, [hash, loading]);
+
+    const visibleInterviews = sortInterviews(interviews);
     const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
     const muted = dark ? "text-slate-400" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
 
     return (<div className={s.page}>
-            <div className={s.headerSection}>
-                <div>
-                    <h1 className={s.title}>
-                        {t("studentInterviews.title")}
-                    </h1>
-                </div>
+        <div className={s.headerSection}>
+            <div>
+                <h1 className={s.title}>
+                    {t("studentInterviews.title")}
+                </h1>
             </div>
+        </div>
 
-            <div className={s.listSection}>
-                <div className={`${s.scrollArea} space-y-4`}>
+        <div className={s.listSection}>
+            <div className={`${s.scrollArea} space-y-4`}>
 
                     <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
 
@@ -223,6 +231,14 @@ function Interviews() {
                                 key={interview.id}
                                 className={`${cardS.card} border-l-4 ${accentBorder} ${dark ? "bg-slate-800" : "bg-white"}`}
                             >
+                    const highlighted = hash === `#interview-${interview.id}`;
+                    const awaitingResponse = !cancelled && !past && interview.studentDecision === "PENDING";
+
+                    return (<article
+                            key={interview.id}
+                            id={`interview-${interview.id}`}
+                            className={`${cardS.card} scroll-mt-20 border-l-4 ${accentBorder} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
+                        >
 
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
@@ -234,11 +250,25 @@ function Interviews() {
                                         </p>
                                     </div>
 
+                                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                                    {awaitingResponse && (
+                                        <span
+                                            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
+                                                dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
+                                                    : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+                                            <Icon name="hourglass_bottom" size={18}/>
+                                            <span>{t("studentInterviews.awaitingResponse")}</span>
+                                        </span>
+                                    )}
+                                    <span
+                                        className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
                                     <span
                                         className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
                                         <Icon name={statusIcon} size={18}/>
                                         <span>{t(`studentInterviews.statuses.${status}`)}</span>
                                     </span>
+                                </div>
+                            </div>
                                 </div>
 
                                 <div className={`${cardS.detailsRow} mt-4 flex flex-wrap gap-2`}>
