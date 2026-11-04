@@ -33,5 +33,5 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
 
     List<Internship> findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(String email, AcademicSession session);
 
-    List<Internship> findByPostedBy_DisciplineAndSession_StartDateGreaterThanEqualAndDeletedIsFalse(Discipline postedByDiscipline, LocalDate sessionStartDate);
+    List<Internship> findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(Discipline postedByDiscipline, Collection<AcademicSession> sessions);
 }
