@@ -3,11 +3,19 @@ import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
 import {devLoginAs} from '../../api/DevApi.jsx';
-import {EmailField, PasswordField, translateWarning} from '../../../utils/CommonFields.jsx';
+import {
+    EmailField,
+    PasswordField,
+    SubmitButton,
+    translateWarning,
+    validateField,
+} from '../../../utils/CommonFields.jsx';
 import {useTranslation} from 'react-i18next';
 import {i18nError} from "../../../utils/i18nError.jsx";
 import {useDevMode} from '../../dev/DevMode.jsx';
 import DevLoginPanel from '../../dev/DevLoginPanel.jsx';
+
+const DEFAULT_WARNINGS = {email: "", password: ""};
 
 const Login = ({user, setError}) => {
     const navigate = useNavigate();
@@ -18,10 +26,8 @@ const Login = ({user, setError}) => {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState("");
-    const [warnings, setWarnings] = useState({
-        email: "",
-        password: ""
-    });
+    const [submitting, setSubmitting] = useState(false);
+    const [warnings, setWarnings] = useState(DEFAULT_WARNINGS);
 
     const classes = getAuthClasses(dark);
     const {
@@ -37,34 +43,14 @@ const Login = ({user, setError}) => {
         serverErrorClass,
     } = classes;
 
-    const validateEmail = () => {
-        const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-        return emailRegex.test(email);
-    };
-
     const validateUser = () => {
-        let isValid = true;
-        const updatedWarnings = {...warnings};
-
-        if (!email) {
-            updatedWarnings.email = {key: "login.emailRequired"};
-            isValid = false;
-        } else if (!validateEmail()) {
-            updatedWarnings.email = {key: "login.emailInvalid"};
-            isValid = false;
-        } else {
-            updatedWarnings.email = "";
-        }
-
-        if (!password) {
-            updatedWarnings.password = {key: "login.passwordRequired"};
-            isValid = false;
-        } else {
-            updatedWarnings.password = "";
-        }
+        const updatedWarnings = {
+            email: validateField("email", email),
+            password: password ? "" : {key: "login.passwordRequired"},
+        };
 
         setWarnings(updatedWarnings);
-        return isValid;
+        return !updatedWarnings.email && !updatedWarnings.password;
     };
 
     // region Api.jsx communication
@@ -84,7 +70,8 @@ const Login = ({user, setError}) => {
             try {
                 const count = await getCvCount();
                 hasCv = count > 0;
-            } catch { }
+            } catch {
+            }
             if (hasCv) navigate("/home");
             else navigate("/portfolio", {state: {requireCv: true}});
         } else {
@@ -93,6 +80,7 @@ const Login = ({user, setError}) => {
     };
 
     const fetchFunc = async () => {
+        setSubmitting(true);
         try {
             await finishLogin(await login(email.toLowerCase(), password));
         } catch (err) {
@@ -111,6 +99,8 @@ const Login = ({user, setError}) => {
                 setError(i18nError("login.genericError"));
             }
             navigate("/error");
+        } finally {
+            setSubmitting(false);
         }
     };
     // endregion
@@ -139,10 +129,12 @@ const Login = ({user, setError}) => {
 
     if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
 
+    const serverErrorText = translateWarning(t, serverError);
+
     return (
         <div className={pageClass}>
             <div className={cardClass}>
-                <h2 className={titleClass}>{t("login.title")}</h2>
+                <h1 className={titleClass}>{t("login.title")}</h1>
 
                 {/* Dev Mode only: pick a mock user and log in instantly */}
                 {devMode && (
@@ -156,47 +148,49 @@ const Login = ({user, setError}) => {
                 )}
 
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                    <div>
-                        <EmailField
-                            value={email}
-                            onChange={(e) => {
-                                setWarnings({...warnings, email: ""});
-                                setEmail(e.target.value.trim());
-                            }}
-                            warning={translateWarning(t, warnings.email)}
-                            labelClass={labelClass}
-                            fieldClass={fieldClass}
-                            errorClass={errorClass}
-                        />
-                    </div>
-
-                    <div>
-                        <PasswordField
-                            value={password}
-                            onChange={(e) => {
-                                setWarnings({...warnings, password: ""});
-                                setPassword(e.target.value);
-                            }}
-                            warning={translateWarning(t, warnings.password)}
-                            labelClass={labelClass}
-                            fieldClass={fieldClass}
-                            eyeClass={eyeClass}
-                            errorClass={errorClass}
-                            show={showPassword}
-                            onToggleShow={() => setShowPassword(!showPassword)}
-                        />
-                    </div>
-
-                    {serverError && (
-                        <div className={serverErrorClass} role="alert">
-                            {translateWarning(t, serverError)}
-                        </div>
+                    {serverErrorText && (
+                        <div className={serverErrorClass} role="alert">{serverErrorText}</div>
                     )}
 
-                    <button type="submit" className={submitClass}>
-                        {t("login.submit")}
-                    </button>
+                    <EmailField
+                        value={email}
+                        onChange={(e) => {
+                            setWarnings((prev) => ({...prev, email: ""}));
+                            setServerError("");
+                            setEmail(e.target.value.trim());
+                        }}
+                        warning={translateWarning(t, warnings.email)}
+                        labelClass={labelClass}
+                        fieldClass={fieldClass}
+                        errorClass={errorClass}
+                    />
+
+                    <PasswordField
+                        value={password}
+                        onChange={(e) => {
+                            setWarnings((prev) => ({...prev, password: ""}));
+                            setServerError("");
+                            setPassword(e.target.value);
+                        }}
+                        warning={translateWarning(t, warnings.password)}
+                        labelClass={labelClass}
+                        fieldClass={fieldClass}
+                        eyeClass={eyeClass}
+                        errorClass={errorClass}
+                        show={showPassword}
+                        onToggleShow={() => setShowPassword((p) => !p)}
+                    />
+
+                    {/* Same button as the signup forms: disabled until every field is filled */}
+                    <SubmitButton
+                        disabled={!email || !password || submitting}
+                        loading={submitting}
+                        loadingLabel={t("login.submit")}
+                        label={t("login.submit")}
+                        submitClass={submitClass}
+                    />
                 </form>
+
                 <p className={subtextClass}>
                     {t("login.noAccount")}{" "}
                     <button onClick={() => navigate("/signup")} className="text-blue-500 hover:underline font-medium">
