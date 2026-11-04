@@ -10,7 +10,10 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                                                             t,
                                                             mobileLinkClass,
                                                             isLoggedIn,
-                                                            isAccessGranted
+                                                            isAccessGranted,
+                                                            sessions,
+                                                            selectedSession,
+                                                            setSelectedSession,
                                                         }, ref) {
     if (!isOpen) return null;
 
@@ -71,6 +74,24 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                         ))}
                     </nav>
                 </div>
+                {isLoggedIn && isAccessGranted && (
+                    <div className={`pt-10`}>
+                        <select
+                            value={selectedSession?.name ?? ""}
+                            onChange={(e) => {
+                                const matchedSession = sessions.find(s => s.name === e.target.value);
+                                setSelectedSession(matchedSession);
+                            }}
+                            className={`sm:hidden w-full px-3 py-1.5 rounded-lg border text-center ${dark ? "bg-indigo-800 border-slate-700 text-white" : "bg-white border-gray-300 text-gray-700"}`}
+                        >
+                            {sessions.map((session) => (
+                                <option key={session.name} value={session.name}>
+                                    {session.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
         </>
     );
