@@ -75,7 +75,7 @@ case "$ARG_UPPER" in
         ;;
     S4)
         START_DATE="22-10-2026"
-        END_DATE="04-11-2026"
+        END_DATE="05-11-2026"
         ;;
     S5)
         START_DATE="05-11-2026"
