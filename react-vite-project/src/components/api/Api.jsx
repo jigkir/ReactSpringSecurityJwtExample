@@ -321,8 +321,8 @@ export async function markNotificationsAsRead(targetType) {
 //endregion
 
 //region Application
-export async function getApplications() {
-    const response = await fetcher("employer/applications", {method: "GET"});
+export async function getApplications(sessionId) {
+    const response = await fetcher(withSession("employer/applications", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 

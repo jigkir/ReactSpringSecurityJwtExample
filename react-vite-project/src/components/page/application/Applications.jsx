@@ -39,7 +39,8 @@ function Applications({user}) {
     const s = getPostInternshipClasses(dark);
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
-    const { selectedSession } = useSession();
+    const {selectedSession} = useSession();
+    const sessionId = selectedSession?.id;
     const {register, isNew: isNewApp, clear: clearNew, version: newVersion} = useNewApplications();
 
     const [applications, setApplications] = useState(null); // null = loading
@@ -55,14 +56,14 @@ function Applications({user}) {
 
     const load = useCallback(async () => {
         try {
-            const [apps, offers] = await Promise.all([getApplications(), getEmployerInternships()]);
+            const [apps, offers] = await Promise.all([getApplications(sessionId), getEmployerInternships(sessionId)]);
             setApplications(Array.isArray(apps) ? apps : []);
             setInternships(Array.isArray(offers) ? offers : []);
             setLoadFailed(false);
         } catch {
             setLoadFailed(true);
         }
-    }, []);
+    }, [sessionId]);
 
     useEffect(() => {
         if (isLoggedIn) void load();
@@ -80,31 +81,19 @@ function Applications({user}) {
         [titleById, t],
     );
 
-    const sessionFilteredApps = useMemo(() => {
+    const sessionApps = useMemo(() => {
         if (!applications) return [];
 
         // Freeze the "new" state the first time an application is seen
         register(applications);
-
-        if (selectedSession?.startDate && selectedSession?.endDate) {
-            const start = new Date(selectedSession.startDate).getTime();
-            const end = new Date(selectedSession.endDate).getTime();
-
-            return applications.filter(app => {
-                const dateField = app.applicationDate;
-                if (!dateField) return false;
-                const appDate = new Date(dateField).getTime();
-                return appDate >= start && appDate <= end;
-            });
-        }
         return applications;
-    }, [applications, selectedSession, register]);
+    }, [applications, register]);
 
     // One group per internship that has at least one application: [{id, title, apps, unread}]
     const groups = useMemo(() => {
-        if (!sessionFilteredApps) return [];
+        if (!sessionApps) return [];
         const byInternship = new Map();
-        for (const app of sessionFilteredApps) {
+        for (const app of sessionApps) {
             if (!byInternship.has(app.internshipId)) byInternship.set(app.internshipId, []);
             byInternship.get(app.internshipId).push(app);
         }
@@ -117,22 +106,22 @@ function Applications({user}) {
                 apps,
             }))
             .sort((a, b) => Number(b.unread > 0) - Number(a.unread > 0) || a.title.localeCompare(b.title));
-    }, [sessionFilteredApps, titleOf, isNewApp, newVersion]);
+    }, [sessionApps, titleOf, isNewApp, newVersion]);
 
     // Apply the internship filter + search, then drop empty groups
     const visibleGroups = useMemo(() => groups
-        .filter((g) => internshipFilter === ALL || String(g.id) === internshipFilter)
-        .map((g) => ({
-            ...g,
-            apps: g.apps
-                .filter((a) => matchesSearch(
-                    [a.student?.firstName, a.student?.lastName, a.student?.email, a.cvFileName],
-                    search,
-                ))
-                .sort(compareApplications(isNewApp)),
-        }))
-        .filter((g) => g.apps.length > 0),
-    [groups, internshipFilter, search, isNewApp, newVersion]);
+            .filter((g) => internshipFilter === ALL || String(g.id) === internshipFilter)
+            .map((g) => ({
+                ...g,
+                apps: g.apps
+                    .filter((a) => matchesSearch(
+                        [a.student?.firstName, a.student?.lastName, a.student?.email, a.cvFileName],
+                        search,
+                    ))
+                    .sort(compareApplications(isNewApp)),
+            }))
+            .filter((g) => g.apps.length > 0),
+        [groups, internshipFilter, search, isNewApp, newVersion]);
 
     const togglePreview = (id) =>
         setOpenPreviewIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
@@ -170,7 +159,8 @@ function Applications({user}) {
         body = visibleGroups.map((group) => (
             <section key={group.id} className="space-y-3" aria-label={group.title}>
                 {/* Which internship these applications come from */}
-                <div className={`flex flex-wrap items-center gap-3 pb-2 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
+                <div
+                    className={`flex flex-wrap items-center gap-3 pb-2 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
                     <div className="min-w-0 flex-1">
                         <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
                             {t("applicationsPage.fromInternship")}
