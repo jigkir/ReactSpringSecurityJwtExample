@@ -175,10 +175,10 @@ describe("StudentInternships shows offers expanded", () => {
     });
 });
 
-describe("StudentInternships puts applied offers first", () => {
+describe("StudentInternships orders NEW, then APPLIED, then OLD", () => {
 
-    it("shouldListAppliedOffersBeforeOffersNotAppliedTo", async () => {
-        // Arrange: Java (id 1) was already applied to, React (id 2) is newer and not applied to
+    it("shouldListNewOffersBeforeAppliedOffers", async () => {
+        // Arrange: Java (id 1) already applied to, React (id 2) is new and not applied to
         getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 1, cv: {id: 1}}]);
 
         // Act
@@ -188,18 +188,18 @@ describe("StudentInternships puts applied offers first", () => {
         // Assert
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3});
-            expect(titles[0]).toHaveTextContent("Développeur Java");
-            expect(titles[1]).toHaveTextContent("Développeur React");
+            expect(titles[0]).toHaveTextContent("Développeur React");
+            expect(titles[1]).toHaveTextContent("Développeur Java");
         });
     });
-});
 
-describe("StudentInternships orders applied first, then New / viewed", () => {
-
-    it("shouldPutAppliedOffersBeforeNewOffers", async () => {
-        // Arrange: Java (id 1) is viewed but already applied to, React (id 2) is new and not applied to
-        getStudentInternships.mockResolvedValue([{...internship1, viewed: true}, internship2]);
-        getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 1, cv: {id: 1}}]);
+    it("shouldListAppliedOffersBeforeOldOffers", async () => {
+        // Arrange: both viewed. Java (id 1) is OLD, React (id 2) is APPLIED
+        getStudentInternships.mockResolvedValue([
+            {...internship1, viewed: true},
+            {...internship2, viewed: true},
+        ]);
+        getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 2, cv: {id: 1}}]);
 
         // Act
         renderStudentInternships();
@@ -208,8 +208,28 @@ describe("StudentInternships orders applied first, then New / viewed", () => {
         // Assert
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3});
-            expect(titles[0]).toHaveTextContent("Développeur Java");
-            expect(titles[1]).toHaveTextContent("Développeur React");
+            expect(titles[0]).toHaveTextContent("Développeur React");
+            expect(titles[1]).toHaveTextContent("Développeur Java");
+        });
+    });
+
+    it("shouldPutNewThenAppliedThenOld", async () => {
+        // Arrange
+        getStudentInternships.mockResolvedValue([
+            {...internship1, id: 1, title: "Old offer", viewed: true},
+            {...internship1, id: 2, title: "Applied offer", viewed: true},
+            {...internship1, id: 3, title: "New offer", viewed: false},
+        ]);
+        getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 2, cv: {id: 1}}]);
+
+        // Act
+        renderStudentInternships();
+        await screen.findByText("New offer");
+
+        // Assert
+        await waitFor(() => {
+            const titles = screen.getAllByRole("heading", {level: 3}).map((h) => h.textContent);
+            expect(titles).toEqual(["New offer", "Applied offer", "Old offer"]);
         });
     });
 });

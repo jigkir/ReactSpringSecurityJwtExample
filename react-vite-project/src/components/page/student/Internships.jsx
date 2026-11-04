@@ -39,9 +39,12 @@ function StudentInternships({preview = false}) {
         [appliedInternships]);
     const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
-    const ordered = [...visible].sort((a, b) =>
-        Number(appliedIds.has(b.id)) - Number(appliedIds.has(a.id))
-        || Number(Boolean(a.viewed)) - Number(Boolean(b.viewed)));
+
+    const groupOf = (internship) => {
+        if (appliedIds.has(internship.id)) return 1; // APPLIED
+        return internship.viewed ? 2 : 0;            // OLD : NEW
+    };
+    const ordered = [...visible].sort((a, b) => groupOf(a) - groupOf(b));
     const shown = preview ? ordered.slice(0, MAX_PREVIEW_ITEMS) : ordered;
 
     const unviewedIdsRef = useRef([]);
