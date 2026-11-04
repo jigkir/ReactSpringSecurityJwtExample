@@ -113,22 +113,21 @@ function Interviews() {
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
     }, [hash, loading]);
 
-    const visibleInterviews = sortInterviews(interviews);
     const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
     const muted = dark ? "text-slate-400" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
 
     return (<div className={s.page}>
-        <div className={s.headerSection}>
-            <div>
-                <h1 className={s.title}>
-                    {t("studentInterviews.title")}
-                </h1>
+            <div className={s.headerSection}>
+                <div>
+                    <h1 className={s.title}>
+                        {t("studentInterviews.title")}
+                    </h1>
+                </div>
             </div>
-        </div>
 
-        <div className={s.listSection}>
-            <div className={`${s.scrollArea} space-y-4`}>
+            <div className={s.listSection}>
+                <div className={`${s.scrollArea} space-y-4`}>
 
                     <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
 
@@ -226,19 +225,15 @@ function Interviews() {
                         const statusIcon = cancelled ? "close" : past ? "check_circle" : "schedule";
                         const accentBorder = cancelled ? "border-l-red-500" : past ? "border-l-slate-400" : "border-l-emerald-500";
                         const statusClasses = cancelled ? (dark ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-red-200 bg-red-50 text-red-700") : past ? (dark ? "border-slate-500/30 bg-slate-500/10 text-slate-200" : "border-slate-300 bg-slate-100 text-slate-700") : (dark ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-emerald-200 bg-emerald-50 text-emerald-700");
+                        const highlighted = hash === `#interview-${interview.id}`;
+                        const awaitingResponse = !cancelled && !past && interview.studentDecision === "PENDING";
 
-                        return (<article
+                        return (
+                            <article
                                 key={interview.id}
-                                className={`${cardS.card} border-l-4 ${accentBorder} ${dark ? "bg-slate-800" : "bg-white"}`}
+                                id={`interview-${interview.id}`}
+                                className={`${cardS.card} scroll-mt-20 border-l-4 ${accentBorder} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
                             >
-                    const highlighted = hash === `#interview-${interview.id}`;
-                    const awaitingResponse = !cancelled && !past && interview.studentDecision === "PENDING";
-
-                    return (<article
-                            key={interview.id}
-                            id={`interview-${interview.id}`}
-                            className={`${cardS.card} scroll-mt-20 border-l-4 ${accentBorder} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
-                        >
 
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
@@ -250,25 +245,22 @@ function Interviews() {
                                         </p>
                                     </div>
 
-                                <div className="flex shrink-0 flex-wrap items-center gap-2">
-                                    {awaitingResponse && (
-                                        <span
-                                            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
-                                                dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
-                                                    : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+                                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                                        {awaitingResponse && (
+                                            <span
+                                                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
+                                                    dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
+                                                        : "border-amber-200 bg-amber-50 text-amber-700"}`}>
                                             <Icon name="hourglass_bottom" size={18}/>
                                             <span>{t("studentInterviews.awaitingResponse")}</span>
                                         </span>
-                                    )}
-                                    <span
-                                        className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
-                                    <span
-                                        className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
+                                        )}
+                                        <span
+                                            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
                                         <Icon name={statusIcon} size={18}/>
                                         <span>{t(`studentInterviews.statuses.${status}`)}</span>
                                     </span>
-                                </div>
-                            </div>
+                                    </div>
                                 </div>
 
                                 <div className={`${cardS.detailsRow} mt-4 flex flex-wrap gap-2`}>
@@ -331,12 +323,14 @@ function Interviews() {
                                     </div>
                                 </div>
                             </article>
-                        );
+                        )
+                            ;
                     })}
                 </div>
             </div>
         </div>
-    );
+    )
+        ;
 }
 
 export default Interviews;

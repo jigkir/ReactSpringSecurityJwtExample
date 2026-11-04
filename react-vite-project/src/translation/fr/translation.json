@@ -564,6 +564,7 @@
 
   "studentInterviews": {
     "title": "Mes entrevues",
+    "awaitingResponse": "En attente de réponse",
     "loading": "Chargement des entrevues...",
     "loadError": "Impossible de charger les entrevues.",
     "empty": "Vous n'avez aucune convocation d'entrevue pour le moment.",

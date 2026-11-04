@@ -581,6 +581,7 @@
   },
   "studentInterviews": {
     "title": "My interviews",
+    "awaitingResponse": "Awaiting response",
     "loading": "Loading interviews…",
     "loadError": "Unable to load interviews. They will refresh automatically.",
     "empty": "No interview invitations yet. When an employer invites you, it will appear here.",
@@ -591,7 +592,6 @@
     "openLink": "Open the meeting link",
     "notProvided": "Not provided",
     "invalidDate": "Date unavailable",
-    "awaitingResponse": "Awaiting your response",
     "statuses": {
       "upcoming": "Upcoming",
       "past": "Past",
