@@ -6,7 +6,8 @@
 #   ./scripts/setEnv.sh 3 4 5      seulement certaines étapes (numéros)
 #
 # Étapes : 1 vérif docker | 2 attente backend | 3 users | 4 cvs |
-#           5 internships | 6 npm i | 7 approbation des internships
+#           5 internships | 6 npm i | 7 approbation des internships |
+#           8 lettres et relevés | 9 candidatures | 10 session passée | 11 Léa expirée
 
 set -uo pipefail
 
@@ -21,6 +22,10 @@ STEPS=(
   05-internships
   06-frontend
   07-approve-internships
+  08-documents
+  09-applications
+  10-past-session
+  11-expired-student
 )
 
 run_step() {

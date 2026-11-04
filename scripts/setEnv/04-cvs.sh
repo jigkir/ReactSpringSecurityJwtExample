@@ -16,10 +16,9 @@ MANAGER_TOKEN=$(login "$MANAGER_EMAIL" "$MANAGER_PASSWORD")
 [[ -n "$MANAGER_TOKEN" ]] || fail "connexion du gestionnaire impossible"
 
 # Un id par ligne (jamais le nom du fichier dans la boucle : il peut contenir des espaces)
-ids=$(curl -s "$API/manager/cvs" -H "Authorization: Bearer $MANAGER_TOKEN" \
-  | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{JSON.parse(d).forEach(cv=>console.log(cv.id))}catch(e){}})')
+ids=$(get_json "$API/manager/cvs" "$MANAGER_TOKEN" | \
+  node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{JSON.parse(d).forEach(cv=>console.log(cv.id))}catch(e){}})')
 
 for id in $ids; do
-  curl -s -o /dev/null -w "  %{http_code}  approuvé CV #$id\n" -X PUT \
-       "$API/manager/cvs/$id/approve" -H "Authorization: Bearer $MANAGER_TOKEN"
+  request PUT "$API/manager/cvs/$id/approve" "$MANAGER_TOKEN"
 done
