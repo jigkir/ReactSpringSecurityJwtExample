@@ -214,11 +214,10 @@ export async function applyForInternship(internshipId, cvId, coverLetterId, tran
     return handleEmpty(response);
 }
 
-export async function getStudentInternships() {
-    const response = await fetcher("student/internship", {method: "GET"});
+export async function getStudentInternships(sessionId) {
+    const response = await fetcher(withSession("student/internship", sessionId), {method: "GET"});
     return handleResponse(response);
 }
-
 
 export async function markInternshipsAsViewed(internshipIds) {
     const response = await fetcher("student/internship/viewed", {
@@ -229,8 +228,8 @@ export async function markInternshipsAsViewed(internshipIds) {
     return handleEmpty(response);
 }
 
-export async function getStudentAppliedInternships() {
-    const response = await fetcher(`student/applications`, {method: "GET"});
+export async function getStudentAppliedInternships(sessionId) {
+    const response = await fetcher(withSession("student/applications", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 

@@ -9,6 +9,7 @@ import {
 } from "../../../api/Api.jsx";
 import i18n from "../../../../i18next.jsx";
 import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
+import {useSession} from "../../../../utils/useSession.js";
 
 vi.mock("../../../api/Api.jsx", () => ({
     getStudentInternships: vi.fn(),
@@ -21,11 +22,18 @@ vi.mock("../../../notification/NotificationsProvider.jsx", () => ({
     useNotifications: vi.fn(),
 }));
 
+vi.mock("../../../../utils/useSession.js", () => ({
+    useSession: vi.fn(),
+}));
+
 vi.mock("../ApplyControls.jsx", () => ({
     default: ({internshipId, onChanged}) => <button onClick={onChanged}>{`apply-${internshipId}`}</button>,
 }));
 
 const refreshNotifications = vi.fn();
+
+const CURRENT_SESSION = {id: 1, name: "A2026", current: true};
+const PAST_SESSION = {id: 4, name: "E2026", current: false};
 
 const internship1 = {
     id: 1,
@@ -55,7 +63,7 @@ const internship2 = {
     uploadedAt: "2026-10-15T10:00:00",
 };
 
-const renderStudentInternships = () => render(
+const studentInternshipsPage = () => (
     <MemoryRouter>
         <Routes>
             <Route element={<Outlet context={{dark: false}}/>}>
@@ -65,6 +73,8 @@ const renderStudentInternships = () => render(
     </MemoryRouter>
 );
 
+const renderStudentInternships = () => render(studentInternshipsPage());
+
 beforeEach(() => {
     vi.resetAllMocks();
     getStudentInternships.mockResolvedValue([internship1, internship2]);
@@ -72,6 +82,7 @@ beforeEach(() => {
     getStudentAppliedInternships.mockResolvedValue([]);
     markInternshipsAsViewed.mockResolvedValue(undefined);
     useNotifications.mockReturnValue({refresh: refreshNotifications});
+    useSession.mockReturnValue({selectedSession: CURRENT_SESSION});
 });
 
 describe("StudentInternships displays available internship offers", () => {
@@ -367,5 +378,34 @@ describe("StudentInternships refreshes notifications", () => {
         // Assert
         await waitFor(() => expect(refreshNotifications).toHaveBeenCalledTimes(1));
         expect(getStudentAppliedInternships).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("StudentInternships follows the chosen session", () => {
+
+    it("shouldLoadOffersAndApplicationsOfChosenSession", async () => {
+        // Arrange
+        useSession.mockReturnValue({selectedSession: PAST_SESSION});
+
+        // Act
+        renderStudentInternships();
+
+        // Assert
+        await waitFor(() => expect(getStudentInternships).toHaveBeenCalledWith(PAST_SESSION.id));
+        expect(getStudentAppliedInternships).toHaveBeenCalledWith(PAST_SESSION.id);
+    });
+
+    it("shouldReloadOffersWhenStudentChoosesAnotherSession", async () => {
+        // Arrange
+        const {rerender} = renderStudentInternships();
+        await waitFor(() => expect(getStudentInternships).toHaveBeenCalledWith(CURRENT_SESSION.id));
+
+        // Act
+        useSession.mockReturnValue({selectedSession: PAST_SESSION});
+        rerender(studentInternshipsPage());
+
+        // Assert
+        await waitFor(() => expect(getStudentInternships).toHaveBeenCalledWith(PAST_SESSION.id));
+        expect(getStudentAppliedInternships).toHaveBeenCalledWith(PAST_SESSION.id);
     });
 });

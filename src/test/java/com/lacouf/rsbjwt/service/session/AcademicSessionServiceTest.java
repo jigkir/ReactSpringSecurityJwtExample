@@ -196,6 +196,54 @@ class AcademicSessionServiceTest {
         assert ("H2020").equals(sessions.get(1).name());
     }
 
+    @Test
+    void shouldReturnCurrentAndUpcomingSessionsWhenNoSessionIsChosen() throws AcademicSessionNotFoundException {
+        // Arrange
+        AcademicSession upcomingSession = upcomingSession();
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
+        when(academicSessionRepository.findByStartDateGreaterThanEqual(currentSession.getStartDate())).thenReturn(List.of(currentSession, upcomingSession));
+
+        // Act
+        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(null);
+
+        // Assert
+        assert (List.of(currentSession, upcomingSession)).equals(sessions);
+    }
+
+    @Test
+    void shouldReturnCurrentAndUpcomingSessionsWhenCurrentSessionIsChosen() throws AcademicSessionNotFoundException {
+        // Arrange
+        AcademicSession upcomingSession = upcomingSession();
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
+        when(academicSessionRepository.findById(1L)).thenReturn(Optional.of(currentSession));
+        when(academicSessionRepository.findByStartDateGreaterThanEqual(currentSession.getStartDate())).thenReturn(List.of(currentSession, upcomingSession));
+
+        // Act
+        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(1L);
+
+        // Assert
+        assert (List.of(currentSession, upcomingSession)).equals(sessions);
+    }
+
+    @Test
+    void shouldReturnOnlyChosenSessionWhenItIsNotTheCurrentOne() throws AcademicSessionNotFoundException {
+        // Arrange
+        AcademicSession pastSession = pastSession();
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(currentSeason, currentYear)).thenReturn(Optional.of(currentSession));
+        when(academicSessionRepository.findById(2L)).thenReturn(Optional.of(pastSession));
+
+        // Act
+        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(2L);
+
+        // Assert
+        assert (List.of(pastSession)).equals(sessions);
+
+        verify(academicSessionRepository, never()).findByStartDateGreaterThanEqual(any(LocalDate.class));
+    }
+
     // ---------- Helpers ----------
 
     private static AcademicSession pastSession() {
@@ -203,5 +251,12 @@ class AcademicSessionServiceTest {
         pastSession.setId(2L);
 
         return pastSession;
+    }
+    
+    private static AcademicSession upcomingSession() {
+        AcademicSession upcomingSession = new AcademicSession(Season.WINTER, 2100);
+        upcomingSession.setId(3L);
+
+        return upcomingSession;
     }
 }
