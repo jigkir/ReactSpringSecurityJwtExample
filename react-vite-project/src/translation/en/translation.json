@@ -82,7 +82,10 @@
     "notificationLoadError": "Unable to load notifications. They will refresh automatically.",
     "notificationMarkAsReadError": "Unable to mark notifications as read. Please try again.",
     "pendingUserNotification": "{{amount}} user acces to review",
-    "interviews": "Interviews"
+    "interviews": "Interviews",
+    "interviewConvocationNotification": "New interview invitation",
+    "interviewUpdatedNotification": "Interview invitation updated",
+    "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}"
   },
   "managerPage": {
     "pageInfo": "Manager home page",
@@ -578,6 +581,7 @@
   },
   "studentInterviews": {
     "title": "My interviews",
+    "awaitingResponse": "Awaiting response",
     "loading": "Loading interviews…",
     "loadError": "Unable to load interviews. They will refresh automatically.",
     "empty": "No interview invitations yet. When an employer invites you, it will appear here.",
