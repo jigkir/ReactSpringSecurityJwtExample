@@ -11,20 +11,18 @@ import {useSession} from "../utils/useSession.js";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
-    STUDENT: [
-        {to: "/portfolio", labelKey: "navbar.portfolio"},
-        {to: "/internship", labelKey: "navbar.internships"},
-        {to: "/interviews", labelKey: "navbar.interviews"}
-    ],
-    MANAGER: [
-        {to: "/manager/cvs", labelKey: "navbar.cv"},
-        {to: "/manager/internships", labelKey: "navbar.internships"},
-        {to: "/users", labelKey: "navbar.users"}
-    ],
-    EMPLOYER: [
-        {to: "/internships", labelKey: "navbar.postInternship"},
-        {to: "/applications", labelKey: "navbar.applications"},
-    ],
+    STUDENT: [{to: "/portfolio", labelKey: "navbar.portfolio"}, {
+        to: "/internship",
+        labelKey: "navbar.internships"
+    }, {to: "/interviews", labelKey: "navbar.interviews"}],
+    MANAGER: [{to: "/manager/cvs", labelKey: "navbar.cv"}, {
+        to: "/manager/internships",
+        labelKey: "navbar.internships"
+    }, {to: "/users", labelKey: "navbar.users"}],
+    EMPLOYER: [{to: "/internships", labelKey: "navbar.postInternship"}, {
+        to: "/applications",
+        labelKey: "navbar.applications"
+    },],
     TEACHER: [],
 };
 
@@ -107,40 +105,29 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
-    const navItems = [
-        {to: homePath, label: t("navbar.accueil"), end: true},
-        {to: "/about", label: t("navbar.about")},
-        ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
-            ...item,
-            label: item.labelKey ? t(item.labelKey) : item.label,
-        })),
-    ];
+    const navItems = [{to: homePath, label: t("navbar.accueil"), end: true}, {
+        to: "/about",
+        label: t("navbar.about")
+    }, ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
+        ...item, label: item.labelKey ? t(item.labelKey) : item.label,
+    })),];
 
-    const linkClass = ({isActive}) =>
-        `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
+    const linkClass = ({isActive}) => `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
     // Mobile dropdown styling
-    const dropdownPanel = `absolute mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${
-        dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
-    }`;
-    const mobileLinkClass = ({isActive}) =>
-        `block px-4 py-2 text-lg pl-8 ${
-            isActive
-                ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700")
-                : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")
-        }`;
+    const dropdownPanel = `absolute mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`;
+    const mobileLinkClass = ({isActive}) => `block px-4 py-2 text-lg pl-8 ${isActive ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700") : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")}`;
 
     const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
 
-    return (
-        <>
+    return (<>
             <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
                 <div className="w-full mx-auto px-2 sm:px-6 xl:px-8">
                     <div className="flex items-center justify-between h-14">
 
                         {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-1 justify-start">
+                        <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-1.5 justify-start">
                             {/* Desktop brand */}
                             <Link to={homePath}
                                   className={`hidden xl:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -152,11 +139,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                 </span>
                                     {/* TLD Badge adapted for dark backgrounds */}
                                     <span
-                                        className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
-                                            dark
-                                                ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
-                                                : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
-                                        }`}>
+                                        className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
                                     .ly
                                 </span>
                                 </div>
@@ -167,8 +150,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                 {navItems.map(({to, label, end}) => (
                                     <NavLink key={to} to={to} end={end} className={linkClass}>
                                         {label}
-                                    </NavLink>
-                                ))}
+                                    </NavLink>))}
                                 {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                             </nav>
 
@@ -198,11 +180,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                         </span>
                                             {/* TLD Badge adapted for dark backgrounds */}
                                             <span
-                                                className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${
-                                                    dark
-                                                        ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30"
-                                                        : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"
-                                                }`}>
+                                                className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
                                             .ly
                                         </span>
                                         </div>
@@ -217,23 +195,20 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                         </div>
 
                         {/*Center section*/}
-                        {isLoggedIn && isAccessGranted &&
-                            (<div className="hidden xl:flex justify-center shrink-0">
-                                <select
-                                    value={selectedSession?.name}
-                                    onChange={(e) => {
-                                        const matchedSession = sessions.find(s => s.name === e.target.value);
-                                        setSelectedSession(matchedSession);
-                                    }}
-                                    className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
-                                >
-                                    {sessions.map((session) => (
-                                        <option key={session.name} value={session.name}>
-                                            {session.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>)}
+                        {isLoggedIn && isAccessGranted && (<div className="flex flex-1 justify-center shrink-0">
+                            <select
+                                value={selectedSession?.name}
+                                onChange={(e) => {
+                                    const matchedSession = sessions.find(s => s.name === e.target.value);
+                                    setSelectedSession(matchedSession);
+                                }}
+                                className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
+                            >
+                                {sessions.map((session) => (<option key={session.name} value={session.name}>
+                                        {session.name}
+                                    </option>))}
+                            </select>
+                        </div>)}
 
                         {/* ───────── Right side ───────── */}
                         <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 flex-1 justify-end">
@@ -254,40 +229,32 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                             {/* Desktop greeting + auth */}
                             <div className="hidden xl:flex items-center gap-3 ml-2">
-                                {isLoggedIn && (
-                                    <div
+                                {isLoggedIn && (<div
                                         className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
                                         <span className="hidden xl:inline">{t("navbar.hello")}</span>
                                         <span className={`font-semibold ${theme.greetingName}`}>
                                         {user.firstName} {user.lastName}
                                     </span>
-                                        {role && (
-                                            <span
+                                        {role && (<span
                                                 className={`hidden xl:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
                                             {formatRole(role)}
-                                        </span>
-                                        )}
-                                    </div>
-                                )}
+                                        </span>)}
+                                    </div>)}
 
-                                {isLoggedIn ? (
-                                    <NavLink to="/logout" className={linkClass}>{t("navbar.disconnect")}</NavLink>
-                                ) : (
-                                    <>
+                                {isLoggedIn ? (<NavLink to="/logout"
+                                                        className={linkClass}>{t("navbar.disconnect")}</NavLink>) : (<>
                                         <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
                                             {t("navbar.login")}
                                         </Link>
                                         <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}>
                                             {t("navbar.signup")}
                                         </Link>
-                                    </>
-                                )}
+                                    </>)}
                             </div>
 
                             {/* Mobile account dropdown */}
                             <div ref={authRef} className="relative xl:hidden">
-                                {isLoggedIn ? (
-                                    <button
+                                {isLoggedIn ? (<button
                                         type="button"
                                         onClick={() => {
                                             setAuthMenuOpen((o) => !o);
@@ -303,9 +270,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                     >
                                       <Icon name="person" size={20}/>
                                     </span>
-                                    </button>
-                                ) : (
-                                    <Link
+                                    </button>) : (<Link
                                         to="/login" // Use `href="/login"` if using Next.js
                                         className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
                                         aria-label={t("navbar.login")}
@@ -314,13 +279,10 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                         <span className="hidden min-[420px]:inline max-w-24 truncate text-md">
                                   {t("navbar.login")}
                                 </span>
-                                    </Link>
-                                )}
+                                    </Link>)}
 
-                                {authMenuOpen && (
-                                    <div className={`${dropdownPanel} right-0`}>
-                                        {isLoggedIn && (
-                                            <>
+                                {authMenuOpen && (<div className={`${dropdownPanel} right-0`}>
+                                        {isLoggedIn && (<>
                                                 <div
                                                     className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
                                                     {user.firstName} {user.lastName} ({formatRole(role)})
@@ -332,10 +294,8 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                                     {t("navbar.disconnect")}
                                                 </span>
                                                 </Link>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                            </>)}
+                                    </div>)}
                             </div>
                         </div>
                     </div>
@@ -350,14 +310,10 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                 dark={dark}
                 t={t}
                 mobileLinkClass={mobileLinkClass}
-                sessions={sessions}
-                selectedSession={selectedSession}
-                setSelectedSession={setSelectedSession}
                 isLoggedIn={isLoggedIn}
                 isAccessGranted={isAccessGranted}
             />
-        </>
-    );
+        </>);
 }
 
 export default Navbar;
