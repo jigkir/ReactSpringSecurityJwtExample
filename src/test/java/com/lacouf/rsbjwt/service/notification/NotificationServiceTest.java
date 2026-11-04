@@ -73,6 +73,28 @@ class NotificationServiceTest {
     }
 
     @Test
+    void shouldCreateInterviewConvocationNotificationTargetingTheInterview() {
+        // Arrange
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.INTERVIEW_CONVOCATION, 30L, student, NotificationStatus.UNREAD)).thenReturn(false);
+
+        // Act
+        notificationService.notifyIfAbsent(NotificationType.INTERVIEW_CONVOCATION, 30L, student);
+
+        // Assert
+        verify(notificationRepository).save(notificationCaptor.capture());
+
+        Notification saved = notificationCaptor.getValue();
+
+        assert ("Interview Invitation").equals(saved.getTitle());
+        assert ("You have been invited to an interview.").equals(saved.getMessage());
+        assert (NotificationStatus.UNREAD).equals(saved.getStatus());
+        assert (TargetType.INTERVIEW).equals(saved.getTargetType());
+        assert (Long.valueOf(30L)).equals(saved.getTargetId());
+        assert student.equals(saved.getUser());
+    }
+
+    @Test
     void shouldNotCreateNotificationWhenUnreadAlreadyExists() {
         // Arrange
         when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
@@ -80,6 +102,19 @@ class NotificationServiceTest {
 
         // Act
         notificationService.notifyIfAbsent(NotificationType.NEW_INTERNSHIP_OFFER, 1L, student);
+
+        // Assert
+        verify(notificationRepository, never()).save(any(Notification.class));
+    }
+
+    @Test
+    void shouldNotCreateInterviewConvocationNotificationAgainWhenUnreadAlreadyExists() {
+        // Arrange
+        when(notificationRepository.existsByNotificationTypeAndTargetIdAndUserAndStatus(
+                NotificationType.INTERVIEW_CONVOCATION, 30L, student, NotificationStatus.UNREAD)).thenReturn(true);
+
+        // Act
+        notificationService.notifyIfAbsent(NotificationType.INTERVIEW_CONVOCATION, 30L, student);
 
         // Assert
         verify(notificationRepository, never()).save(any(Notification.class));

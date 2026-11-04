@@ -28,6 +28,7 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
@@ -242,7 +243,9 @@ public class EmployerService {
         );
 
         updateEmployerDecisionForInterview(internshipApplication, EmployerDecision.INTERVIEW_OFFERED);
-        interviewRepository.save(interview);
+        Interview savedInterview = interviewRepository.save(interview);
+
+        notifyStudentOfInterview(savedInterview, NotificationType.INTERVIEW_CONVOCATION);
     }
 
     @Transactional
@@ -303,6 +306,9 @@ public class EmployerService {
         );
 
         interviewRepository.save(interview);
+
+        notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
+        notifyStudentOfInterview(interview, NotificationType.INTERVIEW_UPDATED);
 
         return InterviewEmployerResponseDTO.of(interview);
     }
@@ -382,6 +388,8 @@ public class EmployerService {
     private void cancelAndSaveInterview(Interview interview) {
         interview.cancel();
         interviewRepository.save(interview);
+
+        notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
     }
 
     private void rejectApplication(InternshipApplication internshipApplication) {
@@ -395,6 +403,12 @@ public class EmployerService {
     private void notifyManagersOfSubmittedInternship(Internship internship) {
         managerRepository.findAll()
                 .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, internship.getId(), manager));
+    }
+
+    private void notifyStudentOfInterview(Interview interview, NotificationType notificationType) {
+        Student student = interview.getInternshipApplication().getStudent();
+
+        notificationService.notifyIfAbsent(notificationType, interview.getId(), student);
     }
 
     private DocumentFileResponseDto toAttachedDocumentFile(Document document, long applicationId) throws ApplicationDocumentNotFoundException {

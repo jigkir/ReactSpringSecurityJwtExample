@@ -12,6 +12,9 @@ public enum NotificationType {
 
     NEW_INTERNSHIP_APPLICATION(TargetType.INTERNSHIP_APPLICATION, "New Internship Application", "A student has applied to one of your internship offers."),
 
+    INTERVIEW_CONVOCATION(TargetType.INTERVIEW, "Interview Invitation", "You have been invited to an interview."),
+    INTERVIEW_UPDATED(TargetType.INTERVIEW, "Interview Updated", "Your interview details have been updated."),
+
     STUDENT_ACCESS_REQUESTED(TargetType.STUDENT_ACCOUNT, "Student Access Requested", null);
 
     private final TargetType targetType;
