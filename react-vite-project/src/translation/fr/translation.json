@@ -545,7 +545,7 @@
     "title": "Convoquer cet étudiant en entrevue",
     "messageLabel": "Message à l'étudiant",
     "meetingTimeLabel": "Date et heure",
-    "meetingTypeLabel": "Comment se déroulera l'entrevue ?",
+    "meetingTypeLabel": "Comment se déroulera l'entrevue?",
     "selectPlaceholder": "Choisissez une option",
     "meetingDetailsLabel": "Détails de la rencontre (lien, numéro de téléphone ou adresse)",
     "cancelBtn": "Annuler les modifications",
