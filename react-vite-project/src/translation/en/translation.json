@@ -597,6 +597,15 @@
       "ONLINE": "Online (video call)",
       "PHONE": "By phone",
       "IN_PERSON": "In person"
+    },
+    "filters": {
+      "search": "Search",
+      "placeholder": "Internship or company...",
+      "status": "Status",
+      "type": "Meeting type",
+      "all": "All statuses",
+      "allTypes": "All types",
+      "noResults": "No interviews match your filters."
     }
   },
   "expiredUser": {

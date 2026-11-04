@@ -580,6 +580,15 @@
       "ONLINE": "En ligne",
       "IN_PERSON": "En personne",
       "PHONE": "Par téléphone"
+    },
+    "filters": {
+      "search": "Rechercher",
+      "placeholder": "Stage ou entreprise...",
+      "status": "Statut",
+      "type": "Type de rencontre",
+      "all": "Tous les statuts",
+      "allTypes": "Tous les types",
+      "noResults": "Aucune entrevue ne correspond aux filtres."
     }
   },
   "viewApplication": {
@@ -599,29 +608,6 @@
     "loadError": "Impossible de charger les utilisateurs fictifs.",
     "retryBtn": "Recharger les utilisateurs fictifs",
     "empty": "Aucun utilisateur fictif disponible."
-  },
-  "studentInterviews": {
-    "title": "Mes entrevues",
-    "loading": "Chargement des entrevues…",
-    "loadError": "Impossible de charger les entrevues. Elles s'actualiseront automatiquement.",
-    "empty": "Aucune convocation pour l'instant. Lorsqu'un employeur vous convoquera, elle apparaîtra ici.",
-    "date": "Date et heure",
-    "type": "Type d'entrevue",
-    "details": "Comment participer",
-    "message": "Message de l'employeur",
-    "openLink": "Ouvrir le lien de la rencontre",
-    "notProvided": "Non fourni",
-    "invalidDate": "Date indisponible",
-    "statuses": {
-      "upcoming": "À venir",
-      "past": "Passée",
-      "cancelled": "Annulée"
-    },
-    "types": {
-      "ONLINE": "En ligne (appel vidéo)",
-      "PHONE": "Par téléphone",
-      "IN_PERSON": "En personne"
-    }
   },
   "expiredUser": {
     "pendingBadge": "En attente de l'approbation du superviseur",
