@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
@@ -20,7 +20,6 @@ const TRANSCRIPT = "TRANSCRIPT";
 const getCoverLetterUrl = async (applicationId) => blobUrlFromFile(await getApplicationCoverLetter(applicationId));
 const getTranscriptUrl = async (applicationId) => blobUrlFromFile(await getApplicationTranscript(applicationId));
 
-
 function ApplicationCard({
                              application,
                              dark,
@@ -37,6 +36,8 @@ function ApplicationCard({
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCVBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
+    const [interviewLoading, setInterviewLoading] = useState(true);
+    const [interviewError, setInterviewError] = useState(false);
     const [openDoc, setOpenDoc] = useState(null); // null | COVER_LETTER | TRANSCRIPT
     const interviewLabel =
         isInterviewSelectOpen
@@ -46,21 +47,42 @@ function ApplicationCard({
     const hasCoverLetter = application.coverLetterId != null;
     const hasTranscript = application.transcriptId != null;
 
-    const getInterviewFromApplication = useCallback(async (application) => {
-        try {
-            const interviews = await getEmployerInterviewsByApplicationId(application.id);
-            setInterview(Array.isArray(interviews) ? (interviews.at(-1) ?? null) : null);
-        } catch {
-            setInterview(null);
-        }
-    }, []);
-
-
     useEffect(() => {
-        void getInterviewFromApplication(application);
-    }, [isInterviewSelectOpen]);
+        let active = true;
 
-    const onToggleInterviewPicker = () => setIsInterviewSelectOpen(!isInterviewSelectOpen);
+        setInterviewLoading(true);
+        setInterviewError(false);
+
+        getEmployerInterviewsByApplicationId(application.id)
+            .then((interviews) => {
+                if (!active) return;
+
+                if (!Array.isArray(interviews)) {
+                    throw new Error("Invalid interviews response");
+                }
+
+                setInterview(interviews.at(-1) ?? null);
+            })
+            .catch(() => {
+                if (active) setInterviewError(true);
+            })
+            .finally(() => {
+                if (active) setInterviewLoading(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [application.id, isInterviewSelectOpen]);
+
+    const onToggleInterviewPicker = () => {
+        if (!isInterviewSelectOpen) {
+            setInterviewLoading(true);
+            setInterviewError(false);
+        }
+
+        setIsInterviewSelectOpen((prev) => !prev);
+    };
 
     const toggleDoc = (doc) => setOpenDoc((current) => (current === doc ? null : doc));
 
@@ -156,13 +178,21 @@ function ApplicationCard({
                 {/* Inline Interview Time Selector */}
                 {isInterviewSelectOpen && (
                     <div className="w-full pt-4 mt-4">
-                        <InterviewPicker
-                            application={application}
-                            dark={dark}
-                            onClose={() => setIsInterviewSelectOpen(false)}
-                            onSendOffer={handleSendOffer}
-                            interview={interview}
-                        />
+                        {interviewLoading ? (
+                            <p>{t("interview.loading")}</p>
+                        ) : interviewError ? (
+                            <p role="alert" className="text-red-500">
+                                {t("interview.loadError")}
+                            </p>
+                        ) : (
+                            <InterviewPicker
+                                application={application}
+                                dark={dark}
+                                onClose={() => setIsInterviewSelectOpen(false)}
+                                onSendOffer={handleSendOffer}
+                                interview={interview}
+                            />
+                        )}
                     </div>
                 )}
 

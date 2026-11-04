@@ -556,6 +556,8 @@
     "errorMeetingType": "Choisissez le déroulement de l'entrevue.",
     "errorTooShort": "Ajoutez un message et les détails de la rencontre (lien, numéro de téléphone ou adresse).",
     "errorTooLong": "Le message peut contenir jusqu'à 500 caractères et les détails jusqu'à 255.",
+    "loading": "Chargement de l'entrevue...",
+    "loadError": "Impossible de charger l'entrevue. Veuillez réessayer.",
     "meetingTypes": {
       "ONLINE": "En ligne (appel vidéo)",
       "PHONE": "Par téléphone",
