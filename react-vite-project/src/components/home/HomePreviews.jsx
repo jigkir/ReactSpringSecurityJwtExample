@@ -9,6 +9,7 @@
 
 import PortfolioPreview from '../page/portfolio/PortfolioPreview.jsx';
 import StudentInternships from '../page/student/Internships.jsx';
+import Interviews from '../page/student/Interviews.jsx';
 import ManagerCv from '../page/manager/Cv.jsx';
 import ManagerInternships from '../page/manager/Internships.jsx';
 import PostInternship from '../page/internship/PostInternship.jsx';
@@ -18,6 +19,7 @@ export const PREVIEWS_BY_ROLE = {
     STUDENT: [
         {to: "/portfolio", titleKey: "home.studentCvLink", render: () => <PortfolioPreview/>},
         {to: "/internship", titleKey: "home.studentInternshipsLink", render: () => <StudentInternships preview/>},
+        {to: "/interviews", titleKey: "home.studentInterviewsLink", render: () => <Interviews preview/>},
     ],
     EMPLOYER: [
         {to: "/internships", titleKey: "home.employerInternshipsLink", render: (user) => <PostInternship user={user} preview/>},

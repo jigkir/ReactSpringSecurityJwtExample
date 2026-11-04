@@ -341,6 +341,7 @@
     "applicationsTitle": "Candidatures",
     "studentCvLink": "Accéder à mon portfolio",
     "studentInternshipsLink": "Trouver un stage et postuler",
+    "studentInterviewsLink": "Consulter mes entrevues",
     "employerInternshipsLink": "Gérer mes offres de stage",
     "employerApplicationsLink": "Consulter les candidatures reçues",
     "managerCvLink": "Valider les CV en attente",
@@ -561,7 +562,6 @@
       "IN_PERSON": "En personne"
     }
   },
-
   "studentInterviews": {
     "title": "Mes entrevues",
     "awaitingResponse": "En attente de réponse",
