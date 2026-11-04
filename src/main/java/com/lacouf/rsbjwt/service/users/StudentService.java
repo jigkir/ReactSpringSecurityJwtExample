@@ -268,15 +268,15 @@ public class StudentService {
     @Transactional(readOnly = true)
     public List<InternshipApplicationResponseDto> getInternshipApplications(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
         Student student = findByEmail(email);
-        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(sessionId);
 
-        return applicationRepository.findByStudentAndInternship_Session(student, session).stream()
+        return applicationRepository.findByStudentAndInternship_SessionIn(student, sessions).stream()
                 .filter(application -> isVisibleToStudents(application.getInternship()))
                 .map(InternshipApplicationResponseDto::of)
                 .toList();
     }
 
-    public List<StudentInternshipResponseDto> getInternships(String email) throws UserNotFoundException {
+    public List<StudentInternshipResponseDto> getInternships(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
         Student student = findByEmail(email);
 
         Set<Long> viewedInternshipIds = studentRepository.findViewedInternshipIds(student);
@@ -284,7 +284,8 @@ public class StudentService {
         Set<Long> favoriteInternshipIds = studentRepository.findFavoriteInternshipIds(student);
         Set<Long> appliedInternshipIds = applicationRepository.findInternshipIdsByStudent(student);
 
-        List<Internship> internships = findInternshipsOfCurrentAndUpcomingSessions(student);
+        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(sessionId);
+        List<Internship> internships = internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(student.getDiscipline(), sessions);
         List<StudentInternshipResponseDto> internshipResponses = new ArrayList<>();
 
         for (Internship internship : internships) {
@@ -472,12 +473,5 @@ public class StudentService {
         return internshipRepository
                 .findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(internshipId, ReviewStatus.APPROVED, student.getDiscipline())
                 .orElseThrow(() -> new InternshipNotFoundException(internshipId));
-    }
-
-    private List<Internship> findInternshipsOfCurrentAndUpcomingSessions(Student student) {
-        AcademicSession currentSession = academicSessionService.getCurrentSession();
-        LocalDate currentSessionStartDate = currentSession.getStartDate();
-
-        return internshipRepository.findByPostedBy_DisciplineAndSession_StartDateGreaterThanEqualAndDeletedIsFalse(student.getDiscipline(), currentSessionStartDate);
     }
 }

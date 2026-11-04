@@ -38,6 +38,17 @@ public class AcademicSessionService {
         return academicSessionRepository.findById(sessionId).orElseThrow(() -> new AcademicSessionNotFoundException(sessionId));
     }
 
+    public List<AcademicSession> findSessionOrCurrentAndUpcoming(Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession currentSession = getCurrentSession();
+        AcademicSession session = findSessionOrCurrent(sessionId);
+
+        if (!isSameSession(session, currentSession)) {
+            return List.of(session);
+        }
+
+        return academicSessionRepository.findByStartDateGreaterThanEqual(currentSession.getStartDate());
+    }
+
     public boolean isInCurrentAcademicYear(AcademicSession session) {
         if (session == null) {
             return false;

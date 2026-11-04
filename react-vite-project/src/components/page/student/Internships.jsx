@@ -16,6 +16,7 @@ import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
+import {useSession} from "../../../utils/useSession.js";
 
 // <StudentInternships />          full page (route /internship)
 // <StudentInternships preview />  Home page block: the newest offers only, no header, no filters
@@ -23,6 +24,8 @@ function StudentInternships({preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
+    const {selectedSession} = useSession();
+    const sessionId = selectedSession?.id;
     const s = getPostInternshipClasses(dark);
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -54,7 +57,7 @@ function StudentInternships({preview = false}) {
 
     const loadInternships = useCallback(async () => {
         try {
-            const data = await getStudentInternships();
+            const data = await getStudentInternships(sessionId);
             setInternships(data
                 .filter(internship => internship.status === 'APPROVED')
                 .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)));
@@ -64,16 +67,16 @@ function StudentInternships({preview = false}) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [sessionId]);
 
     const loadAppliedInternships = useCallback(async () => {
         try {
-            const data = await getStudentAppliedInternships();
+            const data = await getStudentAppliedInternships(sessionId);
             setAppliedInternships(data);
         } catch {
             setError(true);
         }
-    }, []);
+    }, [sessionId]);
 
     // Only visible, approved CVs can be used to apply
     const loadCvs = useCallback(async () => {

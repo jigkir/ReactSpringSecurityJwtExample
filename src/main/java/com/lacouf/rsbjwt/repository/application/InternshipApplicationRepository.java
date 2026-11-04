@@ -8,13 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public interface InternshipApplicationRepository extends JpaRepository<InternshipApplication, Long> {
 
-    List<InternshipApplication> findByStudentAndInternship_Session(Student student, AcademicSession session);
+    List<InternshipApplication> findByStudentAndInternship_SessionIn(Student student, Collection<AcademicSession> sessions);
 
     boolean existsByStudentAndInternship(Student student, Internship internship);
 
