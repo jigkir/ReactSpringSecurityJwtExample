@@ -7,13 +7,14 @@ const STATUS_BADGE = {
     pending: "bg-yellow-100 text-yellow-800",
 };
 
-function UserCard({ studentid, firstname, lastname, status, dark, onReactivate, onDeny }) {
+function UserCard({studentid, firstname, lastname, status, dark, onReactivate, onDeny}) {
     const {t} = useTranslation();
     const val = (status || "").toLowerCase();
     const badgeKey = val === "approved" || val === "rejected" ? val : "pending";
 
     return (
-        <div className={`p-4 rounded-lg border ${dark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"} shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4`}>
+        <div
+            className={`p-4 rounded-lg border ${dark ? "border-slate-700 bg-slate-800" : "border-gray-200 bg-white"} shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4`}>
             {/* Left: User Info & Status Badge */}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -37,7 +38,7 @@ function UserCard({ studentid, firstname, lastname, status, dark, onReactivate, 
                             {t("users.reactivate")}
                         </Button>
                         <Button dark={dark} icon="close" onClick={onDeny}>
-                            {t("users.close")}
+                            {t("users.deactivate")}
                         </Button>
                     </>
                 )}
@@ -50,7 +51,7 @@ function UserCard({ studentid, firstname, lastname, status, dark, onReactivate, 
 
                 {val === "approved" && (
                     <Button dark={dark} icon="close" onClick={onDeny}>
-                        {t("users.close")}
+                        {t("users.deactivate")}
                     </Button>
                 )}
             </div>

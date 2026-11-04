@@ -629,12 +629,12 @@
   },
   "users": {
     "statuses": {
-      "approved": "Approved",
-      "rejected": "Rejected",
+      "approved": "Activated",
+      "rejected": "Deactivated",
       "pending": "Pending"
     },
     "reactivate": "Reactivate",
-    "close": "Close",
+    "deactivate": "Deactivate",
     "studentId": "ID: {{studentId}}"
   }
 }
