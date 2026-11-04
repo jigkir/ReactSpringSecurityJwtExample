@@ -244,3 +244,64 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
         await waitFor(() => expect(screen.getByTestId('new-application-count').textContent).toBe('0'));
     });
 });
+
+describe('NotificationsProvider - Student interview notifications', () => {
+
+    beforeEach(() => {
+        localStorage.setItem('token', 'fake-jwt-token');
+    });
+
+    afterEach(() => {
+        localStorage.clear();
+        vi.clearAllMocks();
+    });
+
+    it('should count interview convocations and updates for a student', async () => {
+        // Arrange
+        api.getNotifications.mockResolvedValueOnce([
+            {id: 1, notificationType: 'INTERVIEW_CONVOCATION', targetType: 'INTERVIEW', targetId: 7},
+            {id: 2, notificationType: 'INTERVIEW_UPDATED', targetType: 'INTERVIEW', targetId: 8},
+        ]);
+
+        function InterviewCounts() {
+            const {items} = useNotifications();
+            return (
+                <span data-testid="counts">
+                    {items.filter((item) => item.targetType === 'INTERVIEW').map((item) => item.count).join(',')}
+                </span>
+            );
+        }
+
+        // Act
+        render(
+            <MemoryRouter>
+                <NotificationsProvider user={{id: 3, role: 'STUDENT'}} accountStatus={ACCOUNT_STATUS.APPROVED}>
+                    <InterviewCounts/>
+                </NotificationsProvider>
+            </MemoryRouter>
+        );
+
+        // Assert
+        await waitFor(() => expect(screen.getByTestId('counts').textContent).toBe('1,1'));
+    });
+
+    it('should close interview notifications when the student opens the interviews page', async () => {
+        // Arrange
+        api.getNotifications.mockResolvedValueOnce([
+            {id: 1, notificationType: 'INTERVIEW_CONVOCATION', targetType: 'INTERVIEW', targetId: 7},
+        ]);
+        api.markNotificationsAsRead.mockResolvedValueOnce();
+
+        // Act
+        render(
+            <MemoryRouter initialEntries={['/interviews']}>
+                <NotificationsProvider user={{id: 3, role: 'STUDENT'}} accountStatus={ACCOUNT_STATUS.APPROVED}>
+                    <span/>
+                </NotificationsProvider>
+            </MemoryRouter>
+        );
+
+        // Assert
+        await waitFor(() => expect(api.markNotificationsAsRead).toHaveBeenCalledWith('INTERVIEW'));
+    });
+});

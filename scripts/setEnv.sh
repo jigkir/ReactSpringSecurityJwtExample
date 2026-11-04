@@ -26,6 +26,7 @@ STEPS=(
   09-applications
   10-past-session
   11-expired-student
+#  12-interviews
 )
 
 run_step() {
