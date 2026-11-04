@@ -82,7 +82,10 @@
     "notificationLoadError": "Unable to load notifications. They will refresh automatically.",
     "notificationMarkAsReadError": "Unable to mark notifications as read. Please try again.",
     "pendingUserNotification": "{{amount}} user acces to review",
-    "interviews": "Interviews"
+    "interviews": "Interviews",
+    "interviewConvocationNotification": "New interview invitation",
+    "interviewUpdatedNotification": "Interview invitation updated",
+    "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}"
   },
   "managerPage": {
     "pageInfo": "Manager home page",
@@ -588,6 +591,7 @@
     "openLink": "Open the meeting link",
     "notProvided": "Not provided",
     "invalidDate": "Date unavailable",
+    "awaitingResponse": "Awaiting your response",
     "statuses": {
       "upcoming": "Upcoming",
       "past": "Past",
