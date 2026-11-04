@@ -79,10 +79,7 @@ function InternshipCard({
         dark ? "bg-sky-500/10 text-sky-200 border-sky-500/30" : "bg-sky-50 text-sky-800 border-sky-300"
     }`;
 
-    // Extract status badge element to easily reuse between mobile and desktop layouts
-    // Same pill as the student's CV status (see DocumentRow)
     const th = getCvDocumentsClasses(dark);
-    // Larger than the CV-row pill: "!" wins over the size classes inside pillBase
     const bigPill = "text-sm! px-3.5! py-1.5! gap-2!";
     const pillStatus = STATUS_ICON[internship.status] ? internship.status : "REJECTED";
     const statusBadge = !hideStatus && (
@@ -106,11 +103,15 @@ function InternshipCard({
             {/* Top row */}
             <div className={s.topRow}>
                 <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <h3 className={s.title}>{internship.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <h3 className={`${s.title} break-words [word-break:break-word] hyphens-auto max-w-full min-w-0`}>
+                            {internship.title}
+                        </h3>
                     </div>
                     {/* The description is always visible */}
-                    <p className={s.description} style={{whiteSpace: "pre-wrap"}}> {internship.description} </p>
+                    <p className={`${s.description} break-words`} style={{whiteSpace: "pre-wrap"}}>
+                        {internship.description}
+                    </p>
                 </div>
                 {((showPreview && !viewed) || application) && (
                     <div className="shrink-0 flex flex-col items-end gap-2">
@@ -127,7 +128,7 @@ function InternshipCard({
                 )}
                 {/* DESKTOP ONLY: Status badge aligned on top-right */}
                 {statusBadge && (
-                    <div className="hidden md:block">
+                    <div className="hidden md:block shrink-0">
                         {statusBadge}
                     </div>
                 )}
@@ -141,7 +142,7 @@ function InternshipCard({
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                         {t("internshipCard.rejectionReason")}
                     </p>
-                    <p className={`mt-0.5 text-sm font-semibold wrap-break-word ${dark ? "text-red-100" : "text-red-900"}`}
+                    <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
                        style={{whiteSpace: "pre-wrap"}}>
                         {internship.rejectionComment}
                     </p>
@@ -199,7 +200,7 @@ function InternshipCard({
                 </span>
             </div>
 
-            {/* Employer actions: second grey bar, then application counters + View application / Edit / Delete */}
+            {/* Employer actions */}
             {(OnEdit || OnDelete) && (
                 <div
                     className={`flex flex-wrap items-center justify-between gap-3 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
@@ -271,7 +272,8 @@ function InternshipCard({
                     {footer && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{footer}</div>}
                 </div>
             )}
-            {/* Bottom row: always the last thing in the card */}
+
+            {/* Bottom row */}
             {bottomFooter && (
                 <div
                     className={`flex flex-wrap items-center justify-end gap-2 pt-3 border-t ${

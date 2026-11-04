@@ -1,4 +1,4 @@
-import {act, render, screen, waitFor} from "@testing-library/react";
+import {act, render, screen, waitFor, within} from "@testing-library/react";
 import {MemoryRouter, Outlet, Route, Routes} from "react-router-dom";
 import StudentInterviews from "../Interviews.jsx";
 import {getStudentInterviews} from "../../../api/Api.jsx";
@@ -52,6 +52,8 @@ const renderStudentInterviews = (dark = false) => render(
     </MemoryRouter>
 );
 
+const cardOf = (title) => screen.getByText(title).closest("article");
+
 beforeEach(async () => {
     vi.resetAllMocks();
     await i18n.changeLanguage("en");
@@ -70,8 +72,8 @@ describe("StudentInterviews displays interview invitations", () => {
         expect(screen.getByText("Entreprise XYZ")).toBeInTheDocument();
         expect(screen.getByText(interview1.message)).toBeInTheDocument();
         expect(screen.getByText(interview2.meetingDetails)).toBeInTheDocument();
-        expect(screen.getByText(i18n.t("studentInterviews.types.ONLINE"))).toBeInTheDocument();
-        expect(screen.getByText(i18n.t("studentInterviews.types.IN_PERSON"))).toBeInTheDocument();
+        expect(within(cardOf("Développeur Java")).getByText(i18n.t("studentInterviews.types.ONLINE"))).toBeInTheDocument();
+        expect(within(cardOf("Développeur React")).getByText(i18n.t("studentInterviews.types.IN_PERSON"))).toBeInTheDocument();
         expect(getStudentInterviews).toHaveBeenCalledTimes(1);
     });
 
@@ -136,7 +138,13 @@ describe("StudentInterviews sorts interviews", () => {
         // Arrange: API deliberately returns interviews in the wrong order.
         getStudentInterviews.mockResolvedValue([
             {...interview1, id: 11, internshipTitle: "Past older", interviewDate: dateInDays(-10)},
-            {...interview1, id: 12, internshipTitle: "Cancelled", interviewDate: dateInDays(20), interviewStatus: "CANCELLED"},
+            {
+                ...interview1,
+                id: 12,
+                internshipTitle: "Cancelled",
+                interviewDate: dateInDays(20),
+                interviewStatus: "CANCELLED"
+            },
             {...interview1, id: 13, internshipTitle: "Upcoming later", interviewDate: dateInDays(10)},
             {...interview1, id: 14, internshipTitle: "Past recent", interviewDate: dateInDays(-2)},
             {...interview1, id: 15, internshipTitle: "Upcoming sooner", interviewDate: dateInDays(2)},
@@ -162,24 +170,42 @@ describe("StudentInterviews sorts interviews", () => {
         getStudentInterviews.mockResolvedValue([
             {...interview1, id: 21, internshipTitle: "Future interview", interviewDate: dateInDays(2)},
             {...interview1, id: 22, internshipTitle: "Past interview", interviewDate: dateInDays(-2)},
-            {...interview1, id: 23, internshipTitle: "Cancelled interview", interviewDate: dateInDays(4), interviewStatus: "CANCELLED"},
+            {
+                ...interview1,
+                id: 23,
+                internshipTitle: "Cancelled interview",
+                interviewDate: dateInDays(4),
+                interviewStatus: "CANCELLED"
+            },
         ]);
 
         // Act
         renderStudentInterviews();
         await screen.findByText("Future interview");
 
-        // Assert
-        expect(screen.getByText(i18n.t("studentInterviews.statuses.upcoming"))).toBeInTheDocument();
-        expect(screen.getByText(i18n.t("studentInterviews.statuses.past"))).toBeInTheDocument();
-        expect(screen.getByText(i18n.t("studentInterviews.statuses.cancelled"))).toBeInTheDocument();
+        // Assert: checked inside each card, because the status filter <option>s use the same labels
+        expect(within(cardOf("Future interview")).getByText(i18n.t("studentInterviews.statuses.upcoming"))).toBeInTheDocument();
+        expect(within(cardOf("Past interview")).getByText(i18n.t("studentInterviews.statuses.past"))).toBeInTheDocument();
+        expect(within(cardOf("Cancelled interview")).getByText(i18n.t("studentInterviews.statuses.cancelled"))).toBeInTheDocument();
     });
 
     it("shouldPutCancelledInterviewsLastEvenWhenTheirDatesAreInTheFuture", async () => {
         // Arrange
         getStudentInterviews.mockResolvedValue([
-            {...interview1, id: 31, internshipTitle: "Cancelled later", interviewDate: dateInDays(30), interviewStatus: "CANCELLED"},
-            {...interview1, id: 32, internshipTitle: "Cancelled sooner", interviewDate: dateInDays(5), interviewStatus: "CANCELLED"},
+            {
+                ...interview1,
+                id: 31,
+                internshipTitle: "Cancelled later",
+                interviewDate: dateInDays(30),
+                interviewStatus: "CANCELLED"
+            },
+            {
+                ...interview1,
+                id: 32,
+                internshipTitle: "Cancelled sooner",
+                interviewDate: dateInDays(5),
+                interviewStatus: "CANCELLED"
+            },
             {...interview1, id: 33, internshipTitle: "Scheduled", interviewDate: dateInDays(2)},
         ]);
 
@@ -219,7 +245,7 @@ it("shouldShowPhoneMeetingType", async () => {
     await screen.findByText("Développeur Java");
 
     // Assert
-    expect(screen.getByText(i18n.t("studentInterviews.types.PHONE"))).toBeInTheDocument();
+    expect(within(cardOf("Développeur Java")).getByText(i18n.t("studentInterviews.types.PHONE"))).toBeInTheDocument();
     expect(screen.getByText("514-555-1234")).toBeInTheDocument();
 });
 
