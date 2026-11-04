@@ -105,7 +105,7 @@ function ApplicationCard({
                         </span>
                     </div>
 
-                    <div className="flex flex-col items-stretch gap-2 sm:min-w-52">
+                    <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto sm:ml-auto sm:min-w-52">
                         <Button
                             tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
                             dark={dark}

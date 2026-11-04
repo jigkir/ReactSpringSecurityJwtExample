@@ -25,11 +25,17 @@ const MESSAGE_MIN = 2;
 const MESSAGE_MAX = 500;
 const DETAILS_MAX = 255;
 
-const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
+const pad = (n) => String(n).padStart(2, "0");
+
+// Local time in the format <input type="datetime-local"> expects: YYYY-MM-DDTHH:mm
+const getNow = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 function buildPayload(formData, interview) {
-    const tomorrow = getTomorrow();
-    const isPastDate = (value, original) => value < tomorrow && value !== original;
+    const now = getNow();
+    const isPastDate = (value, original) => value < now && value !== original;
 
     const message = formData.message.trim();
     const meetingDetails = formData.meetingDetails.trim();
@@ -65,7 +71,7 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
     const s = getInternshipFormClasses(dark);
     const {t} = useTranslation();
     const [error, setError] = useState(null);
-    const minDate = getTomorrow();
+    const minDate = getNow();
     const [formData, setFormData] = useState(() => toForm(interview));
     const isEdit = Boolean(interview);
 
