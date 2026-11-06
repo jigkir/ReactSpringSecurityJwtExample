@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyAcceptedException;
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyHiredException;
+import com.lacouf.rsbjwt.exception.application.InternshipAlreadyOfferedException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
@@ -704,7 +704,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnConflictWhenAcceptingForInterviewAnApplicationAlreadyOffered() throws Exception {
         // Arrange
-        doThrow(new ApplicationAlreadyHiredException(20L))
+        doThrow(new InternshipAlreadyOfferedException(20L))
                 .when(employerService).acceptInternshipApplicationForInterview(20L, EMPLOYER_EMAIL);
 
         // Act + Assert
@@ -715,7 +715,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnConflictWhenCreatingInterviewForApplicationAlreadyOffered() throws Exception {
         // Arrange
-        doThrow(new ApplicationAlreadyHiredException(20L))
+        doThrow(new InternshipAlreadyOfferedException(20L))
                 .when(employerService).createInterview(eq(20L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class));
 
         // Act + Assert
@@ -769,5 +769,31 @@ public class EmployerControllerTest {
         // Act + Assert
         mockMvc.perform(get("/api/employer/99/interviews").principal(authentication))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenOfferingInternshipForRejectedApplication() throws Exception {
+        // Arrange
+        doThrow(new ApplicationRejectedException(20L))
+                .when(employerService).offerInternshipsToStudents(List.of(20L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20]"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenOfferingInternshipAlreadyOffered() throws Exception {
+        // Arrange
+        doThrow(new InternshipAlreadyOfferedException(20L))
+                .when(employerService).offerInternshipsToStudents(List.of(20L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[20]"))
+                .andExpect(status().isConflict());
     }
 }

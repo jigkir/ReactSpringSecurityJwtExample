@@ -965,7 +965,7 @@ public class EmployerServiceTest {
                 .thenReturn(Optional.of(application));
 
         // Act + Assert
-        assertThrows(ApplicationAlreadyHiredException.class,
+        assertThrows(InternshipAlreadyOfferedException.class,
                 () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
@@ -999,7 +999,7 @@ public class EmployerServiceTest {
                 .thenReturn(Optional.of(application));
 
         // Act + Assert
-        assertThrows(ApplicationAlreadyHiredException.class,
+        assertThrows(InternshipAlreadyOfferedException.class,
                 () -> employerService.acceptInternshipApplicationForInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL));
 
         assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
@@ -1059,5 +1059,41 @@ public class EmployerServiceTest {
         assertEquals(EmployerDecision.REJECTED, application.getEmployerDecision());
         verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
         verifyNoInteractions(interviewRepository);
+    }
+
+    @Test
+    void shouldThrowWhenOfferingInternshipForRejectedApplication() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.REJECTED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(ApplicationRejectedException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(INTERNSHIP_APPLICATION_ID), EMPLOYER_EMAIL));
+
+        assertEquals(EmployerDecision.REJECTED, application.getEmployerDecision());
+        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldThrowWhenOfferingInternshipForApplicationAlreadyOffered() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(InternshipAlreadyOfferedException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(INTERNSHIP_APPLICATION_ID), EMPLOYER_EMAIL));
+
+        // The student's answer must not be reset to PENDING
+        assertEquals(StudentInternshipConsent.ACCEPTED, application.getStudentInternshipConsent());
+        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
     }
 }

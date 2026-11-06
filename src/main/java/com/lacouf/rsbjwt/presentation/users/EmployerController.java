@@ -95,7 +95,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
         employerService.acceptInternshipApplicationForInterview(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -107,7 +107,7 @@ public class EmployerController {
     }
 
     @PostMapping("/applications/{applicationId}/interview")
-    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException {
         employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok().build();
     }
@@ -141,7 +141,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<Void> offerInternshipsToStudents (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException {
+    public ResponseEntity<Void> offerInternshipsToStudents (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
         employerService.offerInternshipsToStudents(applicationIds, authentication.getName());
         return ResponseEntity.ok().build();
     }
