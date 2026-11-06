@@ -1,12 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyHiredException;
+import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
@@ -16,6 +11,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -43,12 +39,10 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
@@ -59,6 +53,8 @@ import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -86,8 +82,6 @@ public class EmployerServiceTest {
     private UserAppService userAppService;
     @Mock
     private AcademicSessionService academicSessionService;
-    @Mock
-    private ContractService contractService;
 
     @Mock
     private EmployerRepository employerRepository;
@@ -919,10 +913,8 @@ public class EmployerServiceTest {
         return internshipApplication;
     }
 
-    // ---------- Offering contracts ----------
-
     @Test
-    void shouldOfferContractToEveryApplication() throws Exception {
+    void shouldOfferInternshipToEveryApplication() throws Exception {
         // Arrange
         InternshipApplication first = receivedInternshipApplication();
         InternshipApplication second = receivedInternshipApplication();
@@ -932,85 +924,32 @@ public class EmployerServiceTest {
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(21L, EMPLOYER_EMAIL))
                 .thenReturn(Optional.of(second));
 
+        assertNotEquals(StudentInternshipConsent.PENDING, first.getStudentInternshipConsent());
+
         // Act
-        employerService.offerContracts(List.of(20L, 21L), EMPLOYER_EMAIL);
+        employerService.offerInternshipsToStudents(List.of(20L, 21L), EMPLOYER_EMAIL);
 
         // Assert
-        verify(contractService).createContract(first);
-        verify(contractService).createContract(second);
-
         assertEquals(EmployerDecision.INTERNSHIP_OFFERED, first.getEmployerDecision());
         assertEquals(EmployerDecision.INTERNSHIP_OFFERED, second.getEmployerDecision());
+        assertEquals(StudentInternshipConsent.PENDING, first.getStudentInternshipConsent());
+        assertEquals(StudentInternshipConsent.PENDING, second.getStudentInternshipConsent());
 
         verify(internshipApplicationRepository).save(first);
         verify(internshipApplicationRepository).save(second);
     }
 
     @Test
-    void shouldOfferContractOnlyOnceWhenApplicationIdIsDuplicated() throws Exception {
+    void shouldThrowWhenOfferingInternshipForUnknownApplication() {
         // Arrange
-        InternshipApplication application = receivedInternshipApplication();
-
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(20L, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(application));
-
-        // Act
-        employerService.offerContracts(List.of(20L, 20L), EMPLOYER_EMAIL);
-
-        // Assert
-        verify(contractService, times(1)).createContract(application);
-        verify(internshipApplicationRepository, times(1)).save(application);
-    }
-
-    @Test
-    void shouldReturnErrorWhenOfferingContractForUnknownApplication() {
-        // Arrange
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(20L, EMPLOYER_EMAIL))
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(99L, EMPLOYER_EMAIL))
                 .thenReturn(Optional.empty());
 
-        // Act
-        BatchHireResponseDto response = employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL);
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(99L), EMPLOYER_EMAIL));
 
-        // Assert
-        assertEquals(0, response.successfulApplicationIds().size());
-        assertEquals(1, response.errors().size());
-        assertEquals(20L, response.errors().getFirst().applicationId());
-    }
-
-    @Test
-    void shouldReturnErrorWhenContractCannotBeCreatedBecauseStudentIsAlreadyEmployed() throws Exception {
-        // Arrange
-        InternshipApplication application = receivedInternshipApplication();
-
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(20L, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(application));
-        doThrow(new StudentAlreadyEmployedException(3L)).when(contractService).createContract(application);
-
-        // Act
-        BatchHireResponseDto response = employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL);
-
-        // Assert
-        assertEquals(0, response.successfulApplicationIds().size());
-        assertEquals(1, response.errors().size());
-        assertEquals(20L, response.errors().getFirst().applicationId());
-    }
-
-    @Test
-    void shouldReturnErrorWhenContractAlreadyExistsForApplication() throws Exception {
-        // Arrange
-        InternshipApplication application = receivedInternshipApplication();
-
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(20L, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(application));
-        doThrow(new ContractAlreadyExistsException(20L)).when(contractService).createContract(application);
-
-        // Act
-        BatchHireResponseDto response = employerService.offerContracts(List.of(20L), EMPLOYER_EMAIL);
-
-        // Assert
-        assertEquals(0, response.successfulApplicationIds().size());
-        assertEquals(1, response.errors().size());
-        assertEquals(20L, response.errors().getFirst().applicationId());
+        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
     }
 
 
@@ -1065,5 +1004,60 @@ public class EmployerServiceTest {
 
         assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
         verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldRejectApplicationWhenInterviewWasOffered() throws Exception {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.INTERVIEW_OFFERED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+        when(interviewRepository.findByInternshipApplication(application)).thenReturn(List.of());
+
+        // Act
+        employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(EmployerDecision.REJECTED, application.getEmployerDecision());
+        verify(internshipApplicationRepository).save(application);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EmployerDecision.class, names = {"ACCEPTED", "INTERNSHIP_OFFERED"})
+    void shouldThrowWhenRejectingApplicationThatIsAcceptedOrOffered(EmployerDecision decision) {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(decision);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(ApplicationAlreadyAcceptedException.class,
+                () -> employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL));
+
+        assertEquals(decision, application.getEmployerDecision());
+        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
+        verifyNoInteractions(interviewRepository);
+    }
+
+    @Test
+    void shouldThrowWhenRejectingApplicationThatIsAlreadyRejected() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.REJECTED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(ApplicationAlreadyRejectedException.class,
+                () -> employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL));
+
+        assertEquals(EmployerDecision.REJECTED, application.getEmployerDecision());
+        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
+        verifyNoInteractions(interviewRepository);
     }
 }

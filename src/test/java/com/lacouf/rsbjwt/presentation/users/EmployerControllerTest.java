@@ -3,9 +3,9 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
+import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyAcceptedException;
 import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyHiredException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
 import com.lacouf.rsbjwt.exception.application.ApplicationDocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
@@ -20,10 +20,8 @@ import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.BatchErrorDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -680,87 +678,7 @@ public class EmployerControllerTest {
                         .content("[20, 21]"))
                 .andExpect(status().isOk());
 
-        verify(employerService).offerContracts(List.of(20L, 21L), EMPLOYER_EMAIL);
-    }
-
-    @Test
-    void shouldReturnErrorWhenOfferingContractForUnknownApplication() throws Exception {
-        // Arrange
-        BatchHireResponseDto responseDto = new BatchHireResponseDto(
-                List.of(),
-                List.of(new BatchErrorDto(20L, "Internship application not found with id: 20"))
-        );
-        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[20]"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.errors.length()").value(1))
-                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
-
-        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
-    }
-
-    @Test
-    void shouldReturnErrorWhenOfferingContractToStudentAlreadyEmployed() throws Exception {
-        // Arrange
-        BatchHireResponseDto responseDto = new BatchHireResponseDto(
-                List.of(),
-                List.of(new BatchErrorDto(20L, "Student is already employed"))
-        );
-        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[20]"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.errors.length()").value(1))
-                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
-
-        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
-    }
-
-    @Test
-    void shouldReturnErrorWhenContractAlreadyExists() throws Exception {
-        // Arrange
-        BatchHireResponseDto responseDto = new BatchHireResponseDto(
-                List.of(),
-                List.of(new BatchErrorDto(20L, "Contract already exists"))
-        );
-        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[20]"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.errors.length()").value(1))
-                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
-
-        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
-    }
-
-    @Test
-    void shouldReturnErrorWhenOfferingContractForRejectedApplication() throws Exception {
-        // Arrange
-        BatchHireResponseDto responseDto = new BatchHireResponseDto(
-                List.of(),
-                List.of(new BatchErrorDto(20L, "Application has been rejected"))
-        );
-        when(employerService.offerContracts(anyList(), eq(EMPLOYER_EMAIL))).thenReturn(responseDto);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("[20]"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.errors.length()").value(1))
-                .andExpect(jsonPath("$.errors[0].applicationId").value(20));
-
-        verify(employerService).offerContracts(List.of(20L), EMPLOYER_EMAIL);
+        verify(employerService).offerInternshipsToStudents(List.of(20L, 21L), EMPLOYER_EMAIL);
     }
 
     @Test
@@ -805,5 +723,51 @@ public class EmployerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validInterview())))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenOfferingInternshipForUnknownApplication() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(99L))
+                .when(employerService).offerInternshipsToStudents(List.of(99L), EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[99]"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenOfferBodyIsNotAListOfIds() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/offer").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"applicationId\": 20}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(employerService);
+    }
+
+    @Test
+    void shouldReturnConflictWhenRejectingApplicationAlreadyAccepted() throws Exception {
+        // Arrange
+        doThrow(new ApplicationAlreadyAcceptedException(20L))
+                .when(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingInterviewsOfUnknownApplication() throws Exception {
+        // Arrange
+        when(employerService.getInterviewsByApplicationId(99L, EMPLOYER_EMAIL))
+                .thenThrow(new InternshipApplicationNotFoundException(99L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/99/interviews").principal(authentication))
+                .andExpect(status().isNotFound());
     }
 }
