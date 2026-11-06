@@ -12,30 +12,16 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Getter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private StudentConsent studentConsent;
-
     @Getter
     @OneToOne (fetch = FetchType.LAZY, optional = false)
     private InternshipApplication internshipApplication;
-
-    @Setter
-    @Getter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ContractStatus contractStatus;
 
     public Contract(){
 
     }
 
     public Contract(InternshipApplication internshipApplication) {
-        this.studentConsent = StudentConsent.PENDING;
         this.internshipApplication = internshipApplication;
-        this.contractStatus = ContractStatus.PENDING;
     }
 
 }

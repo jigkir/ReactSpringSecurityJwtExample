@@ -19,7 +19,6 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -106,7 +105,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/reject")
-    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ContractAlreadyExistsException, ContractAlreadyActiveException {
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ContractAlreadyExistsException, ContractAlreadyActiveException, ApplicationAlreadyAcceptedException {
         employerService.rejectInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -149,12 +148,6 @@ public class EmployerController {
     public ResponseEntity<BatchHireResponseDto> offerContractsToStudents (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
         BatchHireResponseDto result = employerService.offerContracts(applicationIds, authentication.getName());
         return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/contracts")
-    public ResponseEntity<List<ContractResponseDto>> getContracts(Authentication authentication) throws UserNotFoundException {
-        List<ContractResponseDto> contracts = employerService.getContractsOfEmployer(authentication.getName());
-        return ResponseEntity.ok(contracts);
     }
 }
 

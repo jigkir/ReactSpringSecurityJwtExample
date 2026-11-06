@@ -1013,43 +1013,6 @@ public class EmployerServiceTest {
         assertEquals(20L, response.errors().getFirst().applicationId());
     }
 
-    // ---------- Rejecting an application that has a contract ----------
-
-    @Test
-    void shouldTerminateContractWhenApplicationIsRejected() throws Exception {
-        // Arrange
-        InternshipApplication application = receivedInternshipApplication();
-
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(application));
-        when(interviewRepository.findByInternshipApplication(application)).thenReturn(List.of());
-
-        // Act
-        employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
-
-        // Assert
-        verify(contractService).terminateForRejection(application);
-        assertEquals(EmployerDecision.REJECTED, application.getEmployerDecision());
-    }
-
-    @Test
-    void shouldNotRejectApplicationWhenContractIsAlreadyActive() throws Exception {
-        // Arrange
-        InternshipApplication application = receivedInternshipApplication();
-        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
-
-        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(application));
-        doThrow(new ContractAlreadyActiveException(40L)).when(contractService).terminateForRejection(application);
-
-        // Act + Assert
-        assertThrows(ContractAlreadyActiveException.class,
-                () -> employerService.rejectInternshipApplication(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL));
-
-        assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
-        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
-        verifyNoInteractions(interviewRepository);
-    }
 
     // ---------- Interview / shortlist guards ----------
 

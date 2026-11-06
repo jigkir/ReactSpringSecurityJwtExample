@@ -1,10 +1,7 @@
 package com.lacouf.rsbjwt.service.contract;
 
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
@@ -12,8 +9,6 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.contract.ContractStatus;
-import com.lacouf.rsbjwt.model.contract.StudentConsent;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -23,7 +18,6 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,8 +30,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,9 +48,7 @@ public class ContractServiceTest {
     private ArgumentCaptor<Contract> contractArgumentCaptor;
 
     private static final long APPLICATION_ID = 20L;
-    private static final long OTHER_APPLICATION_ID = 21L;
     private static final long CONTRACT_ID = 40L;
-    private static final long OTHER_CONTRACT_ID = 41L;
     private static final String STUDENT_EMAIL = "student@example.com";
     private static final String EMPLOYER_EMAIL = "email@example.com";
 
@@ -100,7 +90,7 @@ public class ContractServiceTest {
     @Test
     void shouldCreateContract() throws Exception {
         // Arrange
-        InternshipApplication application = application(APPLICATION_ID);
+        InternshipApplication application = application();
 
         // Act
         contractService.createContract(application);
@@ -110,8 +100,6 @@ public class ContractServiceTest {
 
         Contract savedContract = contractArgumentCaptor.getValue();
         assertEquals(application, savedContract.getInternshipApplication());
-        assertEquals(ContractStatus.PENDING, savedContract.getContractStatus());
-        assertEquals(StudentConsent.PENDING, savedContract.getStudentConsent());
     }
 
     @Test
@@ -120,7 +108,7 @@ public class ContractServiceTest {
         when(contractRepository.existsByInternshipApplicationId(APPLICATION_ID)).thenReturn(true);
 
         // Act + Assert
-        assertThrows(ContractAlreadyExistsException.class, () -> contractService.createContract(application(APPLICATION_ID)));
+        assertThrows(ContractAlreadyExistsException.class, () -> contractService.createContract(application()));
 
         verify(contractRepository, never()).save(any(Contract.class));
     }
@@ -128,7 +116,7 @@ public class ContractServiceTest {
     @Test
     void shouldThrowWhenCreatingContractForRejectedApplication() {
         // Arrange
-        InternshipApplication application = application(APPLICATION_ID);
+        InternshipApplication application = application();
         application.updateEmployerDecision(EmployerDecision.REJECTED);
 
         // Act + Assert
@@ -143,108 +131,21 @@ public class ContractServiceTest {
         student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
 
         // Act + Assert
-        assertThrows(StudentAlreadyEmployedException.class, () -> contractService.createContract(application(APPLICATION_ID)));
+        assertThrows(StudentAlreadyEmployedException.class, () -> contractService.createContract(application()));
 
         verify(contractRepository, never()).save(any(Contract.class));
-    }
-
-
-
-    // ---------- terminateForRejection ----------
-
-    @Test
-    void shouldDoNothingWhenRejectedApplicationHasNoContract() throws Exception {
-        // Arrange
-        InternshipApplication application = application(APPLICATION_ID);
-
-        when(contractRepository.findByInternshipApplication(application)).thenReturn(Optional.empty());
-
-        // Act
-        contractService.terminateForRejection(application);
-
-        // Assert
-        verify(contractRepository, never()).save(any(Contract.class));
-    }
-
-    @Test
-    void shouldTerminatePendingContractWhenApplicationIsRejected() throws Exception {
-        // Arrange
-        InternshipApplication application = application(APPLICATION_ID);
-        Contract contract = contract(CONTRACT_ID, application);
-
-        when(contractRepository.findByInternshipApplication(application)).thenReturn(Optional.of(contract));
-
-        // Act
-        contractService.terminateForRejection(application);
-
-        // Assert
-        assertEquals(ContractStatus.TERMINATED, contract.getContractStatus());
-    }
-
-    @Test
-    void shouldThrowWhenRejectingApplicationWithActiveContract() {
-        // Arrange
-        InternshipApplication application = application(APPLICATION_ID);
-        Contract contract = contract(CONTRACT_ID, application);
-        contract.setContractStatus(ContractStatus.ACTIVE);
-
-        when(contractRepository.findByInternshipApplication(application)).thenReturn(Optional.of(contract));
-
-        // Act + Assert
-        assertThrows(ContractAlreadyActiveException.class, () -> contractService.terminateForRejection(application));
-
-        assertEquals(ContractStatus.ACTIVE, contract.getContractStatus());
-    }
-
-    // ---------- getContractsOfStudent / getContractsOfEmployer ----------
-
-    @Test
-    void shouldReturnContractsOfEmployer() {
-        // Arrange
-        Contract contract = contract(CONTRACT_ID, application(APPLICATION_ID));
-
-        when(contractRepository.findByInternshipApplication_Internship_PostedBy(employer)).thenReturn(List.of(contract));
-
-        // Act
-        List<ContractResponseDto> response = contractService.getContractsOfEmployer(employer);
-
-        // Assert
-        assertEquals(1, response.size());
-        assertEquals(CONTRACT_ID, response.getFirst().id());
-    }
-
-    @Test
-    void shouldNotReturnContractsOfDeletedInternshipForEmployer() {
-        // Arrange
-        Contract contract = contract(CONTRACT_ID, application(APPLICATION_ID));
-        internship.markAsDeleted();
-
-        when(contractRepository.findByInternshipApplication_Internship_PostedBy(employer)).thenReturn(List.of(contract));
-
-        // Act
-        List<ContractResponseDto> response = contractService.getContractsOfEmployer(employer);
-
-        // Assert
-        assertTrue(response.isEmpty());
     }
 
     // ---------- Helpers ----------
 
-    private InternshipApplication application(long applicationId) {
+    private InternshipApplication application() {
         CV cv = new CV();
         cv.setId(5L);
         cv.setFileName("cv.pdf");
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
-        application.setId(applicationId);
+        application.setId(ContractServiceTest.APPLICATION_ID);
 
         return application;
-    }
-
-    private Contract contract(long contractId, InternshipApplication application) {
-        Contract contract = new Contract(application);
-        ReflectionTestUtils.setField(contract, "id", contractId);
-
-        return contract;
     }
 }

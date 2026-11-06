@@ -806,15 +806,4 @@ public class EmployerControllerTest {
                         .content(objectMapper.writeValueAsString(validInterview())))
                 .andExpect(status().isConflict());
     }
-
-    @Test
-    void shouldReturnConflictWhenRejectingApplicationWithActiveContract() throws Exception {
-        // Arrange
-        doThrow(new ContractAlreadyActiveException(40L))
-                .when(employerService).rejectInternshipApplication(20L, EMPLOYER_EMAIL);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/employer/applications/20/reject").principal(authentication))
-                .andExpect(status().isConflict());
-    }
 }

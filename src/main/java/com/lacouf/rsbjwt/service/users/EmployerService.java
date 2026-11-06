@@ -39,7 +39,6 @@ import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.contracts.BatchErrorDto;
 import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -263,10 +262,14 @@ public class EmployerService {
     }
 
     @Transactional
-    public void rejectInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException, ContractAlreadyActiveException {
+    public void rejectInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationAlreadyAcceptedException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
-        contractService.terminateForRejection(internshipApplication);
+        EmployerDecision decision = internshipApplication.getEmployerDecision();
+
+        if (decision != EmployerDecision.PENDING && decision != EmployerDecision.INTERVIEW_OFFERED) {
+            throw new ApplicationAlreadyAcceptedException(applicationId);
+        }
 
         rejectApplication(internshipApplication);
     }
@@ -338,13 +341,6 @@ public class EmployerService {
         }
 
         return new BatchHireResponseDto(successful, errors);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ContractResponseDto> getContractsOfEmployer(String email) throws UserNotFoundException {
-        Employer employer = employerRepository.findByCredentialsEmail(email)
-                .orElseThrow(UserNotFoundException::new);
-        return contractService.getContractsOfEmployer(employer);
     }
 
     private void hire(InternshipApplication application) throws StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
