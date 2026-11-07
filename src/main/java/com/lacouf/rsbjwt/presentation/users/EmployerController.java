@@ -6,7 +6,7 @@ import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
 import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -46,13 +46,13 @@ public class EmployerController {
     }
 
     @PostMapping("/internship")
-    public ResponseEntity<InternshipResponseDto> createInternship(@Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, StartDateOutsideInternshipSeasonException {
+    public ResponseEntity<InternshipResponseDto> createInternship(@Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
         InternshipResponseDto internshipResponseDto = employerService.saveInternship(internshipRequestDto, authentication.getName());
         return new ResponseEntity<>(internshipResponseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/internships/{internshipId}")
-    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, StartDateOutsideInternshipSeasonException {
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
         return ResponseEntity.ok(employerService.updateInternship(internshipId, internshipRequestDto, authentication.getName()));
     }
 

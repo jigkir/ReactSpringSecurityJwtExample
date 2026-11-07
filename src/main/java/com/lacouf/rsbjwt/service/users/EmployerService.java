@@ -5,7 +5,7 @@ import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
 import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -92,7 +92,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, StartDateOutsideInternshipSeasonException {
+    public InternshipResponseDto saveInternship(InternshipRequestDto internshipDto, String employerEmail) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
         internshipService.validateNewInternship(internshipDto);
 
         Employer employer = employerRepository.findByCredentialsEmail(employerEmail).orElseThrow(UserNotFoundException::new);
@@ -109,7 +109,7 @@ public class EmployerService {
                 internshipDto.compensationAmount(),
                 internshipDto.compensationNegotiable(),
                 employer,
-                academicSessionService.getSessionContaining(internshipDto.startDate())
+                academicSessionService.getTargetSessionContaining(internshipDto.startDate())
         );
 
         internshipRepository.save(internship);
@@ -120,12 +120,12 @@ public class EmployerService {
     }
 
     @Transactional
-    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, StartDateOutsideInternshipSeasonException {
+    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
         Internship internship = internshipRepository
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
-        internshipService.updateDetails(internship, dto, academicSessionService.getSessionContaining(dto.startDate()));
+        internshipService.updateDetails(internship, dto, academicSessionService.getTargetSessionContaining(dto.startDate()));
         internship.resubmitForReview();
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);

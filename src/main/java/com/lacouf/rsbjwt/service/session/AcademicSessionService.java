@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service.session;
 
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -32,12 +32,14 @@ public class AcademicSessionService {
         return getOrCreateSession(isThisYearSessionOver ? year + 1 : year);
     }
 
-    public AcademicSession getSessionContaining(LocalDate date) throws StartDateOutsideInternshipSeasonException {
-        if (!INTERNSHIP_SEASON.contains(date)) {
-            throw new StartDateOutsideInternshipSeasonException();
+    public AcademicSession getTargetSessionContaining(LocalDate startDate) throws InternshipStartDateOutsideTargetSessionException {
+        AcademicSession targetSession = getTargetSession();
+
+        if (!targetSession.contains(startDate)) {
+            throw new InternshipStartDateOutsideTargetSessionException(targetSession);
         }
 
-        return getOrCreateSession(date.getYear());
+        return targetSession;
     }
 
     public AcademicSession findSessionOrCurrent(Long sessionId) throws AcademicSessionNotFoundException {

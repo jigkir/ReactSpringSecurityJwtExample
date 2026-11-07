@@ -3,7 +3,7 @@ package com.lacouf.rsbjwt.service.users;
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
@@ -195,10 +195,10 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldSaveInternshipInSessionOfItsStartDate() throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, StartDateOutsideInternshipSeasonException {
+    void shouldSaveInternshipInTargetSession() throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
         // Arrange
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
-        when(academicSessionService.getSessionContaining(internshipRequestDto.startDate())).thenReturn(currentSession);
+        when(academicSessionService.getTargetSessionContaining(internshipRequestDto.startDate())).thenReturn(currentSession);
         when(internshipRepository.save(any(Internship.class)))
                 .thenAnswer(invocation -> {
                     Internship internship = invocation.getArgument(0);
@@ -233,13 +233,13 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldThrowStartDateOutsideInternshipSeasonWhenStartDateIsNotInWinter() throws StartDateOutsideInternshipSeasonException {
+    void shouldThrowStartDateOutsideTargetSessionWhenStartDateIsOutsideTargetSession() throws InternshipStartDateOutsideTargetSessionException {
         // Arrange
         when(employerRepository.findByCredentialsEmail(EMPLOYER_EMAIL)).thenReturn(Optional.of(employer));
-        when(academicSessionService.getSessionContaining(internshipRequestDto.startDate())).thenThrow(new StartDateOutsideInternshipSeasonException());
+        when(academicSessionService.getTargetSessionContaining(internshipRequestDto.startDate())).thenThrow(new InternshipStartDateOutsideTargetSessionException(currentSession));
 
         // Act + Assert
-        assertThrows(StartDateOutsideInternshipSeasonException.class, () -> employerService.saveInternship(internshipRequestDto, EMPLOYER_EMAIL));
+        assertThrows(InternshipStartDateOutsideTargetSessionException.class, () -> employerService.saveInternship(internshipRequestDto, EMPLOYER_EMAIL));
 
         verifyNoInteractions(internshipRepository, notificationService);
     }
@@ -381,18 +381,18 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldMoveInternshipToSessionOfItsStartDateWhenUpdated() throws Exception {
+    void shouldPutInternshipInTargetSessionWhenUpdated() throws Exception {
         // Arrange
-        AcademicSession nextSession = new AcademicSession(Season.WINTER, 2028);
+        AcademicSession targetSession = new AcademicSession(Season.WINTER, 2028);
 
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
-        when(academicSessionService.getSessionContaining(internshipRequestDto.startDate())).thenReturn(nextSession);
+        when(academicSessionService.getTargetSessionContaining(internshipRequestDto.startDate())).thenReturn(targetSession);
 
         // Act
         employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL);
 
         // Assert
-        assert (nextSession).equals(internship.getSession());
+        assert (targetSession).equals(internship.getSession());
     }
 
     @Test

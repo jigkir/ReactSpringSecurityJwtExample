@@ -40,4 +40,8 @@ public class AcademicSession {
     public String getName() {
         return season.getCode() + sessionYear;
     }
+    
+    public boolean contains(LocalDate date) {
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
+    }
 }

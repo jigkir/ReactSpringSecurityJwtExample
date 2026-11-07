@@ -1,6 +1,6 @@
 package com.lacouf.rsbjwt.service.session;
 
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -96,29 +96,28 @@ class AcademicSessionServiceTest {
     }
 
     @Test
-    void shouldCreateSessionContainingDateWhenItDoesNotExistYet() throws StartDateOutsideInternshipSeasonException {
+    void shouldReturnTargetSessionWhenStartDateIsInIt() throws InternshipStartDateOutsideTargetSessionException {
         // Arrange
         LocalDate startDate = LocalDate.of(2027, 1, 18);
 
-        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, 2027)).thenReturn(Optional.empty());
-        when(academicSessionRepository.save(any(AcademicSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
         // Act
-        AcademicSession session = academicSessionService.getSessionContaining(startDate);
+        AcademicSession session = academicSessionService.getTargetSessionContaining(startDate);
 
         // Assert
-        assert ("H2027").equals(session.getName());
+        assert (targetSession).equals(session);
     }
 
     @Test
-    void shouldThrowStartDateOutsideInternshipSeasonWhenStartDateIsNotInWinter() {
+    void shouldThrowStartDateOutsideTargetSessionWhenStartDateIsAfterTargetSession() {
         // Arrange
         LocalDate summerDate = LocalDate.of(2027, 6, 1);
 
-        // Act + Assert
-        assertThrows(StartDateOutsideInternshipSeasonException.class, () -> academicSessionService.getSessionContaining(summerDate));
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
-        verify(academicSessionRepository, never()).save(any(AcademicSession.class));
+        // Act + Assert
+        assertThrows(InternshipStartDateOutsideTargetSessionException.class, () -> academicSessionService.getTargetSessionContaining(summerDate));
     }
 
     @Test
