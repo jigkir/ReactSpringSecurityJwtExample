@@ -1,6 +1,8 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
@@ -11,8 +13,10 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.Document;
@@ -35,6 +39,7 @@ import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
@@ -75,8 +80,9 @@ public class StudentService {
     private final NotificationService notificationService;
     private final DocumentService documentService;
     private final AcademicSessionService academicSessionService;
+    private final ContractService contractService;
 
-    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository interviewRepository, AcademicSessionService academicSessionService) {
+    public StudentService(StudentRepository studentRepository, UserAppService userAppService, CVRepository cvRepository, CoverLetterRepository coverLetterRepository, AcademicTranscriptRepository academicTranscriptRepository, ManagerRepository managerRepository, NotificationService notificationService, InternshipRepository internshipRepository, InternshipApplicationRepository applicationRepository, DocumentService documentService, InterviewRepository interviewRepository, AcademicSessionService academicSessionService, ContractService contractService) {
         this.userAppService = userAppService;
         this.cvRepository = cvRepository;
         this.studentRepository = studentRepository;
@@ -89,6 +95,7 @@ public class StudentService {
         this.documentService = documentService;
         this.interviewRepository = interviewRepository;
         this.academicSessionService = academicSessionService;
+        this.contractService = contractService;
     }
 
     public UserResponseDto save(StudentSignUpDto studentSignUpDto) throws UserAlreadyExistsException {
@@ -354,6 +361,58 @@ public class StudentService {
                 .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
                 .map(InterviewStudentResponseDTO::of)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<InternshipApplicationResponseDto> getOffers(String email) throws UserNotFoundException {
+        Student student = findByEmail(email);
+        return applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED)
+                .stream()
+                .map(InternshipApplicationResponseDto::of)
+                .toList();
+    }
+
+    @Transactional
+    public void acceptOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
+        InternshipApplication application = applicationRepository
+                .findByIdAndStudent_Credentials_Email(applicationId, email)
+                .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
+
+        Student student = findByEmail(email);
+
+        if (student.getStudentInternshipStatus().equals(StudentInternshipStatus.EMPLOYED)) {
+
+        }
+
+        if (!application.getEmployerDecision().equals(EmployerDecision.INTERNSHIP_OFFERED)) {
+
+        }
+
+        if (!application.getStudentInternshipConsent().equals(StudentInternshipConsent.PENDING)) {
+
+        }
+
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
+        contractService.createContract(application);
+        applicationRepository.save(application);
+    }
+
+    @Transactional
+    public void refuseOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException {
+        InternshipApplication application = applicationRepository
+                .findByIdAndStudent_Credentials_Email(applicationId, email)
+                .orElseThrow(() -> new InternshipNotFoundException(applicationId));
+
+        if (!application.getEmployerDecision().equals(EmployerDecision.INTERNSHIP_OFFERED)) {
+
+        }
+
+        if (!application.getStudentInternshipConsent().equals(StudentInternshipConsent.PENDING)) {
+
+        }
+
+        application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
+        applicationRepository.save(application);
     }
 
     private boolean isVisibleToStudents(Internship internship) {
