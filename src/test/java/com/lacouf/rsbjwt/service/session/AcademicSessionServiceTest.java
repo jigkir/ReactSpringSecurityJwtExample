@@ -200,38 +200,6 @@ class AcademicSessionServiceTest {
         assert ("H2026").equals(sessions.get(1).name());
     }
 
-    @Test
-    void shouldReturnTargetAndUpcomingSessionsWhenNoSessionIsChosen() throws AcademicSessionNotFoundException {
-        // Arrange
-        AcademicSession upcomingSession = upcomingSession();
-
-        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
-        when(academicSessionRepository.findByStartDateGreaterThanEqual(targetSession.getStartDate())).thenReturn(List.of(targetSession, upcomingSession));
-
-        // Act
-        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(null);
-
-        // Assert
-        assert (List.of(targetSession, upcomingSession)).equals(sessions);
-    }
-
-    @Test
-    void shouldReturnOnlyChosenSessionWhenItIsNotTheTargetOne() throws AcademicSessionNotFoundException {
-        // Arrange
-        AcademicSession pastSession = pastSession();
-
-        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
-        when(academicSessionRepository.findById(2L)).thenReturn(Optional.of(pastSession));
-
-        // Act
-        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(2L);
-
-        // Assert
-        assert (List.of(pastSession)).equals(sessions);
-
-        verify(academicSessionRepository, never()).findByStartDateGreaterThanEqual(any(LocalDate.class));
-    }
-
     // ---------- Helpers ----------
 
     private AcademicSessionService createServiceOn(LocalDate today) {
@@ -247,12 +215,5 @@ class AcademicSessionServiceTest {
         pastSession.setId(2L);
 
         return pastSession;
-    }
-
-    private static AcademicSession upcomingSession() {
-        AcademicSession upcomingSession = new AcademicSession(Season.WINTER, 2028);
-        upcomingSession.setId(3L);
-
-        return upcomingSession;
     }
 }

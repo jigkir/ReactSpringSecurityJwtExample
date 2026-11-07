@@ -268,9 +268,9 @@ public class StudentService {
     @Transactional(readOnly = true)
     public List<InternshipApplicationResponseDto> getInternshipApplications(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
         Student student = findByEmail(email);
-        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(sessionId);
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
 
-        return applicationRepository.findByStudentAndInternship_SessionIn(student, sessions).stream()
+        return applicationRepository.findByStudentAndInternship_Session(student, session).stream()
                 .filter(application -> isVisibleToStudents(application.getInternship()))
                 .map(InternshipApplicationResponseDto::of)
                 .toList();
@@ -284,8 +284,8 @@ public class StudentService {
         Set<Long> favoriteInternshipIds = studentRepository.findFavoriteInternshipIds(student);
         Set<Long> appliedInternshipIds = applicationRepository.findInternshipIdsByStudent(student);
 
-        List<AcademicSession> sessions = academicSessionService.findSessionOrCurrentAndUpcoming(sessionId);
-        List<Internship> internships = internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(student.getDiscipline(), sessions);
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+        List<Internship> internships = internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(student.getDiscipline(), session);
         List<StudentInternshipResponseDto> internshipResponses = new ArrayList<>();
 
         for (Internship internship : internships) {

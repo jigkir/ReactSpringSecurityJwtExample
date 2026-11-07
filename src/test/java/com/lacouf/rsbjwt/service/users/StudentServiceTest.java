@@ -769,8 +769,8 @@ public class StudentServiceTest {
     void shouldGetAInternshipsSuccessfully() throws UserNotFoundException, AcademicSessionNotFoundException {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(null)).thenReturn(List.of(currentSession));
-        when(internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(dummyStudent.getDiscipline(), List.of(currentSession))).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
 
         //Act + Assert
         internship.setStatus(ReviewStatus.APPROVED);
@@ -782,8 +782,8 @@ public class StudentServiceTest {
     void shouldNotGetAInternshipsWhenStatusIsNotApproved() throws UserNotFoundException, AcademicSessionNotFoundException {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(null)).thenReturn(List.of(currentSession));
-        when(internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(dummyStudent.getDiscipline(), List.of(currentSession))).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
 
         //Act + Assert
         assert studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
@@ -793,8 +793,8 @@ public class StudentServiceTest {
     void shouldNotGetAInternshipsWhenAfterDeadline() throws UserNotFoundException, AcademicSessionNotFoundException {
         //Assert
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(null)).thenReturn(List.of(currentSession));
-        when(internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(dummyStudent.getDiscipline(), List.of(currentSession))).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
 
         internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
 
@@ -809,8 +809,8 @@ public class StudentServiceTest {
         internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(null)).thenReturn(List.of(currentSession));
-        when(internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(dummyStudent.getDiscipline(), List.of(currentSession))).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         when(applicationRepository.findInternshipIdsByStudent(dummyStudent)).thenReturn(Set.of(10L));
 
         // Act
@@ -826,8 +826,8 @@ public class StudentServiceTest {
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(null)).thenReturn(List.of(currentSession));
-        when(internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(dummyStudent.getDiscipline(), List.of(currentSession))).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
         when(studentRepository.findHiddenInternshipIds(dummyStudent)).thenReturn(Set.of(10L));
 
         // Act
@@ -847,8 +847,8 @@ public class StudentServiceTest {
         internship.setStatus(ReviewStatus.APPROVED);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(1L)).thenReturn(List.of(currentSession));
-        when(internshipRepository.findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(dummyStudent.getDiscipline(), List.of(currentSession))).thenReturn(List.of(internship));
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
 
         // Act
         List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL, 1L);
@@ -1110,8 +1110,8 @@ public class StudentServiceTest {
         application.setId(20L);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(academicSessionService.findSessionOrCurrentAndUpcoming(1L)).thenReturn(List.of(currentSession));
-        when(applicationRepository.findByStudentAndInternship_SessionIn(dummyStudent, List.of(currentSession))).thenReturn(List.of(application));
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(applicationRepository.findByStudentAndInternship_Session(dummyStudent, currentSession)).thenReturn(List.of(application));
 
         // Act
         List<InternshipApplicationResponseDto> applications = studentService.getInternshipApplications(STUDENT_EMAIL, 1L);
