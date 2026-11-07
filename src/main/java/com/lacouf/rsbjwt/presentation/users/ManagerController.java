@@ -64,8 +64,8 @@ public class ManagerController {
     }
 
     @GetMapping("/internships/pending")
-    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(managerService.getPendingInternships(sessionId));
+    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships() {
+        return ResponseEntity.ok(managerService.getPendingInternships());
     }
 
     @GetMapping("/internships/{internshipId}")

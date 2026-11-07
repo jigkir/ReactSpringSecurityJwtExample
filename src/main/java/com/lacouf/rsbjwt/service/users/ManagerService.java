@@ -122,10 +122,8 @@ public class ManagerService {
         return saveAndConvert(cv);
     }
 
-    public List<InternshipResponseDto> getPendingInternships(Long sessionId) throws AcademicSessionNotFoundException {
-        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
-
-        return internshipRepository.findBySessionAndStatusAndDeletedFalse(session, ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
+    public List<InternshipResponseDto> getPendingInternships() {
+        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
     }
 
     public List<InternshipResponseDto> getAllInternships(Long sessionId) throws AcademicSessionNotFoundException {

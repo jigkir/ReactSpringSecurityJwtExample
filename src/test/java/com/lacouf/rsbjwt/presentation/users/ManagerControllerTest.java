@@ -194,7 +194,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnPendingInternships() throws Exception {
         // Arrange
-        when(managerService.getPendingInternships(null)).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
+        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/pending"))
@@ -202,7 +202,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
 
-        verify(managerService).getPendingInternships(null);
+        verify(managerService).getPendingInternships();
     }
 
     @Test

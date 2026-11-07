@@ -340,13 +340,12 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnPendingInternships() throws AcademicSessionNotFoundException {
+    void shouldReturnPendingInternships() {
         //Arrange
-        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
-        when(internshipRepository.findBySessionAndStatusAndDeletedFalse(currentSession, ReviewStatus.PENDING)).thenReturn(List.of(internship));
+        when(internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING)).thenReturn(List.of(internship));
 
         //Act
-        List<InternshipResponseDto> result = managerService.getPendingInternships(null);
+        List<InternshipResponseDto> result = managerService.getPendingInternships();
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
