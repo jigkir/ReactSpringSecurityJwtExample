@@ -70,8 +70,9 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    public List<ManagerCvResponseDto> getAllVisibleCvs() {
-        List<CV> cvs = cvRepository.findByVisibility(DocumentVisibility.VISIBLE);
+    public List<ManagerCvResponseDto> getVisibleCvs(Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+        List<CV> cvs = cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, session);
 
         return cvs.stream().map(ManagerCvResponseDto::of).toList();
     }

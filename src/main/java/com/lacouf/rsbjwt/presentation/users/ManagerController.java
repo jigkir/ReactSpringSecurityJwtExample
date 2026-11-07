@@ -34,8 +34,8 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<ManagerCvResponseDto>> getAllVisibleCvs() {
-        return ResponseEntity.ok(managerService.getAllVisibleCvs());
+    public ResponseEntity<List<ManagerCvResponseDto>> getVisibleCvs(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getVisibleCvs(sessionId));
     }
 
     @GetMapping("/cvs/{cvId}")

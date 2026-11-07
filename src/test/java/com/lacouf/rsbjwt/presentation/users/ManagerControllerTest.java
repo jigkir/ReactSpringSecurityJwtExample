@@ -57,17 +57,17 @@ public class ManagerControllerTest {
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
 
     @Test
-    void shouldReturnAllVisibleCvs() throws Exception {
+    void shouldReturnVisibleCvsOfChosenSession() throws Exception {
         // Arrange
-        when(managerService.getAllVisibleCvs()).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
+        when(managerService.getVisibleCvs(1L)).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
 
         // Act + Assert
-        mockMvc.perform(get("/api/manager/cvs"))
+        mockMvc.perform(get("/api/manager/cvs").param("sessionId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].status").value("REJECTED"));
 
-        verify(managerService).getAllVisibleCvs();
+        verify(managerService).getVisibleCvs(1L);
     }
 
     @Test

@@ -281,6 +281,22 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldSaveCVInTargetSessionWhenCVIsUploaded() throws Exception {
+        // Arrange
+        DocumentUploadDto cv = new DocumentUploadDto(validPdfBytes, "cv.pdf");
+
+        when(academicSessionService.getTargetSession()).thenReturn(currentSession);
+
+        // Act
+        studentService.saveCV(cv, dummyStudent);
+
+        // Assert
+        verify(cvRepository).save(cvArgumentCaptor.capture());
+
+        assert currentSession.equals(cvArgumentCaptor.getValue().getSession());
+    }
+
+    @Test
     void shouldNotifyEveryManagerWhenCVIsSubmitted() throws Exception {
         // Arrange
         DocumentUploadDto upload = new DocumentUploadDto(validPdfBytes, "cv.pdf");

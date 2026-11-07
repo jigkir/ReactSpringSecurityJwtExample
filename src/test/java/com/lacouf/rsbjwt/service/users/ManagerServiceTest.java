@@ -91,7 +91,7 @@ public class ManagerServiceTest {
         Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, null);
         student.setId(2L);
 
-        cv = new CV("pdf".getBytes(), "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
+        cv = new CV("pdf".getBytes(), "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), currentSession);
         cv.setId(1L);
         student.addCv(cv);
 
@@ -145,12 +145,13 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnAllVisibleCvs() {
+    void shouldReturnVisibleCvsUploadedForChosenSession() throws AcademicSessionNotFoundException {
         // Arrange
-        when(cvRepository.findByVisibility(DocumentVisibility.VISIBLE)).thenReturn(List.of(cv));
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of(cv));
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getAllVisibleCvs();
+        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(1L);
 
         // Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -158,12 +159,13 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyListWhenNoVisibleCvs() {
+    void shouldReturnEmptyListWhenNoVisibleCvs() throws AcademicSessionNotFoundException {
         // Arrange
-        when(cvRepository.findByVisibility(DocumentVisibility.VISIBLE)).thenReturn(List.of());
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of());
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getAllVisibleCvs();
+        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(null);
 
         // Assert
         assert result.isEmpty();
@@ -693,7 +695,7 @@ public class ManagerServiceTest {
     @Test
     void shouldNotNotifyStudentOfOpenInternshipsWhenStudentAlreadyHasApprovedCv() throws DocumentNotFoundException {
         // Arrange
-        CV approvedCv = new CV("pdf".getBytes(), "old.pdf", LocalDateTime.of(2026, 8, 1, 10, 0));
+        CV approvedCv = new CV("pdf".getBytes(), "old.pdf", LocalDateTime.of(2026, 8, 1, 10, 0), currentSession);
 
         approvedCv.setStatus(ReviewStatus.APPROVED);
 

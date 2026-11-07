@@ -126,7 +126,7 @@ public class StudentService {
 
     @Transactional
     public void saveCV(DocumentUploadDto upload, Student student) throws InvalidFileTypeException, InvalidFileSizeException, NoSuchAlgorithmException, CorruptedFileException, EmptyFileException {
-        CV cv = new CV(upload.content(), upload.fileName(), LocalDateTime.now());
+        CV cv = new CV(upload.content(), upload.fileName(), LocalDateTime.now(), academicSessionService.getTargetSession());
 
         cv.setStudent(student);
 
