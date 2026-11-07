@@ -373,7 +373,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void acceptOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
+    public void acceptOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)
                 .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
@@ -381,15 +381,15 @@ public class StudentService {
         Student student = findByEmail(email);
 
         if (student.getStudentInternshipStatus().equals(StudentInternshipStatus.EMPLOYED)) {
-
+            throw new StudentAlreadyEmployedException(student.getId());
         }
 
         if (!application.getEmployerDecision().equals(EmployerDecision.INTERNSHIP_OFFERED)) {
-
+            throw new InternshipAlreadyOfferedException(applicationId);
         }
 
         if (!application.getStudentInternshipConsent().equals(StudentInternshipConsent.PENDING)) {
-
+            throw new StudentConsentNotPendingException(applicationId);
         }
 
         application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
@@ -398,17 +398,17 @@ public class StudentService {
     }
 
     @Transactional
-    public void refuseOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException {
+    public void refuseOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, StudentConsentNotPendingException, InternshipAlreadyOfferedException {
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)
                 .orElseThrow(() -> new InternshipNotFoundException(applicationId));
 
         if (!application.getEmployerDecision().equals(EmployerDecision.INTERNSHIP_OFFERED)) {
-
+            throw new InternshipAlreadyOfferedException(applicationId);
         }
 
         if (!application.getStudentInternshipConsent().equals(StudentInternshipConsent.PENDING)) {
-
+            throw new StudentConsentNotPendingException(applicationId);
         }
 
         application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
