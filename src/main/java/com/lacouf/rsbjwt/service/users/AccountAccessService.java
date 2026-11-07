@@ -50,7 +50,7 @@ public class AccountAccessService {
             return AccountStatus.APPROVED;
         }
 
-        if (!academicSessionService.isInCurrentAcademicYear(student.getAccessSession())) {
+        if (!academicSessionService.isTargetSession(student.getAccessSession())) {
             return AccountStatus.PENDING;
         }
 
@@ -87,7 +87,7 @@ public class AccountAccessService {
     public StudentAccessResponseDto reactivateStudentAccess(long studentId) throws UserNotFoundException {
         Student student = findStudent(studentId);
 
-        student.grantAccess(academicSessionService.getCurrentSession());
+        student.grantAccess(academicSessionService.getTargetSession());
 
         return saveAndCloseAccessRequest(student);
     }
@@ -96,7 +96,7 @@ public class AccountAccessService {
     public StudentAccessResponseDto denyStudentAccess(long studentId) throws UserNotFoundException {
         Student student = findStudent(studentId);
 
-        student.denyAccess(academicSessionService.getCurrentSession());
+        student.denyAccess(academicSessionService.getTargetSession());
 
         return saveAndCloseAccessRequest(student);
     }

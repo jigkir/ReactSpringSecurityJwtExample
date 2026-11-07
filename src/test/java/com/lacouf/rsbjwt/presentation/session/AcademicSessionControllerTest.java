@@ -32,19 +32,19 @@ class AcademicSessionControllerTest {
     private ReactSpringSecurityJwtApplication application;
 
     @Test
-    void shouldReturnSessionsWithCurrentFlagWhenListingSessions() throws Exception {
+    void shouldReturnSessionsWithTargetFlagWhenListingSessions() throws Exception {
         // Arrange
-        AcademicSessionResponseDto currentSession = new AcademicSessionResponseDto(2L, "A2026", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 31), true);
-        AcademicSessionResponseDto pastSession = new AcademicSessionResponseDto(1L, "E2026", LocalDate.of(2026, 5, 1), LocalDate.of(2026, 8, 31), false);
+        AcademicSessionResponseDto targetSession = new AcademicSessionResponseDto(2L, "H2027", LocalDate.of(2027, 1, 1), LocalDate.of(2027, 5, 31), true);
+        AcademicSessionResponseDto pastSession = new AcademicSessionResponseDto(1L, "H2026", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 5, 31), false);
 
-        when(academicSessionService.getSessions()).thenReturn(List.of(currentSession, pastSession));
+        when(academicSessionService.getSessions()).thenReturn(List.of(targetSession, pastSession));
 
         // Act + Assert
         mockMvc.perform(get("/api/sessions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].name").value("A2026"))
-                .andExpect(jsonPath("$[0].current").value(true))
-                .andExpect(jsonPath("$[1].current").value(false));
+                .andExpect(jsonPath("$[0].name").value("H2027"))
+                .andExpect(jsonPath("$[0].target").value(true))
+                .andExpect(jsonPath("$[1].target").value(false));
     }
 }

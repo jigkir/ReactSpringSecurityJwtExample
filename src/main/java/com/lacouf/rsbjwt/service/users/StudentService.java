@@ -102,7 +102,7 @@ public class StudentService {
                 studentSignUpDto.studentId(),
                 credentials,
                 studentSignUpDto.discipline(),
-                academicSessionService.getCurrentSession()
+                academicSessionService.getTargetSession()
         );
 
         studentRepository.save(student);

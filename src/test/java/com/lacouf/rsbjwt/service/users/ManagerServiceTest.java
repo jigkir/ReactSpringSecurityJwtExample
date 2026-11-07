@@ -85,7 +85,7 @@ public class ManagerServiceTest {
 
     @BeforeEach
     void setUp() {
-        currentSession = new AcademicSession(Season.FALL, 2026);
+        currentSession = new AcademicSession(Season.WINTER, 2027);
         currentSession.setId(1L);
 
         Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, null);

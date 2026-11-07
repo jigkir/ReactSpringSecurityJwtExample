@@ -67,7 +67,7 @@ public class ContractServiceTest {
         employer = new Employer("First Name", "Last Name", employerCredentials, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
         employer.setId(1L);
 
-        AcademicSession session = new AcademicSession(Season.FALL, 2026);
+        AcademicSession session = new AcademicSession(Season.WINTER, 2027);
         session.setId(1L);
 
         internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID,

@@ -160,7 +160,7 @@ public class StudentServiceTest {
 
     @BeforeEach
     void setUp() {
-        currentSession = new AcademicSession(Season.FALL, 2026);
+        currentSession = new AcademicSession(Season.WINTER, 2027);
         currentSession.setId(1L);
 
         dummyStudent = new Student(
@@ -185,7 +185,7 @@ public class StudentServiceTest {
         Credentials credentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
 
         when(userAppService.createCredentials(STUDENT_EMAIL, "Test123@", Role.STUDENT)).thenReturn(credentials);
-        when(academicSessionService.getCurrentSession()).thenReturn(currentSession);
+        when(academicSessionService.getTargetSession()).thenReturn(currentSession);
         when(studentRepository.save(any(Student.class)))
                 .thenAnswer(answer((Student student) -> {
                     student.setId(1L);
@@ -774,7 +774,7 @@ public class StudentServiceTest {
 
         //Act + Assert
         internship.setStatus(ReviewStatus.APPROVED);
-        
+
         assert !studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
     }
 
