@@ -226,13 +226,13 @@ public class StudentController {
     }
 
     @PutMapping("/applications/offers/{applicationId}/accept")
-    public ResponseEntity<Void> acceptOffer(Authentication authentication, @PathVariable long applicationId) throws UserNotFoundException, StudentAlreadyEmployedException, InternshipNotFoundException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipApplicationNotFoundException {
+    public ResponseEntity<Void> acceptOffer(Authentication authentication, @PathVariable long applicationId) throws UserNotFoundException, StudentAlreadyEmployedException, InternshipNotFoundException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipApplicationNotFoundException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
         studentService.acceptOffer(authentication.getName(), applicationId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/applications/offers/{applicationId}/refuse")
-    public ResponseEntity<Void> refuseOffer(Authentication authentication, @PathVariable long applicationId) throws UserNotFoundException, InternshipNotFoundException {
+    public ResponseEntity<Void> refuseOffer(Authentication authentication, @PathVariable long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
         studentService.refuseOffer(authentication.getName(), applicationId);
         return ResponseEntity.noContent().build();
     }
