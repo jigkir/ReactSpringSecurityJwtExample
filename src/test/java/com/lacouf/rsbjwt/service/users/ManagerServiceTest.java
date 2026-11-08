@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
@@ -23,6 +24,7 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -73,6 +75,8 @@ public class ManagerServiceTest {
     private CVRepository cvRepository;
     @Mock
     private InternshipRepository internshipRepository;
+    @Mock
+    private InternshipApplicationRepository applicationRepository;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
@@ -157,6 +161,20 @@ public class ManagerServiceTest {
         // Assert
         assert (Integer.valueOf(1)).equals(result.size());
         assert ("Marie").equals(result.getFirst().student().firstName());
+    }
+
+    @Test
+    void shouldFlagCvUsedInApplicationWhenListingCvs() throws AcademicSessionNotFoundException {
+        // Arrange
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of(cv));
+        when(applicationRepository.existsByCv(cv)).thenReturn(true);
+
+        // Act
+        List<ManagerCvResponseDto> visibleCvs = managerService.getVisibleCvs(1L);
+
+        // Assert
+        assert visibleCvs.getFirst().usedInApplication();
     }
 
     @Test
@@ -305,6 +323,22 @@ public class ManagerServiceTest {
         assertThrows(DocumentNotFoundException.class, () -> managerService.rejectCv(99L, "CV too detailed"));
 
         verify(cvRepository, never()).save(any(CV.class));
+    }
+
+    @Test
+    void shouldThrowCVUsedInApplicationWhenRejectingCvUsedInApplication() {
+        // Arrange
+        cv.setStatus(ReviewStatus.APPROVED);
+
+        when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(applicationRepository.existsByCv(cv)).thenReturn(true);
+
+        // Act + Assert
+        assertThrows(CVUsedInApplicationException.class, () -> managerService.rejectCv(1L, "CV too detailed"));
+
+        assert (ReviewStatus.APPROVED).equals(cv.getStatus());
+        verify(cvRepository, never()).save(any(CV.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -657,7 +691,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws DocumentNotFoundException {
+    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws DocumentNotFoundException, CVUsedInApplicationException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -669,7 +703,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws DocumentNotFoundException {
+    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws DocumentNotFoundException, CVUsedInApplicationException {
         // Arrange
         cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
@@ -687,7 +721,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws DocumentNotFoundException {
+    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws DocumentNotFoundException, CVUsedInApplicationException {
         // Arrange
         cv.setStatus(ReviewStatus.APPROVED);
 

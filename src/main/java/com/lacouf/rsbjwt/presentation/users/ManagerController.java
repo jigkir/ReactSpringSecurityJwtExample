@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -51,7 +52,7 @@ public class ManagerController {
     }
 
     @PutMapping("/cvs/{cvId}/reject")
-    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws DocumentNotFoundException {
+    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws DocumentNotFoundException, CVUsedInApplicationException {
         return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
 

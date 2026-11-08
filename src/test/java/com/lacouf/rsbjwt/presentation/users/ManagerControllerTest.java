@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
@@ -118,6 +119,16 @@ public class ManagerControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenRejectingCvUsedInApplication() throws Exception {
+        // Arrange
+        when(managerService.rejectCv(1L, "CV too detailed")).thenThrow(new CVUsedInApplicationException(1L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/cvs/1/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -390,7 +401,7 @@ public class ManagerControllerTest {
     // ---------- Helpers ----------
 
     private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
-        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
+        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT, false);
     }
 
     private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {

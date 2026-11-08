@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -16,6 +17,7 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -40,17 +42,19 @@ public class ManagerService {
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
     private final StudentRepository studentRepository;
+    private final InternshipApplicationRepository applicationRepository;
 
     private final NotificationService notificationService;
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
+        this.applicationRepository = applicationRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipService = internshipService;
@@ -71,11 +75,11 @@ public class ManagerService {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
         List<CV> cvs = cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, session);
 
-        return cvs.stream().map(ManagerCvResponseDto::of).toList();
+        return cvs.stream().map(this::toManagerCvResponseDto).toList();
     }
 
     public ManagerCvResponseDto getCv(long cvId) throws DocumentNotFoundException {
-        return ManagerCvResponseDto.of(findVisibleCv(cvId));
+        return toManagerCvResponseDto(findVisibleCv(cvId));
     }
 
     public DocumentFileResponseDto getCvFile(long cvId) throws DocumentNotFoundException {
@@ -87,7 +91,7 @@ public class ManagerService {
         CV cv = findVisibleCv(cvId);
 
         if (cv.getStatus() == ReviewStatus.APPROVED) {
-            return ManagerCvResponseDto.of(cv);
+            return toManagerCvResponseDto(cv);
         }
 
         boolean isFirstApprovedCv = !hasVisibleApprovedCv(cv.getStudent());
@@ -105,11 +109,15 @@ public class ManagerService {
     }
 
     @Transactional
-    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws DocumentNotFoundException {
+    public ManagerCvResponseDto rejectCv(long cvId, String comment) throws DocumentNotFoundException, CVUsedInApplicationException {
         CV cv = findVisibleCv(cvId);
 
+        if (applicationRepository.existsByCv(cv)) {
+            throw new CVUsedInApplicationException(cvId);
+        }
+
         if (cv.getStatus() == ReviewStatus.REJECTED && comment.equals(cv.getRejectionComment())) {
-            return ManagerCvResponseDto.of(cv);
+            return toManagerCvResponseDto(cv);
         }
 
         cv.setStatus(ReviewStatus.REJECTED);
@@ -197,7 +205,11 @@ public class ManagerService {
     private ManagerCvResponseDto saveAndConvert(CV cv) {
         cvRepository.save(cv);
 
-        return ManagerCvResponseDto.of(cv);
+        return toManagerCvResponseDto(cv);
+    }
+
+    private ManagerCvResponseDto toManagerCvResponseDto(CV cv) {
+        return ManagerCvResponseDto.of(cv, applicationRepository.existsByCv(cv));
     }
 
     private void notifyStudentOfCvReviewDecision(CV cv, NotificationType notificationType, String message) {
