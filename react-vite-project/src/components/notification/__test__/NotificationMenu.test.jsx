@@ -65,12 +65,11 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         expect(screen.queryByRole("link")).not.toBeInTheDocument();
     });
 
-    it("shouldMarkReviewsAsReadWhenEmployerOpensInternshipsPage", async () => {
+    it("shouldKeepReviewDecisionUnreadWhenEmployerOpensInternshipsPage", async () => {
         // Arrange
-        getNotifications
-            .mockResolvedValueOnce([{notificationType: "INTERNSHIP_OFFER_APPROVED", targetType: "INTERNSHIP_OFFER"}])
-            .mockResolvedValue([]);
-        markNotificationsAsRead.mockResolvedValue();
+        getNotifications.mockResolvedValue([
+            {id: 4, notificationType: "INTERNSHIP_OFFER_APPROVED", targetType: "INTERNSHIP_OFFER", targetId: 9},
+        ]);
         render(<MockNotificationMenu/>);
         await screen.findByText("1");
         openMenu();
@@ -79,8 +78,9 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         fireEvent.click(screen.getByRole("link", {name: approvedLabel(1)}));
 
         // Assert
-        await waitFor(() => expect(screen.queryByText("1")).not.toBeInTheDocument());
-        expect(markNotificationsAsRead).toHaveBeenCalledWith("INTERNSHIP_OFFER");
+        await waitFor(() => expect(getNotifications).toHaveBeenCalledTimes(2));
+        expect(screen.getByText("1")).toBeInTheDocument();
+        expect(markNotificationsAsRead).not.toHaveBeenCalled();
     });
 });
 

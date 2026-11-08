@@ -324,8 +324,13 @@ export async function getNotifications() {
     return handleResponse(response);
 }
 
-export async function markNotificationsAsRead(targetType) {
-    const response = await fetcher(`notifications/read/${targetType}`, {method: "PUT"});
+// The backend only closes the user's own notifications
+export async function markNotificationsAsRead(notificationIds) {
+    const response = await fetcher("notifications/read", {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({notificationIds}),
+    });
     return handleEmpty(response);
 }
 

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipForm from './InternshipForm.jsx';
@@ -18,6 +18,7 @@ import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
 import {useSession} from "../../../utils/useSession.js";
+import {TARGET_TYPE, useCloseShownNotifications} from "../../notification/NotificationsProvider.jsx";
 
 // <PostInternship user />          full page (route /internships)
 // <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
@@ -39,6 +40,11 @@ function PostInternship({user, preview = false}) {
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
     const shown = preview ? visible.slice(0, MAX_PREVIEW_ITEMS) : visible;
+
+    const shownInternshipIds = useMemo(
+        () => (preview || loading ? null : internships.map((internship) => internship.id)),
+        [preview, loading, internships]);
+    useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
     const isLoggedIn = Boolean(user?.isLoggedIn);
 

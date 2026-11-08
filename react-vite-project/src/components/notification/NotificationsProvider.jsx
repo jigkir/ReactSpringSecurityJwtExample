@@ -28,7 +28,7 @@ const NOTIFICATION_TYPE = {
     INTERVIEW_UPDATED: "INTERVIEW_UPDATED",
 };
 
-const TARGET_TYPE = {
+export const TARGET_TYPE = {
     CV: "CV",
     INTERNSHIP_OFFER: "INTERNSHIP_OFFER",
     INTERNSHIP_APPLICATION: "INTERNSHIP_APPLICATION",
@@ -47,7 +47,9 @@ const PAGE = {
     EMPLOYER_APPLICATIONS: "/applications",
 };
 
-// A notification closes when its page is opened (clicking it opens that page)
+// A notification closes when its page is opened (clicking it opens that page).
+// A `sessionScoped` notification targets an item listed by session: it closes only once its page
+// shows that item, so opening the page on another session keeps it.
 const NOTIFICATION_ITEMS = {
     [ROLE.MANAGER]: [
         {
@@ -55,14 +57,16 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW,
             targetType: TARGET_TYPE.CV,
             labelKey: "navbar.cvNotification",
-            to: PAGE.MANAGER_CVS
+            to: PAGE.MANAGER_CVS,
+            sessionScoped: true,
         },
         {
             id: "internshipPosted",
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipSubmittedForReviewNotification",
-            to: PAGE.MANAGER_INTERNSHIPS
+            to: PAGE.MANAGER_INTERNSHIPS,
+            sessionScoped: true,
         },
         {
             id: "accountExpired",
@@ -78,7 +82,8 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.NEW_INTERNSHIP_OFFER,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipNotification",
-            to: PAGE.STUDENT_INTERNSHIPS
+            to: PAGE.STUDENT_INTERNSHIPS,
+            sessionScoped: true,
         },
         {
             id: "cvsApproved",
@@ -117,21 +122,24 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipApprovedNotification",
-            to: PAGE.EMPLOYER_INTERNSHIPS
+            to: PAGE.EMPLOYER_INTERNSHIPS,
+            sessionScoped: true,
         },
         {
             id: "internshipRejected",
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipRejectedNotification",
-            to: PAGE.EMPLOYER_INTERNSHIPS
+            to: PAGE.EMPLOYER_INTERNSHIPS,
+            sessionScoped: true,
         },
         {
             id: "newInternshipApplication",
             notificationType: NOTIFICATION_TYPE.NEW_INTERNSHIP_APPLICATION,
             targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
             labelKey: "navbar.newInternshipApplicationNotification",
-            to: PAGE.EMPLOYER_APPLICATIONS
+            to: PAGE.EMPLOYER_APPLICATIONS,
+            sessionScoped: true,
         },
     ],
 };
@@ -145,6 +153,8 @@ const hasToken = () => Boolean(localStorage.getItem("token"));
 const countNotificationsByType = (notifications, notificationType) =>
     notifications.filter((notification) => notification.notificationType === notificationType).length;
 
+const toNotificationIds = (notifications) => notifications.map((notification) => notification.id);
+
 const NOTIFICATION_ERROR = {
     LOAD: "navbar.notificationLoadError",
     MARK_AS_READ: "navbar.notificationMarkAsReadError",
@@ -156,13 +166,15 @@ const NotificationsContext = createContext({
     errorKey: null,
     refresh: () => {
     },
+    closeShownNotifications: () => {
+    },
 });
 
 /**
  * Owns all notification data (fetching, counts, mark-as-read).
  * Consumers (NotificationMenu, any page) call useNotifications().
  *
- * items: [{id, count, labelKey, to, notificationType, targetType}] — labels are translated by the consumer,
+ * items: [{id, count, labelKey, to, notificationType, targetType, sessionScoped}] — labels are translated by the consumer,
  * so they follow the language switch without refetching.
  */
 export function NotificationsProvider({user, children, accountStatus}) {
@@ -209,38 +221,66 @@ export function NotificationsProvider({user, children, accountStatus}) {
         count: countNotificationsByType(notifications, item.notificationType),
     })), [roleItems, notifications]);
 
+    const closeNotifications = useCallback(async (notificationIds) => {
+        try {
+            await markNotificationsAsRead(notificationIds);
+            const closedIds = new Set(notificationIds);
+            setNotifications((current) => current.filter((notification) => !closedIds.has(notification.id)));
+        } catch {
+            setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ);
+        }
+    }, []);
+
     // Opening a notification's page closes it, whether reached from the menu or the navbar
     useEffect(() => {
-        const targetTypesToClose = new Set(items
-            .filter((item) => item.to === pathname && item.count > 0)
-            .map((item) => item.targetType));
+        const typesClosedByPage = new Set(roleItems
+            .filter((item) => item.to === pathname && !item.sessionScoped)
+            .map((item) => item.notificationType));
+        const notificationIds = toNotificationIds(notifications.filter((notification) => typesClosedByPage.has(notification.notificationType)));
 
-        let cancelled = false;
-        targetTypesToClose.forEach((targetType) => {
-            markNotificationsAsRead(targetType)
-                .then(() => {
-                    if (!cancelled) setNotifications((current) => current.filter((notification) => notification.targetType !== targetType));
-                })
-                .catch(() => {
-                    if (!cancelled) setErrorKey(NOTIFICATION_ERROR.MARK_AS_READ);
-                });
-        });
+        if (notificationIds.length > 0) void closeNotifications(notificationIds);
+    }, [roleItems, notifications, pathname, closeNotifications]);
 
-        return () => {
-            cancelled = true;
-        };
-    }, [items, pathname]);
+    const sessionScopedTypes = useMemo(
+        () => new Set(roleItems.filter((item) => item.sessionScoped).map((item) => item.notificationType)),
+        [roleItems],
+    );
+
+    // A page closes the session-scoped notifications of the items it shows
+    const closeShownNotifications = useCallback((targetType, shownTargetIds) => {
+        const shownIds = new Set(shownTargetIds);
+        const notificationIds = toNotificationIds(notifications.filter((notification) =>
+            sessionScopedTypes.has(notification.notificationType)
+            && notification.targetType === targetType
+            && shownIds.has(notification.targetId)));
+
+        if (notificationIds.length > 0) void closeNotifications(notificationIds);
+    }, [notifications, sessionScopedTypes, closeNotifications]);
 
     const value = useMemo(() => ({
         items,
         notifications,
         errorKey,
-        refresh
-    }), [items, notifications, errorKey, refresh]);
+        refresh,
+        closeShownNotifications,
+    }), [items, notifications, errorKey, refresh, closeShownNotifications]);
 
     return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }
 
 export function useNotifications() {
     return useContext(NotificationsContext);
+}
+
+/**
+ * Closes the session-scoped notifications whose target the page shows.
+ * shownTargetIds: ids of the listed items, or null while nothing is shown (loading, Home preview).
+ * It must be memoized, otherwise the check runs on every render.
+ */
+export function useCloseShownNotifications(targetType, shownTargetIds) {
+    const {closeShownNotifications} = useNotifications();
+
+    useEffect(() => {
+        if (shownTargetIds) closeShownNotifications(targetType, shownTargetIds);
+    }, [targetType, shownTargetIds, closeShownNotifications]);
 }

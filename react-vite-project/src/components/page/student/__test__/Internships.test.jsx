@@ -18,7 +18,8 @@ vi.mock("../../../api/Api.jsx", () => ({
     markInternshipsAsViewed: vi.fn(),
 }));
 
-vi.mock("../../../notification/NotificationsProvider.jsx", () => ({
+vi.mock("../../../notification/NotificationsProvider.jsx", async (importOriginal) => ({
+    ...await importOriginal(),
     useNotifications: vi.fn(),
 }));
 

@@ -26,7 +26,7 @@
  *   preview  boolean   optional, compact Home version
  */
 
-import {useCallback, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button from '../../../styles/Button.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
@@ -35,7 +35,7 @@ import DocumentListShell from '../../documents/DocumentListShell.jsx';
 import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
 import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from '../../api/Api.jsx';
 import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
-import {useNotifications} from '../../notification/NotificationsProvider.jsx';
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {blobUrlFromFile, formatDate} from '../../../utils/documents.js';
 import {CV_SORT_OPTIONS, useCvFilters} from '../../../utils/Sort.jsx';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
@@ -62,6 +62,10 @@ function CvReviewList({dark, preview = false}) {
     );
     const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(loadCvs);
     const filters = useCvFilters(docs);
+    
+    const shownCvIds = useMemo(() => (preview || !docs ? null : docs.map((doc) => doc.id)), [preview, docs]);
+    useCloseShownNotifications(TARGET_TYPE.CV, shownCvIds);
+
     const previews = useToggleSet();
     const [busyId, setBusyId] = useState(null);
     const [confirmId, setConfirmId] = useState(null); // CV whose refuse form is open

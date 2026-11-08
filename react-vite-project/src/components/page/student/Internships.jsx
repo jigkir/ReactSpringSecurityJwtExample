@@ -15,7 +15,7 @@ import {
 import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
-import {useNotifications} from "../../notification/NotificationsProvider.jsx";
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../utils/useSession.js";
 
 // <StudentInternships />          full page (route /internship)
@@ -38,6 +38,11 @@ function StudentInternships({preview = false}) {
         [appliedInternships]);
     const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
+
+    const shownInternshipIds = useMemo(
+        () => (preview || loading ? null : internships.map((internship) => internship.id)),
+        [preview, loading, internships]);
+    useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
     const groupOf = (internship) => {
         if (appliedIds.has(internship.id)) return 1; // APPLIED

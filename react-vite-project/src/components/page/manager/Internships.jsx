@@ -15,7 +15,7 @@
  * Access control: <RequireRole roles={["MANAGER"]}/> in App.jsx + backend.
  */
 
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipCard from '../internship/InternshipCard.jsx';
@@ -31,7 +31,7 @@ import {
     rejectInternship,
     updateManagerInternship
 } from '../../api/Api.jsx';
-import {useNotifications} from '../../notification/NotificationsProvider.jsx';
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
@@ -57,6 +57,12 @@ const ManagerInternships = ({preview = false}) => {
 
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
+
+    const shownInternshipIds = useMemo(
+        () => (preview || !internships ? null : internships.map((internship) => internship.id)),
+        [preview, internships],
+    );
+    useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
     // Home preview: only the first offers still waiting for review
     const shown = preview
