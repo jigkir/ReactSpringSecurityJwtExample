@@ -5,6 +5,8 @@
  * (with a mandatory reason). A decision can be changed at any time.
  * A CV is visible to the manager as soon as the student uploads it.
  *
+ * The backend returns the CVs of the students of the selected session.
+ *
  * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters).
  *
  * `preview` (Home page): no card shell, no toolbar, only the first MAX_PREVIEW_ITEMS CVs
@@ -24,7 +26,7 @@
  *   preview  boolean   optional, compact Home version
  */
 
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button from '../../../styles/Button.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
@@ -39,6 +41,7 @@ import {CV_SORT_OPTIONS, useCvFilters} from '../../../utils/Sort.jsx';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
+import {useSession} from "../../../utils/useSession.js";
 
 // Module-level: a stable reference, so an open PDF preview is never reloaded by a re-render
 const getUrl = async (id) => blobUrlFromFile(await getManagerCvFile(id));
@@ -51,7 +54,13 @@ function CvReviewList({dark, preview = false}) {
     const {refresh: refreshNotifications} = useNotifications();
     const th = getCvDocumentsClasses(dark);
 
-    const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(getPublicCvs);
+    const {selectedSession} = useSession();
+
+    const loadCvs = useCallback(
+        async () => (selectedSession ? getPublicCvs(selectedSession.id) : null),
+        [selectedSession],
+    );
+    const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(loadCvs);
     const filters = useCvFilters(docs);
     const previews = useToggleSet();
     const [busyId, setBusyId] = useState(null);

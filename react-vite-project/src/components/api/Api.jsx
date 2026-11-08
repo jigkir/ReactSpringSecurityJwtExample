@@ -57,6 +57,9 @@ async function postJson(path, payload) {
     return handleEmpty(response);
 }
 
+// Without a session, the backend returns the lists of the target session
+const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
+
 // endregion
 
 // region Login
@@ -132,9 +135,9 @@ export async function getStudentCvs() {
 //endregion
 
 // region Manager CVs
-// All VISIBLE CVs (visible as soon as a student uploads). Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
-export async function getPublicCvs() {
-    const response = await fetcher("manager/cvs", {method: "GET"});
+// VISIBLE CVs of the students of a session (visible as soon as a student uploads). Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
+export async function getPublicCvs(sessionId) {
+    const response = await fetcher(withSession("manager/cvs", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 
@@ -163,8 +166,6 @@ export async function rejectCv(cvId, comment) {
 // endregion
 
 // region Internship
-// Without a session, the backend returns the lists of the target session
-const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
 
 export async function getEmployerInternships(sessionId) {
     const response = await fetcher(withSession("employer/internships", sessionId), {});

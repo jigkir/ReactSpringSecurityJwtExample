@@ -21,7 +21,6 @@
  */
 
 import {useMemo, useState} from 'react';
-import {useSession} from "./useSession.js";
 
 // ─── 1. Generic helpers ───────────────────────────────────────────────────────
 
@@ -204,28 +203,10 @@ export function useCvFilters(docs) {
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("DATE_DESC");
 
-    const {selectedSession} = useSession();
-
-    const sessionFilteredDocs = useMemo(() => {
-        if (!docs) return [];
-        if (selectedSession?.startDate && selectedSession?.endDate) {
-            const start = new Date(selectedSession.startDate).getTime();
-            const end = new Date(selectedSession.endDate).getTime();
-
-            return docs.filter(item => {
-                const dateField = item.uploadedAt;
-                if (!dateField) return false;
-                const itemDate = new Date(dateField).getTime();
-                return itemDate >= start && itemDate <= end;
-            });
-        }
-        return docs;
-    }, [docs, selectedSession]);
-
-    const disciplines = useMemo(() => getCvDisciplines(sessionFilteredDocs), [sessionFilteredDocs]);
+    const disciplines = useMemo(() => getCvDisciplines(docs ?? []), [docs]);
     const visible = useMemo(
-        () => applyCvFilters(sessionFilteredDocs, {status, discipline, search, sort}),
-        [sessionFilteredDocs, status, discipline, search, sort],
+        () => applyCvFilters(docs, {status, discipline, search, sort}),
+        [docs, status, discipline, search, sort],
     );
 
     return {
