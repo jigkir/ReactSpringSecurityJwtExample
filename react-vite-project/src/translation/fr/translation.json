@@ -519,7 +519,9 @@
     "errorRequired": "Remplissez tous les champs obligatoires.",
     "errorDates": "La date de début et la date limite de candidature doivent être à partir de demain.",
     "errorMeetingType": "Choisissez le déroulement de la rencontre.",
-    "closeAria": "Fermer"
+    "closeAria": "Fermer",
+    "sessionRule": "Les offres sont publiées pour la session {{session}} : la date de début doit être entre le {{startDate}} et le {{endDate}}.",
+    "errorStartDateOutsideSession": "La date de début doit être dans la session {{session}}, entre le {{startDate}} et le {{endDate}}."
   },
   "internshipCard": {
     "requiredSkills": "Compétences requises :",

@@ -48,7 +48,13 @@ export function SessionProvider({userId, children}) {
     usePolling(loadSessions, Boolean(userId));
 
     const value = useMemo(
-        () => ({sessions, selectedSession, setSelectedSession, sessionsLoadFailed}),
+        () => ({
+            sessions,
+            targetSession: findTargetSession(sessions),
+            selectedSession,
+            setSelectedSession,
+            sessionsLoadFailed
+        }),
         [sessions, selectedSession, sessionsLoadFailed],
     );
 

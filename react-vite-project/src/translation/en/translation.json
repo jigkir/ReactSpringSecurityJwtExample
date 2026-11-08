@@ -519,7 +519,9 @@
     "errorRequired": "Fill in all the required fields.",
     "errorDates": "The start date and the application deadline must be tomorrow or later.",
     "errorMeetingType": "Choose how the meeting will take place.",
-    "closeAria": "Close"
+    "closeAria": "Close",
+    "sessionRule": "Offers are posted for the {{session}} session: the start date must be between {{startDate}} and {{endDate}}.",
+    "errorStartDateOutsideSession": "The start date must be in the {{session}} session, between {{startDate}} and {{endDate}}."
   },
   "internshipCard": {
     "requiredSkills": "Required skills:",
