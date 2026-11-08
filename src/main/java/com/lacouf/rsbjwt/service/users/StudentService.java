@@ -373,7 +373,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void acceptOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
+    public void acceptOffer(String email, long applicationId) throws UserNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)
                 .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
@@ -398,7 +398,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void refuseOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, StudentConsentNotPendingException, InternshipAlreadyOfferedException {
+    public void refuseOffer(String email, long applicationId) throws InternshipNotFoundException, StudentConsentNotPendingException, InternshipAlreadyOfferedException {
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)
                 .orElseThrow(() -> new InternshipNotFoundException(applicationId));
