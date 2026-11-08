@@ -18,9 +18,11 @@ public class Contract {
     @ManyToOne(fetch = FetchType.LAZY)
     Employer employer;
 
+    @Getter
     @OneToOne(fetch = FetchType.LAZY)
     Student student;
 
+    @Getter
     @OneToOne(fetch = FetchType.LAZY)
     InternshipApplication internshipApplication;
 

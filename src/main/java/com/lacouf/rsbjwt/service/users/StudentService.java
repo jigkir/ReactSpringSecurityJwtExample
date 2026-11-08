@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
@@ -380,7 +381,7 @@ public class StudentService {
     @Transactional
     public void acceptOffer(String email, long applicationId)
             throws UserNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException,
-            ApplicationRejectedException, ContractAlreadyExistsException, StudentConsentNotPendingException {
+            ApplicationRejectedException, ContractAlreadyExistsException, StudentConsentNotPendingException, ApplicationNotOfferedException {
 
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)

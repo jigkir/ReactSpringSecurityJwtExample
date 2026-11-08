@@ -20,22 +20,27 @@ public class ContractService {
     }
 
     @Transactional
-    public void createContract(InternshipApplication application)
-            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
+    public Contract createContract(InternshipApplication application)
+            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
         checkIfContractCanBeCreated(application);
 
-        contractRepository.save(new Contract(application));
+       return contractRepository.save(new Contract(application));
     }
 
     private void checkIfContractCanBeCreated(InternshipApplication application)
-            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
+            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
 
         if (contractRepository.existsByInternshipApplicationId(application.getId())) {
             throw new ContractAlreadyExistsException(application.getId());
         }
 
-        if (application.getEmployerDecision() != EmployerDecision.INTERNSHIP_OFFERED) {
+        EmployerDecision decision = application.getEmployerDecision();
+
+        if (decision == EmployerDecision.REJECTED) {
             throw new ApplicationRejectedException(application.getId());
+        }
+        if (decision != EmployerDecision.INTERNSHIP_OFFERED) {
+            throw new ApplicationNotOfferedException(application.getId());
         }
 
         Student student = application.getStudent();
