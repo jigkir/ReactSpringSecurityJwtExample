@@ -42,6 +42,16 @@ public class AcademicSessionService {
         return getOrCreateSession(isNextWinterAccess ? today.getYear() + 1 : today.getYear());
     }
 
+    public AcademicSessionResponseDto getRegistrationSession() {
+        AcademicSession accessSession = getAccessSession();
+
+        return AcademicSessionResponseDto.of(accessSession, isSameSession(accessSession, getTargetSession()));
+    }
+
+    public boolean isLateRegistration() {
+        return MonthDay.now(clock).isBefore(ACCESS_RENEWAL_DAY);
+    }
+
     public AcademicSession getTargetSessionContaining(LocalDate startDate) throws InternshipStartDateOutsideTargetSessionException {
         AcademicSession targetSession = getTargetSession();
 

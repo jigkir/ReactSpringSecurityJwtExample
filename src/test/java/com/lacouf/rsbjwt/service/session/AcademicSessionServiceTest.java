@@ -184,6 +184,30 @@ class AcademicSessionServiceTest {
     }
 
     @Test
+    void shouldReturnNextWinterAsRegistrationSessionWhenAccessRenewsOnAugust15() {
+        // Arrange
+        AcademicSessionService serviceOnFirstRegistrationDay = createServiceOn(LocalDate.of(2026, 8, 15));
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act
+        AcademicSessionResponseDto session = serviceOnFirstRegistrationDay.getRegistrationSession();
+
+        // Assert
+        assert ("H2027").equals(session.name());
+        assert session.target();
+    }
+
+    @Test
+    void shouldBeLateRegistrationWhenStudentSignsUpInJanuary() {
+        // Arrange
+        AcademicSessionService serviceOnFirstDayOfYear = createServiceOn(LocalDate.of(2027, 1, 1));
+
+        // Act + Assert
+        assert serviceOnFirstDayOfYear.isLateRegistration();
+    }
+
+    @Test
     void shouldBeAccessSessionWhenSessionIsTheOneSearchedFor() {
         // Arrange
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));

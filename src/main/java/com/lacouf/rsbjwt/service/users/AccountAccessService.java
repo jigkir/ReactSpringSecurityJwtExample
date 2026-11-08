@@ -22,7 +22,7 @@ import java.util.List;
 
 @Service
 public class AccountAccessService {
-    private static final String ACCESS_REQUEST_MESSAGE = "%s %s (%s) signed in after their access expired.";
+    private static final String ACCESS_REQUEST_MESSAGE = "%s %s (%s) signed in and is waiting for access approval.";
 
     private final StudentRepository studentRepository;
     private final ManagerRepository managerRepository;
@@ -65,7 +65,7 @@ public class AccountAccessService {
         return user.getAuthorities();
     }
 
-    public void notifyManagersIfAccessExpired(String email) {
+    public void notifyManagersIfAccessIsPending(String email) {
         studentRepository.findByCredentialsEmail(email)
                 .filter(student -> getAccountStatus(student) == AccountStatus.PENDING)
                 .ifPresent(this::notifyManagersOfAccessRequest);

@@ -109,8 +109,12 @@ public class StudentService {
                 studentSignUpDto.studentId(),
                 credentials,
                 studentSignUpDto.discipline(),
-                academicSessionService.getTargetSession()
+                academicSessionService.getAccessSession()
         );
+
+        if (academicSessionService.isLateRegistration()) {
+            student.requireApproval();
+        }
 
         studentRepository.save(student);
 

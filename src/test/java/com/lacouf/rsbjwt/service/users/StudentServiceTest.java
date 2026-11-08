@@ -180,12 +180,12 @@ public class StudentServiceTest {
     // ==========================================
 
     @Test
-    void shouldSaveStudent() throws UserAlreadyExistsException {
+    void shouldSaveStudentInAccessSessionWhenStudentSignsUp() throws UserAlreadyExistsException {
         // Arrange
         Credentials credentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
 
         when(userAppService.createCredentials(STUDENT_EMAIL, "Test123@", Role.STUDENT)).thenReturn(credentials);
-        when(academicSessionService.getTargetSession()).thenReturn(currentSession);
+        when(academicSessionService.getAccessSession()).thenReturn(currentSession);
         when(studentRepository.save(any(Student.class)))
                 .thenAnswer(answer((Student student) -> {
                     student.setId(1L);
@@ -208,6 +208,32 @@ public class StudentServiceTest {
         assert student.getDiscipline().equals(Discipline.COMPUTER_SCIENCE);
         assert student.getAccessSession().equals(currentSession);
         assert student.getAccountStatus().equals(AccountStatus.APPROVED);
+    }
+
+    @Test
+    void shouldSaveStudentWaitingForApprovalWhenRegistrationIsLate() throws UserAlreadyExistsException {
+        // Arrange
+        Credentials credentials = Credentials.builder().email(STUDENT_EMAIL).password("Test123@-encoded").role(Role.STUDENT).build();
+
+        when(userAppService.createCredentials(STUDENT_EMAIL, "Test123@", Role.STUDENT)).thenReturn(credentials);
+        when(academicSessionService.getAccessSession()).thenReturn(currentSession);
+        when(academicSessionService.isLateRegistration()).thenReturn(true);
+        when(studentRepository.save(any(Student.class)))
+                .thenAnswer(answer((Student student) -> {
+                    student.setId(1L);
+                    return student;
+                }));
+
+        // Act
+        studentService.save(studentSignUpDto);
+
+        // Assert
+        verify(studentRepository).save(studentArgumentCaptor.capture());
+
+        Student student = studentArgumentCaptor.getValue();
+
+        assert student.getAccessSession().equals(currentSession);
+        assert student.getAccountStatus().equals(AccountStatus.PENDING);
     }
 
     @Test

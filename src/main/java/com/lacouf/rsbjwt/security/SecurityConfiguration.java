@@ -44,6 +44,7 @@ public class SecurityConfiguration {
     private static final String ROLES_LIST_PATH = "/api/roles";
     private static final String USER_CV_MAX_SIZE_PATH = "/api/max-cv-size";
     private static final String DEV_PATH = "/api/dev/**";
+    private static final String REGISTRATION_SESSION_PATH = "/api/sessions/registration";
 
     // SIGN-UP PATHS
     private static final String STUDENT_SIGNUP_PATH = "/api/student/signup";
@@ -76,6 +77,7 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, ROLES_LIST_PATH).permitAll()
                         .requestMatchers(GET, USER_CV_MAX_SIZE_PATH).permitAll()
                         .requestMatchers(DEV_PATH).permitAll()
+                        .requestMatchers(GET, REGISTRATION_SESSION_PATH).permitAll()
 
                         // SIGN-UP
                         .requestMatchers(POST, STUDENT_SIGNUP_PATH).permitAll()

@@ -40,7 +40,7 @@ public class UserAppService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDto.email(), userLoginDto.password()));
 
-        accountAccessService.notifyManagersIfAccessExpired(authentication.getName());
+        accountAccessService.notifyManagersIfAccessIsPending(authentication.getName());
 
         return new JWTAuthResponse(jwtTokenProvider.generateToken(authentication));
     }
@@ -50,7 +50,7 @@ public class UserAppService {
         UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities());
 
-        accountAccessService.notifyManagersIfAccessExpired(authentication.getName());
+        accountAccessService.notifyManagersIfAccessIsPending(authentication.getName());
 
         return new JWTAuthResponse(jwtTokenProvider.generateToken(authentication));
     }

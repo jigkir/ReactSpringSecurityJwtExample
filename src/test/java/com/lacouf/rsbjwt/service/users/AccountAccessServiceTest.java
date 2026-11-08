@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AccountAccessServiceTest {
     private static final String STUDENT_EMAIL = "marie@claurendeau.qc.ca";
-    private static final String ACCESS_REQUEST_MESSAGE = "Marie Tremblay (marie@claurendeau.qc.ca) signed in after their access expired.";
+    private static final String ACCESS_REQUEST_MESSAGE = "Marie Tremblay (marie@claurendeau.qc.ca) signed in and is waiting for access approval.";
 
     @InjectMocks
     private AccountAccessService accountAccessService;
@@ -140,7 +140,7 @@ class AccountAccessServiceTest {
     }
 
     @Test
-    void shouldNotifyEveryManagerWhenStudentSignsInAfterAccessExpired() {
+    void shouldNotifyEveryManagerWhenStudentSignsInWithPendingAccess() {
         // Arrange
         Manager firstManager = new Manager();
         Manager secondManager = new Manager();
@@ -152,7 +152,7 @@ class AccountAccessServiceTest {
         when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
 
         // Act
-        accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
+        accountAccessService.notifyManagersIfAccessIsPending(STUDENT_EMAIL);
 
         // Assert
         verify(notificationService).notifyIfAbsent(NotificationType.STUDENT_ACCESS_REQUESTED, ACCESS_REQUEST_MESSAGE, 2L, firstManager);
@@ -168,7 +168,7 @@ class AccountAccessServiceTest {
         when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act
-        accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
+        accountAccessService.notifyManagersIfAccessIsPending(STUDENT_EMAIL);
 
         // Assert
         verifyNoInteractions(managerRepository, notificationService);
@@ -183,7 +183,7 @@ class AccountAccessServiceTest {
         when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act
-        accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
+        accountAccessService.notifyManagersIfAccessIsPending(STUDENT_EMAIL);
 
         // Assert
         verifyNoInteractions(managerRepository, notificationService);
@@ -195,7 +195,7 @@ class AccountAccessServiceTest {
         when(studentRepository.findByCredentialsEmail("employer@example.com")).thenReturn(Optional.empty());
 
         // Act
-        accountAccessService.notifyManagersIfAccessExpired("employer@example.com");
+        accountAccessService.notifyManagersIfAccessIsPending("employer@example.com");
 
         // Assert
         verifyNoInteractions(managerRepository, notificationService);

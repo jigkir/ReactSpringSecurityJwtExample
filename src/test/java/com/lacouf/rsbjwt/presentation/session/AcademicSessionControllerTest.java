@@ -47,4 +47,18 @@ class AcademicSessionControllerTest {
                 .andExpect(jsonPath("$[0].target").value(true))
                 .andExpect(jsonPath("$[1].target").value(false));
     }
+
+    @Test
+    void shouldReturnRegistrationSession() throws Exception {
+        // Arrange
+        AcademicSessionResponseDto registrationSession = new AcademicSessionResponseDto(2L, "H2027", LocalDate.of(2027, 1, 1), LocalDate.of(2027, 5, 31), true);
+
+        when(academicSessionService.getRegistrationSession()).thenReturn(registrationSession);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/sessions/registration"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(2))
+                .andExpect(jsonPath("$.name").value("H2027"));
+    }
 }
