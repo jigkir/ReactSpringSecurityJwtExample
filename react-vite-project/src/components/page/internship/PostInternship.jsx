@@ -33,6 +33,7 @@ function PostInternship({user, preview = false}) {
     const [applicationCount, setApplicationCount] = useState({})
     const formRef = useRef(null);
     const {selectedSession} = useSession();
+    const canEditOffers = Boolean(selectedSession?.target); // offers of past sessions are archives
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -127,7 +128,7 @@ function PostInternship({user, preview = false}) {
     const cards = shown.map((internship) => (
         <InternshipCard key={internship.id}
                         internship={internship}
-                        OnEdit={preview ? undefined : openEdit}
+                        OnEdit={preview || !canEditOffers ? undefined : openEdit}
                         OnDelete={preview ? undefined : handleDelete}
                         dark={dark}
                         showStatusBorder={filters.status !== "ALL"}
@@ -167,7 +168,7 @@ function PostInternship({user, preview = false}) {
                     <h1 className={s.title}>{t("postInternship.pageTitle")}</h1>
                     <p className={s.subtitle}>{t("postInternship.pageSubtitle")}</p>
                 </div>
-                {!formOpen && (
+                {!formOpen && canEditOffers && (
                     <Button tone="primary" size="lg" dark={dark} onClick={openCreate} className="shrink-0">
                         {t("postInternship.addBtn")}
                     </Button>

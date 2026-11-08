@@ -42,6 +42,8 @@ const ManagerInternships = ({preview = false}) => {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
+    // Offers of past sessions are archives; the home preview lists offers waiting for review in every session
+    const canChangeOffers = preview || Boolean(selectedSession?.target);
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -144,6 +146,8 @@ const ManagerInternships = ({preview = false}) => {
     };
 
     const renderActions = (internship) => {
+        if (!canChangeOffers) return null;
+
         const busy = busyId === internship.id;
         const isApproved = internship.status === "APPROVED";
         const isRejected = internship.status === "REJECTED";
