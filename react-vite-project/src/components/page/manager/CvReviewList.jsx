@@ -159,7 +159,8 @@ function CvReviewList({dark, preview = false}) {
                             aria-label={`${t("cvDocuments.editCommentBtn")} : ${doc.fileName}`}>
                         {t("cvDocuments.editCommentBtn")}
                     </Button>
-                ) : (
+                ) : !doc.usedInApplication && (
+                    // A CV used in an application stays approved
                     <Button tone="danger" dark={dark} icon="close" disabled={busy} className={ROW_BTN}
                             onClick={() => startRefuse(doc)}
                             aria-label={`${t("cvDocuments.refuseBtn")} : ${doc.fileName}`}>
