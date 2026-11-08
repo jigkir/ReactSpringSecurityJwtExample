@@ -10,11 +10,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.MonthDay;
 import java.util.List;
 
 @Service
 public class AcademicSessionService {
     private static final Season INTERNSHIP_SEASON = Season.WINTER;
+    private static final MonthDay ACCESS_RENEWAL_DAY = MonthDay.of(Month.AUGUST, 15);
 
     private final AcademicSessionRepository academicSessionRepository;
     private final Clock clock;
@@ -30,6 +33,13 @@ public class AcademicSessionService {
         boolean isThisYearSessionOver = today.isAfter(INTERNSHIP_SEASON.lastDayIn(year));
 
         return getOrCreateSession(isThisYearSessionOver ? year + 1 : year);
+    }
+
+    public AcademicSession getAccessSession() {
+        LocalDate today = LocalDate.now(clock);
+        boolean isNextWinterAccess = !MonthDay.from(today).isBefore(ACCESS_RENEWAL_DAY);
+
+        return getOrCreateSession(isNextWinterAccess ? today.getYear() + 1 : today.getYear());
     }
 
     public AcademicSession getTargetSessionContaining(LocalDate startDate) throws InternshipStartDateOutsideTargetSessionException {
@@ -50,8 +60,8 @@ public class AcademicSessionService {
         return academicSessionRepository.findById(sessionId).orElseThrow(() -> new AcademicSessionNotFoundException(sessionId));
     }
 
-    public boolean isTargetSession(AcademicSession session) {
-        return isSameSession(session, getTargetSession());
+    public boolean isAccessSession(AcademicSession session) {
+        return isSameSession(session, getAccessSession());
     }
 
     public List<AcademicSessionResponseDto> getSessions() {

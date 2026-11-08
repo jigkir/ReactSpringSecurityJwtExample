@@ -156,30 +156,58 @@ class AcademicSessionServiceTest {
     }
 
     @Test
-    void shouldBeTargetSessionWhenSessionIsTheTargetOne() {
+    void shouldGiveNextWinterAccessWhenAccessRenewsOnAugust15() {
         // Arrange
+        AcademicSessionService serviceOnRenewalDay = createServiceOn(LocalDate.of(2026, 8, 15));
+
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
-        // Act + Assert
-        assert academicSessionService.isTargetSession(targetSession);
+        // Act
+        AcademicSession session = serviceOnRenewalDay.getAccessSession();
+
+        // Assert
+        assert (targetSession).equals(session);
     }
 
     @Test
-    void shouldNotBeTargetSessionWhenSessionIsPast() {
+    void shouldKeepWinterAccessUntilAugust14WhenWinterIsOver() {
         // Arrange
+        AcademicSessionService serviceOnLastAccessDay = createServiceOn(LocalDate.of(2027, 8, 14));
+
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
-        // Act + Assert
-        assert !academicSessionService.isTargetSession(pastSession());
+        // Act
+        AcademicSession session = serviceOnLastAccessDay.getAccessSession();
+
+        // Assert
+        assert (targetSession).equals(session);
     }
 
     @Test
-    void shouldNotBeTargetSessionWhenStudentHasNoSessionYet() {
+    void shouldBeAccessSessionWhenSessionIsTheOneSearchedFor() {
         // Arrange
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
         // Act + Assert
-        assert !academicSessionService.isTargetSession(null);
+        assert academicSessionService.isAccessSession(targetSession);
+    }
+
+    @Test
+    void shouldNotBeAccessSessionWhenSessionIsPast() {
+        // Arrange
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act + Assert
+        assert !academicSessionService.isAccessSession(pastSession());
+    }
+
+    @Test
+    void shouldNotBeAccessSessionWhenStudentHasNoSessionYet() {
+        // Arrange
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act + Assert
+        assert !academicSessionService.isAccessSession(null);
     }
 
     @Test

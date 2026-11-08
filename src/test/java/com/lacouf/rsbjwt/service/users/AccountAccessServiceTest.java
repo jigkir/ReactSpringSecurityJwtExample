@@ -51,7 +51,7 @@ class AccountAccessServiceTest {
     private AcademicSessionService academicSessionService;
 
     private Student student;
-    private AcademicSession targetSession;
+    private AcademicSession accessSession;
     private AcademicSession pastSession;
 
     @BeforeEach
@@ -59,8 +59,8 @@ class AccountAccessServiceTest {
         student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email(STUDENT_EMAIL).role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, null);
         student.setId(2L);
 
-        targetSession = new AcademicSession(Season.WINTER, 2027);
-        targetSession.setId(1L);
+        accessSession = new AcademicSession(Season.WINTER, 2027);
+        accessSession.setId(1L);
 
         pastSession = new AcademicSession(Season.WINTER, 2026);
         pastSession.setId(2L);
@@ -81,11 +81,11 @@ class AccountAccessServiceTest {
     }
 
     @Test
-    void shouldBeApprovedWhenStudentAccessIsForTargetSession() {
+    void shouldBeApprovedWhenStudentAccessIsForAccessSession() {
         // Arrange
-        student.grantAccess(targetSession);
+        student.grantAccess(accessSession);
 
-        when(academicSessionService.isTargetSession(targetSession)).thenReturn(true);
+        when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act + Assert
         assert (AccountStatus.APPROVED).equals(accountAccessService.getAccountStatus(student));
@@ -96,18 +96,18 @@ class AccountAccessServiceTest {
         // Arrange
         student.grantAccess(pastSession);
 
-        when(academicSessionService.isTargetSession(pastSession)).thenReturn(false);
+        when(academicSessionService.isAccessSession(pastSession)).thenReturn(false);
 
         // Act + Assert
         assert (AccountStatus.PENDING).equals(accountAccessService.getAccountStatus(student));
     }
 
     @Test
-    void shouldBeRejectedWhenManagerDeniedAccessForTargetSession() {
+    void shouldBeRejectedWhenManagerDeniedAccessForAccessSession() {
         // Arrange
-        student.denyAccess(targetSession);
+        student.denyAccess(accessSession);
 
-        when(academicSessionService.isTargetSession(targetSession)).thenReturn(true);
+        when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act + Assert
         assert (AccountStatus.REJECTED).equals(accountAccessService.getAccountStatus(student));
@@ -119,7 +119,7 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(userAppRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isTargetSession(pastSession)).thenReturn(false);
+        when(academicSessionService.isAccessSession(pastSession)).thenReturn(false);
 
         // Act
         AccountStatusResponseDto response = accountAccessService.getAccountStatus(STUDENT_EMAIL);
@@ -131,9 +131,9 @@ class AccountAccessServiceTest {
     @Test
     void shouldGiveRoleWhenStudentIsActive() {
         // Arrange
-        student.grantAccess(targetSession);
+        student.grantAccess(accessSession);
 
-        when(academicSessionService.isTargetSession(targetSession)).thenReturn(true);
+        when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act + Assert
         assert (student.getAuthorities()).equals(accountAccessService.getAuthorities(student));
@@ -148,7 +148,7 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isTargetSession(pastSession)).thenReturn(false);
+        when(academicSessionService.isAccessSession(pastSession)).thenReturn(false);
         when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
 
         // Act
@@ -162,10 +162,10 @@ class AccountAccessServiceTest {
     @Test
     void shouldNotNotifyManagersWhenStudentIsActive() {
         // Arrange
-        student.grantAccess(targetSession);
+        student.grantAccess(accessSession);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isTargetSession(targetSession)).thenReturn(true);
+        when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act
         accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
@@ -177,10 +177,10 @@ class AccountAccessServiceTest {
     @Test
     void shouldNotNotifyManagersAgainWhenAccessWasDenied() {
         // Arrange
-        student.denyAccess(targetSession);
+        student.denyAccess(accessSession);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(academicSessionService.isTargetSession(targetSession)).thenReturn(true);
+        when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act
         accountAccessService.notifyManagersIfAccessExpired(STUDENT_EMAIL);
@@ -207,7 +207,7 @@ class AccountAccessServiceTest {
         student.grantAccess(pastSession);
 
         when(studentRepository.findAll()).thenReturn(List.of(student));
-        when(academicSessionService.isTargetSession(pastSession)).thenReturn(false);
+        when(academicSessionService.isAccessSession(pastSession)).thenReturn(false);
 
         // Act
         List<StudentAccessResponseDto> studentAccesses = accountAccessService.getStudentAccesses();
@@ -221,13 +221,13 @@ class AccountAccessServiceTest {
     @Test
     void shouldReturnOnlyExpiredStudentsWhenGettingExpiredStudentAccesses() {
         // Arrange
-        Student activeStudent = new Student("Luc", "Gagnon", "3234567", Credentials.builder().email("luc@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, targetSession);
+        Student activeStudent = new Student("Luc", "Gagnon", "3234567", Credentials.builder().email("luc@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, accessSession);
         activeStudent.setId(3L);
         student.grantAccess(pastSession);
 
         when(studentRepository.findAll()).thenReturn(List.of(student, activeStudent));
-        when(academicSessionService.isTargetSession(pastSession)).thenReturn(false);
-        when(academicSessionService.isTargetSession(targetSession)).thenReturn(true);
+        when(academicSessionService.isAccessSession(pastSession)).thenReturn(false);
+        when(academicSessionService.isAccessSession(accessSession)).thenReturn(true);
 
         // Act
         List<StudentAccessResponseDto> expiredStudentAccesses = accountAccessService.getExpiredStudentAccesses();
@@ -238,38 +238,38 @@ class AccountAccessServiceTest {
     }
 
     @Test
-    void shouldReactivateStudentAccessForTargetSession() throws UserNotFoundException {
+    void shouldReactivateStudentAccessForAccessSession() throws UserNotFoundException {
         // Arrange
         student.grantAccess(pastSession);
 
         when(studentRepository.findById(2L)).thenReturn(Optional.of(student));
-        when(academicSessionService.getTargetSession()).thenReturn(targetSession);
+        when(academicSessionService.getAccessSession()).thenReturn(accessSession);
 
         // Act
         StudentAccessResponseDto response = accountAccessService.reactivateStudentAccess(2L);
 
         // Assert
         assert (AccountStatus.APPROVED).equals(response.status());
-        assert (targetSession).equals(student.getAccessSession());
+        assert (accessSession).equals(student.getAccessSession());
 
         verify(studentRepository).save(student);
         verify(notificationService).closeNotificationsOfTarget(TargetType.STUDENT_ACCOUNT, 2L);
     }
 
     @Test
-    void shouldDenyStudentAccessForTargetSession() throws UserNotFoundException {
+    void shouldDenyStudentAccessForAccessSession() throws UserNotFoundException {
         // Arrange
         student.grantAccess(pastSession);
 
         when(studentRepository.findById(2L)).thenReturn(Optional.of(student));
-        when(academicSessionService.getTargetSession()).thenReturn(targetSession);
+        when(academicSessionService.getAccessSession()).thenReturn(accessSession);
 
         // Act
         StudentAccessResponseDto response = accountAccessService.denyStudentAccess(2L);
 
         // Assert
         assert (AccountStatus.REJECTED).equals(response.status());
-        assert (targetSession).equals(student.getAccessSession());
+        assert (accessSession).equals(student.getAccessSession());
 
         verify(studentRepository).save(student);
         verify(notificationService).closeNotificationsOfTarget(TargetType.STUDENT_ACCOUNT, 2L);
