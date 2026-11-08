@@ -172,7 +172,9 @@
     "unableToReachServerError": "Impossible d'accéder au serveur. Vérifiez votre connexion et réessayez.",
     "accountCreationButton": "Créer mon compte",
     "accountCreationButtonLoading": "Création de votre compte…",
-    "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces."
+    "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces.",
+    "registrationSession": "Vous vous inscrivez pour la session de stage {{session}}.",
+    "registrationSessionError": "Impossible de charger la session d'inscription. Actualisez la page pour réessayer."
   },
   "commonFields": {
     "firstName": "Prénom",
@@ -624,10 +626,10 @@
     "rejectedBadge": "Demande refusée par le superviseur",
     "signOut": "Se déconnecter",
     "unknownRole": "Utilisateur",
-    "pendingTitle": "Compte expiré : {{role}}",
+    "pendingTitle": "Accès en attente d'approbation : {{role}}",
     "rejectedTitle": "Demande d'accès refusée",
     "pendingTeacher": "L'accès à votre compte de professeur est en attente de validation. Nous avons avisé l'administration de votre tentative de connexion. Cette page se mettra à jour automatiquement dès que votre compte sera vérifié.",
-    "pendingStudent": "L'accès à votre compte étudiant a expiré. Nous avons automatiquement avisé votre superviseur de stage de votre tentative de connexion. Cette page se mettra à jour automatiquement dès que l'accès sera renouvelé.",
+    "pendingStudent": "L'accès à votre compte étudiant doit être approuvé par votre superviseur de stage, parce qu'il a expiré ou que vous vous êtes inscrit après décembre. Nous l'avons avisé de votre tentative de connexion. Cette page se mettra à jour automatiquement dès que l'accès sera approuvé.",
     "rejectedTeacher": "Votre demande de validation de compte de professeur a été examinée et refusée par l'administration. Veuillez communiquer avec votre chef de département.",
     "rejectedStudent": "Votre superviseur de stage a examiné et refusé votre demande d'accès. Veuillez communiquer directement avec votre coordonnateur de programme."
   },

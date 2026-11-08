@@ -113,6 +113,11 @@ export const signupStudent = (payload) => postJson("student/signup", payload);
 export const signupTeacher = (payload) => postJson("teacher/signup", payload);
 export const signupEmployer = (payload) => postJson("employer/signup", payload);
 
+// Public: the winter session a new student signs up for, the one their access is for
+export async function getRegistrationSession() {
+    return handleResponse(await fetcher("sessions/registration", {method: "GET"}));
+}
+
 // endregion
 
 // region Student CVs

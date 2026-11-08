@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from 'react-i18next';
-import {getDisciplines, signupStudent} from "../../../api/Api.jsx";
+import {getDisciplines, getRegistrationSession, signupStudent} from "../../../api/Api.jsx";
 import {
     ConfirmPasswordField,
     DisciplineField,
@@ -48,12 +48,22 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const [disciplinesLoading, setDisciplinesLoading] = useState(true);
     const [disciplinesFetchError, setDisciplinesFetchError] = useState("");
 
+    const [registrationSession, setRegistrationSession] = useState(null);
+    const [registrationSessionError, setRegistrationSessionError] = useState("");
+
     // Fetch discipline options once on mount
     useEffect(() => {
         getDisciplines()
             .then(setDisciplines)
             .catch(() => setDisciplinesFetchError({key: "commonFields.fetchError"}))
             .finally(() => setDisciplinesLoading(false));
+    }, []);
+
+    // The backend gives the session from the signup date: the student only sees which one
+    useEffect(() => {
+        getRegistrationSession()
+            .then(setRegistrationSession)
+            .catch(() => setRegistrationSessionError({key: "student.registrationSessionError"}));
     }, []);
 
     // Clear the field's inline warning as soon as the user starts correcting it
@@ -123,11 +133,16 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
 
     // Props shared by every field component — spread with {...sharedProps} to avoid repetition
     const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
-    const serverErrorText = translateWarning(t, serverError);
+    const serverErrorText = translateWarning(t, serverError) || translateWarning(t, registrationSessionError);
 
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {serverErrorText && <div className={serverErrorClass}>{serverErrorText}</div>}
+            {registrationSession && (
+                <p className={passwordHintClass}>
+                    {t("student.registrationSession", {session: registrationSession.name})}
+                </p>
+            )}
 
             <FirstNameField  {...sharedProps} value={form.firstName} warning={translateWarning(t, warnings.firstName)}/>
             <LastNameField   {...sharedProps} value={form.lastName} warning={translateWarning(t, warnings.lastName)}/>
