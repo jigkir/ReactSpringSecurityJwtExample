@@ -28,8 +28,8 @@ public class ReactSpringSecurityJwtApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        academicSessionService.getCurrentSession();
-        
+        academicSessionService.getTargetSession();
+
         if (userAppRepository.findByCredentialsEmail(MANAGER_EMAIL).isPresent()) return;
 
         managerService.save("John", "Doe", MANAGER_EMAIL, "John123#", "4505550000");

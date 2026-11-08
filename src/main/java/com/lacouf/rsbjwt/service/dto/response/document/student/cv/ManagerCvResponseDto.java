@@ -12,16 +12,18 @@ public record ManagerCvResponseDto(
         LocalDateTime uploadedAt,
         ReviewStatus status,
         String rejectionComment,
-        StudentSummaryDto student
+        StudentSummaryDto student,
+        boolean usedInApplication
 ) {
-    public static ManagerCvResponseDto of(CV cv) {
+    public static ManagerCvResponseDto of(CV cv, boolean usedInApplication) {
         return new ManagerCvResponseDto(
                 cv.getId(),
                 cv.getFileName(),
                 cv.getUploadDate(),
                 cv.getStatus(),
                 cv.getRejectionComment(),
-                StudentSummaryDto.of(cv.getStudent())
+                StudentSummaryDto.of(cv.getStudent()),
+                usedInApplication
         );
     }
 }

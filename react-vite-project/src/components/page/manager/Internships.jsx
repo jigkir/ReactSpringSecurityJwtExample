@@ -7,7 +7,7 @@
  *
  * <ManagerInternships />          full page (route /manager/internships)
  * <ManagerInternships preview />  Home page block: the latest offers still waiting for review,
- *                                 no header, no filters
+ *                                 of every session, no header, no filters
  *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live.
@@ -15,7 +15,7 @@
  * Access control: <RequireRole roles={["MANAGER"]}/> in App.jsx + backend.
  */
 
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import InternshipCard from '../internship/InternshipCard.jsx';
@@ -27,10 +27,11 @@ import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {
     approveInternship,
     getManagerInternships,
+    getPendingInternships,
     rejectInternship,
     updateManagerInternship
 } from '../../api/Api.jsx';
-import {useNotifications} from '../../notification/NotificationsProvider.jsx';
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
@@ -41,7 +42,8 @@ const ManagerInternships = ({preview = false}) => {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
+    // Offers of past sessions are archives; the home preview lists offers waiting for review in every session
+    const canChangeOffers = preview || Boolean(selectedSession?.target);
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -56,6 +58,12 @@ const ManagerInternships = ({preview = false}) => {
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
 
+    const shownInternshipIds = useMemo(
+        () => (preview || !internships ? null : internships.map((internship) => internship.id)),
+        [preview, internships],
+    );
+    useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
+
     // Home preview: only the first offers still waiting for review
     const shown = preview
         ? visible.filter((i) => i.status === "PENDING").slice(0, MAX_PREVIEW_ITEMS)
@@ -66,13 +74,18 @@ const ManagerInternships = ({preview = false}) => {
     }`;
 
     const load = useCallback(async () => {
+        if (!preview && !selectedSession) return; // sessions still loading
         setLoadFailed(false);
         try {
-            setInternships(await getManagerInternships(sessionId));
+            // Home preview: offers waiting for review of every session, so the manager never misses one
+            const loadedInternships = preview
+                ? await getPendingInternships()
+                : await getManagerInternships(selectedSession.id);
+            setInternships(loadedInternships);
         } catch {
             setLoadFailed(true);
         }
-    }, [sessionId]);
+    }, [preview, selectedSession]);
 
     useEffect(() => {
         load();
@@ -139,6 +152,8 @@ const ManagerInternships = ({preview = false}) => {
     };
 
     const renderActions = (internship) => {
+        if (!canChangeOffers) return null;
+
         const busy = busyId === internship.id;
         const isApproved = internship.status === "APPROVED";
         const isRejected = internship.status === "REJECTED";

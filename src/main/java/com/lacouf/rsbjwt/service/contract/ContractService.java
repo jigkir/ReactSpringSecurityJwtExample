@@ -4,17 +4,11 @@ import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.contract.ContractStatus;
-import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ContractService {
@@ -33,25 +27,6 @@ public class ContractService {
         contractRepository.save(contract);
     }
 
-    @Transactional(readOnly = true)
-    public List<ContractResponseDto> getContractsOfEmployer(Employer employer) {
-        return contractRepository.findByInternshipApplication_Internship_PostedBy(employer).stream()
-                .filter(contract -> !contract.getInternshipApplication().getInternship().isDeleted())
-                .map(ContractResponseDto::of)
-                .toList();
-    }
-
-    @Transactional
-    public void terminateForRejection(InternshipApplication application) throws ContractAlreadyActiveException {
-        Optional<Contract> contract = contractRepository.findByInternshipApplication(application);
-        if (contract.isEmpty()) {
-            return;
-        }
-        if (contract.get().getContractStatus() == ContractStatus.ACTIVE) {
-            throw new ContractAlreadyActiveException(contract.get().getId());
-        }
-        contract.get().setContractStatus(ContractStatus.TERMINATED);
-    }
 
     private void checkIfContractCanBeCreated(InternshipApplication internshipApplication) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
         if (contractRepository.existsByInternshipApplicationId(internshipApplication.getId())) {

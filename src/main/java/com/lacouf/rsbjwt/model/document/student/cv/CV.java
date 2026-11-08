@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.model.document.student.cv;
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.Document;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -22,12 +23,17 @@ public class CV extends Document {
     @Column(columnDefinition = "TEXT")
     private String rejectionComment;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "session_id", nullable = false)
+    private AcademicSession session;
+
     public CV() {
     }
 
-    public CV(byte[] content, String fileName, LocalDateTime uploadDate) {
+    public CV(byte[] content, String fileName, LocalDateTime uploadDate, AcademicSession session) {
         super(content, fileName, uploadDate);
         this.status = ReviewStatus.PENDING;
+        this.session = session;
     }
 
     public Student getStudent() {

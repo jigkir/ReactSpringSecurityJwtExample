@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.repository.document.student.cv;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import org.springframework.stereotype.Repository;
@@ -18,7 +19,7 @@ public interface CVRepository extends DocumentRepository<CV> {
 
     long countByUserAndVisibility(Student student, DocumentVisibility visibility);
 
-    List<CV> findByVisibility(DocumentVisibility visibility);
+    List<CV> findByVisibilityAndSession(DocumentVisibility visibility, AcademicSession session);
 
     Optional<CV> findByIdAndVisibility(long id, DocumentVisibility visibility);
 

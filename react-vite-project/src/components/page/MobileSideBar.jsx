@@ -1,6 +1,7 @@
 import {NavLink} from 'react-router-dom';
 import Icon from '../../styles/Icon.jsx';
 import {forwardRef} from "react";
+import SessionSelect from "../session/SessionSelect.jsx";
 
 const MobileSidebar = forwardRef(function MobileSidebar({
                                                             isOpen,
@@ -11,9 +12,6 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                                                             mobileLinkClass,
                                                             isLoggedIn,
                                                             isAccessGranted,
-                                                            sessions,
-                                                            selectedSession,
-                                                            setSelectedSession,
                                                         }, ref) {
     if (!isOpen) return null;
 
@@ -76,20 +74,10 @@ const MobileSidebar = forwardRef(function MobileSidebar({
                 </div>
                 {isLoggedIn && isAccessGranted && (
                     <div className={`pt-10`}>
-                        <select
-                            value={selectedSession?.name ?? ""}
-                            onChange={(e) => {
-                                const matchedSession = sessions.find(s => s.name === e.target.value);
-                                setSelectedSession(matchedSession);
-                            }}
+                        <SessionSelect
                             className={`sm:hidden w-full px-3 py-1.5 rounded-lg border text-center ${dark ? "bg-indigo-800 border-slate-700 text-white" : "bg-white border-gray-300 text-gray-700"}`}
-                        >
-                            {sessions.map((session) => (
-                                <option key={session.name} value={session.name}>
-                                    {session.name}
-                                </option>
-                            ))}
-                        </select>
+                            errorClassName={`sm:hidden text-center text-sm ${dark ? "text-red-300" : "text-red-600"}`}
+                        />
                     </div>
                 )}
             </div>

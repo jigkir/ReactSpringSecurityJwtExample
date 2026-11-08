@@ -87,7 +87,7 @@ function App() {
     usePolling(fetchStatus, Boolean(user?.email));
 
     return (
-        <SessionProvider>
+        <SessionProvider userId={user?.isLoggedIn ? user.id : null}>
             <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-dvh`}>
                 <Routes>
                     <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}

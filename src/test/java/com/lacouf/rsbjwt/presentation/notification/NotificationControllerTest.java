@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,18 +40,22 @@ class NotificationControllerTest {
     private final Authentication authentication = new UsernamePasswordAuthenticationToken("student@example.com", null);
 
     @Test
-    void shouldReturnNoContentWhenMarkingTargetTypeAsRead() throws Exception {
+    void shouldReturnNoContentWhenMarkingNotificationsAsRead() throws Exception {
         // Act + Assert
-        mockMvc.perform(put("/api/notifications/read/CV").principal(authentication))
+        mockMvc.perform(put("/api/notifications/read").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"notificationIds\": [1, 2]}"))
                 .andExpect(status().isNoContent());
 
-        verify(notificationService).markAllAsReadByTargetType("student@example.com", TargetType.CV);
+        verify(notificationService).markAsRead("student@example.com", List.of(1L, 2L));
     }
 
     @Test
-    void shouldReturnBadRequestWhenTargetTypeIsInvalid() throws Exception {
+    void shouldReturnBadRequestWhenNoNotificationIsGiven() throws Exception {
         // Act + Assert
-        mockMvc.perform(put("/api/notifications/read/UNKNOWN").principal(authentication))
+        mockMvc.perform(put("/api/notifications/read").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"notificationIds\": []}"))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(notificationService);

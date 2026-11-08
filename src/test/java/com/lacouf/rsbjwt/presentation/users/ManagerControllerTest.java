@@ -1,12 +1,16 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
@@ -57,17 +61,17 @@ public class ManagerControllerTest {
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
 
     @Test
-    void shouldReturnAllVisibleCvs() throws Exception {
+    void shouldReturnVisibleCvsOfChosenSession() throws Exception {
         // Arrange
-        when(managerService.getAllVisibleCvs()).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
+        when(managerService.getVisibleCvs(1L)).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
 
         // Act + Assert
-        mockMvc.perform(get("/api/manager/cvs"))
+        mockMvc.perform(get("/api/manager/cvs").param("sessionId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].status").value("REJECTED"));
 
-        verify(managerService).getAllVisibleCvs();
+        verify(managerService).getVisibleCvs(1L);
     }
 
     @Test
@@ -115,6 +119,16 @@ public class ManagerControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/manager/cvs/99/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenRejectingCvUsedInApplication() throws Exception {
+        // Arrange
+        when(managerService.rejectCv(1L, "CV too detailed")).thenThrow(new CVUsedInApplicationException(1L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/cvs/1/reject").contentType(MediaType.APPLICATION_JSON).content(REJECTION_BODY))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -194,7 +208,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnPendingInternships() throws Exception {
         // Arrange
-        when(managerService.getPendingInternships(null)).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
+        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/pending"))
@@ -202,7 +216,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
 
-        verify(managerService).getPendingInternships(null);
+        verify(managerService).getPendingInternships();
     }
 
     @Test
@@ -268,6 +282,15 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnConflictWhenApprovingPastSessionInternship() throws Exception {
+        // Arrange
+        when(managerService.approveInternship(1L)).thenThrow(new PastSessionInternshipNotEditableException(new AcademicSession(Season.WINTER, 2026)));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/approve")).andExpect(status().isConflict());
+    }
+
+    @Test
     void shouldReturnNotFoundWhenRejectingUnknownInternship() throws Exception {
         // Arrange
         when(managerService.rejectInternship(99L, "A ghost?!?")).thenThrow(new InternshipNotFoundException(99L));
@@ -299,6 +322,17 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.status").value("APPROVED"));
 
         verify(managerService).updateInternship(eq(1L), any(InternshipRequestDto.class));
+    }
+
+    @Test
+    void shouldReturnConflictWhenManagerUpdatesPastSessionInternship() throws Exception {
+        // Arrange
+        when(managerService.updateInternship(eq(1L), any(InternshipRequestDto.class)))
+                .thenThrow(new PastSessionInternshipNotEditableException(new AcademicSession(Season.WINTER, 2026)));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internships/1").contentType(MediaType.APPLICATION_JSON).content(INTERNSHIP_BODY))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -367,7 +401,7 @@ public class ManagerControllerTest {
     // ---------- Helpers ----------
 
     private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
-        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT);
+        return new ManagerCvResponseDto(1L, "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), status, comment, STUDENT, false);
     }
 
     private static InternshipResponseDto internshipWith(ReviewStatus status, String comment) {

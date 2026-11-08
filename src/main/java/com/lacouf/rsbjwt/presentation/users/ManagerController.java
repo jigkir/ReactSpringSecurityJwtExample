@@ -1,9 +1,8 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
+import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
@@ -33,8 +32,8 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<ManagerCvResponseDto>> getAllVisibleCvs() {
-        return ResponseEntity.ok(managerService.getAllVisibleCvs());
+    public ResponseEntity<List<ManagerCvResponseDto>> getVisibleCvs(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getVisibleCvs(sessionId));
     }
 
     @GetMapping("/cvs/{cvId}")
@@ -53,7 +52,7 @@ public class ManagerController {
     }
 
     @PutMapping("/cvs/{cvId}/reject")
-    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws DocumentNotFoundException {
+    public ResponseEntity<ManagerCvResponseDto> rejectCv(@PathVariable long cvId, @Valid @RequestBody CvRejectionDto rejection) throws DocumentNotFoundException, CVUsedInApplicationException {
         return ResponseEntity.ok(managerService.rejectCv(cvId, rejection.comment()));
     }
 
@@ -63,8 +62,8 @@ public class ManagerController {
     }
 
     @GetMapping("/internships/pending")
-    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(managerService.getPendingInternships(sessionId));
+    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships() {
+        return ResponseEntity.ok(managerService.getPendingInternships());
     }
 
     @GetMapping("/internships/{internshipId}")
@@ -73,17 +72,17 @@ public class ManagerController {
     }
 
     @PutMapping("/internships/{internshipId}/approve")
-    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(managerService.approveInternship(internshipId));
     }
 
     @PutMapping("/internships/{internshipId}/reject")
-    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRejectionDto rejection) throws InternshipNotFoundException {
+    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRejectionDto rejection) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(managerService.rejectInternship(internshipId, rejection.comment()));
     }
 
     @PutMapping("/internships/{internshipId}")
-    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException {
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(managerService.updateInternship(internshipId, internshipRequestDto));
     }
 

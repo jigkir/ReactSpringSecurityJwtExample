@@ -27,11 +27,11 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
 
     Optional<Internship> findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(long id, ReviewStatus status, Discipline discipline);
 
-    List<Internship> findBySessionAndStatusAndDeletedFalse(AcademicSession session, ReviewStatus status);
+    List<Internship> findByStatusAndDeletedFalse(ReviewStatus status);
 
     List<Internship> findBySessionAndDeletedFalse(AcademicSession session);
 
     List<Internship> findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(String email, AcademicSession session);
 
-    List<Internship> findByPostedBy_DisciplineAndSessionInAndDeletedIsFalse(Discipline postedByDiscipline, Collection<AcademicSession> sessions);
+    List<Internship> findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(Discipline postedByDiscipline, AcademicSession session);
 }

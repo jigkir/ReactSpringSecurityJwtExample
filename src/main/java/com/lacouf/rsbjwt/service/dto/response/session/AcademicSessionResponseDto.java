@@ -9,9 +9,9 @@ public record AcademicSessionResponseDto(
         String name,
         LocalDate startDate,
         LocalDate endDate,
-        boolean current
+        boolean target
 ) {
-    public static AcademicSessionResponseDto of(AcademicSession session, boolean current) {
-        return new AcademicSessionResponseDto(session.getId(), session.getName(), session.getStartDate(), session.getEndDate(), current);
+    public static AcademicSessionResponseDto of(AcademicSession session, boolean target) {
+        return new AcademicSessionResponseDto(session.getId(), session.getName(), session.getStartDate(), session.getEndDate(), target);
     }
 }

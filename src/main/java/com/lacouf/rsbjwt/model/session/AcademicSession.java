@@ -40,8 +40,8 @@ public class AcademicSession {
     public String getName() {
         return season.getCode() + sessionYear;
     }
-
-    public int getAcademicYear() {
-        return season == Season.FALL ? sessionYear : sessionYear - 1;
+    
+    public boolean contains(LocalDate date) {
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 }

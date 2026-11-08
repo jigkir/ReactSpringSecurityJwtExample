@@ -46,6 +46,11 @@ public class InternshipApplication {
     @Column(nullable = false)
     private InternshipApplicationStatus internshipApplicationStatus;
 
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudentInternshipConsent studentInternshipConsent;
+
     public InternshipApplication() {
     }
 
@@ -56,6 +61,7 @@ public class InternshipApplication {
         this.internshipApplicationStatus = InternshipApplicationStatus.UNREAD;
         this.applicationDate = LocalDate.now();
         this.employerDecision = EmployerDecision.PENDING;
+        this.studentInternshipConsent = StudentInternshipConsent.NOT_APPLICABLE;
     }
 
     public void markAsRead() {

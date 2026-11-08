@@ -3,23 +3,13 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyActiveException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.*;
+import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.BatchHireResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -53,13 +43,13 @@ public class EmployerController {
     }
 
     @PostMapping("/internship")
-    public ResponseEntity<InternshipResponseDto> createInternship(@Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
+    public ResponseEntity<InternshipResponseDto> createInternship(@Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws UserNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
         InternshipResponseDto internshipResponseDto = employerService.saveInternship(internshipRequestDto, authentication.getName());
         return new ResponseEntity<>(internshipResponseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/internships/{internshipId}")
-    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException {
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(employerService.updateInternship(internshipId, internshipRequestDto, authentication.getName()));
     }
 
@@ -100,19 +90,19 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
         employerService.acceptInternshipApplicationForInterview(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/applications/{applicationId}/reject")
-    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ContractAlreadyExistsException, ContractAlreadyActiveException {
+    public ResponseEntity<Void> rejectReceivedInternshipApplication(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationAlreadyAcceptedException, ApplicationAlreadyRejectedException {
         employerService.rejectInternshipApplication(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/applications/{applicationId}/interview")
-    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, ApplicationAlreadyHiredException {
+    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException {
         employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok().build();
     }
@@ -146,15 +136,9 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<BatchHireResponseDto> offerContractsToStudents (@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException {
-        BatchHireResponseDto result = employerService.offerContracts(applicationIds, authentication.getName());
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/contracts")
-    public ResponseEntity<List<ContractResponseDto>> getContracts(Authentication authentication) throws UserNotFoundException {
-        List<ContractResponseDto> contracts = employerService.getContractsOfEmployer(authentication.getName());
-        return ResponseEntity.ok(contracts);
+    public ResponseEntity<Void> offerInternshipsToStudents(@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
+        employerService.offerInternshipsToStudents(applicationIds, authentication.getName());
+        return ResponseEntity.ok().build();
     }
 }
 

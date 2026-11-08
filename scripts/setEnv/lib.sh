@@ -19,7 +19,7 @@ MANAGER_PASSWORD='John123#'
 DB_SERVICE="postgres"
 DB_NAME="rsbjwt"
 DB_USER="rsbjwt"
-FALL_START_DAY="0815"   # l'année scolaire commence le 15 août (session d'automne)
+WINTER_LAST_DAY="0531"   # la session d'hiver se termine le 31 mai
 
 log()  { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 fail() { printf '\033[1;31mERREUR : %s\033[0m\n' "$*" >&2; exit 1; }
@@ -63,11 +63,6 @@ request() { # request <POST|PUT> <url> <token>  (requête sans corps)
 
 get_json() { # get_json <url> <token>  -> imprime la réponse JSON
   curl -s "$1" -H "Authorization: Bearer $2"
-}
-
-session_ids() { # session_ids <token> -> imprime l'id de chaque session, un par ligne
-  get_json "$API/sessions" "$1" | \
-    node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>JSON.parse(d).forEach(s=>console.log(s.id)))'
 }
 
 login() { # login <email> <password> -> imprime le token
@@ -116,15 +111,15 @@ sql() { # sql <requête>  -> exécute la requête dans la base du conteneur Dock
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -q -t -A -c "$1" || fail "requête SQL refusée"
 }
 
-current_academic_year() { # année de la session d'automne qui a commencé l'année scolaire en cours
+past_winter_year() { # année de la dernière session d'hiver terminée
   local year
   year=$(date +%Y)
-  [[ "$(date +%m%d)" < "$FALL_START_DAY" ]] && year=$((year - 1))
+  [[ "$(date +%m%d)" > "$WINTER_LAST_DAY" ]] || year=$((year - 1))
   echo "$year"
 }
 
-ensure_summer_session() { # ensure_summer_session <année>  -> crée la session d'été si elle n'existe pas encore
+ensure_winter_session() { # ensure_winter_session <année>  -> crée la session d'hiver si elle n'existe pas encore
   sql "INSERT INTO academic_session (season, session_year, start_date, end_date)
-       VALUES ('SUMMER', $1, '$1-06-01', '$1-08-14')
+       VALUES ('WINTER', $1, '$1-01-01', '$1-05-31')
        ON CONFLICT (season, session_year) DO NOTHING;"
 }

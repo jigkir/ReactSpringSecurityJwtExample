@@ -7,7 +7,6 @@ import {
     getEmployerInterviewsByApplicationId,
     getEmployerInternships
 } from '../../../api/Api.jsx';
-import {SessionProvider} from '../../../../utils/SessionContext.jsx';
 
 vi.mock('../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
@@ -20,6 +19,10 @@ vi.mock('../../../api/Api.jsx', () => ({
 
 vi.mock('../../../../utils/usePolling.js', () => ({
     usePolling: vi.fn(),
+}));
+
+vi.mock('../../../../utils/useSession.js', () => ({
+    useSession: () => ({selectedSession: {id: 1, name: 'H2027', target: true}}),
 }));
 
 vi.mock('../../cv/cvUtils.js', () => ({
@@ -40,9 +43,7 @@ vi.mock('react-i18next', () => ({
 
 const MockApplications = ({user = {isLoggedIn: true}}) => (
     <BrowserRouter>
-        <SessionProvider>
-            <Applications user={user}/>
-        </SessionProvider>
+        <Applications user={user}/>
     </BrowserRouter>
 );
 

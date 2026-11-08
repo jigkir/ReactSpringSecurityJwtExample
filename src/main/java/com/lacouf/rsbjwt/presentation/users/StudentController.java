@@ -1,9 +1,7 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
-import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotPendingException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
+import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.EmptyFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
@@ -19,7 +17,6 @@ import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.contracts.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -221,4 +218,24 @@ public class StudentController {
         List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
     }
+
+    @GetMapping("/applications/offers")
+    public ResponseEntity<List<InternshipApplicationResponseDto>> getInternshipOffers(Authentication authentication) throws UserNotFoundException {
+        List<InternshipApplicationResponseDto> offers = studentService.getOffers(authentication.getName());
+        return ResponseEntity.ok(offers);
+    }
+
+    @PutMapping("/applications/offers/{applicationId}/accept")
+    public ResponseEntity<Void> acceptOffer(Authentication authentication, @PathVariable long applicationId) throws UserNotFoundException, StudentAlreadyEmployedException, InternshipNotFoundException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipApplicationNotFoundException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
+        studentService.acceptOffer(authentication.getName(), applicationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/applications/offers/{applicationId}/refuse")
+    public ResponseEntity<Void> refuseOffer(Authentication authentication, @PathVariable long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
+        studentService.refuseOffer(authentication.getName(), applicationId);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

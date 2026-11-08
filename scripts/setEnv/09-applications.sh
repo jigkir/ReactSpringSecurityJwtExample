@@ -24,7 +24,7 @@ log "Candidatures"
 apply samuel.gagnon@claurendeau.qc.ca 'Samuel2026!' "Développeur full stack React/Spring" CV_Samuel_Gagnon.pdf \
       Lettre_Samuel_Gagnon_Tech_Quebec.pdf Releve_Samuel_Gagnon.pdf
 apply samuel.gagnon@claurendeau.qc.ca 'Samuel2026!' "Stagiaire DevOps" CV_Samuel_Gagnon.pdf
-# Ancien stage de Samuel : l'étape 10 déplace cette offre et sa candidature dans la session d'été passée
+# Ancien stage de Samuel : l'étape 10 déplace cette offre et sa candidature dans la session d'hiver passée
 apply samuel.gagnon@claurendeau.qc.ca 'Samuel2026!' "Soutien informatique aux utilisateurs" CV_Samuel_Gagnon.pdf
 apply emma.lavoie@claurendeau.qc.ca 'Emma2026!' "Assistant chargé de projet" CV_Emma_Lavoie.pdf \
       "" Releve_Emma_Lavoie.pdf

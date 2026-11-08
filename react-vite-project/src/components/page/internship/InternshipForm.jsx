@@ -4,6 +4,7 @@ import {getInternshipFormClasses} from '../../../styles/AppStyles.jsx';
 import Button from '../../../styles/Button.jsx';
 import {Field, translateWarning} from '../../../utils/CommonFields.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
+import {useSession} from "../../../utils/useSession.js";
 
 const INITIAL_FORM = {
     title: "",
@@ -34,6 +35,13 @@ const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
 
 // en-CA renders YYYY-MM-DD, which is what <input type="date"> expects
 const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
+
+// YYYY-MM-DD dates compare as strings
+const laterDate = (date, otherDate) => (otherDate > date ? otherDate : date);
+
+const isInSession = (isoDate, session) => isoDate >= session.startDate && isoDate <= session.endDate;
+
+const sessionPeriodOf = (session) => ({session: session.name, startDate: session.startDate, endDate: session.endDate});
 
 const isUnpaid = (i) =>
     !i.compensationNegotiable && i.compensationAmount != null && Number(i.compensationAmount) === 0;
@@ -67,8 +75,9 @@ const cleanSkills = (raw) =>
  * Validates the form and builds the API payload.
  * Returns {error: {key}} on the first problem, or {payload} when everything is valid.
  * In edit mode an unchanged (possibly now past) date is still accepted.
+ * Offers can only be posted for the target session (the backend checks it too).
  */
-function buildPayload(formData, selection, internship) {
+function buildPayload(formData, selection, internship, targetSession) {
     const tomorrow = getTomorrow();
     const isPastDate = (value, original) => value < tomorrow && value !== original;
 
@@ -91,6 +100,10 @@ function buildPayload(formData, selection, internship) {
     if (isPastDate(formData.startDate, internship?.startDate)
         || isPastDate(formData.applicationDeadline, internship?.applicationDeadline)) {
         return {error: {key: "internshipModal.errorDate"}};
+    }
+
+    if (targetSession && !isInSession(formData.startDate, targetSession)) {
+        return {error: {key: "internshipModal.errorStartDateOutsideSession", options: sessionPeriodOf(targetSession)}};
     }
 
     // Compensation: amount | to be discussed | unpaid (sent as amount 0, not negotiable)
@@ -118,8 +131,10 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
     const {t} = useTranslation();
     const s = getInternshipFormClasses(dark);
     const isEdit = Boolean(internship);
+    const {targetSession} = useSession();
     const tomorrow = getTomorrow();
     const minDate = isEdit ? undefined : tomorrow;
+    const minStartDate = isEdit ? undefined : laterDate(tomorrow, targetSession?.startDate);
 
     const [formData, setFormData] = useState(() => toForm(internship));
     const [selection, setSelection] = useState(() => toSelection(internship));
@@ -148,7 +163,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
         e.preventDefault();
         setError(null);
 
-        const {error: validationError, payload} = buildPayload(formData, selection, internship);
+        const {error: validationError, payload} = buildPayload(formData, selection, internship, targetSession);
         if (validationError) return setError(validationError);
 
         const result = await onSubmitInternship(payload);
@@ -239,13 +254,19 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
 
                 {/* Start date + Deadline */}
                 <div className={s.grid2}>
-                    <Field id="startDate" label={t("internshipModal.startDateLabel")} labelClass={s.label}>
-                        <input
-                            id="startDate" type="date" name="startDate" value={formData.startDate}
-                            min={minDate} onChange={handleChange}
-                            className={s.input} required
-                        />
-                    </Field>
+                    <div>
+                        <Field id="startDate" label={t("internshipModal.startDateLabel")} labelClass={s.label}>
+                            <input
+                                id="startDate" type="date" name="startDate" value={formData.startDate}
+                                min={minStartDate} max={targetSession?.endDate} onChange={handleChange}
+                                className={s.input} required
+                            />
+                        </Field>
+                        {/* The employer sees the only session offers can be posted for */}
+                        {targetSession && (
+                            <p className={s.hint}>{t("internshipModal.sessionRule", sessionPeriodOf(targetSession))}</p>
+                        )}
+                    </div>
                     <Field id="applicationDeadline" label={t("internshipModal.deadlineLabel")} labelClass={s.label}>
                         <input
                             id="applicationDeadline" type="date" name="applicationDeadline"

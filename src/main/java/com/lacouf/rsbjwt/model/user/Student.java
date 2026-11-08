@@ -121,6 +121,10 @@ public class Student extends UserApp {
         this.accountStatus = AccountStatus.APPROVED;
     }
 
+    public void requireApproval() {
+        this.accountStatus = AccountStatus.PENDING;
+    }
+
     public void denyAccess(AcademicSession session) {
         this.accessSession = session;
         this.accountStatus = AccountStatus.REJECTED;
