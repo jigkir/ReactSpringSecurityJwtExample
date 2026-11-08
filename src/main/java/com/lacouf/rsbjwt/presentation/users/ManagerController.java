@@ -71,12 +71,12 @@ public class ManagerController {
     }
 
     @PutMapping("/internships/{internshipId}/approve")
-    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException {
+    public ResponseEntity<InternshipResponseDto> approveInternship(@PathVariable long internshipId) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(managerService.approveInternship(internshipId));
     }
 
     @PutMapping("/internships/{internshipId}/reject")
-    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRejectionDto rejection) throws InternshipNotFoundException {
+    public ResponseEntity<InternshipResponseDto> rejectInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRejectionDto rejection) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(managerService.rejectInternship(internshipId, rejection.comment()));
     }
 

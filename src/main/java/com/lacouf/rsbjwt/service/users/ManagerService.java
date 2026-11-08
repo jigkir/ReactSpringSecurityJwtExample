@@ -135,8 +135,8 @@ public class ManagerService {
     }
 
     @Transactional
-    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException {
-        Internship internship = findInternship(internshipId);
+    public InternshipResponseDto approveInternship(long internshipId) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
+        Internship internship = findInternshipOfTargetSession(internshipId);
 
         if (internship.getStatus() == ReviewStatus.APPROVED) {
             return InternshipResponseDto.of(internship);
@@ -151,8 +151,8 @@ public class ManagerService {
     }
 
     @Transactional
-    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException {
-        Internship internship = findInternship(internshipId);
+    public InternshipResponseDto rejectInternship(long internshipId, String comment) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
+        Internship internship = findInternshipOfTargetSession(internshipId);
 
         internship.reject(comment);
         internshipRepository.save(internship);
@@ -180,6 +180,14 @@ public class ManagerService {
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    }
+
+    private Internship findInternshipOfTargetSession(long internshipId) throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
+        Internship internship = findInternship(internshipId);
+
+        academicSessionService.verifyInternshipIsInTargetSession(internship.getSession());
+
+        return internship;
     }
 
     private CV findVisibleCv(long cvId) throws DocumentNotFoundException {

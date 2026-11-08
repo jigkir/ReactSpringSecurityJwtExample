@@ -409,7 +409,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldApproveInternship() throws InternshipNotFoundException {
+    void shouldApproveInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -425,7 +425,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnInternshipWithoutSavingWhenApprovingAlreadyApprovedInternship() throws InternshipNotFoundException {
+    void shouldReturnInternshipWithoutSavingWhenApprovingAlreadyApprovedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         internship.approve();
 
@@ -442,7 +442,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldRejectInternship() throws InternshipNotFoundException {
+    void shouldRejectInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -478,6 +478,34 @@ public class ManagerServiceTest {
         assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L, "Who's there?"));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenApprovingPastInternship() throws PastSessionInternshipNotEditableException {
+        //Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        doThrow(new PastSessionInternshipNotEditableException(currentSession)).when(academicSessionService).verifyInternshipIsInTargetSession(currentSession);
+
+        //Act + assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> managerService.approveInternship(1L));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenRejectingPastInternship() throws PastSessionInternshipNotEditableException {
+        //Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        doThrow(new PastSessionInternshipNotEditableException(currentSession)).when(academicSessionService).verifyInternshipIsInTargetSession(currentSession);
+
+        //Act + assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> managerService.rejectInternship(1L, "Too late."));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -561,7 +589,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldAllowApprovingRejectedInternship() throws InternshipNotFoundException {
+    void shouldAllowApprovingRejectedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         internship.reject("Offer is no good.");
 
@@ -581,7 +609,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldAllowRejectingPreviouslyApprovedInternship() throws InternshipNotFoundException {
+    void shouldAllowRejectingPreviouslyApprovedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         internship.approve();
 
@@ -599,7 +627,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldAllowUpdatingRejectionComment() throws InternshipNotFoundException {
+    void shouldAllowUpdatingRejectionComment() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         internship.reject("Old comment.");
 
@@ -675,7 +703,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentsWithApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotifyStudentsWithApprovedCvWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         Student student = cv.getStudent();
 
@@ -727,7 +755,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         Student student = cv.getStudent();
 
@@ -743,7 +771,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentsWhoseApprovedCvIsHiddenWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotNotifyStudentsWhoseApprovedCvIsHiddenWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         Student student = cv.getStudent();
 
@@ -762,7 +790,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyEmployerWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotifyEmployerWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -778,7 +806,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyEmployerWithCommentWhenRejectingInternship() throws InternshipNotFoundException {
+    void shouldNotifyEmployerWithCommentWhenRejectingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 

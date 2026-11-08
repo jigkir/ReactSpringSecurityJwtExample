@@ -64,11 +64,15 @@ public class AcademicSessionService {
     }
 
     public AcademicSession getTargetSessionForUpdate(AcademicSession internshipSession, LocalDate startDate) throws PastSessionInternshipNotEditableException, InternshipStartDateOutsideTargetSessionException {
+        verifyInternshipIsInTargetSession(internshipSession);
+
+        return getTargetSessionContaining(startDate);
+    }
+
+    public void verifyInternshipIsInTargetSession(AcademicSession internshipSession) throws PastSessionInternshipNotEditableException {
         if (!isSameSession(internshipSession, getTargetSession())) {
             throw new PastSessionInternshipNotEditableException(internshipSession);
         }
-
-        return getTargetSessionContaining(startDate);
     }
 
     public AcademicSession findSessionOrCurrent(Long sessionId) throws AcademicSessionNotFoundException {

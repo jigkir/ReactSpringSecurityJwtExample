@@ -271,6 +271,15 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnConflictWhenApprovingPastSessionInternship() throws Exception {
+        // Arrange
+        when(managerService.approveInternship(1L)).thenThrow(new PastSessionInternshipNotEditableException(new AcademicSession(Season.WINTER, 2026)));
+
+        // Act + assert
+        mockMvc.perform(put("/api/manager/internships/1/approve")).andExpect(status().isConflict());
+    }
+
+    @Test
     void shouldReturnNotFoundWhenRejectingUnknownInternship() throws Exception {
         // Arrange
         when(managerService.rejectInternship(99L, "A ghost?!?")).thenThrow(new InternshipNotFoundException(99L));
