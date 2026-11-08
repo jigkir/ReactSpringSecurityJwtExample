@@ -4,9 +4,12 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
@@ -299,6 +302,17 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.status").value("APPROVED"));
 
         verify(managerService).updateInternship(eq(1L), any(InternshipRequestDto.class));
+    }
+
+    @Test
+    void shouldReturnConflictWhenManagerUpdatesPastSessionInternship() throws Exception {
+        // Arrange
+        when(managerService.updateInternship(eq(1L), any(InternshipRequestDto.class)))
+                .thenThrow(new PastSessionInternshipNotEditableException(new AcademicSession(Season.WINTER, 2026)));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internships/1").contentType(MediaType.APPLICATION_JSON).content(INTERNSHIP_BODY))
+                .andExpect(status().isConflict());
     }
 
     @Test

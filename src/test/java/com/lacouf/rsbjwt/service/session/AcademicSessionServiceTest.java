@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.session;
 
 import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -118,6 +119,34 @@ class AcademicSessionServiceTest {
 
         // Act + Assert
         assertThrows(InternshipStartDateOutsideTargetSessionException.class, () -> academicSessionService.getTargetSessionContaining(summerDate));
+    }
+
+    @Test
+    void shouldReturnTargetSessionForUpdateWhenInternshipIsInTargetSession() throws PastSessionInternshipNotEditableException, InternshipStartDateOutsideTargetSessionException {
+        // Arrange
+        LocalDate startDate = LocalDate.of(2027, 1, 18);
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act
+        AcademicSession session = academicSessionService.getTargetSessionForUpdate(targetSession, startDate);
+
+        // Assert
+        assert (targetSession).equals(session);
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenInternshipIsInPastSession() {
+        // Arrange
+        AcademicSession pastSession = new AcademicSession(Season.WINTER, TARGET_YEAR - 1);
+        pastSession.setId(2L);
+
+        LocalDate startDate = LocalDate.of(2027, 1, 18);
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act + Assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> academicSessionService.getTargetSessionForUpdate(pastSession, startDate));
     }
 
     @Test

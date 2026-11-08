@@ -3,10 +3,7 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -52,7 +49,7 @@ public class EmployerController {
     }
 
     @PutMapping("/internships/{internshipId}")
-    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
         return ResponseEntity.ok(employerService.updateInternship(internshipId, internshipRequestDto, authentication.getName()));
     }
 

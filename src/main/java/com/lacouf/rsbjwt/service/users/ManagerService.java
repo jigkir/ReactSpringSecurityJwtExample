@@ -1,10 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -166,11 +163,11 @@ public class ManagerService {
     }
 
     @Transactional
-    public InternshipResponseDto updateInternship(long internshipId, InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException, InternshipStartDateOutsideTargetSessionException {
+    public InternshipResponseDto updateInternship(long internshipId, InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
         Internship internship = findInternship(internshipId);
         boolean wasAlreadyApproved = internship.getStatus() == ReviewStatus.APPROVED;
 
-        internshipService.updateDetails(internship, internshipRequestDto, academicSessionService.getTargetSessionContaining(internshipRequestDto.startDate()));
+        internshipService.updateDetails(internship, internshipRequestDto, academicSessionService.getTargetSessionForUpdate(internship.getSession(), internshipRequestDto.startDate()));
         internship.approve();
         internshipRepository.save(internship);
 

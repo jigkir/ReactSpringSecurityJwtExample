@@ -2,8 +2,7 @@ package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
@@ -36,8 +35,6 @@ import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
@@ -381,18 +378,15 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldPutInternshipInTargetSessionWhenUpdated() throws Exception {
+    void shouldThrowPastSessionInternshipNotEditableWhenEmployerUpdatesPastInternship() throws Exception {
         // Arrange
-        AcademicSession targetSession = new AcademicSession(Season.WINTER, 2028);
-
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
-        when(academicSessionService.getTargetSessionContaining(internshipRequestDto.startDate())).thenReturn(targetSession);
+        when(academicSessionService.getTargetSessionForUpdate(internship.getSession(), internshipRequestDto.startDate())).thenThrow(new PastSessionInternshipNotEditableException(currentSession));
 
-        // Act
-        employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL);
+        // Act + Assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL));
 
-        // Assert
-        assert (targetSession).equals(internship.getSession());
+        verify(internshipRepository, never()).save(any(Internship.class));
     }
 
     @Test

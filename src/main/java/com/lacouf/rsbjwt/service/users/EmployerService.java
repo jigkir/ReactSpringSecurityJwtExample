@@ -2,10 +2,7 @@ package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
@@ -120,12 +117,12 @@ public class EmployerService {
     }
 
     @Transactional
-    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException {
+    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
         Internship internship = internshipRepository
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
-        internshipService.updateDetails(internship, dto, academicSessionService.getTargetSessionContaining(dto.startDate()));
+        internshipService.updateDetails(internship, dto, academicSessionService.getTargetSessionForUpdate(internship.getSession(), dto.startDate()));
         internship.resubmitForReview();
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, id);

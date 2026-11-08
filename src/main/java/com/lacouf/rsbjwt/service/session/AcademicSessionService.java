@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.session;
 
 import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -60,6 +61,14 @@ public class AcademicSessionService {
         }
 
         return targetSession;
+    }
+
+    public AcademicSession getTargetSessionForUpdate(AcademicSession internshipSession, LocalDate startDate) throws PastSessionInternshipNotEditableException, InternshipStartDateOutsideTargetSessionException {
+        if (!isSameSession(internshipSession, getTargetSession())) {
+            throw new PastSessionInternshipNotEditableException(internshipSession);
+        }
+
+        return getTargetSessionContaining(startDate);
     }
 
     public AcademicSession findSessionOrCurrent(Long sessionId) throws AcademicSessionNotFoundException {

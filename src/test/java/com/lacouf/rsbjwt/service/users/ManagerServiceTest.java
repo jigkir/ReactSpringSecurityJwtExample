@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -542,6 +543,21 @@ public class ManagerServiceTest {
         assertThrows(InvalidCompensationException.class, () -> managerService.updateInternship(1L, internshipRequestDto));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenManagerUpdatesPastInternship() throws Exception {
+        //Arrange
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), new BigDecimal("27.00"));
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+        when(academicSessionService.getTargetSessionForUpdate(currentSession, internship.getStartDate())).thenThrow(new PastSessionInternshipNotEditableException(currentSession));
+
+        //Act + assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> managerService.updateInternship(1L, internshipRequestDto));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
