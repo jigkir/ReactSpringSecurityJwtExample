@@ -85,7 +85,9 @@
     "interviews": "Interviews",
     "interviewConvocationNotification": "New interview invitation",
     "interviewUpdatedNotification": "Interview invitation updated",
-    "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}"
+    "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}",
+    "sessionSelector": "Session",
+    "sessionsLoadError": "Unable to load the sessions."
   },
   "managerPage": {
     "pageInfo": "Manager home page",

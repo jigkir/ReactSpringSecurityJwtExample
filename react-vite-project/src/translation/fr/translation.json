@@ -85,7 +85,9 @@
     "interviews": "Entrevues",
     "interviewConvocationNotification": "Nouvelle convocation en entrevue",
     "interviewUpdatedNotification": "Convocation en entrevue modifiée",
-    "interviewNotificationDetail": "{{company}} — {{title}}, le {{date}}"
+    "interviewNotificationDetail": "{{company}} — {{title}}, le {{date}}",
+    "sessionSelector": "Session",
+    "sessionsLoadError": "Impossible de charger les sessions."
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",

@@ -5,9 +5,8 @@ import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import MobileSidebar from "./page/MobileSideBar.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
-import {getSessions} from "./api/Api.jsx";
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
-import {useSession} from "../utils/useSession.js";
+import SessionSelect from "./session/SessionSelect.jsx";
 
 // Links by role. Every label is a translation key (`labelKey`).
 const NAV_BY_ROLE = {
@@ -32,8 +31,6 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const {t, i18n} = useTranslation();
     const location = useLocation();
     const theme = getNavbarClasses(dark);
-    const [sessions, setSessions] = useState([]);
-    const {selectedSession, setSelectedSession} = useSession();
 
     // Mobile dropdowns
     const [menuOpen, setMenuOpen] = useState(false);
@@ -77,22 +74,6 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const isLoggedIn = user?.isLoggedIn ?? false;
     const homePath = isLoggedIn ? "/home" : "/";
 
-
-    useEffect(() => {
-        if (isLoggedIn) {
-            getSessions().then((data) => {
-                setSessions(data.sessions || []);
-                if (data.sessions && data.sessions.length > 0) {
-                    // Only set default if no session is currently selected in context
-                    if (!selectedSession) {
-                        const currentSession = data.sessions.find(session => session.current === true);
-                        setSelectedSession(currentSession);
-                    }
-                }
-            });
-        }
-    }, [isLoggedIn, selectedSession, setSelectedSession]);
-
     const isAccessGranted = accountStatus === ACCOUNT_STATUS.APPROVED;
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
@@ -122,201 +103,190 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
 
     return (<>
-            <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
-                <div className="w-full mx-auto px-2 sm:px-6 xl:px-8">
-                    <div className="flex items-center justify-between h-14">
+        <header className={`sticky top-0 z-50 transition-colors duration-300 ${theme.header}`}>
+            <div className="w-full mx-auto px-2 sm:px-6 xl:px-8">
+                <div className="flex items-center justify-between h-14">
 
-                        {/* ───────── Left side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-1.5 justify-start">
-                            {/* Desktop brand */}
-                            <Link to={homePath}
-                                  className={`hidden xl:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
-                                <div
-                                    className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
-                                    {/* Always light text for dark-colored navbars */}
-                                    <span className="text-white transition-colors duration-150">
+                    {/* ───────── Left side ───────── */}
+                    <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-1.5 justify-start">
+                        {/* Desktop brand */}
+                        <Link to={homePath}
+                              className={`hidden xl:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
+                            <div
+                                className="flex items-center font-extrabold text-2xl tracking-tight select-none group cursor-pointer">
+                                {/* Always light text for dark-colored navbars */}
+                                <span className="text-white transition-colors duration-150">
                                     Intern
                                 </span>
-                                    {/* TLD Badge adapted for dark backgrounds */}
-                                    <span
-                                        className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
+                                {/* TLD Badge adapted for dark backgrounds */}
+                                <span
+                                    className={`ml-1 px-1.5 py-0.5 rounded-md text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
                                     .ly
                                 </span>
-                                </div>
-                            </Link>
+                            </div>
+                        </Link>
 
-                            {/* Desktop nav (bell always visible) */}
-                            <nav className="hidden xl:flex items-center gap-1">
-                                {navItems.map(({to, label, end}) => (
-                                    <NavLink key={to} to={to} end={end} className={linkClass}>
-                                        {label}
-                                    </NavLink>))}
-                                {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
-                            </nav>
+                        {/* Desktop nav (bell always visible) */}
+                        <nav className="hidden xl:flex items-center gap-1">
+                            {navItems.map(({to, label, end}) => (
+                                <NavLink key={to} to={to} end={end} className={linkClass}>
+                                    {label}
+                                </NavLink>))}
+                            {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
+                        </nav>
 
-                            {/* Mobile: app name doubles as the pages dropdown button */}
-                            <div ref={menuRef} className="xl:hidden">
-                                <div
-                                    className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-1 sm:gap-2 ${theme.brand}`}>
-                                    {/* Burger Button - added flex items-center */}
-                                    <button
-                                        onClick={() => {
-                                            setMenuOpen((o) => !o);
-                                            setAuthMenuOpen(false);
-                                        }}
-                                        className="flex items-center justify-center transition duration-200 active:scale-95 motion-reduce:active:scale-100"
-                                        aria-label={t("navbar.pagesMenu")}
-                                        aria-expanded={menuOpen}
-                                    >
-                                        <Icon name="menu" size={24}/>
-                                    </button>
+                        {/* Mobile: app name doubles as the pages dropdown button */}
+                        <div ref={menuRef} className="xl:hidden">
+                            <div
+                                className={`p-1.5 -ml-1.5 rounded-lg font-bold flex items-center gap-1 sm:gap-2 ${theme.brand}`}>
+                                {/* Burger Button - added flex items-center */}
+                                <button
+                                    onClick={() => {
+                                        setMenuOpen((o) => !o);
+                                        setAuthMenuOpen(false);
+                                    }}
+                                    className="flex items-center justify-center transition duration-200 active:scale-95 motion-reduce:active:scale-100"
+                                    aria-label={t("navbar.pagesMenu")}
+                                    aria-expanded={menuOpen}
+                                >
+                                    <Icon name="menu" size={24}/>
+                                </button>
 
-                                    <Link to={homePath} className="text-xl sm:text-2xl leading-none tracking-tight">
-                                        <div
-                                            className="flex items-center font-extrabold text-xl sm:text-2xl tracking-tight select-none group cursor-pointer">
-                                            {/* Always light text for dark-colored navbars */}
-                                            <span className="text-white transition-colors duration-150">
+                                <Link to={homePath} className="text-xl sm:text-2xl leading-none tracking-tight">
+                                    <div
+                                        className="flex items-center font-extrabold text-xl sm:text-2xl tracking-tight select-none group cursor-pointer">
+                                        {/* Always light text for dark-colored navbars */}
+                                        <span className="text-white transition-colors duration-150">
                                             Intern
                                         </span>
-                                            {/* TLD Badge adapted for dark backgrounds */}
-                                            <span
-                                                className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
+                                        {/* TLD Badge adapted for dark backgrounds */}
+                                        <span
+                                            className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
                                             .ly
                                         </span>
-                                        </div>
-                                    </Link>
-                                </div>
+                                    </div>
+                                </Link>
+                            </div>
 
-                            </div>
-                            {/* Mobile bell (always visible, in the top bar) */}
-                            <div className="xl:hidden">
-                                {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
-                            </div>
                         </div>
+                        {/* Mobile bell (always visible, in the top bar) */}
+                        <div className="xl:hidden">
+                            {isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
+                        </div>
+                    </div>
 
-                        {/*Center section*/}
-                        {isLoggedIn && isAccessGranted && (<div className="hidden sm:flex flex-1 justify-center shrink-0">
-                            <select
-                                value={selectedSession?.name}
-                                onChange={(e) => {
-                                    const matchedSession = sessions.find(s => s.name === e.target.value);
-                                    setSelectedSession(matchedSession);
-                                }}
-                                className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
-                            >
-                                {sessions.map((session) => (<option key={session.name} value={session.name}>
-                                        {session.name}
-                                    </option>))}
-                            </select>
-                        </div>)}
+                    {/*Center section*/}
+                    {isLoggedIn && isAccessGranted && (<div className="hidden sm:flex flex-1 justify-center shrink-0">
+                        <SessionSelect
+                            className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
+                            errorClassName="text-sm text-red-300"
+                        />
+                    </div>)}
 
-                        {/* ───────── Right side ───────── */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 flex-1 justify-end">
-                            <button onClick={toggleLang}
-                                    className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
-                                    aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
-                                {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
-                            </button>
+                    {/* ───────── Right side ───────── */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 flex-1 justify-end">
+                        <button onClick={toggleLang}
+                                className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
+                                aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
+                            {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                        </button>
 
-                            <button onClick={toggleDark}
-                                    className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
-                                    aria-label={dark ? t("navbar.switchToLight") : t("navbar.switchToDark")}>
-                                <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
-                                <span className="hidden xl:inline">
+                        <button onClick={toggleDark}
+                                className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
+                                aria-label={dark ? t("navbar.switchToLight") : t("navbar.switchToDark")}>
+                            <Icon name={dark ? "light_mode" : "dark_mode"} size={16}/>
+                            <span className="hidden xl:inline">
                                 {dark ? t("navbar.lightmode") : t("navbar.darkmode")}
                             </span>
-                            </button>
+                        </button>
 
-                            {/* Desktop greeting + auth */}
-                            <div className="hidden xl:flex items-center gap-3 ml-2">
-                                {isLoggedIn && (<div
-                                        className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
-                                        <span className="hidden xl:inline">{t("navbar.hello")}</span>
-                                        <span className={`font-semibold ${theme.greetingName}`}>
+                        {/* Desktop greeting + auth */}
+                        <div className="hidden xl:flex items-center gap-3 ml-2">
+                            {isLoggedIn && (<div
+                                className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
+                                <span className="hidden xl:inline">{t("navbar.hello")}</span>
+                                <span className={`font-semibold ${theme.greetingName}`}>
                                         {user.firstName} {user.lastName}
                                     </span>
-                                        {role && (<span
-                                                className={`hidden xl:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
+                                {role && (<span
+                                    className={`hidden xl:inline text-xs px-2 py-0.5 rounded-full ${theme.badge}`}>
                                             {formatRole(role)}
                                         </span>)}
-                                    </div>)}
+                            </div>)}
 
-                                {isLoggedIn ? (<NavLink to="/logout"
-                                                        className={linkClass}>{t("navbar.disconnect")}</NavLink>) : (<>
-                                        <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
-                                            {t("navbar.login")}
-                                        </Link>
-                                        <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}>
-                                            {t("navbar.signup")}
-                                        </Link>
-                                    </>)}
-                            </div>
+                            {isLoggedIn ? (<NavLink to="/logout"
+                                                    className={linkClass}>{t("navbar.disconnect")}</NavLink>) : (<>
+                                <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
+                                    {t("navbar.login")}
+                                </Link>
+                                <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}>
+                                    {t("navbar.signup")}
+                                </Link>
+                            </>)}
+                        </div>
 
-                            {/* Mobile account dropdown */}
-                            <div ref={authRef} className="relative xl:hidden">
-                                {isLoggedIn ? (<button
-                                        type="button"
-                                        onClick={() => {
-                                            setAuthMenuOpen((o) => !o);
-                                            setMenuOpen(false);
-                                        }}
-                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
-                                        aria-label={t("navbar.accountMenu")}
-                                        aria-expanded={authMenuOpen}
-                                    >
+                        {/* Mobile account dropdown */}
+                        <div ref={authRef} className="relative xl:hidden">
+                            {isLoggedIn ? (<button
+                                type="button"
+                                onClick={() => {
+                                    setAuthMenuOpen((o) => !o);
+                                    setMenuOpen(false);
+                                }}
+                                className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
+                                aria-label={t("navbar.accountMenu")}
+                                aria-expanded={authMenuOpen}
+                            >
                                     <span
                                         className="max-w-24 truncate text-md"
                                         title={t("navbar.account")}
                                     >
                                       <Icon name="person" size={20}/>
                                     </span>
-                                    </button>) : (<Link
-                                        to="/login" // Use `href="/login"` if using Next.js
-                                        className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
-                                        aria-label={t("navbar.login")}
-                                    >
-                                        <Icon name="person" size={20} className="min-[420px]:hidden"/>
-                                        <span className="hidden min-[420px]:inline max-w-24 truncate text-md">
+                            </button>) : (<Link
+                                to="/login" // Use `href="/login"` if using Next.js
+                                className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
+                                aria-label={t("navbar.login")}
+                            >
+                                <Icon name="person" size={20} className="min-[420px]:hidden"/>
+                                <span className="hidden min-[420px]:inline max-w-24 truncate text-md">
                                   {t("navbar.login")}
                                 </span>
-                                    </Link>)}
+                            </Link>)}
 
-                                {authMenuOpen && (<div className={`${dropdownPanel} right-0`}>
-                                        {isLoggedIn && (<>
-                                                <div
-                                                    className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
-                                                    {user.firstName} {user.lastName} ({formatRole(role)})
-                                                </div>
-                                                <Link to="/logout"
-                                                      className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
+                            {authMenuOpen && (<div className={`${dropdownPanel} right-0`}>
+                                {isLoggedIn && (<>
+                                    <div
+                                        className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
+                                        {user.firstName} {user.lastName} ({formatRole(role)})
+                                    </div>
+                                    <Link to="/logout"
+                                          className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
                                                 <span className={"flex gap-2 items-center"}>
                                                     <Icon name={"logout"} size={20}/>
                                                     {t("navbar.disconnect")}
                                                 </span>
-                                                </Link>
-                                            </>)}
-                                    </div>)}
-                            </div>
+                                    </Link>
+                                </>)}
+                            </div>)}
                         </div>
                     </div>
                 </div>
-            </header>
-            {/* Side Menu Drawer & Backdrop */}
-            <MobileSidebar
-                ref={sidebarRef}
-                isOpen={menuOpen}
-                onClose={() => setMenuOpen(false)}
-                navItems={navItems}
-                dark={dark}
-                t={t}
-                mobileLinkClass={mobileLinkClass}
-                isLoggedIn={isLoggedIn}
-                isAccessGranted={isAccessGranted}
-                sessions={sessions}
-                selectedSession={selectedSession}
-                setSelectedSession={setSelectedSession}
-            />
-        </>);
+            </div>
+        </header>
+        {/* Side Menu Drawer & Backdrop */}
+        <MobileSidebar
+            ref={sidebarRef}
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            navItems={navItems}
+            dark={dark}
+            t={t}
+            mobileLinkClass={mobileLinkClass}
+            isLoggedIn={isLoggedIn}
+            isAccessGranted={isAccessGranted}
+        />
+    </>);
 }
 
 export default Navbar;
