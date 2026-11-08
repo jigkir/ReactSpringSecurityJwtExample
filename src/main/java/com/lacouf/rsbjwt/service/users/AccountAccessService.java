@@ -22,7 +22,7 @@ import java.util.List;
 
 @Service
 public class AccountAccessService {
-    private static final String ACCESS_REQUEST_MESSAGE = "%s %s (%s) signed in after their access expired.";
+    private static final String ACCESS_REQUEST_MESSAGE = "%s %s (%s) signed in and is waiting for access approval.";
 
     private final StudentRepository studentRepository;
     private final ManagerRepository managerRepository;
@@ -50,7 +50,7 @@ public class AccountAccessService {
             return AccountStatus.APPROVED;
         }
 
-        if (!academicSessionService.isTargetSession(student.getAccessSession())) {
+        if (!academicSessionService.isAccessSession(student.getAccessSession())) {
             return AccountStatus.PENDING;
         }
 
@@ -65,7 +65,7 @@ public class AccountAccessService {
         return user.getAuthorities();
     }
 
-    public void notifyManagersIfAccessExpired(String email) {
+    public void notifyManagersIfAccessIsPending(String email) {
         studentRepository.findByCredentialsEmail(email)
                 .filter(student -> getAccountStatus(student) == AccountStatus.PENDING)
                 .ifPresent(this::notifyManagersOfAccessRequest);
@@ -87,7 +87,7 @@ public class AccountAccessService {
     public StudentAccessResponseDto reactivateStudentAccess(long studentId) throws UserNotFoundException {
         Student student = findStudent(studentId);
 
-        student.grantAccess(academicSessionService.getTargetSession());
+        student.grantAccess(academicSessionService.getAccessSession());
 
         return saveAndCloseAccessRequest(student);
     }
@@ -96,7 +96,7 @@ public class AccountAccessService {
     public StudentAccessResponseDto denyStudentAccess(long studentId) throws UserNotFoundException {
         Student student = findStudent(studentId);
 
-        student.denyAccess(academicSessionService.getTargetSession());
+        student.denyAccess(academicSessionService.getAccessSession());
 
         return saveAndCloseAccessRequest(student);
     }

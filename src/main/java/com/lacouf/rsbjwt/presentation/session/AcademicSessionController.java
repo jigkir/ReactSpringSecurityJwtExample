@@ -22,4 +22,9 @@ public class AcademicSessionController {
     public ResponseEntity<List<AcademicSessionResponseDto>> getSessions() {
         return ResponseEntity.ok(academicSessionService.getSessions());
     }
+
+    @GetMapping("/registration")
+    public ResponseEntity<AcademicSessionResponseDto> getRegistrationSession() {
+        return ResponseEntity.ok(academicSessionService.getRegistrationSession());
+    }
 }

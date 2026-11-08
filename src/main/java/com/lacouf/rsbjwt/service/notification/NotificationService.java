@@ -26,8 +26,8 @@ public class NotificationService {
                 .toList();
     }
 
-    public void markAllAsReadByTargetType(String email, TargetType targetType) {
-        notificationRepository.markAllAsReadByEmailAndTargetType(email, targetType);
+    public void markAsRead(String email, List<Long> notificationIds) {
+        notificationRepository.markAsReadByEmailAndIdIn(email, notificationIds);
     }
 
     public void notifyIfAbsent(NotificationType notificationType, long targetId, UserApp recipient) {

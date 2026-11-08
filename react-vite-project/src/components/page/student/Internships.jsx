@@ -15,7 +15,7 @@ import {
 import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
-import {useNotifications} from "../../notification/NotificationsProvider.jsx";
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../utils/useSession.js";
 
 // <StudentInternships />          full page (route /internship)
@@ -25,7 +25,6 @@ function StudentInternships({preview = false}) {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
     const s = getPostInternshipClasses(dark);
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -39,6 +38,11 @@ function StudentInternships({preview = false}) {
         [appliedInternships]);
     const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
+
+    const shownInternshipIds = useMemo(
+        () => (preview || loading ? null : internships.map((internship) => internship.id)),
+        [preview, loading, internships]);
+    useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
     const groupOf = (internship) => {
         if (appliedIds.has(internship.id)) return 1; // APPLIED
@@ -59,8 +63,9 @@ function StudentInternships({preview = false}) {
     }, []);
 
     const loadInternships = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
         try {
-            const data = await getStudentInternships(sessionId);
+            const data = await getStudentInternships(selectedSession.id);
             setInternships(data
                 .filter(internship => internship.status === 'APPROVED')
                 .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)));
@@ -70,16 +75,17 @@ function StudentInternships({preview = false}) {
         } finally {
             setLoading(false);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     const loadAppliedInternships = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
         try {
-            const data = await getStudentAppliedInternships(sessionId);
+            const data = await getStudentAppliedInternships(selectedSession.id);
             setAppliedInternships(data);
         } catch {
             setError(true);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     // Only visible, approved CVs can be used to apply
     const loadCvs = useCallback(async () => {

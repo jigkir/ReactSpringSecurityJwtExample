@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.session;
 
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -10,11 +11,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.MonthDay;
 import java.util.List;
 
 @Service
 public class AcademicSessionService {
     private static final Season INTERNSHIP_SEASON = Season.WINTER;
+    private static final MonthDay ACCESS_RENEWAL_DAY = MonthDay.of(Month.AUGUST, 15);
 
     private final AcademicSessionRepository academicSessionRepository;
     private final Clock clock;
@@ -32,12 +36,43 @@ public class AcademicSessionService {
         return getOrCreateSession(isThisYearSessionOver ? year + 1 : year);
     }
 
-    public AcademicSession getSessionContaining(LocalDate date) throws StartDateOutsideInternshipSeasonException {
-        if (!INTERNSHIP_SEASON.contains(date)) {
-            throw new StartDateOutsideInternshipSeasonException();
+    public AcademicSession getAccessSession() {
+        LocalDate today = LocalDate.now(clock);
+        boolean isNextWinterAccess = !MonthDay.from(today).isBefore(ACCESS_RENEWAL_DAY);
+
+        return getOrCreateSession(isNextWinterAccess ? today.getYear() + 1 : today.getYear());
+    }
+
+    public AcademicSessionResponseDto getRegistrationSession() {
+        AcademicSession accessSession = getAccessSession();
+
+        return AcademicSessionResponseDto.of(accessSession, isSameSession(accessSession, getTargetSession()));
+    }
+
+    public boolean isLateRegistration() {
+        return MonthDay.now(clock).isBefore(ACCESS_RENEWAL_DAY);
+    }
+
+    public AcademicSession getTargetSessionContaining(LocalDate startDate) throws InternshipStartDateOutsideTargetSessionException {
+        AcademicSession targetSession = getTargetSession();
+
+        if (!targetSession.contains(startDate)) {
+            throw new InternshipStartDateOutsideTargetSessionException(targetSession);
         }
 
-        return getOrCreateSession(date.getYear());
+        return targetSession;
+    }
+
+    public AcademicSession getTargetSessionForUpdate(AcademicSession internshipSession, LocalDate startDate) throws PastSessionInternshipNotEditableException, InternshipStartDateOutsideTargetSessionException {
+        verifyInternshipIsInTargetSession(internshipSession);
+
+        return getTargetSessionContaining(startDate);
+    }
+
+    public void verifyInternshipIsInTargetSession(AcademicSession internshipSession) throws PastSessionInternshipNotEditableException {
+        if (!isSameSession(internshipSession, getTargetSession())) {
+            throw new PastSessionInternshipNotEditableException(internshipSession);
+        }
     }
 
     public AcademicSession findSessionOrCurrent(Long sessionId) throws AcademicSessionNotFoundException {
@@ -48,8 +83,8 @@ public class AcademicSessionService {
         return academicSessionRepository.findById(sessionId).orElseThrow(() -> new AcademicSessionNotFoundException(sessionId));
     }
 
-    public boolean isTargetSession(AcademicSession session) {
-        return isSameSession(session, getTargetSession());
+    public boolean isAccessSession(AcademicSession session) {
+        return isSameSession(session, getAccessSession());
     }
 
     public List<AcademicSessionResponseDto> getSessions() {

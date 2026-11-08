@@ -57,6 +57,9 @@ async function postJson(path, payload) {
     return handleEmpty(response);
 }
 
+// Without a session, the backend returns the lists of the target session
+const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
+
 // endregion
 
 // region Login
@@ -110,6 +113,11 @@ export const signupStudent = (payload) => postJson("student/signup", payload);
 export const signupTeacher = (payload) => postJson("teacher/signup", payload);
 export const signupEmployer = (payload) => postJson("employer/signup", payload);
 
+// Public: the winter session a new student signs up for, the one their access is for
+export async function getRegistrationSession() {
+    return handleResponse(await fetcher("sessions/registration", {method: "GET"}));
+}
+
 // endregion
 
 // region Student CVs
@@ -132,9 +140,9 @@ export async function getStudentCvs() {
 //endregion
 
 // region Manager CVs
-// All VISIBLE CVs (visible as soon as a student uploads). Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
-export async function getPublicCvs() {
-    const response = await fetcher("manager/cvs", {method: "GET"});
+// VISIBLE CVs of the students of a session (visible as soon as a student uploads). Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
+export async function getPublicCvs(sessionId) {
+    const response = await fetcher(withSession("manager/cvs", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 
@@ -163,11 +171,14 @@ export async function rejectCv(cvId, comment) {
 // endregion
 
 // region Internship
-// Without a session, the backend returns the offers of the current session
-const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
 
 export async function getEmployerInternships(sessionId) {
     const response = await fetcher(withSession("employer/internships", sessionId), {});
+    return handleResponse(response);
+}
+
+export async function getPendingInternships() {
+    const response = await fetcher("manager/internships/pending", {method: "GET"});
     return handleResponse(response);
 }
 
@@ -313,8 +324,13 @@ export async function getNotifications() {
     return handleResponse(response);
 }
 
-export async function markNotificationsAsRead(targetType) {
-    const response = await fetcher(`notifications/read/${targetType}`, {method: "PUT"});
+// The backend only closes the user's own notifications
+export async function markNotificationsAsRead(notificationIds) {
+    const response = await fetcher("notifications/read", {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({notificationIds}),
+    });
     return handleEmpty(response);
 }
 

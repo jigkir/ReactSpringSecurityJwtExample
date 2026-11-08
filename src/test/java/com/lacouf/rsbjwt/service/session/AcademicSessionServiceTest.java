@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.session;
 
-import com.lacouf.rsbjwt.exception.internship.StartDateOutsideInternshipSeasonException;
+import com.lacouf.rsbjwt.exception.internship.InternshipStartDateOutsideTargetSessionException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -96,29 +97,56 @@ class AcademicSessionServiceTest {
     }
 
     @Test
-    void shouldCreateSessionContainingDateWhenItDoesNotExistYet() throws StartDateOutsideInternshipSeasonException {
+    void shouldReturnTargetSessionWhenStartDateIsInIt() throws InternshipStartDateOutsideTargetSessionException {
         // Arrange
         LocalDate startDate = LocalDate.of(2027, 1, 18);
 
-        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, 2027)).thenReturn(Optional.empty());
-        when(academicSessionRepository.save(any(AcademicSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
         // Act
-        AcademicSession session = academicSessionService.getSessionContaining(startDate);
+        AcademicSession session = academicSessionService.getTargetSessionContaining(startDate);
 
         // Assert
-        assert ("H2027").equals(session.getName());
+        assert (targetSession).equals(session);
     }
 
     @Test
-    void shouldThrowStartDateOutsideInternshipSeasonWhenStartDateIsNotInWinter() {
+    void shouldThrowStartDateOutsideTargetSessionWhenStartDateIsAfterTargetSession() {
         // Arrange
         LocalDate summerDate = LocalDate.of(2027, 6, 1);
 
-        // Act + Assert
-        assertThrows(StartDateOutsideInternshipSeasonException.class, () -> academicSessionService.getSessionContaining(summerDate));
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
-        verify(academicSessionRepository, never()).save(any(AcademicSession.class));
+        // Act + Assert
+        assertThrows(InternshipStartDateOutsideTargetSessionException.class, () -> academicSessionService.getTargetSessionContaining(summerDate));
+    }
+
+    @Test
+    void shouldReturnTargetSessionForUpdateWhenInternshipIsInTargetSession() throws PastSessionInternshipNotEditableException, InternshipStartDateOutsideTargetSessionException {
+        // Arrange
+        LocalDate startDate = LocalDate.of(2027, 1, 18);
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act
+        AcademicSession session = academicSessionService.getTargetSessionForUpdate(targetSession, startDate);
+
+        // Assert
+        assert (targetSession).equals(session);
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenInternshipIsInPastSession() {
+        // Arrange
+        AcademicSession pastSession = new AcademicSession(Season.WINTER, TARGET_YEAR - 1);
+        pastSession.setId(2L);
+
+        LocalDate startDate = LocalDate.of(2027, 1, 18);
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act + Assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> academicSessionService.getTargetSessionForUpdate(pastSession, startDate));
     }
 
     @Test
@@ -157,30 +185,82 @@ class AcademicSessionServiceTest {
     }
 
     @Test
-    void shouldBeTargetSessionWhenSessionIsTheTargetOne() {
+    void shouldGiveNextWinterAccessWhenAccessRenewsOnAugust15() {
         // Arrange
+        AcademicSessionService serviceOnRenewalDay = createServiceOn(LocalDate.of(2026, 8, 15));
+
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
-        // Act + Assert
-        assert academicSessionService.isTargetSession(targetSession);
+        // Act
+        AcademicSession session = serviceOnRenewalDay.getAccessSession();
+
+        // Assert
+        assert (targetSession).equals(session);
     }
 
     @Test
-    void shouldNotBeTargetSessionWhenSessionIsPast() {
+    void shouldKeepWinterAccessUntilAugust14WhenWinterIsOver() {
         // Arrange
+        AcademicSessionService serviceOnLastAccessDay = createServiceOn(LocalDate.of(2027, 8, 14));
+
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
-        // Act + Assert
-        assert !academicSessionService.isTargetSession(pastSession());
+        // Act
+        AcademicSession session = serviceOnLastAccessDay.getAccessSession();
+
+        // Assert
+        assert (targetSession).equals(session);
     }
 
     @Test
-    void shouldNotBeTargetSessionWhenStudentHasNoSessionYet() {
+    void shouldReturnNextWinterAsRegistrationSessionWhenAccessRenewsOnAugust15() {
+        // Arrange
+        AcademicSessionService serviceOnFirstRegistrationDay = createServiceOn(LocalDate.of(2026, 8, 15));
+
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act
+        AcademicSessionResponseDto session = serviceOnFirstRegistrationDay.getRegistrationSession();
+
+        // Assert
+        assert ("H2027").equals(session.name());
+        assert session.target();
+    }
+
+    @Test
+    void shouldBeLateRegistrationWhenStudentSignsUpInJanuary() {
+        // Arrange
+        AcademicSessionService serviceOnFirstDayOfYear = createServiceOn(LocalDate.of(2027, 1, 1));
+
+        // Act + Assert
+        assert serviceOnFirstDayOfYear.isLateRegistration();
+    }
+
+    @Test
+    void shouldBeAccessSessionWhenSessionIsTheOneSearchedFor() {
         // Arrange
         when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
 
         // Act + Assert
-        assert !academicSessionService.isTargetSession(null);
+        assert academicSessionService.isAccessSession(targetSession);
+    }
+
+    @Test
+    void shouldNotBeAccessSessionWhenSessionIsPast() {
+        // Arrange
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act + Assert
+        assert !academicSessionService.isAccessSession(pastSession());
+    }
+
+    @Test
+    void shouldNotBeAccessSessionWhenStudentHasNoSessionYet() {
+        // Arrange
+        when(academicSessionRepository.findBySeasonAndSessionYear(Season.WINTER, TARGET_YEAR)).thenReturn(Optional.of(targetSession));
+
+        // Act + Assert
+        assert !academicSessionService.isAccessSession(null);
     }
 
     @Test

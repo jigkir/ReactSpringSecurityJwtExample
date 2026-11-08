@@ -27,10 +27,4 @@ public enum Season {
     public LocalDate lastDayIn(int year) {
         return lastDay.atYear(year);
     }
-
-    public boolean contains(LocalDate date) {
-        MonthDay day = MonthDay.from(date);
-
-        return !day.isBefore(firstDay) && !day.isAfter(lastDay);
-    }
 }

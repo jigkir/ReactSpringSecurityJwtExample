@@ -1,9 +1,11 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
+import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
@@ -22,6 +24,7 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
@@ -72,6 +75,8 @@ public class ManagerServiceTest {
     private CVRepository cvRepository;
     @Mock
     private InternshipRepository internshipRepository;
+    @Mock
+    private InternshipApplicationRepository applicationRepository;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
@@ -91,7 +96,7 @@ public class ManagerServiceTest {
         Student student = new Student("Marie", "Tremblay", "2234567", Credentials.builder().email("marie@example.com").role(Role.STUDENT).build(), Discipline.COMPUTER_SCIENCE, null);
         student.setId(2L);
 
-        cv = new CV("pdf".getBytes(), "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0));
+        cv = new CV("pdf".getBytes(), "cv.pdf", LocalDateTime.of(2026, 9, 1, 10, 0), currentSession);
         cv.setId(1L);
         student.addCv(cv);
 
@@ -145,12 +150,13 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnAllVisibleCvs() {
+    void shouldReturnVisibleCvsUploadedForChosenSession() throws AcademicSessionNotFoundException {
         // Arrange
-        when(cvRepository.findByVisibility(DocumentVisibility.VISIBLE)).thenReturn(List.of(cv));
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of(cv));
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getAllVisibleCvs();
+        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(1L);
 
         // Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -158,12 +164,27 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyListWhenNoVisibleCvs() {
+    void shouldFlagCvUsedInApplicationWhenListingCvs() throws AcademicSessionNotFoundException {
         // Arrange
-        when(cvRepository.findByVisibility(DocumentVisibility.VISIBLE)).thenReturn(List.of());
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of(cv));
+        when(applicationRepository.existsByCv(cv)).thenReturn(true);
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getAllVisibleCvs();
+        List<ManagerCvResponseDto> visibleCvs = managerService.getVisibleCvs(1L);
+
+        // Assert
+        assert visibleCvs.getFirst().usedInApplication();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoVisibleCvs() throws AcademicSessionNotFoundException {
+        // Arrange
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of());
+
+        // Act
+        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(null);
 
         // Assert
         assert result.isEmpty();
@@ -305,6 +326,22 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldThrowCVUsedInApplicationWhenRejectingCvUsedInApplication() {
+        // Arrange
+        cv.setStatus(ReviewStatus.APPROVED);
+
+        when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
+        when(applicationRepository.existsByCv(cv)).thenReturn(true);
+
+        // Act + Assert
+        assertThrows(CVUsedInApplicationException.class, () -> managerService.rejectCv(1L, "CV too detailed"));
+
+        assert (ReviewStatus.APPROVED).equals(cv.getStatus());
+        verify(cvRepository, never()).save(any(CV.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldAllowRejectingPreviouslyApprovedCv() throws Exception {
         // Arrange
         cv.setStatus(ReviewStatus.APPROVED);
@@ -406,7 +443,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldApproveInternship() throws InternshipNotFoundException {
+    void shouldApproveInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -422,7 +459,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldReturnInternshipWithoutSavingWhenApprovingAlreadyApprovedInternship() throws InternshipNotFoundException {
+    void shouldReturnInternshipWithoutSavingWhenApprovingAlreadyApprovedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         internship.approve();
 
@@ -439,7 +476,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldRejectInternship() throws InternshipNotFoundException {
+    void shouldRejectInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -475,6 +512,34 @@ public class ManagerServiceTest {
         assertThrows(InternshipNotFoundException.class, () -> managerService.rejectInternship(99L, "Who's there?"));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenApprovingPastInternship() throws PastSessionInternshipNotEditableException {
+        //Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        doThrow(new PastSessionInternshipNotEditableException(currentSession)).when(academicSessionService).verifyInternshipIsInTargetSession(currentSession);
+
+        //Act + assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> managerService.approveInternship(1L));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldThrowPastSessionInternshipNotEditableWhenRejectingPastInternship() throws PastSessionInternshipNotEditableException {
+        //Arrange
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+
+        doThrow(new PastSessionInternshipNotEditableException(currentSession)).when(academicSessionService).verifyInternshipIsInTargetSession(currentSession);
+
+        //Act + assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> managerService.rejectInternship(1L, "Too late."));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -543,7 +608,22 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldAllowApprovingRejectedInternship() throws InternshipNotFoundException {
+    void shouldThrowPastSessionInternshipNotEditableWhenManagerUpdatesPastInternship() throws Exception {
+        //Arrange
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), new BigDecimal("27.00"));
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+        when(academicSessionService.getTargetSessionForUpdate(currentSession, internship.getStartDate())).thenThrow(new PastSessionInternshipNotEditableException(currentSession));
+
+        //Act + assert
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> managerService.updateInternship(1L, internshipRequestDto));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldAllowApprovingRejectedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         internship.reject("Offer is no good.");
 
@@ -563,7 +643,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldAllowRejectingPreviouslyApprovedInternship() throws InternshipNotFoundException {
+    void shouldAllowRejectingPreviouslyApprovedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         internship.approve();
 
@@ -581,7 +661,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldAllowUpdatingRejectionComment() throws InternshipNotFoundException {
+    void shouldAllowUpdatingRejectionComment() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         internship.reject("Old comment.");
 
@@ -611,7 +691,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws DocumentNotFoundException {
+    void shouldNotifyStudentWithRejectionCommentWhenRejectingCv() throws DocumentNotFoundException, CVUsedInApplicationException {
         // Arrange
         when(cvRepository.findByIdAndVisibility(1L, DocumentVisibility.VISIBLE)).thenReturn(Optional.of(cv));
 
@@ -623,7 +703,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws DocumentNotFoundException {
+    void shouldNotNotifyStudentWhenRejectingWithSameComment() throws DocumentNotFoundException, CVUsedInApplicationException {
         // Arrange
         cv.setStatus(ReviewStatus.REJECTED);
         cv.setRejectionComment("CV too detailed");
@@ -641,7 +721,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws DocumentNotFoundException {
+    void shouldCloseOldCvNotificationsBeforeNotifyingStudentOfNewDecision() throws DocumentNotFoundException, CVUsedInApplicationException {
         // Arrange
         cv.setStatus(ReviewStatus.APPROVED);
 
@@ -657,7 +737,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyStudentsWithApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotifyStudentsWithApprovedCvWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         Student student = cv.getStudent();
 
@@ -693,7 +773,7 @@ public class ManagerServiceTest {
     @Test
     void shouldNotNotifyStudentOfOpenInternshipsWhenStudentAlreadyHasApprovedCv() throws DocumentNotFoundException {
         // Arrange
-        CV approvedCv = new CV("pdf".getBytes(), "old.pdf", LocalDateTime.of(2026, 8, 1, 10, 0));
+        CV approvedCv = new CV("pdf".getBytes(), "old.pdf", LocalDateTime.of(2026, 8, 1, 10, 0), currentSession);
 
         approvedCv.setStatus(ReviewStatus.APPROVED);
 
@@ -709,7 +789,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotNotifyStudentsWithoutApprovedCvWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         Student student = cv.getStudent();
 
@@ -725,7 +805,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotNotifyStudentsWhoseApprovedCvIsHiddenWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotNotifyStudentsWhoseApprovedCvIsHiddenWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         Student student = cv.getStudent();
 
@@ -744,7 +824,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyEmployerWhenApprovingInternship() throws InternshipNotFoundException {
+    void shouldNotifyEmployerWhenApprovingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 
@@ -760,7 +840,7 @@ public class ManagerServiceTest {
     }
 
     @Test
-    void shouldNotifyEmployerWithCommentWhenRejectingInternship() throws InternshipNotFoundException {
+    void shouldNotifyEmployerWithCommentWhenRejectingInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         // Arrange
         when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
 

@@ -82,7 +82,7 @@ class UserAppServiceTest {
         assert ("Password123").equals(authenticationRequest.getCredentials());
 
         verify(jwtTokenProvider).generateToken(authentication);
-        verify(accountAccessService).notifyManagersIfAccessExpired("user@example.com");
+        verify(accountAccessService).notifyManagersIfAccessIsPending("user@example.com");
     }
 
     @Test
@@ -303,7 +303,7 @@ class UserAppServiceTest {
         assert generatedFor.getCredentials() == null;
         assert generatedFor.getAuthorities().contains(new SimpleGrantedAuthority("STUDENT"));
 
-        verify(accountAccessService).notifyManagersIfAccessExpired("student@example.com");
+        verify(accountAccessService).notifyManagersIfAccessIsPending("student@example.com");
     }
 
     @Test

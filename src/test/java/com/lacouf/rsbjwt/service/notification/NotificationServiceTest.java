@@ -121,12 +121,12 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldMarkAllNotificationsOfTargetTypeAsReadForConnectedUser() {
+    void shouldMarkChosenNotificationsAsReadForConnectedUser() {
         // Act
-        notificationService.markAllAsReadByTargetType(EMAIL, TargetType.CV);
+        notificationService.markAsRead(EMAIL, List.of(1L, 2L));
 
         // Assert
-        verify(notificationRepository).markAllAsReadByEmailAndTargetType(EMAIL, TargetType.CV);
+        verify(notificationRepository).markAsReadByEmailAndIdIn(EMAIL, List.of(1L, 2L));
     }
 
     @Test

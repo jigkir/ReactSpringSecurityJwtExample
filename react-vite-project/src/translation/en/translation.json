@@ -85,7 +85,9 @@
     "interviews": "Interviews",
     "interviewConvocationNotification": "New interview invitation",
     "interviewUpdatedNotification": "Interview invitation updated",
-    "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}"
+    "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}",
+    "sessionSelector": "Session",
+    "sessionsLoadError": "Unable to load the sessions."
   },
   "managerPage": {
     "pageInfo": "Manager home page",
@@ -170,7 +172,9 @@
     "unableToReachServerError": "Unable to reach the server. Check your connection and try again.",
     "accountCreationButton": "Create my account",
     "accountCreationButtonLoading": "Creating your account…",
-    "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces."
+    "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces.",
+    "registrationSession": "You are signing up for the {{session}} internship session.",
+    "registrationSessionError": "Unable to load the registration session. Refresh the page to try again."
   },
   "commonFields": {
     "firstName": "First name",
@@ -517,7 +521,9 @@
     "errorRequired": "Fill in all the required fields.",
     "errorDates": "The start date and the application deadline must be tomorrow or later.",
     "errorMeetingType": "Choose how the meeting will take place.",
-    "closeAria": "Close"
+    "closeAria": "Close",
+    "sessionRule": "Offers are posted for the {{session}} session: the start date must be between {{startDate}} and {{endDate}}.",
+    "errorStartDateOutsideSession": "The start date must be in the {{session}} session, between {{startDate}} and {{endDate}}."
   },
   "internshipCard": {
     "requiredSkills": "Required skills:",
@@ -620,10 +626,10 @@
     "rejectedBadge": "Request rejected by supervisor",
     "signOut": "Log out",
     "unknownRole": "User",
-    "pendingTitle": "{{role}} account expired",
+    "pendingTitle": "Access awaiting approval ({{role}})",
     "rejectedTitle": "Access request denied",
     "pendingTeacher": "Your teacher account is waiting for validation. We've notified the academic administration of your sign-in attempt. This page updates automatically once your account is verified.",
-    "pendingStudent": "Your student account access has expired. We've automatically notified your internship supervisor of your sign-in attempt. This page updates automatically once access is renewed.",
+    "pendingStudent": "Your internship supervisor must approve your student account access, because it expired or you signed up after December. We've notified them of your sign-in attempt. This page updates automatically once access is approved.",
     "rejectedTeacher": "Your teacher account validation request was reviewed and declined by the administration. Please contact your department head for help.",
     "rejectedStudent": "Your internship supervisor reviewed and declined your access request. Please contact your program coordinator for help."
   },

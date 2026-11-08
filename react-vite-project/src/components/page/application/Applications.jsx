@@ -21,7 +21,7 @@ import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {getApplicationCv, getApplications, getEmployerInternships} from '../../api/Api.jsx';
 import {base64ToBlobUrl} from '../../../utils/documents.js';
 import {matchesSearch, toNum} from '../../../utils/Sort.jsx';
-import {useNotifications} from '../../notification/NotificationsProvider.jsx';
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
 import {useSession} from "../../../utils/useSession.js";
 import {useNewApplications} from "../../../utils/useNewApplications.js";
@@ -32,7 +32,7 @@ const ALL = "ALL";
 const compareApplications = (isNew) => (a, b) =>
     Number(isNew(b)) - Number(isNew(a)) || (toNum(b.id) ?? 0) - (toNum(a.id) ?? 0);
 
-function Applications({user}) {
+function Applications({user, preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh} = useNotifications();
@@ -40,7 +40,6 @@ function Applications({user}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
     const {register, isNew: isNewApp, clear: clearNew, version: newVersion} = useNewApplications();
 
     const [applications, setApplications] = useState(null); // null = loading
@@ -50,11 +49,18 @@ function Applications({user}) {
     const [internshipFilter, setInternshipFilter] = useState(ALL);
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
+    const shownApplicationIds = useMemo(
+        () => (preview || !applications ? null : applications.map((application) => application.id)),
+        [preview, applications]);
+    useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_APPLICATION, shownApplicationIds);
+
     const controlClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
     const load = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
+        const sessionId = selectedSession.id;
         try {
             const [apps, offers] = await Promise.all([getApplications(sessionId), getEmployerInternships(sessionId)]);
             setApplications(Array.isArray(apps) ? apps : []);
@@ -63,7 +69,7 @@ function Applications({user}) {
         } catch {
             setLoadFailed(true);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     useEffect(() => {
         if (isLoggedIn) void load();

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.repository.application;
 
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -18,6 +19,8 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
     List<InternshipApplication> findByStudentAndInternship_Session(Student student, AcademicSession session);
 
     boolean existsByStudentAndInternship(Student student, Internship internship);
+
+    boolean existsByCv(CV cv);
 
     Optional<InternshipApplication> findByIdAndStudent_Credentials_Email(long id, String email);
 
