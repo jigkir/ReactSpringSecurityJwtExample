@@ -8,7 +8,7 @@
 # Étapes : 1 vérif docker | 2 attente backend | 3 users | 4 cvs |
 #           5 internships | 6 npm i | 7 approbation des internships |
 #           8 lettres et relevés | 9 candidatures | 10 session passée | 11 Léa expirée |
-#           12 convocations d'Emma et de Chloé | 13 offres en attente
+#           12 convocations d'Emma et de Chloé | 13 offres en attente | 14 Noah inscrit après décembre
 
 set -uo pipefail
 
@@ -29,6 +29,7 @@ STEPS=(
   11-expired-student
   12-interviews
   13-pending-internships
+  14-late-student
 )
 
 run_step() {
