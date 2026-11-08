@@ -41,7 +41,6 @@ const ManagerInternships = ({preview = false}) => {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -66,13 +65,14 @@ const ManagerInternships = ({preview = false}) => {
     }`;
 
     const load = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
         setLoadFailed(false);
         try {
-            setInternships(await getManagerInternships(sessionId));
+            setInternships(await getManagerInternships(selectedSession.id));
         } catch {
             setLoadFailed(true);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     useEffect(() => {
         load();

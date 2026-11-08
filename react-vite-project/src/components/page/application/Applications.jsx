@@ -40,7 +40,6 @@ function Applications({user}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
     const {register, isNew: isNewApp, clear: clearNew, version: newVersion} = useNewApplications();
 
     const [applications, setApplications] = useState(null); // null = loading
@@ -55,6 +54,8 @@ function Applications({user}) {
     }`;
 
     const load = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
+        const sessionId = selectedSession.id;
         try {
             const [apps, offers] = await Promise.all([getApplications(sessionId), getEmployerInternships(sessionId)]);
             setApplications(Array.isArray(apps) ? apps : []);
@@ -63,7 +64,7 @@ function Applications({user}) {
         } catch {
             setLoadFailed(true);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     useEffect(() => {
         if (isLoggedIn) void load();

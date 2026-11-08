@@ -33,7 +33,6 @@ function PostInternship({user, preview = false}) {
     const [applicationCount, setApplicationCount] = useState({})
     const formRef = useRef(null);
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -43,15 +42,16 @@ function PostInternship({user, preview = false}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const load = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
         try {
-            setInternships(await getEmployerInternships(sessionId));
+            setInternships(await getEmployerInternships(selectedSession.id));
             setError("");
         } catch {
             setError({key: "postInternship.loadError"});
         } finally {
             setLoading(false);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     const fetchApplicationCount = useCallback(async () => {
         try {

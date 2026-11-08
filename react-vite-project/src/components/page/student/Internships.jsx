@@ -25,7 +25,6 @@ function StudentInternships({preview = false}) {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
-    const sessionId = selectedSession?.id;
     const s = getPostInternshipClasses(dark);
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,8 +58,9 @@ function StudentInternships({preview = false}) {
     }, []);
 
     const loadInternships = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
         try {
-            const data = await getStudentInternships(sessionId);
+            const data = await getStudentInternships(selectedSession.id);
             setInternships(data
                 .filter(internship => internship.status === 'APPROVED')
                 .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)));
@@ -70,16 +70,17 @@ function StudentInternships({preview = false}) {
         } finally {
             setLoading(false);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     const loadAppliedInternships = useCallback(async () => {
+        if (!selectedSession) return; // sessions still loading
         try {
-            const data = await getStudentAppliedInternships(sessionId);
+            const data = await getStudentAppliedInternships(selectedSession.id);
             setAppliedInternships(data);
         } catch {
             setError(true);
         }
-    }, [sessionId]);
+    }, [selectedSession]);
 
     // Only visible, approved CVs can be used to apply
     const loadCvs = useCallback(async () => {

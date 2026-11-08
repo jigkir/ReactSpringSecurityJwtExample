@@ -32,8 +32,8 @@ vi.mock("../ApplyControls.jsx", () => ({
 
 const refreshNotifications = vi.fn();
 
-const CURRENT_SESSION = {id: 1, name: "A2026", current: true};
-const PAST_SESSION = {id: 4, name: "E2026", current: false};
+const CURRENT_SESSION = {id: 1, name: "H2027", target: true};
+const PAST_SESSION = {id: 2, name: "H2026", target: false};
 
 const internship1 = {
     id: 1,
@@ -382,6 +382,18 @@ describe("StudentInternships refreshes notifications", () => {
 });
 
 describe("StudentInternships follows the chosen session", () => {
+    it("shouldNotLoadOffersWhileSessionsAreLoading", async () => {
+        // Arrange
+        useSession.mockReturnValue({selectedSession: null});
+
+        // Act
+        renderStudentInternships();
+
+        // Assert
+        await waitFor(() => expect(getStudentCvs).toHaveBeenCalled());
+        expect(getStudentInternships).not.toHaveBeenCalled();
+        expect(getStudentAppliedInternships).not.toHaveBeenCalled();
+    });
 
     it("shouldLoadOffersAndApplicationsOfChosenSession", async () => {
         // Arrange

@@ -163,7 +163,7 @@ export async function rejectCv(cvId, comment) {
 // endregion
 
 // region Internship
-// Without a session, the backend returns the offers of the current session
+// Without a session, the backend returns the lists of the target session
 const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
 
 export async function getEmployerInternships(sessionId) {
