@@ -20,25 +20,25 @@ public class ContractService {
     }
 
     @Transactional
-    public void createContract(InternshipApplication internshipApplication) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
-        checkIfContractCanBeCreated(internshipApplication);
+    public void createContract(InternshipApplication application)
+            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
+        checkIfContractCanBeCreated(application);
 
-        Contract contract = new Contract(internshipApplication);
-        contractRepository.save(contract);
+        contractRepository.save(new Contract(application));
     }
 
+    private void checkIfContractCanBeCreated(InternshipApplication application)
+            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
 
-    private void checkIfContractCanBeCreated(InternshipApplication internshipApplication) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException {
-        if (contractRepository.existsByInternshipApplicationId(internshipApplication.getId())) {
-            throw new ContractAlreadyExistsException(internshipApplication.getId());
+        if (contractRepository.existsByInternshipApplicationId(application.getId())) {
+            throw new ContractAlreadyExistsException(application.getId());
         }
 
-        if (internshipApplication.getEmployerDecision() == EmployerDecision.REJECTED) {
-            throw new ApplicationRejectedException(internshipApplication.getId());
+        if (application.getEmployerDecision() != EmployerDecision.INTERNSHIP_OFFERED) {
+            throw new ApplicationRejectedException(application.getId());
         }
 
-        Student student = internshipApplication.getStudent();
-
+        Student student = application.getStudent();
         if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
             throw new StudentAlreadyEmployedException(student.getId());
         }
