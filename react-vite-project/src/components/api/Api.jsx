@@ -171,6 +171,11 @@ export async function getEmployerInternships(sessionId) {
     return handleResponse(response);
 }
 
+export async function getPendingInternships() {
+    const response = await fetcher("manager/internships/pending", {method: "GET"});
+    return handleResponse(response);
+}
+
 export async function createInternship(internship) {
     const response = await fetcher("employer/internship", {
         method: "POST",

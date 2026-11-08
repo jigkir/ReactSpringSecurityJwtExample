@@ -7,7 +7,7 @@
  *
  * <ManagerInternships />          full page (route /manager/internships)
  * <ManagerInternships preview />  Home page block: the latest offers still waiting for review,
- *                                 no header, no filters
+ *                                 of every session, no header, no filters
  *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live.
@@ -27,6 +27,7 @@ import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {
     approveInternship,
     getManagerInternships,
+    getPendingInternships,
     rejectInternship,
     updateManagerInternship
 } from '../../api/Api.jsx';
@@ -65,14 +66,18 @@ const ManagerInternships = ({preview = false}) => {
     }`;
 
     const load = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!preview && !selectedSession) return; // sessions still loading
         setLoadFailed(false);
         try {
-            setInternships(await getManagerInternships(selectedSession.id));
+            // Home preview: offers waiting for review of every session, so the manager never misses one
+            const loadedInternships = preview
+                ? await getPendingInternships()
+                : await getManagerInternships(selectedSession.id);
+            setInternships(loadedInternships);
         } catch {
             setLoadFailed(true);
         }
-    }, [selectedSession]);
+    }, [preview, selectedSession]);
 
     useEffect(() => {
         load();
