@@ -8,9 +8,7 @@ import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRejectedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -552,20 +550,39 @@ public class StudentService {
             throw new InterviewAlreadyAcceptedException(interviewId);
         }
         interview.setStudentDecision(StudentDecision.ACCEPTED);
+        interview.setRejectionMessage(null);
 
     }
 
-    public void rejectInterviewOffer(long interviewId, String rejectionMessage) throws InterviewAlreadyRejectedException, InterviewNotFoundException {
+    public void rejectInterviewOffer(long interviewId, String rejectionMessage) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException {
         Interview interview = interviewRepository.findById(interviewId).orElseThrow(() -> new InterviewNotFoundException(interviewId));
         if(interview.getStudentDecision() == StudentDecision.REJECTED && rejectionMessage == interview.getMessage()) {
             throw new InterviewAlreadyRejectedException(interviewId);
         }
         interview.setStudentDecision(StudentDecision.REJECTED);
-        if(!rejectionMessage.isEmpty()) {
-            interview.setRejectionMessage(rejectionMessage);
+        if(rejectionMessage.isEmpty()) {
+            throw new InterviewInvalidMessageException("Interview with ID" +  interviewId + " requires a message to be rejected");
         }
+        interview.setRejectionMessage(rejectionMessage);
     }
 
-    public void rescheduleInterviewOffer(long interviewId, @Valid InterviewReschedulingDto rescheduling) {
+    public void rescheduleInterviewOffer(long interviewId, @Valid InterviewReschedulingDto rescheduling) throws InterviewNotFoundException, InterviewAlreadyRescheduledException, InterviewInvalidDateException {
+        Interview interview = interviewRepository.findById(interviewId).orElseThrow(() -> new InterviewNotFoundException(interviewId));
+        String rejectionMessage = rescheduling.comment();
+        LocalDateTime reschedulingTime = rescheduling.interviewDate();
+        if(interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED && rescheduling.comment() == interview.getMessage() && rescheduling.interviewDate() == interview.getInterviewDate()) {
+            throw new InterviewAlreadyRescheduledException(interviewId);
+        }
+        interview.setStudentDecision(StudentDecision.RESCHEDULE_REQUESTED);
+        if(rejectionMessage.isEmpty()) {
+            interview.setRejectionMessage(null);
+        }else{
+            interview.setRejectionMessage(rejectionMessage);
+        }
+
+        if(reschedulingTime == null || reschedulingTime.isBefore(LocalDateTime.now())) {
+            throw new InterviewInvalidDateException("Interview with ID " + interviewId + " requires a time in the future to be rescheduled");
+        }
+        interview.setInterviewDate(reschedulingTime);
     }
 }

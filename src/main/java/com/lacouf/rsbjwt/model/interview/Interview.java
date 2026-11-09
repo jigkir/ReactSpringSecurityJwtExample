@@ -34,6 +34,7 @@ public class Interview {
     @Column
     private String rejectionMessage;
 
+    @Setter
     @Column(nullable = false)
     private LocalDateTime interviewDate;
 

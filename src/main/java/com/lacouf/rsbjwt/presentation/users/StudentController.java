@@ -10,8 +10,7 @@ import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -232,13 +231,13 @@ public class StudentController {
     }
 
     @PutMapping("/interviews/{interviewId}/refuse")
-    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws UserNotFoundException {
+    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException {
         studentService.rejectInterviewOffer(interviewId, rejection.comment());
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/interviews/{interviewId}/reschedule")
-    public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws UserNotFoundException{
+    public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws InterviewAlreadyRescheduledException, InterviewNotFoundException, InterviewInvalidDateException {
         studentService.rescheduleInterviewOffer(interviewId, rescheduling);
         return ResponseEntity.noContent().build();
     }
