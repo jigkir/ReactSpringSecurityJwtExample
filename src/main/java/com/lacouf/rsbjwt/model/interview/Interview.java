@@ -25,9 +25,14 @@ public class Interview {
     @Column(nullable = false)
     private String message;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StudentDecision studentDecision;
+
+    @Setter
+    @Column
+    private String rejectionMessage;
 
     @Column(nullable = false)
     private LocalDateTime interviewDate;

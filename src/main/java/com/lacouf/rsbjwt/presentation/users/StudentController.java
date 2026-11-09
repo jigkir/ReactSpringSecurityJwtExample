@@ -10,11 +10,17 @@ import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRejectionDto;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -217,6 +223,24 @@ public class StudentController {
     public ResponseEntity<List<InterviewStudentResponseDTO>> getInterviews(Authentication authentication) throws UserNotFoundException {
         List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
+    }
+
+    @PutMapping("/interviews/{interviewId}/accept")
+    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws UserNotFoundException, InterviewNotFoundException, InterviewAlreadyAcceptedException {
+        studentService.acceptInterviewOffer(interviewId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/interviews/{interviewId}/refuse")
+    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws UserNotFoundException {
+        studentService.rejectInterviewOffer(interviewId, rejection.comment());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/interviews/{interviewId}/reschedule")
+    public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws UserNotFoundException{
+        studentService.rescheduleInterviewOffer(interviewId, rescheduling);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/applications/offers")

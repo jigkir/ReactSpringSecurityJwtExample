@@ -8,6 +8,9 @@ import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRejectedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -25,6 +28,8 @@ import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTrans
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -42,6 +47,8 @@ import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRejectionDto;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -52,6 +59,7 @@ import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponse
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -536,5 +544,28 @@ public class StudentService {
         return internshipRepository
                 .findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(internshipId, ReviewStatus.APPROVED, student.getDiscipline())
                 .orElseThrow(() -> new InternshipNotFoundException(internshipId));
+    }
+
+    public void acceptInterviewOffer(long interviewId) throws UserNotFoundException, InterviewNotFoundException, InterviewAlreadyAcceptedException {
+        Interview interview = interviewRepository.findById(interviewId).orElseThrow(() -> new InterviewNotFoundException(interviewId));
+        if(interview.getStudentDecision() == StudentDecision.ACCEPTED) {
+            throw new InterviewAlreadyAcceptedException(interviewId);
+        }
+        interview.setStudentDecision(StudentDecision.ACCEPTED);
+
+    }
+
+    public void rejectInterviewOffer(long interviewId, String rejectionMessage) throws InterviewAlreadyRejectedException, InterviewNotFoundException {
+        Interview interview = interviewRepository.findById(interviewId).orElseThrow(() -> new InterviewNotFoundException(interviewId));
+        if(interview.getStudentDecision() == StudentDecision.REJECTED && rejectionMessage == interview.getMessage()) {
+            throw new InterviewAlreadyRejectedException(interviewId);
+        }
+        interview.setStudentDecision(StudentDecision.REJECTED);
+        if(!rejectionMessage.isEmpty()) {
+            interview.setRejectionMessage(rejectionMessage);
+        }
+    }
+
+    public void rescheduleInterviewOffer(long interviewId, @Valid InterviewReschedulingDto rescheduling) {
     }
 }
