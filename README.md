@@ -56,14 +56,48 @@ vers la fin des 2 semaines.
 
 ### 1. Prise des tâches Jira
 
-À partir du prochain sprint, chaque membre ne s'assigne une tâche que s'il peut la terminer au plus tard 4 jours après l'avoir prise. Les tâches dont d'autres tâches dépendent passent en priorité. Si un membre voit qu'il ne pourra pas finir à temps, il le signale sur le canal de l'équipe et se désassigne sur Jira, pour qu'un coéquipier reprenne la tâche.
+À partir du prochain sprint, chaque membre ne s'assigne une tâche que s'il peut la terminer au plus tard 4 jours après
+l'avoir prise. Les tâches dont d'autres tâches dépendent passent en priorité. Si un membre voit qu'il ne pourra pas
+finir à temps, il le signale sur le canal de l'équipe et se désassigne sur Jira, pour qu'un coéquipier reprenne la
+tâche.
 
 ### 2. Communication
 
-À partir du prochain sprint, chaque membre répond à tout message de l'équipe qui le concerne dans les 24 h, en donnant son avis ou une réponse claire (accord, désaccord ou question), et non un simple « vu ».
+À partir du prochain sprint, chaque membre répond à tout message de l'équipe qui le concerne dans les 24 h, en donnant
+son avis ou une réponse claire (accord, désaccord ou question), et non un simple « vu ».
 
 # Sprint 4
 
 ## Scrum Master
 
 *Benjamin Liss*
+
+## Points d'actions SMART
+
+### 1.
+
+### 2.
+
+# Sprint 5
+
+## Scrum Master
+
+*Xavier Lavigne*
+
+## Points d'actions SMART
+
+### 1.
+
+### 2.
+
+# Sprint 6
+
+## Scrum Master
+
+*Daniel Khalil*
+
+## Points d'actions SMART
+
+### 1.
+
+### 2. 

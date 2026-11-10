@@ -188,6 +188,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                         <button onClick={toggleLang}
                                 className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
                                 aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
+                            <Icon name="language" size={16}/>
                             {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                         </button>
 
@@ -204,7 +205,9 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                         <div className="hidden xl:flex items-center gap-3 ml-2">
                             {isLoggedIn && (<div
                                 className={`flex items-center gap-2 text-sm whitespace-nowrap ${theme.greeting}`}>
-                                <span className="hidden xl:inline">{t("navbar.hello")}</span>
+                                <span className="hidden xl:inline-flex" role="img" aria-label={t("navbar.hello")}>
+                                    <Icon name="waving_hand" size={20}/>
+                                </span>
                                 <span className={`font-semibold ${theme.greetingName}`}>
                                         {user.firstName} {user.lastName}
                                     </span>
@@ -214,8 +217,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                         </span>)}
                             </div>)}
 
-                            {isLoggedIn ? (<NavLink to="/logout"
-                                                    className={linkClass}>{t("navbar.disconnect")}</NavLink>) : (<>
+                            {!isLoggedIn && (<>
                                 <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
                                     {t("navbar.login")}
                                 </Link>
@@ -260,16 +262,20 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                         className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
                                         {user.firstName} {user.lastName} ({formatRole(role)})
                                     </div>
-                                    <Link to="/logout"
-                                          className="block px-4 py-2 text-sm text-red-500 hover:bg-red-500/10">
-                                                <span className={"flex gap-2 items-center"}>
-                                                    <Icon name={"logout"} size={20}/>
-                                                    {t("navbar.disconnect")}
-                                                </span>
-                                    </Link>
                                 </>)}
                             </div>)}
                         </div>
+
+                        {/* Logout: icon visible on every screen size, text only on wide screens */}
+                        {isLoggedIn && (
+                            <Link to="/logout"
+                                  className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
+                                  aria-label={t("navbar.disconnect")}
+                                  title={t("navbar.disconnect")}>
+                                <Icon name="logout" size={16}/>
+                                <span className="hidden xl:inline">{t("navbar.disconnect")}</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
