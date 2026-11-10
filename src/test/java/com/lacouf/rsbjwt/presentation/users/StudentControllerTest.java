@@ -10,6 +10,7 @@ import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
+import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -18,6 +19,7 @@ import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -716,6 +719,206 @@ public class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    void shouldReturnNoContentWhenInterviewOfferIsAccepted() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/accept").principal(authentication))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).acceptInterviewOffer(STUDENT_EMAIL, 30L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAcceptingUnknownInterview() throws Exception {
+        // Arrange
+        doThrow(new InterviewNotFoundException(30L)).when(studentService).acceptInterviewOffer(STUDENT_EMAIL, 30L);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/accept").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenInterviewOfferIsAlreadyAccepted() throws Exception {
+        // Arrange
+        doThrow(new InterviewAlreadyAcceptedException(30L)).when(studentService).acceptInterviewOffer(STUDENT_EMAIL, 30L);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/accept").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+
+    @Test
+    void shouldReturnNoContentWhenInterviewOfferIsRefused() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/refuse").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"I am not available\"}"))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).rejectInterviewOffer(STUDENT_EMAIL, 30L, "I am not available");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRefusalCommentIsBlank() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/refuse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"   \"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(studentService);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRefusalBodyIsMissing() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/refuse")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(studentService);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRefusingUnknownInterview() throws Exception {
+        // Arrange
+        doThrow(new InterviewNotFoundException(30L)).when(studentService).rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks");
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/refuse").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"No thanks\"}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenInterviewOfferIsAlreadyRefused() throws Exception {
+        // Arrange
+        doThrow(new InterviewAlreadyRejectedException(30L)).when(studentService).rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks");
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/refuse").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"No thanks\"}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenServiceRejectsRefusalMessage() throws Exception {
+        // Arrange
+        doThrow(new InterviewInvalidMessageException("A message is required"))
+                .when(studentService).rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks");
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/refuse").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"No thanks\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("A message is required"));
+    }
+
+    @Test
+    void shouldReturnNoContentWhenInterviewOfferIsRescheduled() throws Exception {
+        // Arrange
+        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"Can we do later?\", \"interviewDate\": \"" + newDate + "\"}"))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
+    }
+
+    @Test
+    void shouldPassCommentAndDateToServiceWhenRescheduling() throws Exception {
+        // Arrange
+        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
+
+        // Act
+        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"comment\": \"Can we do later?\", \"interviewDate\": \"" + newDate + "\"}"));
+
+        // Assert: capture the DTO the controller built and inspect it
+        ArgumentCaptor<InterviewReschedulingDto> captor = ArgumentCaptor.forClass(InterviewReschedulingDto.class);
+        verify(studentService).rescheduleInterviewOffer(
+                eq(STUDENT_EMAIL),
+                eq(30L),
+                captor.capture());
+
+        assert "Can we do later?".equals(captor.getValue().comment());
+        assert newDate.equals(captor.getValue().interviewDate());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRescheduleDateIsMissing() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/reschedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"Later please\"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(studentService);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRescheduleDateIsInThePast() throws Exception {
+        // Arrange
+        LocalDateTime past = LocalDateTime.now().minusDays(1);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/reschedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\": \"Later please\", \"interviewDate\": \"" + past + "\"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(studentService);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenReschedulingUnknownInterview() throws Exception {
+        // Arrange
+        doThrow(new InterviewNotFoundException(30L))
+                .when(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenInterviewIsAlreadyRescheduled() throws Exception {
+        // Arrange
+        doThrow(new InterviewAlreadyRescheduledException(30L))
+                .when(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenServiceRejectsRescheduleDate() throws Exception {
+        // Arrange
+        doThrow(new InterviewInvalidDateException("Bad date"))
+                .when(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Bad date"));
     }
 
     // Internship Offer Tests

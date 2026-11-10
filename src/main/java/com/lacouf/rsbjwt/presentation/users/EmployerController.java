@@ -78,7 +78,6 @@ public class EmployerController {
     public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationCoverLetter(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
         return ResponseEntity.ok(employerService.getReceivedInternshipApplicationCoverLetter(applicationId, authentication.getName()));
     }
-
     @GetMapping("/applications/{applicationId}/transcript")
     public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationAcademicTranscript(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
         return ResponseEntity.ok(employerService.getReceivedInternshipApplicationAcademicTranscript(applicationId, authentication.getName()));

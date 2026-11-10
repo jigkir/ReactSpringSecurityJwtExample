@@ -36,6 +36,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRejectedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRescheduledException;
+import com.lacouf.rsbjwt.exception.interview.InterviewInvalidDateException;
+import com.lacouf.rsbjwt.exception.interview.InterviewInvalidMessageException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -226,19 +233,19 @@ public class StudentController {
 
     @PutMapping("/interviews/{interviewId}/accept")
     public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws UserNotFoundException, InterviewNotFoundException, InterviewAlreadyAcceptedException {
-        studentService.acceptInterviewOffer(interviewId);
+        studentService.acceptInterviewOffer(authentication.getName(), interviewId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/interviews/{interviewId}/refuse")
     public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException {
-        studentService.rejectInterviewOffer(interviewId, rejection.comment());
+        studentService.rejectInterviewOffer(authentication.getName(), interviewId, rejection.comment());
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/interviews/{interviewId}/reschedule")
     public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws InterviewAlreadyRescheduledException, InterviewNotFoundException, InterviewInvalidDateException {
-        studentService.rescheduleInterviewOffer(interviewId, rescheduling);
+        studentService.rescheduleInterviewOffer(authentication.getName(), interviewId, rescheduling);
         return ResponseEntity.noContent().build();
     }
 

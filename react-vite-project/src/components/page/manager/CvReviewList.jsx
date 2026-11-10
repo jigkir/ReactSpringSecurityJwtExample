@@ -33,7 +33,7 @@ import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 import {getSelectClass, SearchInput} from '../../../styles/FormControls.jsx';
 import DocumentListShell from '../../documents/DocumentListShell.jsx';
 import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
-import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from '../../api/Api.jsx';
+import {approveCv, getManagerCvFile, getPendingCvs, getPublicCvs, rejectCv} from '../../api/Api.jsx';
 import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {blobUrlFromFile, formatDate} from '../../../utils/documents.js';
@@ -56,13 +56,15 @@ function CvReviewList({dark, preview = false}) {
 
     const {selectedSession} = useSession();
 
-    const loadCvs = useCallback(
-        async () => (selectedSession ? getPublicCvs(selectedSession.id) : null),
-        [selectedSession],
-    );
+    const loadCvs = useCallback(async () => {
+        // Home preview: CVs waiting for review of every session, so the manager never misses one
+        if (preview) return getPendingCvs();
+        return selectedSession ? getPublicCvs(selectedSession.id) : null;
+    }, [preview, selectedSession]);
+
     const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(loadCvs);
     const filters = useCvFilters(docs);
-    
+
     const shownCvIds = useMemo(() => (preview || !docs ? null : docs.map((doc) => doc.id)), [preview, docs]);
     useCloseShownNotifications(TARGET_TYPE.CV, shownCvIds);
 

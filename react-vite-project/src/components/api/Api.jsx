@@ -146,6 +146,11 @@ export async function getPublicCvs(sessionId) {
     return handleResponse(response);
 }
 
+export async function getPendingCvs() {
+    const response = await fetcher("manager/cvs/pending", {method: "GET"});
+    return handleResponse(response);
+}
+
 // Returns {id, fileName, content (Base64)}
 export async function getManagerCvFile(cvId) {
     const response = await fetcher(`manager/cvs/${cvId}/file`, {method: "GET"});
