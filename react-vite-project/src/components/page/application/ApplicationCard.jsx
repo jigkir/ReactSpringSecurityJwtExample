@@ -28,11 +28,17 @@ function ApplicationCard({
                              onTogglePreview,
                              getUrl,
                              internshipTitle,
-                             onInterviewSent
+                             onInterviewSent,
+                             selected = false,
+                             onSelect,
+                             hiring = false
                          }) {
     const s = getApplicationCardClasses(dark);
     const {t} = useTranslation();
     const {student, cvFileName} = application;
+    const isHired = application.employerDecision === "INTERNSHIP_OFFERED";
+    const isRejected = application.employerDecision === "REJECTED";
+    const canHire = !isHired && !isRejected;
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCVBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
@@ -109,10 +115,27 @@ function ApplicationCard({
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
                         <div>
                             <div className="flex items-center gap-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selected}
+                                        onChange={() => onSelect(application.id)}
+                                        disabled={!canHire || hiring}
+                                        aria-label={t("viewApplication.selectStudent", {
+                                            name: `${student?.firstName} ${student?.lastName}`
+                                        })}
+                                        className="h-5 w-5 cursor-pointer disabled:cursor-not-allowed"
+                                    />
+                                </label>
                                 <h3 className={s.title}>
                                     {student?.firstName} {student?.lastName}
                                 </h3>
                                 {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
+                                {isHired && (
+                                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                        {t("viewApplication.hired")}
+                                    </span>
+                                )}
                             </div>
                             <p className={`${s.description} min-w-0 break-all`}>
                                 {student?.email}

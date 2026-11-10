@@ -575,7 +575,13 @@
     "new": "New",
     "loading": "Loading…",
     "empty": "No applications yet for this internship. Students will appear here once they apply.",
-    "backBtn": "Back to my offers"
+    "backBtn": "Back to my offers",
+    "selectedCount_one": "{{count}} student selected",
+    "selectedCount_other": "{{count}} students selected",
+    "hire": "Hire",
+    "hireSuccess": "The selected students have been successfully hired.",
+    "hired": "Hired",
+    "selectStudent": "Select {{name}}"
   },
   "dev": {
     "label": "Dev",

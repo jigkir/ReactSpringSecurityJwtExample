@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getApplicationCv, getApplications, getEmployerInternships} from "../../api/Api.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships, offerInternshipsToStudents} from "../../api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../../styles/Button.jsx";
 import {base64ToBlobUrl} from "../../../utils/documents.js";
@@ -19,6 +19,8 @@ function ViewApplications({user}) {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
     const [allowed, setAllowed] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [hiring, setHiring] = useState(false);
     const {dark} = useOutletContext();
     const Nid = parseInt(id, 10);
 
@@ -27,6 +29,41 @@ function ViewApplications({user}) {
 
     const {refresh} = useNotifications();
     const isLoggedIn = Boolean(user?.isLoggedIn);
+
+    const toggleSelection = (applicationId) => {
+        setSelectedIds((prev) =>
+            prev.includes(applicationId)
+                ? prev.filter((id) => id !== applicationId)
+                : [...prev, applicationId]
+        );
+    };
+
+    const [hireSuccess, setHireSuccess] = useState(false);
+    const [hireError, setHireError] = useState(null);
+
+    const handleHire = async () => {
+        if (selectedIds.length === 0 || hiring) return;
+
+        setHiring(true);
+        setHireSuccess(false);
+        setHireError(null);
+
+        try {
+            await offerInternshipsToStudents(selectedIds);
+            await loadApplications();
+
+            setSelectedIds([]);
+            setHireSuccess(true);
+        } catch (err) {
+            setHireError(err.i18n ?? {key: "error.server"});
+        } finally {
+            setHiring(false);
+        }
+    };
+
+    useEffect(() => {
+        setSelectedIds([]);
+    }, [Nid]);
 
     useEffect(() => {
         if (!isLoggedIn) return;
@@ -123,6 +160,35 @@ function ViewApplications({user}) {
             {/*This is the page for each individual thing*/}
             {/* Applications List */}
             <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
+                {hasItems && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <span className={dark ? "text-slate-300" : "text-gray-700"}>
+                        {t("viewApplication.selectedCount", {count: selectedIds.length})}
+                    </span>
+
+                        <Button
+                            tone="primary"
+                            dark={dark}
+                            disabled={selectedIds.length === 0 || hiring}
+                            onClick={handleHire}
+                            className="w-full sm:w-auto"
+                        >
+                            {t("viewApplication.hire")}
+                        </Button>
+                    </div>
+                )}
+
+                {hireSuccess && (
+                    <p role="status" className="text-green-600 dark:text-green-400">
+                        {t("viewApplication.hireSuccess")}
+                    </p>
+                )}
+
+                {hireError && (
+                    <p role="alert" className="text-red-500">
+                        {translateWarning(t, hireError)}
+                    </p>
+                )}
                 {hasItems ? (
                     applications.map((application) => {
                         const isPreviewOpen = openPreviewIds.includes(application.id);
@@ -137,6 +203,9 @@ function ViewApplications({user}) {
                                 onTogglePreview={() => togglePreview(application.id)}
                                 getUrl={getUrl}
                                 onInterviewSent={handleInterviewSent}
+                                selected={selectedIds.includes(application.id)}
+                                onSelect={toggleSelection}
+                                hiring={hiring}
                             />
                         );
                     })

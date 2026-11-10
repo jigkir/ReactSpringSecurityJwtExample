@@ -608,7 +608,13 @@
     "new": "Nouveau",
     "loading": "Chargement…",
     "empty": "Aucune candidature pour ce stage pour l'instant. Les étudiants apparaîtront ici dès qu'ils postuleront.",
-    "backBtn": "Retour à mes offres"
+    "backBtn": "Retour à mes offres",
+    "selectedCount_one": "{{count}} étudiant sélectionné",
+    "selectedCount_other": "{{count}} étudiants sélectionnés",
+    "hire": "Embaucher",
+    "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
+    "hired": "Embauché",
+    "selectStudent": "Sélectionner {{name}}"
   },
   "dev": {
     "label": "Dev",
