@@ -17,9 +17,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rsbjwt
+          POSTGRES_USER: rsbjwt
+          POSTGRES_PASSWORD: rsbjwt
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+
     strategy:
       matrix:
-        java-version: ['25']
+        java-version: [ '25' ]
 
     steps:
       - name: Checkout code
