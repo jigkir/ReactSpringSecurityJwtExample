@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
@@ -31,6 +32,7 @@ import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
@@ -383,32 +385,30 @@ public class StudentService {
     }
 
     @Transactional
-    public void acceptOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException, ApplicationRejectedException, ContractAlreadyExistsException, InternshipAlreadyOfferedException, StudentConsentNotPendingException {
+    public void acceptOffer(String email, long applicationId)
+            throws UserNotFoundException, InternshipApplicationNotFoundException, StudentAlreadyEmployedException,
+            ApplicationRejectedException, ContractAlreadyExistsException, StudentConsentNotPendingException, ApplicationNotOfferedException {
+
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)
                 .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
-
-        Student student = findByEmail(email);
-
-        if (student.getStudentInternshipStatus().equals(StudentInternshipStatus.EMPLOYED)) {
-            throw new StudentAlreadyEmployedException(student.getId());
-        }
-
-        if (!application.getEmployerDecision().equals(EmployerDecision.INTERNSHIP_OFFERED)) {
-            throw new InternshipAlreadyOfferedException(applicationId);
-        }
 
         if (!application.getStudentInternshipConsent().equals(StudentInternshipConsent.PENDING)) {
             throw new StudentConsentNotPendingException(applicationId);
         }
 
-        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
         contractService.createContract(application);
+
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
         applicationRepository.save(application);
+
+        Student student = findByEmail(email);
+        student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
+        studentRepository.save(student);
     }
 
     @Transactional
-    public void refuseOffer(String email, long applicationId) throws UserNotFoundException, InternshipNotFoundException, StudentConsentNotPendingException, InternshipAlreadyOfferedException {
+    public void refuseOffer(String email, long applicationId) throws InternshipNotFoundException, StudentConsentNotPendingException, InternshipAlreadyOfferedException {
         InternshipApplication application = applicationRepository
                 .findByIdAndStudent_Credentials_Email(applicationId, email)
                 .orElseThrow(() -> new InternshipNotFoundException(applicationId));

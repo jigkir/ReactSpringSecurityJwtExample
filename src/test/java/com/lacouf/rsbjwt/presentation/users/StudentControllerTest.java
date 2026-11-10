@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.StudentConsentNotPendingException;
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
 import com.lacouf.rsbjwt.exception.document.CorruptedFileException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileSizeException;
 import com.lacouf.rsbjwt.exception.document.InvalidFileTypeException;
@@ -32,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -917,5 +918,72 @@ public class StudentControllerTest {
                         .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Bad date"));
+    }
+
+    // Internship Offer Tests
+
+    @Test
+    void shouldGetOffersSuccessfully() throws Exception {
+        // Arrange
+        when(studentService.getOffers(STUDENT_EMAIL)).thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/student/applications/offers")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    void shouldAcceptOfferSuccessfully() throws Exception {
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/offers/20/accept")
+                        .principal(authentication))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).acceptOffer(STUDENT_EMAIL, 20L);
+    }
+
+    @Test
+    void shouldReturnConflictWhenAcceptingApplicationThatWasNeverOffered() throws Exception {
+        // Arrange
+        doThrow(new ApplicationNotOfferedException(20L))
+                .when(studentService).acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/offers/20/accept").principal(authentication))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAcceptingNonExistentOffer() throws Exception {
+        // Arrange
+        doThrow(new InternshipApplicationNotFoundException(20L))
+                .when(studentService).acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/offers/20/accept").principal(authentication))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldRefuseOfferSuccessfully() throws Exception {
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/offers/20/refuse")
+                        .principal(authentication))
+                .andExpect(status().isNoContent());
+
+        verify(studentService).refuseOffer(STUDENT_EMAIL, 20L);
+    }
+
+    @Test
+    void shouldReturnErrorWhenRefusingOfferAlreadyAnswered() throws Exception {
+        // Arrange
+        doThrow(new StudentConsentNotPendingException(20L))
+                .when(studentService).refuseOffer(STUDENT_EMAIL, 20L);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/student/applications/offers/20/refuse").principal(authentication))
+                .andExpect(status().is4xxClientError());
     }
 }
