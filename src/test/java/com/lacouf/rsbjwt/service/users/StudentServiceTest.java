@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
@@ -1472,7 +1473,6 @@ public class StudentServiceTest {
         dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
         InternshipApplication application = offeredApplication();
 
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
 
         // Act
@@ -1551,18 +1551,18 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldThrowInternshipNotFoundExceptionWhenRefusingUnknownOffer() {
+    void shouldThrowInternshipApplicationNotFoundExceptionExceptionWhenRefusingUnknownOffer() {
         // Arrange
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(InternshipNotFoundException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+        assertThrows(InternshipApplicationNotFoundException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
 
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
     @Test
-    void shouldThrowInternshipAlreadyOfferedExceptionWhenRefusingApplicationThatWasNeverOffered() {
+    void shouldThrowApplicationNotOfferedExceptionWhenRefusingApplicationThatWasNeverOffered() {
         // Arrange
         InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
         application.setId(20L);
@@ -1570,7 +1570,7 @@ public class StudentServiceTest {
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
 
         // Act + Assert
-        assertThrows(InternshipAlreadyOfferedException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+        assertThrows(ApplicationNotOfferedException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
 
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
