@@ -206,6 +206,20 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnPendingCvs() throws Exception {
+        // Arrange
+        when(managerService.getPendingCvs()).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/cvs/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
+
+        verify(managerService).getPendingCvs();
+    }
+
+    @Test
     void shouldReturnPendingInternships() throws Exception {
         // Arrange
         when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));

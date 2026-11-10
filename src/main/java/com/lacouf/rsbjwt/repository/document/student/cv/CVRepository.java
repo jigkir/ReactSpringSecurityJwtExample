@@ -21,6 +21,8 @@ public interface CVRepository extends DocumentRepository<CV> {
 
     List<CV> findByVisibilityAndSession(DocumentVisibility visibility, AcademicSession session);
 
+    List<CV> findByVisibilityAndStatus(DocumentVisibility visibility, ReviewStatus status);
+
     Optional<CV> findByIdAndVisibility(long id, DocumentVisibility visibility);
 
     List<CV> findByUser_Credentials_EmailAndStatusAndVisibility(String email, ReviewStatus status, DocumentVisibility visibility);
