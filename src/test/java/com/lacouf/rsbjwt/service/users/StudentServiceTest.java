@@ -1601,58 +1601,6 @@ public class StudentServiceTest {
         verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
-    // ---------- Helpers ----------
-
-    private CV approvedVisibleCv(long id) {
-        CV cv = new CV();
-        cv.setId(id);
-        cv.setStatus(ReviewStatus.APPROVED);
-        cv.setVisibility(DocumentVisibility.VISIBLE);
-        cv.setStudent(dummyStudent);
-        return cv;
-    }
-
-    private Student studentWithVisibleInternship() {
-        Student student = spy(dummyStudent);
-
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
-
-        return student;
-    }
-
-    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(bytes);
-        return HexFormat.of().formatHex(hashBytes);
-    }
-
-    private CoverLetter readableCoverLetter(long id) throws NoSuchAlgorithmException {
-        CoverLetter coverLetter = new CoverLetter(validPdfBytes, "lettre_de_recommandation.pdf", LocalDateTime.now());
-
-        coverLetter.setId(id);
-        coverLetter.setFileHash(calculateHash(validPdfBytes));
-
-        return coverLetter;
-    }
-
-    private AcademicTranscript readableAcademicTranscript(long id) throws NoSuchAlgorithmException {
-        AcademicTranscript academicTranscript = new AcademicTranscript(validPdfBytes, "releve_de_notes.pdf", LocalDateTime.now());
-
-        academicTranscript.setId(id);
-        academicTranscript.setFileHash(calculateHash(validPdfBytes));
-
-        return academicTranscript;
-    }
-
-    private InternshipApplication offeredApplication() {
-        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
-        application.setId(20L);
-        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
-        application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
-        return application;
-    }
-
     // ==========================================
     // Interview Offer Tests
     // ==========================================
@@ -1743,7 +1691,7 @@ public class StudentServiceTest {
     void shouldThrowInterviewNotFoundWhenRefusingUnknownInterview() {
 
         // Act + Assert
-        assertThrows(InterviewNotFoundException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,"No thanks"));
+        assertThrows(InterviewNotFoundException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks"));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -1759,7 +1707,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(interview));
 
         // Act + Assert
-        assertThrows(InterviewAlreadyRejectedException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,"I am busy"));
+        assertThrows(InterviewAlreadyRejectedException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I am busy"));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -1775,7 +1723,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(interview));
 
         // Act
-        studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,"I found another internship");
+        studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I found another internship");
 
         // Assert
         assert "I found another internship".equals(interview.getRejectionMessage());
@@ -1794,7 +1742,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(interview));
 
         // Act + Assert
-        assertThrows(InterviewInvalidMessageException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,blankMessage));
+        assertThrows(InterviewInvalidMessageException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, blankMessage));
 
         assert StudentDecision.PENDING.equals(interview.getStudentDecision());
         assert interview.getRejectionMessage() == null;
@@ -1922,5 +1870,67 @@ public class StudentServiceTest {
 
         // Assert
         assert secondDate.equals(interview.getInterviewDate());
+    }
+
+    // ---------- Helpers ----------
+
+    private CV approvedVisibleCv(long id) {
+        CV cv = new CV();
+        cv.setId(id);
+        cv.setStatus(ReviewStatus.APPROVED);
+        cv.setVisibility(DocumentVisibility.VISIBLE);
+        cv.setStudent(dummyStudent);
+        return cv;
+    }
+
+    private Student studentWithVisibleInternship() {
+        Student student = spy(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
+        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
+
+        return student;
+    }
+
+    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(bytes);
+        return HexFormat.of().formatHex(hashBytes);
+    }
+
+    private CoverLetter readableCoverLetter(long id) throws NoSuchAlgorithmException {
+        CoverLetter coverLetter = new CoverLetter(validPdfBytes, "lettre_de_recommandation.pdf", LocalDateTime.now());
+
+        coverLetter.setId(id);
+        coverLetter.setFileHash(calculateHash(validPdfBytes));
+
+        return coverLetter;
+    }
+
+    private AcademicTranscript readableAcademicTranscript(long id) throws NoSuchAlgorithmException {
+        AcademicTranscript academicTranscript = new AcademicTranscript(validPdfBytes, "releve_de_notes.pdf", LocalDateTime.now());
+
+        academicTranscript.setId(id);
+        academicTranscript.setFileHash(calculateHash(validPdfBytes));
+
+        return academicTranscript;
+    }
+
+    private InternshipApplication offeredApplication() {
+        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
+        application.setId(20L);
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+        application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
+        return application;
+    }
+
+    private Interview scheduledInterview() {
+        InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
+        application.setId(20L);
+
+        Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
+        interview.setId(30L);
+
+        return interview;
     }
 }
