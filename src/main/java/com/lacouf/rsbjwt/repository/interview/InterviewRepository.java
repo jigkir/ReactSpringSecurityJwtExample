@@ -17,4 +17,5 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     List<Interview> findByInternshipApplication_Internship(Internship internship);
     boolean existsByInternshipApplicationAndInterviewStatus(InternshipApplication application, InterviewStatus status);
     List<Interview> findByInternshipApplication_Student(Student student);
+    Optional<Interview> findByIdAndInternshipApplication_Student_Credentials_Email(Long id, String email);
 }
