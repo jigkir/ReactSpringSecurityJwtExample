@@ -11,18 +11,24 @@ import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 import {useNewApplications} from "../../../utils/useNewApplications.js";
 
+const canHireApplication = (application) => application.employerDecision !== "INTERNSHIP_OFFERED" && application.employerDecision !== "REJECTED";
+
 function ViewApplications({user}) {
     const {t} = useTranslation();
+    const {dark} = useOutletContext();
+    const {id} = useParams();
+    const Nid = parseInt(id, 10);
+
     const [applications, setApplications] = useState([]);
     const [internshipTitle, setInternshipTitle] = useState("");
-    const {id} = useParams();
     const [error, setError] = useState("");
+    const [listError, setListError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [allowed, setAllowed] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
     const [hiring, setHiring] = useState(false);
-    const {dark} = useOutletContext();
-    const Nid = parseInt(id, 10);
+    const [hireSuccessCount, setHireSuccessCount] = useState(0);
+    const [hireError, setHireError] = useState(null);
 
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
     const {register, isNew, clear: clearNew} = useNewApplications();
@@ -30,39 +36,11 @@ function ViewApplications({user}) {
     const {refresh} = useNotifications();
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
-    const toggleSelection = (applicationId) => {
-        setSelectedIds((prev) =>
-            prev.includes(applicationId)
-                ? prev.filter((id) => id !== applicationId)
-                : [...prev, applicationId]
-        );
-    };
-
-    const [hireSuccess, setHireSuccess] = useState(false);
-    const [hireError, setHireError] = useState(null);
-
-    const handleHire = async () => {
-        if (selectedIds.length === 0 || hiring) return;
-
-        setHiring(true);
-        setHireSuccess(false);
-        setHireError(null);
-
-        try {
-            await offerInternshipsToStudents(selectedIds);
-            await loadApplications();
-
-            setSelectedIds([]);
-            setHireSuccess(true);
-        } catch (err) {
-            setHireError(err.i18n ?? {key: "error.server"});
-        } finally {
-            setHiring(false);
-        }
-    };
-
+    // Reset selection when navigating to another internship
     useEffect(() => {
         setSelectedIds([]);
+        setHireSuccessCount(0);
+        setHireError(null);
     }, [Nid]);
 
     useEffect(() => {
@@ -72,10 +50,18 @@ function ViewApplications({user}) {
             return;
         }
 
+        let active = true;
+        setAllowed(null);
+        setError("");
+
         getEmployerInternships()
             .then((internshipsData) => {
+                if (!active) return;
+
                 const list = Array.isArray(internshipsData) ? internshipsData : [];
+
                 const matchedInternship = list.find((item) => item.id === Nid);
+
                 if (matchedInternship?.status === "APPROVED") {
                     setInternshipTitle(matchedInternship.title ?? "");
                     setAllowed(true);
@@ -83,34 +69,110 @@ function ViewApplications({user}) {
                     setAllowed(false);
                 }
             })
-            .catch(() => setError({key: "postInternship.loadError"}));
+            .catch(() => {
+                if (active) {
+                    setError({key: "postInternship.loadError"});
+                }
+            });
+
+        return () => {
+            active = false;
+        };
     }, [isLoggedIn, Nid]);
+
+    // Fetch and update the applications list
+    const fetchApplications = useCallback(async () => {
+        const list = sortApplication(await getApplications(), Nid);
+
+        register(list);
+        setApplications(list);
+
+        // Remove selections that are no longer eligible
+        setSelectedIds((prev) => prev.filter((applicationId) => list.some((application) => application.id === applicationId && canHireApplication(application))));
+
+        return list;
+    }, [Nid, register]);
 
     const loadApplications = useCallback(async () => {
         try {
-            const list = sortApplication(await getApplications(), Nid);
-            register(list);
-            setApplications(list);
-            setError("");
+            await fetchApplications();
+            setListError(null);
         } catch {
-            setError({key: "viewApplication.loadError"});
+            setListError({key: "viewApplication.loadError"});
         } finally {
             setLoading(false);
         }
-    }, [Nid, register]);
+    }, [fetchApplications]);
 
     useEffect(() => {
         if (isLoggedIn && allowed) void loadApplications();
     }, [isLoggedIn, allowed, loadApplications]);
 
-    usePolling(loadApplications, isLoggedIn && allowed === true);
+    // Pause polling while hiring
+    usePolling(loadApplications, isLoggedIn && allowed === true && !hiring);
+
+    // Eligible applications for hiring
+    const eligibleApplications = applications.filter(canHireApplication);
+    const eligibleIds = eligibleApplications.map((application) => application.id);
+
+    const allSelected = eligibleIds.length > 0 && eligibleIds.every((applicationId) => selectedIds.includes(applicationId));
+
+    const toggleSelection = (applicationId) => {
+        if (hiring || !eligibleIds.includes(applicationId)) return;
+
+        setSelectedIds((prev) => prev.includes(applicationId) ? prev.filter((id) => id !== applicationId) : [...prev, applicationId]);
+
+        setHireSuccessCount(0);
+        setHireError(null);
+    };
+
+    const toggleSelectAll = () => {
+        if (hiring) return;
+
+        setSelectedIds(allSelected ? [] : eligibleIds);
+        setHireSuccessCount(0);
+        setHireError(null);
+    };
+
+    const handleHire = async () => {
+        if (hiring) return;
+
+        const ids = selectedIds.filter((applicationId) => eligibleIds.includes(applicationId));
+
+        if (ids.length === 0) return;
+
+        setHiring(true);
+        setHireSuccessCount(0);
+        setHireError(null);
+
+        try {
+            await offerInternshipsToStudents(ids);
+
+            // Update the displayed status immediately after success
+            setApplications((prev) => prev.map((application) => ids.includes(application.id) ? {
+                ...application, employerDecision: "INTERNSHIP_OFFERED"
+            } : application));
+
+            setSelectedIds([]);
+            setHireSuccessCount(ids.length);
+
+            // Synchronize with the backend
+            try {
+                await fetchApplications();
+                setListError(null);
+            } catch {
+                // Hiring succeeded, but refreshing failed
+                setListError({key: "viewApplication.refreshError"});
+            }
+        } catch (err) {
+            setHireError(err.i18n ?? {key: "error.server"});
+        } finally {
+            setHiring(false);
+        }
+    };
 
     const togglePreview = (appId) => {
-        setOpenPreviewIds((prev) =>
-            prev.includes(appId)
-                ? prev.filter((item) => item !== appId)
-                : [...prev, appId]
-        );
+        setOpenPreviewIds((prev) => prev.includes(appId) ? prev.filter((item) => item !== appId) : [...prev, appId]);
     };
 
     // Opening the CV marks the application as read on the server (and closes its notification),
@@ -124,47 +186,73 @@ function ViewApplications({user}) {
         return base64ToBlobUrl(cv.content);
     }, [refresh]);
 
-    // Interview invitation sent: the badge goes away right now
+    // Interview invitation sent: remove the New badge
     const handleInterviewSent = useCallback((appId) => {
         clearNew(appId);
         void refresh();
     }, [clearNew, refresh]);
 
-    if (allowed === false) return <Navigate to="/internships" replace/>;
+    if (allowed === false) {
+        return <Navigate to="/internships" replace/>;
+    }
 
     if (error) {
-        return (
-            <div className="p-6 text-center text-red-500" role="alert">
+        return (<div className="p-6 text-center text-red-500" role="alert">
                 {translateWarning(t, error)}
-            </div>
-        );
+            </div>);
     }
 
     if (loading || allowed === null) {
-        return <div className="p-6 text-center" aria-busy="true">{t("viewApplication.loading")}</div>;
+        return (<div className="p-6 text-center" aria-busy="true">
+                {t("viewApplication.loading")}
+            </div>);
     }
 
     const hasItems = applications.length > 0;
 
-    return (
-        <div className="p-6 flex flex-col gap-6">
-            {/* Header Section */}
+    return (<div className="p-4 sm:p-6 flex flex-col gap-6">
+            {/* Header */}
             <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
-                <Button as={NavLink} to="/internships" tone="primary" dark={dark} icon="arrow_back" className="w-fit">
+                <Button
+                    as={NavLink}
+                    to="/internships"
+                    tone="primary"
+                    dark={dark}
+                    icon="arrow_back"
+                    className="w-fit"
+                >
                     {t("viewApplication.backBtn")}
                 </Button>
-                <h1 className={`text-4xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
+
+                <h1 className={`text-2xl sm:text-4xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
                     {internshipTitle}
                 </h1>
             </div>
-            {/*This is the page for each individual thing*/}
-            {/* Applications List */}
+
+            {/* Applications */}
             <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
-                {hasItems && (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <span className={dark ? "text-slate-300" : "text-gray-700"}>
-                        {t("viewApplication.selectedCount", {count: selectedIds.length})}
-                    </span>
+                {hasItems && (<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+
+                            <label
+                                className={`flex items-center gap-2 cursor-pointer ${dark ? "text-slate-300" : "text-gray-700"}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={allSelected}
+                                    onChange={toggleSelectAll}
+                                    disabled={hiring || eligibleIds.length === 0}
+                                    className="h-5 w-5 accent-blue-600 disabled:cursor-not-allowed"
+                                />
+                                {t("viewApplication.selectAll")}
+                            </label>
+
+                            <span className={`text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
+                                {t("viewApplication.selectedCount", {
+                                    count: selectedIds.length
+                                })}
+                            </span>
+                        </div>
 
                         <Button
                             tone="primary"
@@ -173,28 +261,34 @@ function ViewApplications({user}) {
                             onClick={handleHire}
                             className="w-full sm:w-auto"
                         >
-                            {t("viewApplication.hire")}
+                            {hiring ? t("viewApplication.hiring") : t("viewApplication.hire")}
                         </Button>
-                    </div>
-                )}
+                    </div>)}
 
-                {hireSuccess && (
-                    <p role="status" className="text-green-600 dark:text-green-400">
-                        {t("viewApplication.hireSuccess")}
-                    </p>
-                )}
+                {/* Confirmation */}
+                {hireSuccessCount > 0 && (<p
+                        role="status"
+                        className="text-green-600 dark:text-green-400"
+                    >
+                        {t("viewApplication.hireSuccess", {
+                            count: hireSuccessCount
+                        })}
+                    </p>)}
 
-                {hireError && (
-                    <p role="alert" className="text-red-500">
+                {hireError && (<p role="alert" className="text-red-500">
                         {translateWarning(t, hireError)}
-                    </p>
-                )}
-                {hasItems ? (
-                    applications.map((application) => {
+                    </p>)}
+
+                {/* Loading/refresh error */}
+                {listError && (<p role="alert" className="text-red-500">
+                        {translateWarning(t, listError)}
+                    </p>)}
+
+                {/* Application cards */}
+                {hasItems ? (applications.map((application) => {
                         const isPreviewOpen = openPreviewIds.includes(application.id);
 
-                        return (
-                            <ApplicationCard
+                        return (<ApplicationCard
                                 key={application.id}
                                 application={application}
                                 isNew={isNew(application)}
@@ -206,17 +300,13 @@ function ViewApplications({user}) {
                                 selected={selectedIds.includes(application.id)}
                                 onSelect={toggleSelection}
                                 hiring={hiring}
-                            />
-                        );
-                    })
-                ) : (
+                            />);
+                    })) : !listError ? (
                     <p className={`text-sm py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`}>
                         {t("viewApplication.empty")}
-                    </p>
-                )}
+                    </p>) : null}
             </div>
-        </div>
-    );
+        </div>);
 }
 
 export default ViewApplications;

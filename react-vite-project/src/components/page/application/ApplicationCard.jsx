@@ -32,8 +32,7 @@ function ApplicationCard({
                              onInterviewSent,
                              selected = false,
                              onSelect,
-                             hiring = false
-                             onInterviewSent,
+                             hiring = false,
                              showCvFileName = true
                          }) {
     const s = getApplicationCardClasses(dark);
@@ -127,7 +126,7 @@ function ApplicationCard({
                                         aria-label={t("viewApplication.selectStudent", {
                                             name: `${student?.firstName} ${student?.lastName}`
                                         })}
-                                        className="h-5 w-5 cursor-pointer disabled:cursor-not-allowed"
+                                        className="h-5 w-5 accent-blue-600 cursor-pointer disabled:cursor-not-allowed"
                                     />
                                 </label>
                                 <h3 className={s.title}>
