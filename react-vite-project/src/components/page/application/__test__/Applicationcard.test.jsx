@@ -128,16 +128,57 @@ describe('ApplicationCard Component', () => {
         expect(screen.getByText('View CV').closest('button')).toHaveAttribute('aria-expanded', 'false');
     });
 
-    it('opens one document preview at a time', async () => {
-        renderCard({application: {
-            ...mockApplication,
-            coverLetterId: 5, coverLetterFileName: 'letter.pdf',
-            transcriptId: 6, transcriptFileName: 'transcript.pdf',
-        }});
+    it('opens the cover letter and the transcript previews at the same time', async () => {
+        renderCard({
+            application: {
+                ...mockApplication,
+                coverLetterId: 5, coverLetterFileName: 'letter.pdf',
+                transcriptId: 6, transcriptFileName: 'transcript.pdf',
+            }
+        });
         await waitForInterviewLoad();
 
         fireEvent.click(screen.getByText('Cover letter'));
         fireEvent.click(screen.getByText('Transcript'));
+
+        const previews = screen.getAllByTestId('pdf-preview');
+        expect(previews).toHaveLength(2);
+        expect(previews[0]).toHaveTextContent('letter.pdf');
+        expect(previews[1]).toHaveTextContent('transcript.pdf');
+        expect(screen.getByText('Cover letter').closest('button')).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByText('Transcript').closest('button')).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('opens the cover letter, the transcript and the CV previews all together', async () => {
+        renderCard({
+            isPreviewOpen: true,
+            application: {
+                ...mockApplication,
+                coverLetterId: 5, coverLetterFileName: 'letter.pdf',
+                transcriptId: 6, transcriptFileName: 'transcript.pdf',
+            }
+        });
+        await waitForInterviewLoad();
+
+        fireEvent.click(screen.getByText('Cover letter'));
+        fireEvent.click(screen.getByText('Transcript'));
+
+        expect(screen.getAllByTestId('pdf-preview')).toHaveLength(3);
+    });
+
+    it('closes only the preview whose button is clicked again', async () => {
+        renderCard({
+            application: {
+                ...mockApplication,
+                coverLetterId: 5, coverLetterFileName: 'letter.pdf',
+                transcriptId: 6, transcriptFileName: 'transcript.pdf',
+            }
+        });
+        await waitForInterviewLoad();
+
+        fireEvent.click(screen.getByText('Cover letter'));
+        fireEvent.click(screen.getByText('Transcript'));
+        fireEvent.click(screen.getByText('Cover letter'));
 
         expect(screen.getAllByTestId('pdf-preview')).toHaveLength(1);
         expect(screen.getByTestId('pdf-preview')).toHaveTextContent('transcript.pdf');

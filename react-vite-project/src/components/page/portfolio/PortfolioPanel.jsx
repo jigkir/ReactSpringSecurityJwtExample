@@ -2,6 +2,7 @@
  * PortfolioPanel.jsx — The portfolio view (tabs + document lists + upload panel) without the
  * page title, so it can be embedded (e.g. inside an internship card when applying).
  * Tabs: All | CV | Cover letters | Transcripts, all rendered by <DocumentList />.
+ * The upload panel preselects the type of the tab being viewed.
  *
  * Props
  *   dark         boolean
@@ -41,7 +42,7 @@ function PortfolioPanel({dark, selection = null, uploadTypes = DOC_TYPE_KEYS, on
     return (
         <div className="flex w-full flex-col gap-4">
             {uploadOpen && (
-                <PortfolioUpload dark={dark} maxBytes={maxBytes} types={uploadTypes}
+                <PortfolioUpload dark={dark} maxBytes={maxBytes} types={uploadTypes} defaultType={tab}
                                  onUploaded={() => {
                                      reloadLists();
                                      onUploaded?.();

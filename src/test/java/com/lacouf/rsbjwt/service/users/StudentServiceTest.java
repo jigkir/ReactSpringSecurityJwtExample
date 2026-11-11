@@ -1,9 +1,8 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
-import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
@@ -13,7 +12,9 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -57,6 +58,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRejectedException;
+import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRescheduledException;
+import com.lacouf.rsbjwt.exception.interview.InterviewInvalidDateException;
+import com.lacouf.rsbjwt.exception.interview.InterviewInvalidMessageException;
+import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
+import com.lacouf.rsbjwt.model.interview.StudentDecision;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1443,6 +1455,423 @@ public class StudentServiceTest {
         assert "SCHEDULED".equals(first.interviewStatus());
     }
 
+
+    // ==========================================
+    // Internship Offer Tests
+    // ==========================================
+
+    @Test
+    void shouldGetOffersWhereEmployerOfferedInternship() throws Exception {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication application = offeredApplication();
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(application));
+
+        // Act
+        List<InternshipApplicationResponseDto> offers = studentService.getOffers(STUDENT_EMAIL);
+
+        // Assert
+        assert offers.size() == 1;
+        assert offers.getFirst().internshipId() == 10L;
+    }
+
+    @Test
+    void shouldAcceptOfferSuccessfully() throws Exception {
+        // Arrange
+        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
+        InternshipApplication application = offeredApplication();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act
+        studentService.acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        verify(contractService).createContract(application);
+        verify(applicationRepository).save(application);
+        verify(studentRepository).save(dummyStudent);
+
+        assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        assert StudentInternshipStatus.EMPLOYED.equals(dummyStudent.getStudentInternshipStatus());
+    }
+
+    @Test
+    void shouldThrowInternshipApplicationNotFoundExceptionWhenAcceptingUnknownOffer() {
+        // Arrange
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class, () -> studentService.acceptOffer(STUDENT_EMAIL, 20L));
+
+        verifyNoInteractions(contractService);
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    void shouldThrowStudentConsentNotPendingExceptionWhenAcceptingOfferAlreadyAnswered() {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(StudentConsentNotPendingException.class, () -> studentService.acceptOffer(STUDENT_EMAIL, 20L));
+
+        verifyNoInteractions(contractService);
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldNotChangeConsentOrEmploymentStatusWhenContractCreationFails() throws Exception {
+        // Arrange
+        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
+        InternshipApplication application = offeredApplication();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+        doThrow(new StudentAlreadyEmployedException(dummyStudent.getId())).when(contractService).createContract(application);
+
+        // Act + Assert
+        assertThrows(StudentAlreadyEmployedException.class, () -> studentService.acceptOffer(STUDENT_EMAIL, 20L));
+
+        assert StudentInternshipConsent.PENDING.equals(application.getStudentInternshipConsent());
+        assert StudentInternshipStatus.NOT_EMPLOYED.equals(dummyStudent.getStudentInternshipStatus());
+
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    void shouldRefuseOfferSuccessfully() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act
+        studentService.refuseOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert StudentInternshipConsent.REJECTED.equals(application.getStudentInternshipConsent());
+
+        verify(applicationRepository).save(application);
+        verifyNoInteractions(contractService);
+    }
+
+    @Test
+    void shouldThrowInternshipApplicationNotFoundExceptionExceptionWhenRefusingUnknownOffer() {
+        // Arrange
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldThrowApplicationNotOfferedExceptionWhenRefusingApplicationThatWasNeverOffered() {
+        // Arrange
+        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
+        application.setId(20L);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(ApplicationNotOfferedException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldThrowStudentConsentNotPendingExceptionWhenRefusingOfferAlreadyAnswered() {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(StudentConsentNotPendingException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+
+        assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    // ==========================================
+    // Interview Offer Tests
+    // ==========================================
+
+    // ---------- Accept ----------
+
+    @Test
+    void shouldAcceptInterviewOffer() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act
+        studentService.acceptInterviewOffer(STUDENT_EMAIL, 30L);
+
+        // Assert
+        assert StudentDecision.ACCEPTED.equals(interview.getStudentDecision());
+        assert interview.getRejectionMessage() == null;
+
+        verify(interviewRepository).save(interview);
+    }
+
+    @Test
+    void shouldClearRejectionMessageWhenAcceptingPreviouslyRefusedOffer() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+        interview.setStudentDecision(StudentDecision.REJECTED);
+        interview.setRejectionMessage("I am busy");
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act
+        studentService.acceptInterviewOffer(STUDENT_EMAIL, 30L);
+
+        // Assert
+        assert StudentDecision.ACCEPTED.equals(interview.getStudentDecision());
+        assert interview.getRejectionMessage() == null;
+    }
+
+    @Test
+    void shouldThrowInterviewNotFoundWhenAcceptingUnknownInterview() {
+
+        // Act + Assert
+        assertThrows(InterviewNotFoundException.class, () -> studentService.acceptInterviewOffer(STUDENT_EMAIL, 30L));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowAlreadyAcceptedWhenOfferWasAlreadyAccepted() {
+        // Arrange
+        Interview interview = scheduledInterview();
+        interview.setStudentDecision(StudentDecision.ACCEPTED);
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewAlreadyAcceptedException.class, () -> studentService.acceptInterviewOffer(STUDENT_EMAIL, 30L));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    // ---------- Refuse ----------
+
+    @Test
+    void shouldRefuseInterviewOfferWithMessage() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act
+        studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I am not available");
+
+        // Assert
+        assert StudentDecision.REJECTED.equals(interview.getStudentDecision());
+        assert "I am not available".equals(interview.getRejectionMessage());
+
+        verify(interviewRepository).save(interview);
+    }
+
+    @Test
+    void shouldThrowInterviewNotFoundWhenRefusingUnknownInterview() {
+
+        // Act + Assert
+        assertThrows(InterviewNotFoundException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks"));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowAlreadyRejectedWhenSameRefusalIsSentAgain() {
+        // Arrange
+        Interview interview = scheduledInterview();
+        interview.setStudentDecision(StudentDecision.REJECTED);
+        interview.setRejectionMessage("I am busy");
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewAlreadyRejectedException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I am busy"));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldAllowRefusingAgainWithDifferentMessage() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+        interview.setStudentDecision(StudentDecision.REJECTED);
+        interview.setRejectionMessage("I am busy");
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act
+        studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I found another internship");
+
+        // Assert
+        assert "I found another internship".equals(interview.getRejectionMessage());
+
+        verify(interviewRepository).save(interview);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = "   ")
+    void shouldThrowInvalidMessageAndKeepInterviewUntouchedWhenRefusalMessageIsBlank(String blankMessage) {
+        // Arrange
+        Interview interview = scheduledInterview();
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewInvalidMessageException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, blankMessage));
+
+        assert StudentDecision.PENDING.equals(interview.getStudentDecision());
+        assert interview.getRejectionMessage() == null;
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    // ---------- Reschedule ----------
+
+    @Test
+    void shouldRequestRescheduleOfInterviewOffer() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act
+        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Can we do it later?", newDate));
+
+        // Assert
+        assert StudentDecision.RESCHEDULE_REQUESTED.equals(interview.getStudentDecision());
+        assert "Can we do it later?".equals(interview.getRejectionMessage());
+        assert newDate.equals(interview.getInterviewDate());
+
+        verify(interviewRepository).save(interview);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void shouldStoreNoCommentWhenRescheduleCommentIsMissing(String missingComment) throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act
+        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto(missingComment, LocalDateTime.now().plusDays(10)));
+
+        // Assert
+        assert StudentDecision.RESCHEDULE_REQUESTED.equals(interview.getStudentDecision());
+        assert interview.getRejectionMessage() == null;
+    }
+
+    @Test
+    void shouldThrowInterviewNotFoundWhenReschedulingUnknownInterview() {
+
+        // Act + Assert
+        assertThrows(InterviewNotFoundException.class,
+                () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later", LocalDateTime.now().plusDays(10))));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowInvalidDateAndKeepInterviewUntouchedWhenRescheduleDateIsInThePast() {
+        // Arrange
+        Interview interview = scheduledInterview();
+        LocalDateTime originalDate = interview.getInterviewDate();
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewInvalidDateException.class,
+                () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later", LocalDateTime.now().minusDays(1))));
+
+        assert StudentDecision.PENDING.equals(interview.getStudentDecision());
+        assert originalDate.equals(interview.getInterviewDate());
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowInvalidDateAndKeepInterviewUntouchedWhenRescheduleDateIsMissing() {
+        // Arrange
+        Interview interview = scheduledInterview();
+        LocalDateTime originalDate = interview.getInterviewDate();
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InterviewInvalidDateException.class,
+                () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later", null)));
+
+        assert StudentDecision.PENDING.equals(interview.getStudentDecision());
+        assert originalDate.equals(interview.getInterviewDate());
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+    }
+
+    @Test
+    void shouldThrowAlreadyRescheduledWhenSameRequestIsSentAgain() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+        InterviewReschedulingDto request = new InterviewReschedulingDto("Later please", LocalDateTime.now().plusDays(10));
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, request);
+
+        // Act + Assert
+        assertThrows(InterviewAlreadyRescheduledException.class, () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, request));
+
+        verify(interviewRepository, times(1)).save(interview);
+    }
+
+    @Test
+    void shouldAllowReschedulingAgainWithDifferentDate() throws Exception {
+        // Arrange
+        Interview interview = scheduledInterview();
+        LocalDateTime secondDate = LocalDateTime.now().plusDays(20);
+
+        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later please", LocalDateTime.now().plusDays(10)));
+
+        // Act
+        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later please", secondDate));
+
+        // Assert
+        assert secondDate.equals(interview.getInterviewDate());
+    }
+
     // ---------- Helpers ----------
 
     private CV approvedVisibleCv(long id) {
@@ -1485,5 +1914,23 @@ public class StudentServiceTest {
         academicTranscript.setFileHash(calculateHash(validPdfBytes));
 
         return academicTranscript;
+    }
+
+    private InternshipApplication offeredApplication() {
+        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
+        application.setId(20L);
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+        application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
+        return application;
+    }
+
+    private Interview scheduledInterview() {
+        InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
+        application.setId(20L);
+
+        Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
+        interview.setId(30L);
+
+        return interview;
     }
 }

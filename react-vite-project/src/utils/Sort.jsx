@@ -12,8 +12,9 @@
  *
  * Sort options are [value, translationKey] pairs so components just map over them.
  *
- * Display order everywhere (CVs and internships, Home included):
- *   REJECTED → PENDING → APPROVED
+ * Display order
+ *   CVs:         REJECTED → PENDING → APPROVED
+ *   Internships: PENDING → APPROVED → REJECTED   (pending offers first, rejected ones never first)
  * The status always comes first; the chosen sort only orders items inside the same status.
  *
  * The student internships page then regroups its list as NEW → APPLIED → OLD
@@ -47,14 +48,19 @@ export const compareText = (field) => (a, b) => (a[field] ?? "").localeCompare(b
 
 export const reverse = (cmp) => (a, b) => cmp(b, a);
 
-// Display order of statuses: rejected first, then pending, then approved
+// Display order of statuses for CVs: rejected first, then pending, then approved
 const STATUS_RANK = {REJECTED: 0, PENDING: 1, APPROVED: 2};
 
+// Display order of statuses for internship offers: pending first, then approved, rejected last
+const INTERNSHIP_STATUS_RANK = {PENDING: 0, APPROVED: 1, REJECTED: 2};
+
 // A missing or unknown status counts as PENDING
-export const statusRank = (item) => STATUS_RANK[item.status ?? "PENDING"] ?? STATUS_RANK.PENDING;
+export const statusRank = (item, ranks = STATUS_RANK) =>
+    ranks[item.status ?? "PENDING"] ?? ranks.PENDING;
 
 // Wraps a comparator so the status order always wins; `cmp` only orders items of the same status
-export const byStatusThen = (cmp) => (a, b) => statusRank(a) - statusRank(b) || cmp(a, b);
+export const byStatusThen = (cmp, ranks = STATUS_RANK) => (a, b) =>
+    statusRank(a, ranks) - statusRank(b, ranks) || cmp(a, b);
 
 // True if the lower-cased search text appears in any of the given values
 export const matchesSearch = (values, search) => {
@@ -112,9 +118,10 @@ export function filterInternships(list, {
     });
 }
 
-/** Status order first (REJECTED → PENDING → APPROVED), then the chosen sort. */
+/** Status order first (PENDING → APPROVED → REJECTED), then the chosen sort. */
 export function sortInternships(list, sort = "NEWEST") {
-    return [...list].sort(byStatusThen(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST));
+    return [...list].sort(
+        byStatusThen(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST, INTERNSHIP_STATUS_RANK));
 }
 
 export function applyInternshipFilters(list, {

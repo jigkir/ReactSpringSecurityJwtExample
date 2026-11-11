@@ -2,10 +2,26 @@
 
 clear
 
+# ==========================================
+# SINGLE SOURCE OF TRUTH FOR SPRINT DATES
+# Modify dates here, and they update everywhere!
+# ==========================================
+get_sprint_dates() {
+    local sprint="$1"
+    case "$sprint" in
+        S1) echo "09-09-2026 23-09-2026";;
+        S2) echo "23-09-2026 07-10-2026";;
+        S3) echo "08-10-2026 21-10-2026";;
+        S4) echo "22-10-2026 05-11-2026";;
+        S5) echo "05-11-2026 18-11-2026";;
+        S6) echo "18-11-2026 02-12-2026";;
+    esac
+}
+
 # Usage options:
 # - S4 ./eq3hours.sh or s4 ./eq3hours.sh    -> Supports env-prefix invocation
 # - ./eq3hours.sh S4 (to S6) or s4          -> Supports positional arguments anywhere
-# - ./eq3hours.sh                           -> Defaults START to today, END to inclusive 2 weeks (default WITHOUT_END=false)
+# - ./eq3hours.sh                           -> Automatically detects and uses current Sprint based on today's date!
 # - WITHOUT_END=true ./eq3hours.sh          -> Uses 14-days calculation (without inclusive end date)
 # - START="09/09/2026" ./eq3hours.sh          -> Supports both / and - formats
 # - START="09/09/2026" END="23/09/2026" ./eq3hours.sh
@@ -53,37 +69,46 @@ if [ -z "$DETECTED_SPRINT" ]; then
     done
 fi
 
+# Auto-detect Sprint based on the current date if no sprint or custom start date was provided
+if [ -z "$DETECTED_SPRINT" ] && [ -z "${START:-${start:-$1}}" ]; then
+    CURRENT_DATE_EPOCH=$(date +%s)
+    for s in S1 S2 S3 S4 S5 S6; do
+        s_info=$(get_sprint_dates "$s")
+        s_start=$(echo "$s_info" | cut -d' ' -f1)
+        s_end=$(echo "$s_info" | cut -d' ' -f2)
+
+        sd_y=$(echo "$s_start" | cut -d'-' -f3)
+        sd_m=$(echo "$s_start" | cut -d'-' -f2)
+        sd_d=$(echo "$s_start" | cut -d'-' -f1)
+        start_epoch=$(date -d "${sd_y}-${sd_m}-${sd_d}" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "${sd_y}-${sd_m}-${sd_d}" +%s 2>/dev/null)
+
+        ed_y=$(echo "$s_end" | cut -d'-' -f3)
+        ed_m=$(echo "$s_end" | cut -d'-' -f2)
+        ed_d=$(echo "$s_end" | cut -d'-' -f1)
+        end_epoch=$(date -d "${ed_y}-${ed_m}-${ed_d}" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "${ed_y}-${ed_m}-${ed_d}" +%s 2>/dev/null)
+
+        if [ -n "$start_epoch" ] && [ -n "$end_epoch" ]; then
+            if [ "$CURRENT_DATE_EPOCH" -ge "$start_epoch" ] && [ "$CURRENT_DATE_EPOCH" -le "$end_epoch" ]; then
+                DETECTED_SPRINT="$s"
+                echo "Auto-detected current sprint: $DETECTED_SPRINT ($s_start to $s_end)"
+                break
+            fi
+        fi
+    done
+fi
+
 # Reassign cleaned positional arguments (excluding the sprint argument)
 set -- "${CLEANED_ARGS[@]}"
 
 # Normalize sprint identifier to uppercase (supports S1-S6 and s1-s6)
 ARG_UPPER=$(echo "$DETECTED_SPRINT" | tr '[:lower:]' '[:upper:]')
 
-# Predefined Sprint Date Mapping (Adjusted per your rules: S1 = 09/09/2026, subsequent sprints start +1 day and end -1 day)
+# Main Sprint Date Mapping using the centralized function
 case "$ARG_UPPER" in
-    S1)
-        START_DATE="09-09-2026"
-        END_DATE="23-09-2026"
-        ;;
-    S2)
-        START_DATE="23-09-2026"
-        END_DATE="07-10-2026"
-        ;;
-    S3)
-        START_DATE="08-10-2026"
-        END_DATE="21-10-2026"
-        ;;
-    S4)
-        START_DATE="22-10-2026"
-        END_DATE="05-11-2026"
-        ;;
-    S5)
-        START_DATE="05-11-2026"
-        END_DATE="18-11-2026"
-        ;;
-    S6)
-        START_DATE="18-11-2026"
-        END_DATE="02-12-2026"
+    S1|S2|S3|S4|S5|S6)
+        s_info=$(get_sprint_dates "$ARG_UPPER")
+        START_DATE=$(echo "$s_info" | cut -d' ' -f1)
+        END_DATE=$(echo "$s_info" | cut -d' ' -f2)
         ;;
     *)
         # Fallback to standard environment variables or custom positional arguments
