@@ -54,6 +54,7 @@ export default function InterviewCard({
     const cancelled = isCancelled(interview);
     const past = validDate && time < Date.now();
     const rejected = interview.studentDecision === "REJECTED";
+    const accepted = interview.studentDecision === "ACCEPTED";
     const status = getInterviewStatus(interview);
 
     const formattedDate = validDate
@@ -62,7 +63,7 @@ export default function InterviewCard({
 
     const meetingUrl = interview.meetingType === "ONLINE" ? getMeetingUrl(interview.meetingDetails) : null;
     const statusIcon = cancelled || rejected ? "close" : past || interview.studentDecision === "ACCEPTED" ? "check_circle" : "schedule";
-    const accentBorder = cancelled ? "border-l-red-500" : past ? "border-l-slate-400" : "border-l-emerald-500";
+    const accentBorder = cancelled || rejected ? "border-l-red-500" : past ? "border-l-slate-400" : "border-l-emerald-500";
 
     const statusClasses = cancelled || rejected
         ? (dark ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-red-200 bg-red-50 text-red-700")
@@ -79,6 +80,7 @@ export default function InterviewCard({
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
+    console.log(interview)
     return (
         <article
             id={`interview-${interview.id}`}
@@ -161,14 +163,20 @@ export default function InterviewCard({
                         </>
                     ) : (
                         <>
-                            <Button dark={dark} tone="success" icon="check" disabled={busy} onClick={() => onAccept(interview.id)}>
+                            <Button dark={dark} tone="success" icon="check" disabled={busy} onClick={() => onAccept(interview.id)} hidden={accepted}>
                                 Accept
                             </Button>
                             <Button dark={dark} tone="warning" icon="edit" disabled={busy}>
                                 Change date
                             </Button>
-                            <Button dark={dark} tone="danger" icon="close" disabled={busy} onClick={() => onStartReject(interview)}>
-                                Reject
+                            <Button
+                                dark={dark}
+                                tone={!rejected ? "danger" : "warning"}
+                                icon={!rejected ? "close" : "edit"}
+                                disabled={busy}
+                                onClick={() => onStartReject(interview)}
+                            >
+                                {rejected ? "Edit message" : "Reject"}
                             </Button>
                         </>
                     )}

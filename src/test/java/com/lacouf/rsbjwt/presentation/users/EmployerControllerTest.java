@@ -489,7 +489,7 @@ public class EmployerControllerTest {
     void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED");
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "");
 
         when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
 
@@ -572,7 +572,7 @@ public class EmployerControllerTest {
     void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO cancelled = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED");
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "");
 
         when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
 
@@ -667,7 +667,8 @@ public class EmployerControllerTest {
                 "2026-11-01T14:30",
                 "IN_PERSON",
                 "123 Main St",
-                "SCHEDULED"
+                "SCHEDULED",
+                ""
         );
     }
 
