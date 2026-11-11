@@ -549,7 +549,7 @@ public class StudentService {
         return interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(interviewId, email)
                 .orElseThrow(() -> new InterviewNotFoundException(interviewId));
     }
-
+    @Transactional
     public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
         if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
@@ -564,6 +564,7 @@ public class StudentService {
         interviewRepository.save(interview);
     }
 
+    @Transactional
     public void rejectInterviewOffer(String email, long interviewId, String rejectionMessage) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
         if (interview.getStudentDecision().equals(StudentDecision.REJECTED) && rejectionMessage.equals(interview.getRejectionMessage())) {
@@ -581,6 +582,7 @@ public class StudentService {
         interviewRepository.save(interview);
     }
 
+    @Transactional
     public void rescheduleInterviewOffer(String email, long interviewId, @Valid InterviewReschedulingDto rescheduling) throws InterviewNotFoundException, InterviewAlreadyRescheduledException, InterviewInvalidDateException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
         String rejectionMessage = rescheduling.comment();
