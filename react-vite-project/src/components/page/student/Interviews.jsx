@@ -3,10 +3,12 @@ import {useLocation, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getInternshipCardClasses, getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import Icon from "../../../styles/Icon.jsx";
-import {getStudentInterviews} from "../../api/Api.jsx";
+import {acceptInterviews, denyInterviews, getStudentInterviews} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 import {MAX_PREVIEW_ITEMS} from "../../home/PreviewLoaders.js";
 import PreviewState from "../../home/PreviewState.jsx";
+import Button from "../../../styles/Button.jsx";
+import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx"; // 👈 1. Added import here
 
 const getInterviewTime = (interview) => {
     const raw = interview.scheduledAt ?? interview.interviewDate;
@@ -64,6 +66,11 @@ function Interviews({preview = false}) {
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [typeFilter, setTypeFilter] = useState("ALL");
 
+    // Rejection state
+    const [confirmId, setConfirmId] = useState(null);
+    const [rejectComment, setRejectComment] = useState("");
+    const [busyId, setBusyId] = useState(null);
+
     const loadInterviews = useCallback(async () => {
         try {
             const data = await getStudentInterviews();
@@ -86,6 +93,41 @@ function Interviews({preview = false}) {
     }, [loadInterviews]);
 
     usePolling(loadInterviews);
+
+    const closeForm = () => {
+        setConfirmId(null);
+        setRejectComment("");
+    };
+
+    const handleAccept = async (interviewId) => {
+        setBusyId(interviewId);
+        try {
+            await acceptInterviews(interviewId);
+            await loadInterviews();
+        } catch {
+            console.log("BAD!!!!!!!!!");
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const startReject = (interview) => {
+        setConfirmId(interview.id);
+        setRejectComment(interview.studentRejectionComment ?? "");
+    };
+
+    const handleDeny = async (interviewId) => {
+        setBusyId(interviewId);
+        try {
+            await denyInterviews(interviewId, rejectComment.trim());
+            closeForm();
+            await loadInterviews();
+        } catch {
+            console.log("BAD!!!!!!!!!");
+        } finally {
+            setBusyId(null);
+        }
+    };
 
     const visibleInterviews = sortInterviews(interviews).filter((interview) => {
         const query = search.trim().toLowerCase();
@@ -110,10 +152,8 @@ function Interviews({preview = false}) {
         return matchesSearch && matchesStatus && matchesType;
     });
 
-    // Home preview: only the first interviews
     const shown = preview ? visibleInterviews.slice(0, MAX_PREVIEW_ITEMS) : visibleInterviews;
 
-    // Arriving from a notification: /interviews#interview-12 (full page only)
     useEffect(() => {
         if (preview || loading || !hash) return;
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
@@ -122,6 +162,10 @@ function Interviews({preview = false}) {
     const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
     const muted = dark ? "text-slate-400" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
+
+    const textareaClass = `w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
 
     const renderCard = (interview) => {
         const time = getInterviewTime(interview);
@@ -146,6 +190,9 @@ function Interviews({preview = false}) {
                 : (dark ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-emerald-200 bg-emerald-50 text-emerald-700");
         const highlighted = !preview && hash === `#interview-${interview.id}`;
         const awaitingResponse = !cancelled && !past && interview.studentDecision === "PENDING";
+
+        const busy = busyId === interview.id;
+        const isConfirmingReject = confirmId === interview.id;
 
         return (
             <article
@@ -239,6 +286,77 @@ function Interviews({preview = false}) {
                             {interview.message ||
                                 t("studentInterviews.notProvided")}
                         </p>
+                    </div>
+
+                    {/* Inline Rejection Reason Form */}
+                    {isConfirmingReject && (
+                        <div className="space-y-2 pt-2">
+                            <label className={`block text-sm font-semibold ${muted}`}>
+                                Rejection Reason:
+                            </label>
+                            <AutoResizeTextarea
+                                value={rejectComment}
+                                onChange={(e) => setRejectComment(e.target.value)}
+                                rows={2}
+                                autoFocus
+                                placeholder="Specify the reason for rejecting..."
+                                className={textareaClass}
+                            />
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3">
+                        {isConfirmingReject ? (
+                            <>
+                                <Button
+                                    dark={dark}
+                                    tone="danger"
+                                    icon="check"
+                                    disabled={busy || !rejectComment.trim()}
+                                    onClick={() => handleDeny(interview.id)}
+                                >
+                                    Confirm Rejection
+                                </Button>
+                                <Button
+                                    dark={dark}
+                                    tone="neutral"
+                                    icon="close"
+                                    disabled={busy}
+                                    onClick={closeForm}
+                                >
+                                    Cancel
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    dark={dark}
+                                    tone="success"
+                                    icon="check"
+                                    disabled={busy}
+                                    onClick={() => handleAccept(interview.id)}
+                                >
+                                    Accept
+                                </Button>
+                                <Button
+                                    dark={dark}
+                                    tone="warning"
+                                    icon="edit"
+                                    disabled={busy}
+                                >
+                                    Change date
+                                </Button>
+                                <Button
+                                    dark={dark}
+                                    tone="danger"
+                                    icon="close"
+                                    disabled={busy}
+                                    onClick={() => startReject(interview)}
+                                >
+                                    Reject
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
             </article>
