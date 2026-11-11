@@ -596,7 +596,7 @@ public class StudentService {
         } else {
             interview.setRejectionMessage(rejectionMessage);
         }
-        if (reschedulingTime == null || reschedulingTime.isBefore(LocalDateTime.now())) {
+        if (reschedulingTime.isBefore(LocalDateTime.now())) {
             throw new InterviewInvalidDateException("Interview with ID " + interviewId + " requires a time in the future to be rescheduled");
         }
         interview.setStudentDecision(StudentDecision.RESCHEDULE_REQUESTED);
