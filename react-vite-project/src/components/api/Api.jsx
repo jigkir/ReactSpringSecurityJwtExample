@@ -146,6 +146,11 @@ export async function getPublicCvs(sessionId) {
     return handleResponse(response);
 }
 
+export async function getPendingCvs() {
+    const response = await fetcher("manager/cvs/pending", {method: "GET"});
+    return handleResponse(response);
+}
+
 // Returns {id, fileName, content (Base64)}
 export async function getManagerCvFile(cvId) {
     const response = await fetcher(`manager/cvs/${cvId}/file`, {method: "GET"});
@@ -359,6 +364,22 @@ export async function getApplicationCount() {
 export async function getStudentInterviews() {
     const response = await fetcher("student/interviews", {method: "GET"});
     return handleResponse(response);
+}
+
+export async function acceptInterviews(interviewId) {
+    const response = await fetcher(`student/interviews/${interviewId}/accept`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
+export async function denyInterviews(interviewId, comment) {
+    const response = await fetcher(`student/interviews/${interviewId}/refuse`,
+        {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({comment})
+        }
+        );
+    return handleEmpty(response);
 }
 
 //endregion

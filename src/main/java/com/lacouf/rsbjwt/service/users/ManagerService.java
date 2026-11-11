@@ -78,6 +78,10 @@ public class ManagerService {
         return cvs.stream().map(this::toManagerCvResponseDto).toList();
     }
 
+    public List<ManagerCvResponseDto> getPendingCvs() {
+        return cvRepository.findByVisibilityAndStatus(DocumentVisibility.VISIBLE, ReviewStatus.PENDING).stream().map(this::toManagerCvResponseDto).toList();
+    }
+
     public ManagerCvResponseDto getCv(long cvId) throws DocumentNotFoundException {
         return toManagerCvResponseDto(findVisibleCv(cvId));
     }

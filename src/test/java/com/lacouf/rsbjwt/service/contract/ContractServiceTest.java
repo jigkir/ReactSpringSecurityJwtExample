@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.contract;
 
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
@@ -21,18 +22,13 @@ import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +44,6 @@ public class ContractServiceTest {
     private ArgumentCaptor<Contract> contractArgumentCaptor;
 
     private static final long APPLICATION_ID = 20L;
-    private static final long CONTRACT_ID = 40L;
     private static final String STUDENT_EMAIL = "student@example.com";
     private static final String EMPLOYER_EMAIL = "email@example.com";
 
@@ -85,12 +80,14 @@ public class ContractServiceTest {
         student.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
     }
 
-    // ---------- createContract ----------
+    // ==========================================
+    // Contract Creation Tests
+    // ==========================================
 
     @Test
-    void shouldCreateContract() throws Exception {
+    void shouldCreateContractWhenApplicationWasOffered() throws Exception {
         // Arrange
-        InternshipApplication application = application();
+        InternshipApplication application = offeredApplication();
 
         // Act
         contractService.createContract(application);
@@ -99,25 +96,59 @@ public class ContractServiceTest {
         verify(contractRepository).save(contractArgumentCaptor.capture());
 
         Contract savedContract = contractArgumentCaptor.getValue();
-        assertEquals(application, savedContract.getInternshipApplication());
+
+        assert application.equals(savedContract.getInternshipApplication());
     }
 
     @Test
-    void shouldThrowWhenContractAlreadyExistsForApplication() {
+    void shouldCopyStudentAndEmployerFromApplicationWhenCreatingContract() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+
+        // Act
+        contractService.createContract(application);
+
+        // Assert
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        Contract savedContract = contractArgumentCaptor.getValue();
+
+        assert student.equals(savedContract.getStudent());
+        assert employer.equals(savedContract.getEmployer());
+    }
+
+    @Test
+    void shouldReturnSavedContractWhenCreatingContract() throws Exception {
+        // Arrange
+        when(contractRepository.save(any(Contract.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Contract contract = contractService.createContract(offeredApplication());
+
+        // Assert
+        assert contract != null;
+        assert student.equals(contract.getStudent());
+    }
+
+    // ==========================================
+    // Contract Creation Validation Tests
+    // ==========================================
+
+    @Test
+    void shouldThrowContractAlreadyExistsExceptionWhenContractAlreadyExistsForApplication() {
         // Arrange
         when(contractRepository.existsByInternshipApplicationId(APPLICATION_ID)).thenReturn(true);
 
         // Act + Assert
-        assertThrows(ContractAlreadyExistsException.class, () -> contractService.createContract(application()));
+        assertThrows(ContractAlreadyExistsException.class, () -> contractService.createContract(offeredApplication()));
 
         verify(contractRepository, never()).save(any(Contract.class));
     }
 
     @Test
-    void shouldThrowWhenCreatingContractForRejectedApplication() {
+    void shouldThrowApplicationRejectedExceptionWhenApplicationWasRejected() {
         // Arrange
-        InternshipApplication application = application();
-        application.updateEmployerDecision(EmployerDecision.REJECTED);
+        InternshipApplication application = applicationWithDecision(EmployerDecision.REJECTED);
 
         // Act + Assert
         assertThrows(ApplicationRejectedException.class, () -> contractService.createContract(application));
@@ -126,12 +157,36 @@ public class ContractServiceTest {
     }
 
     @Test
-    void shouldThrowWhenCreatingContractForStudentAlreadyEmployed() {
+    void shouldThrowApplicationNotOfferedExceptionWhenApplicationWasNeverOffered() {
+        // Arrange
+        InternshipApplication application = application();
+
+        // Act + Assert
+        assertThrows(ApplicationNotOfferedException.class, () -> contractService.createContract(application));
+
+        verify(contractRepository, never()).save(any(Contract.class));
+    }
+
+    @Test
+    void shouldThrowStudentAlreadyEmployedExceptionWhenStudentIsAlreadyEmployed() {
         // Arrange
         student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
 
         // Act + Assert
-        assertThrows(StudentAlreadyEmployedException.class, () -> contractService.createContract(application()));
+        assertThrows(StudentAlreadyEmployedException.class, () -> contractService.createContract(offeredApplication()));
+
+        verify(contractRepository, never()).save(any(Contract.class));
+    }
+
+    @Test
+    void shouldThrowContractAlreadyExistsExceptionBeforeCheckingApplicationDecision() {
+        // Arrange
+        when(contractRepository.existsByInternshipApplicationId(APPLICATION_ID)).thenReturn(true);
+
+        InternshipApplication application = applicationWithDecision(EmployerDecision.REJECTED);
+
+        // Act + Assert
+        assertThrows(ContractAlreadyExistsException.class, () -> contractService.createContract(application));
 
         verify(contractRepository, never()).save(any(Contract.class));
     }
@@ -144,8 +199,18 @@ public class ContractServiceTest {
         cv.setFileName("cv.pdf");
 
         InternshipApplication application = new InternshipApplication(internship, cv, student);
-        application.setId(ContractServiceTest.APPLICATION_ID);
+        application.setId(APPLICATION_ID);
 
         return application;
+    }
+
+    private InternshipApplication applicationWithDecision(EmployerDecision decision) {
+        InternshipApplication application = application();
+        application.updateEmployerDecision(decision);
+        return application;
+    }
+
+    private InternshipApplication offeredApplication() {
+        return applicationWithDecision(EmployerDecision.INTERNSHIP_OFFERED);
     }
 }

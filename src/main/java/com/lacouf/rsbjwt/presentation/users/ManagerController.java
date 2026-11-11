@@ -36,6 +36,11 @@ public class ManagerController {
         return ResponseEntity.ok(managerService.getVisibleCvs(sessionId));
     }
 
+    @GetMapping("/cvs/pending")
+    public ResponseEntity<List<ManagerCvResponseDto>> getPendingCvs() {
+        return ResponseEntity.ok(managerService.getPendingCvs());
+    }
+
     @GetMapping("/cvs/{cvId}")
     public ResponseEntity<ManagerCvResponseDto> getCv(@PathVariable long cvId) throws DocumentNotFoundException {
         return ResponseEntity.ok(managerService.getCv(cvId));

@@ -150,6 +150,19 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldReturnPendingVisibleCvsWhenGettingPendingCvs() {
+        // Arrange
+        when(cvRepository.findByVisibilityAndStatus(DocumentVisibility.VISIBLE, ReviewStatus.PENDING)).thenReturn(List.of(cv));
+
+        // Act
+        List<ManagerCvResponseDto> result = managerService.getPendingCvs();
+
+        // Assert
+        assert (Integer.valueOf(1)).equals(result.size());
+        assert ("Marie").equals(result.getFirst().student().firstName());
+    }
+
+    @Test
     void shouldReturnVisibleCvsUploadedForChosenSession() throws AcademicSessionNotFoundException {
         // Arrange
         when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);

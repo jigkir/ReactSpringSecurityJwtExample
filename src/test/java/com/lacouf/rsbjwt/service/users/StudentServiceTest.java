@@ -1,9 +1,8 @@
 package com.lacouf.rsbjwt.service.users;
 
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.application.ApplicationAlreadyReadException;
-import com.lacouf.rsbjwt.exception.application.DeadlineAlreadyPassedException;
-import com.lacouf.rsbjwt.exception.application.InternshipApplicationNotFoundException;
+import com.lacouf.rsbjwt.exception.application.*;
+import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
@@ -13,7 +12,9 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -184,18 +185,6 @@ public class StudentServiceTest {
 
         internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer, currentSession);
         internship.setId(10L);
-    }
-
-    //----helpers----
-
-    private Interview scheduledInterview() {
-        InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
-        application.setId(20L);
-
-        Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
-        interview.setId(30L);
-
-        return interview;
     }
 
     // ==========================================
@@ -1466,48 +1455,150 @@ public class StudentServiceTest {
         assert "SCHEDULED".equals(first.interviewStatus());
     }
 
-    // ---------- Helpers ----------
 
-    private CV approvedVisibleCv(long id) {
-        CV cv = new CV();
-        cv.setId(id);
-        cv.setStatus(ReviewStatus.APPROVED);
-        cv.setVisibility(DocumentVisibility.VISIBLE);
-        cv.setStudent(dummyStudent);
-        return cv;
+    // ==========================================
+    // Internship Offer Tests
+    // ==========================================
+
+    @Test
+    void shouldGetOffersWhereEmployerOfferedInternship() throws Exception {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication application = offeredApplication();
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(application));
+
+        // Act
+        List<InternshipApplicationResponseDto> offers = studentService.getOffers(STUDENT_EMAIL);
+
+        // Assert
+        assert offers.size() == 1;
+        assert offers.getFirst().internshipId() == 10L;
     }
 
-    private Student studentWithVisibleInternship() {
-        Student student = spy(dummyStudent);
+    @Test
+    void shouldAcceptOfferSuccessfully() throws Exception {
+        // Arrange
+        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
+        InternshipApplication application = offeredApplication();
 
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
-        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
 
-        return student;
+        // Act
+        studentService.acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        verify(contractService).createContract(application);
+        verify(applicationRepository).save(application);
+        verify(studentRepository).save(dummyStudent);
+
+        assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        assert StudentInternshipStatus.EMPLOYED.equals(dummyStudent.getStudentInternshipStatus());
     }
 
-    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(bytes);
-        return HexFormat.of().formatHex(hashBytes);
+    @Test
+    void shouldThrowInternshipApplicationNotFoundExceptionWhenAcceptingUnknownOffer() {
+        // Arrange
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class, () -> studentService.acceptOffer(STUDENT_EMAIL, 20L));
+
+        verifyNoInteractions(contractService);
+        verify(studentRepository, never()).save(any(Student.class));
     }
 
-    private CoverLetter readableCoverLetter(long id) throws NoSuchAlgorithmException {
-        CoverLetter coverLetter = new CoverLetter(validPdfBytes, "lettre_de_recommandation.pdf", LocalDateTime.now());
+    @Test
+    void shouldThrowStudentConsentNotPendingExceptionWhenAcceptingOfferAlreadyAnswered() {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
 
-        coverLetter.setId(id);
-        coverLetter.setFileHash(calculateHash(validPdfBytes));
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
 
-        return coverLetter;
+        // Act + Assert
+        assertThrows(StudentConsentNotPendingException.class, () -> studentService.acceptOffer(STUDENT_EMAIL, 20L));
+
+        verifyNoInteractions(contractService);
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
-    private AcademicTranscript readableAcademicTranscript(long id) throws NoSuchAlgorithmException {
-        AcademicTranscript academicTranscript = new AcademicTranscript(validPdfBytes, "releve_de_notes.pdf", LocalDateTime.now());
+    @Test
+    void shouldNotChangeConsentOrEmploymentStatusWhenContractCreationFails() throws Exception {
+        // Arrange
+        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
+        InternshipApplication application = offeredApplication();
 
-        academicTranscript.setId(id);
-        academicTranscript.setFileHash(calculateHash(validPdfBytes));
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+        doThrow(new StudentAlreadyEmployedException(dummyStudent.getId())).when(contractService).createContract(application);
 
-        return academicTranscript;
+        // Act + Assert
+        assertThrows(StudentAlreadyEmployedException.class, () -> studentService.acceptOffer(STUDENT_EMAIL, 20L));
+
+        assert StudentInternshipConsent.PENDING.equals(application.getStudentInternshipConsent());
+        assert StudentInternshipStatus.NOT_EMPLOYED.equals(dummyStudent.getStudentInternshipStatus());
+
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    void shouldRefuseOfferSuccessfully() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act
+        studentService.refuseOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert StudentInternshipConsent.REJECTED.equals(application.getStudentInternshipConsent());
+
+        verify(applicationRepository).save(application);
+        verifyNoInteractions(contractService);
+    }
+
+    @Test
+    void shouldThrowInternshipApplicationNotFoundExceptionExceptionWhenRefusingUnknownOffer() {
+        // Arrange
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldThrowApplicationNotOfferedExceptionWhenRefusingApplicationThatWasNeverOffered() {
+        // Arrange
+        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
+        application.setId(20L);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(ApplicationNotOfferedException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldThrowStudentConsentNotPendingExceptionWhenRefusingOfferAlreadyAnswered() {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(StudentConsentNotPendingException.class, () -> studentService.refuseOffer(STUDENT_EMAIL, 20L));
+
+        assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        verify(applicationRepository, never()).save(any(InternshipApplication.class));
     }
 
     // ==========================================
@@ -1600,7 +1691,7 @@ public class StudentServiceTest {
     void shouldThrowInterviewNotFoundWhenRefusingUnknownInterview() {
 
         // Act + Assert
-        assertThrows(InterviewNotFoundException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,"No thanks"));
+        assertThrows(InterviewNotFoundException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks"));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -1616,7 +1707,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(interview));
 
         // Act + Assert
-        assertThrows(InterviewAlreadyRejectedException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,"I am busy"));
+        assertThrows(InterviewAlreadyRejectedException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I am busy"));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -1632,7 +1723,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(interview));
 
         // Act
-        studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,"I found another internship");
+        studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I found another internship");
 
         // Assert
         assert "I found another internship".equals(interview.getRejectionMessage());
@@ -1651,7 +1742,7 @@ public class StudentServiceTest {
                 .thenReturn(Optional.of(interview));
 
         // Act + Assert
-        assertThrows(InterviewInvalidMessageException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L,blankMessage));
+        assertThrows(InterviewInvalidMessageException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, blankMessage));
 
         assert StudentDecision.PENDING.equals(interview.getStudentDecision());
         assert interview.getRejectionMessage() == null;
@@ -1779,5 +1870,67 @@ public class StudentServiceTest {
 
         // Assert
         assert secondDate.equals(interview.getInterviewDate());
+    }
+
+    // ---------- Helpers ----------
+
+    private CV approvedVisibleCv(long id) {
+        CV cv = new CV();
+        cv.setId(id);
+        cv.setStatus(ReviewStatus.APPROVED);
+        cv.setVisibility(DocumentVisibility.VISIBLE);
+        cv.setStudent(dummyStudent);
+        return cv;
+    }
+
+    private Student studentWithVisibleInternship() {
+        Student student = spy(dummyStudent);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(student));
+        when(internshipRepository.findByIdAndDeletedFalseAndStatusAndPostedBy_Discipline(10L, ReviewStatus.APPROVED, Discipline.COMPUTER_SCIENCE)).thenReturn(Optional.of(internship));
+
+        return student;
+    }
+
+    private static String calculateHash(byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(bytes);
+        return HexFormat.of().formatHex(hashBytes);
+    }
+
+    private CoverLetter readableCoverLetter(long id) throws NoSuchAlgorithmException {
+        CoverLetter coverLetter = new CoverLetter(validPdfBytes, "lettre_de_recommandation.pdf", LocalDateTime.now());
+
+        coverLetter.setId(id);
+        coverLetter.setFileHash(calculateHash(validPdfBytes));
+
+        return coverLetter;
+    }
+
+    private AcademicTranscript readableAcademicTranscript(long id) throws NoSuchAlgorithmException {
+        AcademicTranscript academicTranscript = new AcademicTranscript(validPdfBytes, "releve_de_notes.pdf", LocalDateTime.now());
+
+        academicTranscript.setId(id);
+        academicTranscript.setFileHash(calculateHash(validPdfBytes));
+
+        return academicTranscript;
+    }
+
+    private InternshipApplication offeredApplication() {
+        InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
+        application.setId(20L);
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+        application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
+        return application;
+    }
+
+    private Interview scheduledInterview() {
+        InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
+        application.setId(20L);
+
+        Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
+        interview.setId(30L);
+
+        return interview;
     }
 }

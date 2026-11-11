@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.APIException;
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
 import com.lacouf.rsbjwt.exception.internship.*;
@@ -317,7 +318,7 @@ public class EmployerService {
         return InterviewEmployerResponseDTO.of(interview);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = APIException.class)
     public void offerInternshipsToStudents(List<Long> applicationIds, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
 
         for (Long applicationId : new LinkedHashSet<>(applicationIds)) {
