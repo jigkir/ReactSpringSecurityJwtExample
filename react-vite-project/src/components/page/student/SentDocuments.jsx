@@ -1,6 +1,7 @@
 /**
  * SentDocuments.jsx — The documents a student sent with an application (CV, cover letter,
- * transcript), each one previewable inline. Always visible once the student has applied.
+ * transcript), each one previewable inline (all at the same time if wanted).
+ * Always visible once the student has applied. The preview button is RED while its preview is open.
  *
  * Props
  *   application  {cv, coverLetter, academicTranscript}  each {id, fileName?}
@@ -54,7 +55,7 @@ function SentDocuments({application, dark}) {
                                         </p>
                                     )}
                                 </div>
-                                <Button tone="accent" lockTone dark={dark}
+                                <Button tone={isOpen ? "danger" : "accent"} lockTone dark={dark}
                                         icon={isOpen ? "close" : "visibility"}
                                         aria-expanded={isOpen}
                                         aria-label={doc.fileName ? `${label} : ${doc.fileName}` : label}

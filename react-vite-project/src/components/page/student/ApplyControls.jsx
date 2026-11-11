@@ -124,16 +124,32 @@ function ApplyControls({
     );
 
     if (!open) {
+        const actionButton = (
+            <Button tone={application ? "warning" : "success"} lockTone
+                    dark={dark} icon={application ? "edit" : "send"} onClick={() => {
+                resetFeedback();
+                setOpen(true);
+            }}>
+                {t(application ? "studentInternship.updateCV" : "studentInternship.apply")}
+            </Button>
+        );
+
         return (
             <>
                 {application && <SentDocuments application={application} dark={dark}/>}
-                {messages}
-                <Button tone="success" dark={dark} icon="send" onClick={() => {
-                    resetFeedback();
-                    setOpen(true);
-                }}>
-                    {t(application ? "studentInternship.updateCV" : "studentInternship.apply")}
-                </Button>
+                {/* Separator between the sent documents ("Preview CV"...) and the apply / edit button */}
+                {application ? (
+                    <div className={`flex w-full flex-wrap items-center justify-end gap-2 pt-3 border-t ${
+                        dark ? "border-slate-700" : "border-gray-200"}`}>
+                        {messages}
+                        {actionButton}
+                    </div>
+                ) : (
+                    <>
+                        {messages}
+                        {actionButton}
+                    </>
+                )}
             </>
         );
     }

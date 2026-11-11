@@ -27,6 +27,10 @@ vi.mock("../../../../utils/useSession.js", () => ({
     useSession: vi.fn(),
 }));
 
+vi.mock("../../../../utils/usePolling.js", () => ({
+    usePolling: vi.fn(),
+}));
+
 vi.mock("../ApplyControls.jsx", () => ({
     default: ({internshipId, onChanged}) => <button onClick={onChanged}>{`apply-${internshipId}`}</button>,
 }));

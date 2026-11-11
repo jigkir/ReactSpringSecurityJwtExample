@@ -4,7 +4,7 @@
  * CVs also carry a review status (pill + rejection reason), the other types do not:
  * the row simply shows a pill when the document has a `status`.
  *
- * Actions: Preview CV / cover letter / transcript | Change document type (full page only) |
+ * Actions: Preview CV / cover letter / transcript | Edit the document (full page only, opens a modal) |
  * Delete CV / cover letter / transcript (hide, with confirmation).
  * The card header shows the type title and the "Upload documents" / "Close upload panel" button
  * (full page only).
@@ -22,7 +22,7 @@
  * each one its own card.
  *
  * `selection` ("pick" mode, used when applying to an internship): only APPROVED CVs are listed,
- * no status pill or status filter, no Change type / Delete; CVs, cover letters and transcripts
+ * no status pill or status filter, no Edit / Delete; CVs, cover letters and transcripts
  * get a checkbox.
  *
  * `actionError` stores a translation KEY (not text) so it follows the language switch live.
@@ -35,7 +35,7 @@
  *   selection      object    optional {cvId, letterId, transcriptId, onPickCv(id), onPickLetter(id),
  *                            onPickTranscript(id), disabled}
  *   reloadToken    number    optional, change it to refetch the list silently
- *   onTypeChanged  function  optional, shows "Change document type" and is called once a file was moved
+ *   onTypeChanged  function  optional, shows "Edit the document" and is called once a file was moved / replaced
  *   uploadOpen     boolean   the upload panel is open (button shows "Close upload panel")
  *   onAddClick     function  opens the upload panel
  *   onCloseClick   function  closes the upload panel
@@ -109,6 +109,8 @@ function DocumentList({
     const [typeEditKey, setTypeEditKey] = useState(null);
     const [actionError, setActionError] = useState("");
 
+    const closeTypeEdit = useCallback(() => setTypeEditKey(null), []);
+
     const filtered = docs && hasStatusFilter && status !== "ALL"
         ? docs.filter((d) => (d.status ?? "PENDING") === status)
         : docs;
@@ -177,20 +179,19 @@ function DocumentList({
 
         return (
             <>
+                {/* The edit control opens a modal: the row itself keeps its normal buttons */}
                 {onTypeChanged && (
-                    <ChangeDocType type={doc.docType} id={doc.id} dark={dark}
+                    <ChangeDocType type={doc.docType} id={doc.id} fileName={doc.fileName} dark={dark}
                                    open={typeEditKey === key}
                                    onOpen={() => setTypeEditKey(key)}
-                                   onClose={() => setTypeEditKey(null)}
+                                   onClose={closeTypeEdit}
                                    onChanged={onTypeChanged} className={ROW_BTN}/>
                 )}
-                {typeEditKey !== key && (
-                    <Button tone="danger" dark={dark} icon="delete" disabled={busy} className={ROW_BTN}
-                            onClick={() => setConfirmKey(key)}
-                            aria-label={`${deleteLabel} : ${doc.fileName}`}>
-                        {deleteLabel}
-                    </Button>
-                )}
+                <Button tone="danger" dark={dark} icon="delete" disabled={busy} className={ROW_BTN}
+                        onClick={() => setConfirmKey(key)}
+                        aria-label={`${deleteLabel} : ${doc.fileName}`}>
+                    {deleteLabel}
+                </Button>
             </>
         );
     };

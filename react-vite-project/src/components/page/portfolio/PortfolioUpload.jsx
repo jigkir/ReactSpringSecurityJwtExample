@@ -1,18 +1,21 @@
 /**
  * PortfolioUpload.jsx — Upload several PDFs at once, each with its own document type.
  * Files are added by drag & drop or with the file picker (click / Enter / Space on the dropzone).
- * The type is guessed from the file name and can be changed before uploading.
+ * The type of each file is preselected from the tab the student is looking at (`defaultType`).
+ * On the "All" tab it is guessed from the file name. It can be changed before uploading.
  *
  * Item status: ready → uploading → done | failed (server error, can be retried)
  *              invalid (rejected by validateFile, never sent; remove it)
  *
  * Props
- *   dark        boolean
- *   maxBytes    number    max size of one file
- *   types       string[]  optional, document types offered (default: all). The guessed type
- *                         falls back to the first one when it is not allowed.
- *   onUploaded  function  called after every upload attempt (parent reloads its lists)
- *   onClose     function  called when everything was uploaded, or when the Close button is clicked
+ *   dark         boolean
+ *   maxBytes     number    max size of one file
+ *   types        string[]  optional, document types offered (default: all). The preselected type
+ *                          falls back to the first one when it is not allowed.
+ *   defaultType  string    optional, type of the tab being viewed ("CV" | "COVER_LETTER" |
+ *                          "TRANSCRIPT"). "ALL" or undefined → guess from the file name.
+ *   onUploaded   function  called after every upload attempt (parent reloads its lists)
+ *   onClose      function  called when everything was uploaded, or when the Close button is clicked
  */
 
 import {useRef, useState} from 'react';
@@ -28,7 +31,7 @@ import {translateWarning} from '../../../utils/CommonFields.jsx';
 
 const canUpload = (item) => item.status === "ready" || item.status === "failed";
 
-function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, onUploaded, onClose}) {
+function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, onUploaded, onClose}) {
     const {t} = useTranslation();
     const inputRef = useRef(null);
     const nextKey = useRef(0);
@@ -42,14 +45,20 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, onUploaded, onC
     const patch = (key, changes) =>
         setItems((prev) => prev.map((i) => (i.key === key ? {...i, ...changes} : i)));
 
+    // The tab being viewed wins; on the "All" tab the file name decides
+    const initialTypeFor = (fileName) => {
+        if (defaultType && defaultType !== "ALL" && types.includes(defaultType)) return defaultType;
+        const guess = guessDocType(fileName);
+        return types.includes(guess) ? guess : types[0];
+    };
+
     const addFiles = (fileList) => {
         const added = Array.from(fileList ?? []).map((file) => {
             const error = validateFile(file, maxBytes);
-            const guess = guessDocType(file.name);
             return {
                 key: nextKey.current++,
                 file,
-                type: types.includes(guess) ? guess : types[0],
+                type: initialTypeFor(file.name),
                 status: error ? "invalid" : "ready",
                 error,
             };

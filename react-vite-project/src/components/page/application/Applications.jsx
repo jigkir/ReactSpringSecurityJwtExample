@@ -8,6 +8,7 @@
  * - "New" badge: frozen while the employer is on the page (previewing a CV does not remove it).
  *   It is removed when the interview invitation is sent, and when the page is left
  *   (see useNewApplications).
+ * - The cards do not show the CV file name here (the preview buttons are enough).
  * Access control: <RequireRole roles={["EMPLOYER"]}/> in App.jsx + backend.
  */
 
@@ -167,11 +168,11 @@ function Applications({user, preview = false}) {
                 {/* Which internship these applications come from */}
                 <div
                     className={`flex flex-wrap items-center gap-3 pb-2 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-48 flex-1">
                         <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
                             {t("applicationsPage.fromInternship")}
                         </p>
-                        <h2 className={`text-xl font-bold break-words ${headerText}`}>{group.title}</h2>
+                        <h2 className={`text-xl font-bold wrap-break-word ${headerText}`}>{group.title}</h2>
                     </div>
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${
                         dark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-700"}`}>
@@ -199,6 +200,7 @@ function Applications({user, preview = false}) {
                         onTogglePreview={() => togglePreview(application.id)}
                         getUrl={getUrl}
                         onInterviewSent={handleInterviewSent}
+                        showCvFileName={false}
                     />
                 ))}
             </section>

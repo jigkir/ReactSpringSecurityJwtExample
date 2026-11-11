@@ -3,6 +3,7 @@
  * Tabs: All | CV | Cover letters | Transcripts, all rendered by the same <DocumentList />.
  * The page opens on the "All" tab.
  * One upload panel accepts several PDFs at once (drag & drop or picker), each with its own type.
+ * The type of each uploaded file is preselected from the tab being viewed.
  * The "Upload files" button lives in the header of each list card (like before).
  *
  * The "required files" banner shows while the student has no CV at all
@@ -67,7 +68,7 @@ function Portfolio() {
                 {hasCv === false && <RequiredFilesNotice dark={dark}/>}
 
                 {uploadOpen && (
-                    <PortfolioUpload dark={dark} maxBytes={maxBytes}
+                    <PortfolioUpload dark={dark} maxBytes={maxBytes} defaultType={tab}
                                      onUploaded={reloadLists} onClose={() => setUploadOpen(false)}/>
                 )}
 

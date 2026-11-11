@@ -3,7 +3,8 @@
  *
  * Layout (md and up): [ identity ] [ status pill (optional) ] [ actions ]
  * Below md everything stacks vertically. The Preview / Close toggle is always the first
- * action; the inline PDF preview opens under the row.
+ * action (blue while closed, RED while the preview is open); the inline PDF preview opens
+ * under the row.
  *
  * The Preview label names the document: "Preview CV", "Preview cover letter", "Preview transcript"
  * (from doc.docType). Without a docType (manager CV page) it falls back to the generic label.
@@ -57,11 +58,11 @@ export const getRowListClass = (dark, {preview = false, bordered = false} = {}) 
     return getCvDocumentsClasses(dark).list;
 };
 
-export default function DocumentRow({
-                                        doc, dark, status, leading, details, actions, busy = false,
-                                        isOpen, onToggle, getUrl, preview = false, bordered = false,
-                                        audience = "student",
-                                    }) {
+function DocumentRow({
+                         doc, dark, status, leading, details, actions, busy = false,
+                         isOpen, onToggle, getUrl, preview = false, bordered = false,
+                         audience = "student",
+                     }) {
     const {t} = useTranslation();
     const th = getCvDocumentsClasses(dark);
     const statusKeys = audience === "manager" ? MANAGER_STATUS_KEY : STATUS_KEY;
@@ -109,8 +110,9 @@ export default function DocumentRow({
 
                 {/* Actions: one vertical stack, every button the same width */}
                 <div className="flex flex-col items-stretch gap-2 @2xl:min-w-44 @2xl:justify-self-end">
-                    {/* Preview stays available in every state (also while rejecting / deleting) */}
-                    <Button tone="accent" lockTone dark={dark}
+                    {/* Preview stays available in every state (also while rejecting / deleting).
+                        Red while the preview is open, like the employer side. */}
+                    <Button tone={isOpen ? "danger" : "accent"} lockTone dark={dark}
                             icon={isOpen ? "close" : "visibility"}
                             onClick={onToggle}
                             disabled={busy}
@@ -131,3 +133,5 @@ export default function DocumentRow({
         </li>
     );
 }
+
+export default DocumentRow;
