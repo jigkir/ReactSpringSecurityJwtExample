@@ -1492,10 +1492,8 @@ public class StudentServiceTest {
         // Assert
         verify(contractService).createContract(application);
         verify(applicationRepository).save(application);
-        verify(studentRepository).save(dummyStudent);
 
         assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
-        assert StudentInternshipStatus.EMPLOYED.equals(dummyStudent.getStudentInternshipStatus());
     }
 
     @Test

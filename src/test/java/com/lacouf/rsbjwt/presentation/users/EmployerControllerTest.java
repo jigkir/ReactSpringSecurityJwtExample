@@ -17,6 +17,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
@@ -355,7 +356,7 @@ public class EmployerControllerTest {
     void shouldReturnReceivedInternshipApplications() throws Exception {
         // Arrange
         StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
-        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", null, null, null, null, LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
+        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", null, null, null, null, LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING, StudentInternshipConsent.PENDING);
 
         when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL, null)).thenReturn(List.of(receivedInternshipApplication));
 

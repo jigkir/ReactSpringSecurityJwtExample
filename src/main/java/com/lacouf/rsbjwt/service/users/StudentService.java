@@ -398,10 +398,6 @@ public class StudentService {
 
         application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
         applicationRepository.save(application);
-
-        Student student = application.getStudent();
-        student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
-        studentRepository.save(student);
     }
 
     @Transactional
