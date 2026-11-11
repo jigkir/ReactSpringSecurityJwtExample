@@ -43,6 +43,7 @@ public class Interview {
     private MeetingType meetingType;
 
     @Getter
+    @Setter
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private InterviewStatus interviewStatus;
