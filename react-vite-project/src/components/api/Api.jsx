@@ -347,6 +347,15 @@ export async function getApplications(sessionId) {
     return handleResponse(response);
 }
 
+export async function offerInternshipsToStudents(applicationIds) {
+    const response = await fetcher("employer/applications/offer", {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(applicationIds),
+    });
+    return handleEmpty(response);
+}
+
 export async function getApplicationCv(id) {
     const response = await fetcher(`employer/applications/${id}/cv`, {method: "GET"});
     return handleResponse(response);

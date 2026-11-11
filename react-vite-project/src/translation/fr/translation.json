@@ -608,7 +608,18 @@
     "new": "Nouveau",
     "loading": "Chargement…",
     "empty": "Aucune candidature pour ce stage pour l'instant. Les étudiants apparaîtront ici dès qu'ils postuleront.",
-    "backBtn": "Retour à mes offres"
+    "backBtn": "Retour à mes offres",
+    "selectedCount_one": "{{count}} étudiant sélectionné",
+    "selectedCount_other": "{{count}} étudiants sélectionnés",
+    "hire": "Embaucher",
+    "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
+    "hired": "Embauché",
+    "selectStudent": "Sélectionner {{name}}",
+    "selectAll": "Tout sélectionner",
+    "hiring": "Embauche en cours...",
+    "hireSuccess_one": "{{count}} étudiant a bien été embauché.",
+    "hireSuccess_other": "{{count}} étudiants ont bien été embauchés.",
+    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée."
   },
   "dev": {
     "label": "Dev",
