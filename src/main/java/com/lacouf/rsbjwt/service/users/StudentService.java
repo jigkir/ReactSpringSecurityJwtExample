@@ -590,7 +590,7 @@ public class StudentService {
         if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED && rejectionMessage.equals(interview.getRejectionMessage()) && reschedulingTime.equals(interview.getInterviewDate())) {
             throw new InterviewAlreadyRescheduledException(interviewId);
         }
-        if (reschedulingTime.isBefore(LocalDateTime.now()) || interview.getInterviewStatus() == InterviewStatus.CANCELLED) {
+        if (interview.getInterviewDate().isBefore(LocalDateTime.now()) || interview.getInterviewStatus() == InterviewStatus.CANCELLED) {
             throw new InterviewCancelledException(interviewId);
         }
         if (rejectionMessage == null || rejectionMessage.isBlank()) {
@@ -598,7 +598,7 @@ public class StudentService {
         } else {
             interview.setRejectionMessage(rejectionMessage);
         }
-        if (reschedulingTime.isBefore(LocalDateTime.now())) {
+        if (reschedulingTime == null || reschedulingTime.isBefore(LocalDateTime.now())) {
             throw new InterviewInvalidDateException("Interview with ID " + interviewId + " requires a time in the future to be rescheduled");
         }
         interview.setStudentDecision(StudentDecision.RESCHEDULE_REQUESTED);

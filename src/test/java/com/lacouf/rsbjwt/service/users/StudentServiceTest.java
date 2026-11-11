@@ -77,10 +77,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.answer;
@@ -1745,7 +1742,7 @@ public class StudentServiceTest {
         assertThrows(InterviewInvalidMessageException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, blankMessage));
 
         assert StudentDecision.PENDING.equals(interview.getStudentDecision());
-        assert interview.getRejectionMessage() == null;
+        assert Objects.equals(interview.getRejectionMessage(), "");
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
