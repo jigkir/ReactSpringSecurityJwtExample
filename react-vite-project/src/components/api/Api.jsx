@@ -391,6 +391,16 @@ export async function denyInterviews(interviewId, comment) {
     return handleEmpty(response);
 }
 
+export async function rescheduleInterviews(interviewId, comment, interviewDate){
+    const response = await fetcher(`student/interviews/${interviewId}/reschedule`,
+        {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({comment,interviewDate})
+        } );
+    return handleEmpty(response);
+}
+
 //endregion
 
 // region Student documents (generic: CV, cover letters, transcripts)
