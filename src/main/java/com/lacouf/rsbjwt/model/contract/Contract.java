@@ -30,26 +30,9 @@ public class Contract {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "image", column = @Column(name = "manager_signature", columnDefinition = "bytea")),
-            @AttributeOverride(name = "signedAt", column = @Column(name = "manager_signed_at"))
-    })
-    private Signature managerSignature;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "image", column = @Column(name = "student_signature", columnDefinition = "bytea")),
-            @AttributeOverride(name = "signedAt", column = @Column(name = "student_signed_at"))
-    })
-    private Signature studentSignature;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "image", column = @Column(name = "employer_signature", columnDefinition = "bytea")),
-            @AttributeOverride(name = "signedAt", column = @Column(name = "employer_signed_at"))
-    })
-    private Signature employerSignature;
+    private LocalDateTime managerSignedAt;
+    private LocalDateTime studentSignedAt;
+    private LocalDateTime employerSignedAt;
 
     public Contract() {
     }
@@ -64,15 +47,15 @@ public class Contract {
         return internship.getPostedBy();
     }
 
-    public Signature getSignatureOf(ContractParty party) {
+    public LocalDateTime getSignedAtOf(ContractParty party) {
         return switch (party) {
-            case STUDENT -> studentSignature;
-            case EMPLOYER -> employerSignature;
-            case MANAGER -> managerSignature;
+            case STUDENT -> studentSignedAt;
+            case EMPLOYER -> employerSignedAt;
+            case MANAGER -> managerSignedAt;
         };
     }
 
     public boolean isSignedBy(ContractParty party) {
-        return getSignatureOf(party) != null;
+        return getSignedAtOf(party) != null;
     }
 }
