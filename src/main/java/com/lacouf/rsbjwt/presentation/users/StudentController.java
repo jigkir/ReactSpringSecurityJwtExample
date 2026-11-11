@@ -15,8 +15,6 @@ import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
-import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
-import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
@@ -42,7 +40,6 @@ import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRescheduledExceptio
 import com.lacouf.rsbjwt.exception.interview.InterviewInvalidDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewInvalidMessageException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
-import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -232,7 +229,7 @@ public class StudentController {
     }
 
     @PutMapping("/interviews/{interviewId}/accept")
-    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws UserNotFoundException, InterviewNotFoundException, InterviewAlreadyAcceptedException {
+    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException {
         studentService.acceptInterviewOffer(authentication.getName(), interviewId);
         return ResponseEntity.noContent().build();
     }
