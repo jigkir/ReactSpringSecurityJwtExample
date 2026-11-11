@@ -29,7 +29,9 @@ import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
@@ -66,6 +68,8 @@ public class ManagerServiceTest {
     private UserAppService userAppService;
     @Mock
     private AcademicSessionService academicSessionService;
+    @Mock
+    private ContractService contractService;
 
     @Mock
     private ManagerRepository managerRepository;
@@ -866,6 +870,21 @@ public class ManagerServiceTest {
         inOrder.verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 1L);
         inOrder.verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REJECTED,
                 "Offer is no good.", 1L, internship.getPostedBy());
+    }
+
+    @Test
+    void shouldReturnContractsOfChosenSessionWhenGettingContracts() throws AcademicSessionNotFoundException {
+        // Arrange
+        ContractResponseDto contract = new ContractResponseDto(30L, InternshipResponseDto.of(internship), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", null, LocalDateTime.of(2026, 11, 10, 14, 30), null, null, null);
+
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(currentSession);
+        when(contractService.getContracts(currentSession)).thenReturn(List.of(contract));
+
+        // Act
+        List<ContractResponseDto> result = managerService.getContracts(1L);
+
+        // Assert
+        assert List.of(contract).equals(result);
     }
 
     // ---------- Helpers ----------

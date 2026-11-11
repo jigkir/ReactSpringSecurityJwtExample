@@ -20,6 +20,7 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -151,6 +153,32 @@ public class ContractServiceTest {
         // Assert
         assert contract != null;
         assert student.equals(contract.getStudent());
+    }
+
+    // ==========================================
+    // Contract List Tests
+    // ==========================================
+
+    @Test
+    void shouldReturnContractsOfSessionWhenGettingContracts() {
+        // Arrange
+        Contract contract = new Contract(offeredApplication(), NOW);
+        contract.setId(30L);
+
+        when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract));
+
+        // Act
+        List<ContractResponseDto> contracts = contractService.getContracts(internship.getSession());
+
+        // Assert
+        assert contracts.size() == 1;
+        assert "Jane Doe".equals(contracts.getFirst().studentName());
+        assert "Company Name".equals(contracts.getFirst().companyName());
+        assert "Software Developer".equals(contracts.getFirst().internship().title());
+        assert new BigDecimal("25.00").equals(contracts.getFirst().internship().compensationAmount());
+        assert internship.getStartDate().plusWeeks(16).minusDays(1).equals(contracts.getFirst().internshipEndDate());
+        assert contracts.getFirst().managerName() == null;
+        assert contracts.getFirst().managerSignedAt() == null;
     }
 
     // ==========================================
