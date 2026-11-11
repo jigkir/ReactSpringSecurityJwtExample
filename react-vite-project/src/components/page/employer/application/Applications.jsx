@@ -16,16 +16,20 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {NavLink, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import ApplicationCard from './ApplicationCard.jsx';
-import Icon from '../../../styles/Icon.jsx';
-import Badge from '../../../styles/Badge.jsx';
-import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
-import {getApplicationCv, getApplications, getEmployerInternships} from '../../api/Api.jsx';
-import {base64ToBlobUrl} from '../../../utils/documents.js';
-import {matchesSearch, toNum} from '../../../utils/Sort.jsx';
-import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
-import {usePolling} from '../../../utils/usePolling.js';
-import {useSession} from "../../../utils/useSession.js";
-import {useNewApplications} from "../../../utils/useNewApplications.js";
+import Icon from '../../../../styles/Icon.jsx';
+import Badge from '../../../../styles/Badge.jsx';
+import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
+import {getApplicationCv, getApplications, getEmployerInternships} from '../../../api/Api.jsx';
+import {base64ToBlobUrl} from '../../../../utils/documents.js';
+import {matchesSearch, toNum} from '../../../../utils/Sort.jsx';
+import {
+    TARGET_TYPE,
+    useCloseShownNotifications,
+    useNotifications
+} from '../../../notification/NotificationsProvider.jsx';
+import {usePolling} from '../../../../utils/usePolling.js';
+import {useSession} from "../../../../utils/useSession.js";
+import {useNewApplications} from "../../../../utils/useNewApplications.js";
 
 const ALL = "ALL";
 

@@ -18,7 +18,7 @@
  * CV tab: when a status is picked in the filter, every row gets a coloured border
  * (red = rejected, yellow = pending, green = approved), like the manager page.
  *
- * `preview` (Home page): no card shell, only the first MAX_PREVIEW_ITEMS documents,
+ * `preview` (Home page): no card shell, all matching documents,
  * each one its own card.
  *
  * `selection` ("pick" mode, used when applying to an internship): only APPROVED CVs are listed,
@@ -55,7 +55,6 @@ import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
 import {sortCvsNewest} from '../../../utils/Sort.jsx';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
-import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 
 const ALL = "ALL";
 
@@ -114,7 +113,7 @@ function DocumentList({
     const filtered = docs && hasStatusFilter && status !== "ALL"
         ? docs.filter((d) => (d.status ?? "PENDING") === status)
         : docs;
-    const shown = filtered && preview ? filtered.slice(0, MAX_PREVIEW_ITEMS) : filtered;
+    const shown = filtered;
     const filterHidesAll = Boolean(docs?.length) && shown?.length === 0;
     const bordered = hasStatusFilter && status !== "ALL";
 

@@ -229,19 +229,19 @@ public class StudentController {
     }
 
     @PutMapping("/interviews/{interviewId}/accept")
-    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException {
+    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
         studentService.acceptInterviewOffer(authentication.getName(), interviewId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/interviews/{interviewId}/refuse")
-    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException {
+    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
         studentService.rejectInterviewOffer(authentication.getName(), interviewId, rejection.comment());
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/interviews/{interviewId}/reschedule")
-    public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws InterviewAlreadyRescheduledException, InterviewNotFoundException, InterviewInvalidDateException {
+    public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws InterviewAlreadyRescheduledException, InterviewNotFoundException, InterviewInvalidDateException, InterviewCancelledException {
         studentService.rescheduleInterviewOffer(authentication.getName(), interviewId, rescheduling);
         return ResponseEntity.noContent().build();
     }

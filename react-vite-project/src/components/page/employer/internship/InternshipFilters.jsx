@@ -1,7 +1,7 @@
 import {useTranslation} from 'react-i18next';
-import Icon from '../../../styles/Icon.jsx';
-import {INTERNSHIP_SORT_OPTIONS, useInternshipFilters} from '../../../utils/Sort.jsx';
-import {getStatusBorder} from '../../../styles/AppStyles.jsx';
+import Icon from '../../../../styles/Icon.jsx';
+import {INTERNSHIP_SORT_OPTIONS, useInternshipFilters} from '../../../../utils/Sort.jsx';
+import {getStatusBorder} from '../../../../styles/AppStyles.jsx';
 
 export {useInternshipFilters};
 

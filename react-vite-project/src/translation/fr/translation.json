@@ -586,7 +586,9 @@
     "statuses": {
       "upcoming": "À venir",
       "past": "Passée",
-      "cancelled": "Annulée"
+      "cancelled": "Annulée",
+      "rejected" : "Rejettée",
+      "accepted" : "Acceptée"
     },
     "types": {
       "ONLINE": "En ligne",
