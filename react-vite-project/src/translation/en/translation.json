@@ -632,6 +632,20 @@
       "noResults": "No interviews match your filters."
     }
   },
+  "employerInterviews": {
+    "title": "Interviews",
+    "subtitle": "Interviews you have scheduled with students",
+    "loading": "Loading interviews…",
+    "loadError": "Could not load interviews.",
+    "empty": "You have not scheduled any interviews yet.",
+    "invalidDate": "Invalid date",
+    "details": "Meeting details",
+    "notProvided": "Not provided",
+    "rejectionReason": "Reason for declining",
+    "statuses": {"upcoming": "Upcoming", "past": "Past", "cancelled": "Cancelled"},
+    "types": {"ONLINE": "Online", "IN_PERSON": "In person", "PHONE": "Phone"},
+    "decisions": {"PENDING": "Awaiting response", "ACCEPTED": "Accepted", "REJECTED": "Declined"}
+  },
   "expiredUser": {
     "pendingBadge": "Waiting for supervisor approval",
     "rejectedBadge": "Request rejected by supervisor",

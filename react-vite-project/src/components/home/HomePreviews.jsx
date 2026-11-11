@@ -14,6 +14,7 @@ import ManagerCv from '../page/manager/Cv.jsx';
 import ManagerInternships from '../page/manager/Internships.jsx';
 import PostInternship from '../page/employer/internship/PostInternship.jsx';
 import Applications from '../page/employer/application/Applications.jsx';
+import EmployerInterviews from "../page/employer/interview/EmployerInterviews.jsx";
 
 export const PREVIEWS_BY_ROLE = {
     STUDENT: [
@@ -40,6 +41,12 @@ export const PREVIEWS_BY_ROLE = {
             titleKey: "home.managerInternshipsLink",
             render: () => <ManagerInternships preview/>
         },
+        {
+            to: "/employer/interviews",
+            titleKey: "navbar.interviews",
+            render: () => <EmployerInterviews preview/>
+
+        }
     ],
     TEACHER: [],
 };
