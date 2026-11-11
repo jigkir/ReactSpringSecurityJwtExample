@@ -375,6 +375,22 @@ export async function getStudentInterviews() {
     return handleResponse(response);
 }
 
+export async function acceptInterviews(interviewId) {
+    const response = await fetcher(`student/interviews/${interviewId}/accept`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
+export async function denyInterviews(interviewId, comment) {
+    const response = await fetcher(`student/interviews/${interviewId}/refuse`,
+        {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({comment})
+        }
+        );
+    return handleEmpty(response);
+}
+
 //endregion
 
 // region Student documents (generic: CV, cover letters, transcripts)
