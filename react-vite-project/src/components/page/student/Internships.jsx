@@ -2,8 +2,8 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import InternshipCard from "../internship/InternshipCard.jsx";
-import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
+import InternshipCard from "../employer/internship/InternshipCard.jsx";
+import InternshipFilters, {useInternshipFilters} from '../employer/internship/InternshipFilters.jsx';
 import ApplyControls from "./ApplyControls.jsx";
 import {
     getDocuments,
@@ -13,7 +13,6 @@ import {
     markInternshipsAsViewed
 } from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
-import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../utils/useSession.js";
@@ -49,7 +48,7 @@ function StudentInternships({preview = false}) {
         return internship.viewed ? 2 : 0;            // OLD : NEW
     };
     const ordered = [...visible].sort((a, b) => groupOf(a) - groupOf(b));
-    const shown = preview ? ordered.slice(0, MAX_PREVIEW_ITEMS) : ordered;
+    const shown = ordered;
 
     const unviewedIdsRef = useRef([]);
     useEffect(() => {

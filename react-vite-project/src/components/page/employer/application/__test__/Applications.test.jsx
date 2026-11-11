@@ -1,12 +1,12 @@
 import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {BrowserRouter} from 'react-router-dom';
-import Applications from '../Applications';
+import Applications from '../Applications.jsx';
 import {
     getApplicationCv,
     getApplications,
     getEmployerInterviewsByApplicationId,
     getEmployerInternships
-} from '../../../api/Api.jsx';
+} from '../../../../api/Api.jsx';
 
 vi.mock('../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),

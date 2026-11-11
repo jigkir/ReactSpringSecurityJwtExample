@@ -9,7 +9,7 @@
  *
  * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters).
  *
- * `preview` (Home page): no card shell, no toolbar, only the first MAX_PREVIEW_ITEMS CVs
+ * `preview` (Home page): no card shell, no toolbar, all CVs still waiting for review
  * still waiting for review.
  *
  * The backend returns the updated DTO after a decision: it is patched into the list so the row
@@ -40,7 +40,6 @@ import {blobUrlFromFile, formatDate} from '../../../utils/documents.js';
 import {CV_SORT_OPTIONS, useCvFilters} from '../../../utils/Sort.jsx';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
-import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import {useSession} from "../../../utils/useSession.js";
 
 // Module-level: a stable reference, so an open PDF preview is never reloaded by a re-render
@@ -81,7 +80,7 @@ function CvReviewList({dark, preview = false}) {
     const bordered = !preview && filters.status !== "ALL";
 
     const filtered = docs === null ? null : filters.visible;
-    const shown = preview && filtered ? filtered.filter(isPending).slice(0, MAX_PREVIEW_ITEMS) : filtered;
+    const shown = preview && filtered ? filtered.filter(isPending) : filtered;
 
     // ── Decision ──────────────────────────────────────────────────────────────
 

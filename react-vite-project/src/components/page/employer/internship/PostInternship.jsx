@@ -4,21 +4,20 @@ import {useTranslation} from 'react-i18next';
 import InternshipForm from './InternshipForm.jsx';
 import InternshipCard from './InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
-import Button from '../../../styles/Button.jsx';
-import {translateWarning} from '../../../utils/CommonFields.jsx';
-import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../../styles/Button.jsx';
+import {translateWarning} from '../../../../utils/CommonFields.jsx';
+import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
 import {
     createInternship,
     deleteInternship,
     getApplicationCount,
     getEmployerInternships,
     updateInternship
-} from '../../api/Api.jsx';
-import {usePolling} from "../../../utils/usePolling.js";
-import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
-import PreviewState from '../../home/PreviewState.jsx';
-import {useSession} from "../../../utils/useSession.js";
-import {TARGET_TYPE, useCloseShownNotifications} from "../../notification/NotificationsProvider.jsx";
+} from '../../../api/Api.jsx';
+import {usePolling} from "../../../../utils/usePolling.js";
+import PreviewState from '../../../home/PreviewState.jsx';
+import {useSession} from "../../../../utils/useSession.js";
+import {TARGET_TYPE, useCloseShownNotifications} from "../../../notification/NotificationsProvider.jsx";
 
 // <PostInternship user />          full page (route /internships)
 // <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
@@ -39,7 +38,7 @@ function PostInternship({user, preview = false}) {
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
-    const shown = preview ? visible.slice(0, MAX_PREVIEW_ITEMS) : visible;
+    const shown = visible;
 
     const shownInternshipIds = useMemo(
         () => (preview || loading ? null : internships.map((internship) => internship.id)),

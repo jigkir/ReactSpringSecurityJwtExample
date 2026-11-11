@@ -1,9 +1,9 @@
-import {getInternshipFormClasses} from "../../../../styles/AppStyles.jsx";
-import Button from "../../../../styles/Button.jsx";
+import {getInternshipFormClasses} from "../../../../../styles/AppStyles.jsx";
+import Button from "../../../../../styles/Button.jsx";
 import {useTranslation} from "react-i18next";
-import {Field, translateWarning} from "../../../../utils/CommonFields.jsx";
+import {Field, translateWarning} from "../../../../../utils/CommonFields.jsx";
 import {useState} from "react";
-import AutoResizeTextarea from "../../../../styles/AutoResizeTextarea.jsx";
+import AutoResizeTextarea from "../../../../../styles/AutoResizeTextarea.jsx";
 
 const INITIAL_FORM = {
     interviewDate: "",

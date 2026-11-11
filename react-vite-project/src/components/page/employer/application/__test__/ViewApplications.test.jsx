@@ -1,7 +1,7 @@
 import {render, screen, waitFor} from '@testing-library/react';
 import {BrowserRouter} from 'react-router-dom';
-import ViewApplications from '../ViewApplications';
-import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from '../../../api/Api.jsx';
+import ViewApplications from '../ViewApplications.jsx';
+import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from '../../../../api/Api.jsx';
 
 
 vi.mock('../../../api/Api.jsx', () => ({
@@ -35,8 +35,8 @@ vi.mock('react-i18next', () => ({
 }));
 
 const MockViewApplications = ({user}) => (<BrowserRouter>
-        <ViewApplications user={user}/>
-    </BrowserRouter>);
+    <ViewApplications user={user}/>
+</BrowserRouter>);
 
 describe('ViewApplications Component', () => {
     const loggedInUser = {isLoggedIn: true};

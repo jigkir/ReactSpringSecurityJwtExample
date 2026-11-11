@@ -1,6 +1,6 @@
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {getEmployerInterviewsByApplicationId} from '../../../api/Api.jsx';
+import {getEmployerInterviewsByApplicationId} from '../../../../api/Api.jsx';
 
 vi.mock('../../../api/Api.jsx', () => ({
     getEmployerInterviewsByApplicationId: vi.fn(),
@@ -34,7 +34,7 @@ vi.mock('../../../../styles/Button.jsx', () => ({
         <button onClick={onClick} aria-expanded={expanded}>{children}</button>)
 }));
 
-import ApplicationCard from '../ApplicationCard';
+import ApplicationCard from '../ApplicationCard.jsx';
 
 describe('ApplicationCard Component', () => {
     const mockApplication = {

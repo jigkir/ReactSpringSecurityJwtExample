@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-import { useLocation, useOutletContext } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { getPostInternshipClasses } from "../../../styles/AppStyles.jsx";
-import { acceptInterviews, denyInterviews, getStudentInterviews } from "../../api/Api.jsx";
-import { usePolling } from "../../../utils/usePolling.js";
-import { MAX_PREVIEW_ITEMS } from "../../home/PreviewLoaders.js";
+import {useCallback, useEffect, useState} from "react";
+import {useLocation, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
+import {acceptInterviews, denyInterviews, getStudentInterviews} from "../../api/Api.jsx";
+import {usePolling} from "../../../utils/usePolling.js";
 import PreviewState from "../../home/PreviewState.jsx";
 import InterviewCard from "./InterviewCard.jsx";
 
@@ -45,20 +44,22 @@ const sortInterviews = (interviews) => {
     });
 };
 
-export default function Interviews({ preview = false }) {
-    const { dark } = useOutletContext();
-    const { t, i18n } = useTranslation();
+function Interviews({preview = false}) {
+    const {dark} = useOutletContext();
+    const {t, i18n} = useTranslation();
     const s = getPostInternshipClasses(dark);
 
     const [interviews, setInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-    const { hash } = useLocation();
+    const {hash} = useLocation();
 
-    // Filters & Actions State
+    // Filters
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [typeFilter, setTypeFilter] = useState("ALL");
+
+    // Rejection state
     const [confirmId, setConfirmId] = useState(null);
     const [rejectComment, setRejectComment] = useState("");
     const [busyId, setBusyId] = useState(null);
@@ -82,6 +83,16 @@ export default function Interviews({ preview = false }) {
 
     usePolling(loadInterviews);
 
+    const closeForm = () => {
+        setConfirmId(null);
+        setRejectComment("");
+    };
+
+    const startReject = (interview) => {
+        setConfirmId(interview.id);
+        setRejectComment(interview.studentRejectionComment ?? "");
+    };
+
     const handleAccept = async (interviewId) => {
         setBusyId(interviewId);
         try {
@@ -98,8 +109,7 @@ export default function Interviews({ preview = false }) {
         setBusyId(interviewId);
         try {
             await denyInterviews(interviewId, rejectComment.trim());
-            setConfirmId(null);
-            setRejectComment("");
+            closeForm();
             await loadInterviews();
         } catch (err) {
             console.error("Failed to deny interview:", err);
@@ -122,11 +132,12 @@ export default function Interviews({ preview = false }) {
         return matchesSearch && matchesStatus && matchesType;
     });
 
-    const shown = preview ? visibleInterviews.slice(0, MAX_PREVIEW_ITEMS) : visibleInterviews;
+    // Home preview shows every matching interview, like the other previews
+    const shown = visibleInterviews;
 
     useEffect(() => {
         if (preview || loading || !hash) return;
-        document.getElementById(hash.slice(1))?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
     }, [hash, loading, preview]);
 
     const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
@@ -134,27 +145,30 @@ export default function Interviews({ preview = false }) {
         dark ? "bg-slate-800 border-slate-600 text-white" : "bg-white border-slate-300 text-slate-900"
     }`;
 
+    const renderCard = (interview) => (
+        <InterviewCard
+            key={interview.id}
+            interview={interview}
+            dark={dark}
+            locale={locale}
+            hash={hash}
+            preview={preview}
+            busy={busyId === interview.id}
+            isConfirmingReject={confirmId === interview.id}
+            rejectComment={rejectComment}
+            onRejectCommentChange={setRejectComment}
+            onAccept={handleAccept}
+            onStartReject={startReject}
+            onDeny={handleDeny}
+            onCloseForm={closeForm}
+        />
+    );
+
+    // Home preview: same states and spacing as every other Home preview
     if (preview) {
         return (
             <PreviewState dark={dark} error={error} loading={loading} empty={shown.length === 0}>
-                {shown.map((interview) => (
-                    <InterviewCard
-                        key={interview.id}
-                        interview={interview}
-                        dark={dark}
-                        locale={locale}
-                        hash={hash}
-                        preview={preview}
-                        busy={busyId === interview.id}
-                        isConfirmingReject={confirmId === interview.id}
-                        rejectComment={rejectComment}
-                        onRejectCommentChange={setRejectComment}
-                        onAccept={handleAccept}
-                        onStartReject={(i) => { setConfirmId(i.id); setRejectComment(i.studentRejectionComment ?? ""); }}
-                        onDeny={handleDeny}
-                        onCloseForm={() => { setConfirmId(null); setRejectComment(""); }}
-                    />
-                ))}
+                {shown.map(renderCard)}
             </PreviewState>
         );
     }
@@ -219,33 +233,22 @@ export default function Interviews({ preview = false }) {
                     </div>
 
                     {loading && <p className={s.loadingText}>{t("studentInterviews.loading")}</p>}
-                    {!loading && error && <p className={s.errorText} role="alert">{t("studentInterviews.loadError")}</p>}
+
+                    {!loading && error && (
+                        <p className={s.errorText} role="alert">{t("studentInterviews.loadError")}</p>
+                    )}
+
                     {!loading && !error && visibleInterviews.length === 0 && (
                         <p className={s.emptyText}>
                             {t(interviews.length === 0 ? "studentInterviews.empty" : "studentInterviews.filters.noResults")}
                         </p>
                     )}
 
-                    {!loading && !error && shown.map((interview) => (
-                        <InterviewCard
-                            key={interview.id}
-                            interview={interview}
-                            dark={dark}
-                            locale={locale}
-                            hash={hash}
-                            preview={preview}
-                            busy={busyId === interview.id}
-                            isConfirmingReject={confirmId === interview.id}
-                            rejectComment={rejectComment}
-                            onRejectCommentChange={setRejectComment}
-                            onAccept={handleAccept}
-                            onStartReject={(i) => { setConfirmId(i.id); setRejectComment(i.studentRejectionComment ?? ""); }}
-                            onDeny={handleDeny}
-                            onCloseForm={() => { setConfirmId(null); setRejectComment(""); }}
-                        />
-                    ))}
+                    {!loading && !error && shown.map(renderCard)}
                 </div>
             </div>
         </div>
     );
 }
+
+export default Interviews;
