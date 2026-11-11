@@ -86,12 +86,14 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
-    const navItems = [{to: homePath, label: t("navbar.accueil"), end: true}, {
-        to: "/about",
-        label: t("navbar.about")
-    }, ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
-        ...item, label: item.labelKey ? t(item.labelKey) : item.label,
-    })),];
+    // Order: Home, role links, then About always last (right before the notification bell)
+    const navItems = [
+        {to: homePath, label: t("navbar.accueil"), end: true},
+        ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
+            ...item, label: item.labelKey ? t(item.labelKey) : item.label,
+        })),
+        {to: "/about", label: t("navbar.about")},
+    ];
 
     const linkClass = ({isActive}) => `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
@@ -108,7 +110,8 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                 <div className="flex items-center justify-between h-14">
 
                     {/* ───────── Left side ───────── */}
-                    <div className="flex items-center gap-1.5 sm:gap-3 xl:gap-6 min-w-0 flex-1.5 justify-start">
+                    <div
+                        className="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-3 xl:gap-6 min-w-0 justify-start">
                         {/* Desktop brand */}
                         <Link to={homePath}
                               className={`hidden xl:flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -152,16 +155,17 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                     <Icon name="menu" size={24}/>
                                 </button>
 
-                                <Link to={homePath} className="text-xl sm:text-2xl leading-none tracking-tight">
+                                <Link to={homePath}
+                                      className="text-lg min-[380px]:text-xl sm:text-2xl leading-none tracking-tight">
                                     <div
-                                        className="flex items-center font-extrabold text-xl sm:text-2xl tracking-tight select-none group cursor-pointer">
+                                        className="flex items-center font-extrabold text-lg min-[380px]:text-xl sm:text-2xl tracking-tight select-none group cursor-pointer">
                                         {/* Always light text for dark-colored navbars */}
                                         <span className="text-white transition-colors duration-150">
                                             Intern
                                         </span>
                                         {/* TLD Badge adapted for dark backgrounds */}
                                         <span
-                                            className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
+                                            className={`ml-1 px-1 sm:px-1.5 py-0.5 rounded-md text-lg min-[380px]:text-xl sm:text-2xl font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`}>
                                             .ly
                                         </span>
                                     </div>
@@ -176,7 +180,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                     </div>
 
                     {/*Center section*/}
-                    {isLoggedIn && isAccessGranted && (<div className="hidden sm:flex flex-1 justify-center shrink-0">
+                    {isLoggedIn && isAccessGranted && (<div className="hidden sm:flex flex-1 justify-center px-2">
                         <SessionSelect
                             className={`px-3 py-1 rounded-lg text-sm border text-white  ${dark ? "bg-slate-800 border-slate-700 " : "border-gray-300 [&>option]:text-gray-900"}`}
                             errorClassName="text-sm text-red-300"
@@ -184,12 +188,15 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                     </div>)}
 
                     {/* ───────── Right side ───────── */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 flex-1 justify-end">
+                    <div className="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-2 xl:gap-3 ml-auto justify-end">
                         <button onClick={toggleLang}
                                 className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
                                 aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
                             <Icon name="language" size={16}/>
-                            {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                            {/* Icon only on very narrow screens (320px) so the bar does not overflow */}
+                            <span className="max-[379px]:hidden">
+                                {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
+                            </span>
                         </button>
 
                         <button onClick={toggleDark}
@@ -256,20 +263,32 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                 </span>
                             </Link>)}
 
-                            {authMenuOpen && (<div className={`${dropdownPanel} right-0`}>
-                                {isLoggedIn && (<>
-                                    <div
-                                        className={`px-4 py-2 text-xs border-b ${dark ? "border-slate-700 text-slate-400" : "border-gray-100 text-gray-500"}`}>
-                                        {user.firstName} {user.lastName} ({formatRole(role)})
-                                    </div>
-                                </>)}
+                            {/* Wherever the person icon shows (below xl): name + role, then logout */}
+                            {authMenuOpen && isLoggedIn && (<div className={`${dropdownPanel} right-0`}>
+                                <div
+                                    className={`px-4 py-2 mb-1 border-b ${dark ? "border-slate-600" : "border-gray-200"}`}>
+                                    <p className={`text-sm font-semibold truncate ${dark ? "text-white" : "text-gray-900"}`}>
+                                        {user.firstName} {user.lastName}
+                                    </p>
+                                    {role && (
+                                        <p className={`text-xs ${dark ? "text-slate-400" : "text-gray-500"}`}>
+                                            {formatRole(role)}
+                                        </p>
+                                    )}
+                                </div>
+                                <Link to="/logout"
+                                      className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold ${dark ? "text-red-400 hover:bg-slate-700/50" : "text-red-600 hover:bg-red-50"}`}>
+                                    <Icon name="logout" size={16}/>
+                                    {t("navbar.disconnect")}
+                                </Link>
                             </div>)}
                         </div>
 
-                        {/* Logout: icon visible on every screen size, text only on wide screens */}
+                        {/* Logout button: desktop only (xl+). Wherever the person icon shows
+                            (below xl), logout lives inside its dropdown instead. */}
                         {isLoggedIn && (
                             <Link to="/logout"
-                                  className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
+                                  className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1 max-xl:hidden ${dark ? "text-red-400!" : "text-red-300!"}`}
                                   aria-label={t("navbar.disconnect")}
                                   title={t("navbar.disconnect")}>
                                 <Icon name="logout" size={16}/>

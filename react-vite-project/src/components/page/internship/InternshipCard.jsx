@@ -100,38 +100,41 @@ function InternshipCard({
                 </div>
             )}
 
-            {/* Top row */}
-            <div className={s.topRow}>
-                <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 min-w-0">
-                        <h3 className={`${s.title} break-words [word-break:break-word] hyphens-auto max-w-full min-w-0`}>
-                            {internship.title}
-                        </h3>
+            {/* Header: title + badges share one row, the description below takes the full width */}
+            <div className="min-w-0">
+                <div className={s.topRow}>
+                    <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                            <h3 className={`${s.title} wrap-break-word [word-break:break-word] hyphens-auto max-w-full min-w-0`}>
+                                {internship.title}
+                            </h3>
+                        </div>
                     </div>
-                    {/* The description is always visible */}
-                    <p className={`${s.description} break-words`} style={{whiteSpace: "pre-wrap"}}>
-                        {internship.description}
-                    </p>
+                    {((showPreview && !viewed) || application) && (
+                        <div className="shrink-0 flex flex-col items-end gap-2">
+                            {showPreview && !viewed && (
+                                <Badge tone="new">{t("studentInternship.new")}</Badge>
+                            )}
+                            {application && (
+                                <span className={`${th.pillBase} ${th.statusPill("APPROVED")} ${bigPill}`}>
+                                    <Icon name="check_circle" size={18}/>
+                                    {t("studentInternship.appliedBadge")}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    {/* DESKTOP ONLY: Status badge aligned on top-right */}
+                    {statusBadge && (
+                        <div className="hidden md:block shrink-0">
+                            {statusBadge}
+                        </div>
+                    )}
                 </div>
-                {((showPreview && !viewed) || application) && (
-                    <div className="shrink-0 flex flex-col items-end gap-2">
-                        {showPreview && !viewed && (
-                            <Badge tone="new">{t("studentInternship.new")}</Badge>
-                        )}
-                        {application && (
-                            <span className={`${th.pillBase} ${th.statusPill("APPROVED")} ${bigPill}`}>
-                                <Icon name="check_circle" size={18}/>
-                                {t("studentInternship.appliedBadge")}
-                            </span>
-                        )}
-                    </div>
-                )}
-                {/* DESKTOP ONLY: Status badge aligned on top-right */}
-                {statusBadge && (
-                    <div className="hidden md:block shrink-0">
-                        {statusBadge}
-                    </div>
-                )}
+
+                {/* The description is always visible, full card width */}
+                <p className={`${s.description} w-full wrap-break-word`} style={{whiteSpace: "pre-wrap"}}>
+                    {internship.description}
+                </p>
             </div>
 
             {/* Rejection reason (visible to employer and manager) */}
@@ -142,7 +145,7 @@ function InternshipCard({
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                         {t("internshipCard.rejectionReason")}
                     </p>
-                    <p className={`mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`}
+                    <p className={`mt-0.5 text-sm font-semibold wrap-break-word ${dark ? "text-red-100" : "text-red-900"}`}
                        style={{whiteSpace: "pre-wrap"}}>
                         {internship.rejectionComment}
                     </p>
