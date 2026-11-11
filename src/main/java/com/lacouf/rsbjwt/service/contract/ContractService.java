@@ -10,27 +10,29 @@ import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+
 @Service
 public class ContractService {
 
     private final ContractRepository contractRepository;
+    private final Clock clock;
 
-    public ContractService(ContractRepository contractRepository) {
+    public ContractService(ContractRepository contractRepository, Clock clock) {
         this.contractRepository = contractRepository;
+        this.clock = clock;
     }
 
     @Transactional
-    public Contract createContract(InternshipApplication application)
-            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
+    public Contract createContract(InternshipApplication application) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
         checkIfContractCanBeCreated(application);
 
-       return contractRepository.save(new Contract(application));
+        return contractRepository.save(new Contract(application, LocalDateTime.now(clock)));
     }
 
-    private void checkIfContractCanBeCreated(InternshipApplication application)
-            throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
-
-        if (contractRepository.existsByInternshipApplicationId(application.getId())) {
+    private void checkIfContractCanBeCreated(InternshipApplication application) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
+        if (contractRepository.existsByStudentAndInternship(application.getStudent(), application.getInternship())) {
             throw new ContractAlreadyExistsException(application.getId());
         }
 
