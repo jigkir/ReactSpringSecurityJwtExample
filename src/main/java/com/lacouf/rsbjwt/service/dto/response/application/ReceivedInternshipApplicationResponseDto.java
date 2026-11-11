@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service.dto.response.application;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -23,7 +24,8 @@ public record ReceivedInternshipApplicationResponseDto(
         String transcriptFileName,
         LocalDate applicationDate,
         InternshipApplicationStatus internshipApplicationStatus,
-        EmployerDecision employerDecision
+        EmployerDecision employerDecision,
+        StudentInternshipConsent studentInternshipConsent
 ) {
 
     public static ReceivedInternshipApplicationResponseDto of(InternshipApplication internshipApplication) {
@@ -43,7 +45,8 @@ public record ReceivedInternshipApplicationResponseDto(
                 fileNameOf(internshipApplication.getAcademicTranscript()),
                 internshipApplication.getApplicationDate(),
                 internshipApplication.getInternshipApplicationStatus(),
-                internshipApplication.getEmployerDecision()
+                internshipApplication.getEmployerDecision(),
+                internshipApplication.getStudentInternshipConsent()
         );
     }
 
