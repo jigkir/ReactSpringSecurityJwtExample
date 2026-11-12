@@ -21,7 +21,7 @@ import {useSession} from "../../../utils/useSession.js";
 // <StudentInternships preview />  Home page block: the newest offers only, no header, no filters
 function StudentInternships({preview = false}) {
     const {dark} = useOutletContext();
-    const {t} = useTranslation();
+    const {t, i18n } = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
     const s = getPostInternshipClasses(dark);
@@ -37,6 +37,9 @@ function StudentInternships({preview = false}) {
         [appliedInternships]);
     const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
+    const lang = i18n.resolvedLanguage ?? i18n.language;
+    const langRef = useRef(lang);
+    langRef.current = lang;
 
     const shownInternshipIds = useMemo(
         () => (preview || loading ? null : internships.map((internship) => internship.id)),
@@ -62,9 +65,10 @@ function StudentInternships({preview = false}) {
     }, []);
 
     const loadInternships = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!selectedSession) return;
         try {
             const data = await getStudentInternships(selectedSession.id);
+            if (lang !== langRef.current) return; // language changed while the request was in flight
             setInternships(data
                 .filter(internship => internship.status === 'APPROVED')
                 .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)));
@@ -74,7 +78,7 @@ function StudentInternships({preview = false}) {
         } finally {
             setLoading(false);
         }
-    }, [selectedSession]);
+    }, [selectedSession, lang]);
 
     const loadAppliedInternships = useCallback(async () => {
         if (!selectedSession) return; // sessions still loading

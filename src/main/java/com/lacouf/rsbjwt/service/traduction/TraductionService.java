@@ -115,11 +115,11 @@ public class TraductionService {
                     try {
                         return new InternshipResponseDto(
                                 dto.id(),
-                                traductStringToLanguage(dto.title(), targetLang),
-                                traductStringToLanguage(dto.description(), targetLang),
-                                traductStringToLanguage(dto.requiredSkills(), targetLang),
+                                dto.title(),
+                                dto.description(),
+                                dto.requiredSkills(),
                                 dto.durationInWeeks(),
-                                traductStringToLanguage(dto.location(), targetLang),
+                                dto.location(),
                                 dto.workMode(),
                                 dto.startDate(),
                                 dto.applicationDeadline(),
