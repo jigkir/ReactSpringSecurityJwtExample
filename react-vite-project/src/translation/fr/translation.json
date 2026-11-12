@@ -604,7 +604,23 @@
       "all": "Tous les statuts",
       "allTypes": "Tous les types",
       "noResults": "Aucune entrevue ne correspond aux filtres."
-    }
+    },
+    "rejectionReason": "Raison de rejection",
+    "rescheduledReason": "Détails de la demande de report",
+    "chooseNewDate": "Choisissez une nouvelle date et heure",
+    "reasonMessage": "Motif / Message :",
+    "rejectionReasonLabel": "Motif du refus :",
+    "reschedulePlaceholder": "Expliquez pourquoi vous devez reporter...",
+    "rejectPlaceholder": "Précisez le motif du refus...",
+    "confirmNewMessage": "Confirmer le nouveau message",
+    "confirmRejection": "Confirmer le refus",
+    "confirmReschedule": "Confirmer le report",
+    "cancel": "Annuler",
+    "accept": "Accepter",
+    "editReschedule": "Modifier le report",
+    "changeDate": "Changer la date",
+    "editMessage": "Modifier le message",
+    "reject": "Refuser"
   },
   "employerInterviews": {
     "title": "Entrevues",

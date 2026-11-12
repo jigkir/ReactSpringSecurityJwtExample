@@ -98,7 +98,7 @@ function Interviews({ preview = false }) {
     const startReject = (interview) => {
         setConfirmId(interview.id);
         setActiveMode("REJECT");
-        setRejectComment(interview.studentRejectionComment ?? interview.rejectionMessage ?? "");
+        setRejectComment(interview.studentRejectionComment ?? "");
         setNouvelDate("");
     };
 

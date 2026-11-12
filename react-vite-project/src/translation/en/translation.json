@@ -617,7 +617,10 @@
     "statuses": {
       "upcoming": "Upcoming",
       "past": "Past",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "rejected": "Rejected",
+      "accepted": "Accepted",
+      "rescheduled": "Rescheduled"
     },
     "types": {
       "ONLINE": "Online (video call)",
@@ -632,7 +635,23 @@
       "all": "All statuses",
       "allTypes": "All types",
       "noResults": "No interviews match your filters."
-    }
+    },
+    "rejectionReason": "Rejection reason",
+    "rescheduledReason": "Reschedule request details",
+    "chooseNewDate": "Choose new date and time",
+    "reasonMessage": "Reason / Message:",
+    "rejectionReasonLabel": "Rejection reason:",
+    "reschedulePlaceholder": "Explain why you need to reschedule...",
+    "rejectPlaceholder": "Specify the reason for rejecting...",
+    "confirmNewMessage": "Confirm new message",
+    "confirmRejection": "Confirm rejection",
+    "confirmReschedule": "Confirm reschedule",
+    "cancel": "Cancel",
+    "accept": "Accept",
+    "editReschedule": "Edit reschedule",
+    "changeDate": "Change date",
+    "editMessage": "Edit message",
+    "reject": "Reject"
   },
   "employerInterviews": {
     "title": "Interviews",
