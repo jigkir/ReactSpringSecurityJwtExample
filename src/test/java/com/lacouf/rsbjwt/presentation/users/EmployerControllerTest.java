@@ -17,6 +17,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
@@ -355,7 +356,7 @@ public class EmployerControllerTest {
     void shouldReturnReceivedInternshipApplications() throws Exception {
         // Arrange
         StudentSummaryDto student = new StudentSummaryDto(3L, "Jane", "Doe", "student@example.com", "1234567", Discipline.COMPUTER_SCIENCE);
-        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", null, null, null, null, LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING);
+        ReceivedInternshipApplicationResponseDto receivedInternshipApplication = new ReceivedInternshipApplicationResponseDto(20L, 10L, "Software Developer", student, 5L, "cv.pdf", null, null, null, null, LocalDate.now(), InternshipApplicationStatus.UNREAD, EmployerDecision.PENDING, StudentInternshipConsent.PENDING);
 
         when(employerService.getReceivedInternshipApplications(EMPLOYER_EMAIL, null)).thenReturn(List.of(receivedInternshipApplication));
 
@@ -488,7 +489,7 @@ public class EmployerControllerTest {
     void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED");
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "");
 
         when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
 
@@ -571,7 +572,7 @@ public class EmployerControllerTest {
     void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO cancelled = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED");
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "");
 
         when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
 
@@ -666,7 +667,8 @@ public class EmployerControllerTest {
                 "2026-11-01T14:30",
                 "IN_PERSON",
                 "123 Main St",
-                "SCHEDULED"
+                "SCHEDULED",
+                ""
         );
     }
 

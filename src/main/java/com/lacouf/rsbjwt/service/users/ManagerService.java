@@ -22,7 +22,9 @@ import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -48,8 +50,9 @@ public class ManagerService {
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
+    private final ContractService contractService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService, ContractService contractService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
@@ -59,6 +62,7 @@ public class ManagerService {
         this.userAppService = userAppService;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
+        this.contractService = contractService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -188,6 +192,10 @@ public class ManagerService {
         }
 
         return InternshipResponseDto.of(internship);
+    }
+
+    public List<ContractResponseDto> getContracts(Long sessionId) throws AcademicSessionNotFoundException {
+        return contractService.getContracts(academicSessionService.findSessionOrCurrent(sessionId));
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {

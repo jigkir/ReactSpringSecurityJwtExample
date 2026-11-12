@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
@@ -109,5 +110,10 @@ public class ManagerController {
     @PutMapping("/students/{studentId}/deny")
     public ResponseEntity<StudentAccessResponseDto> denyStudentAccess(@PathVariable long studentId) throws UserNotFoundException {
         return ResponseEntity.ok(accountAccessService.denyStudentAccess(studentId));
+    }
+
+    @GetMapping("/contracts")
+    public ResponseEntity<List<ContractResponseDto>> getContracts(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getContracts(sessionId));
     }
 }

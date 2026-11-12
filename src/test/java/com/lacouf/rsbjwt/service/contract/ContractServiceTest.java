@@ -10,6 +10,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -19,6 +20,7 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +28,11 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -34,7 +40,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ContractServiceTest {
 
-    @InjectMocks
     private ContractService contractService;
 
     @Mock
@@ -46,6 +51,7 @@ public class ContractServiceTest {
     private static final long APPLICATION_ID = 20L;
     private static final String STUDENT_EMAIL = "student@example.com";
     private static final String EMPLOYER_EMAIL = "email@example.com";
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 10, 14, 30);
 
     private Employer employer;
     private Internship internship;
@@ -53,6 +59,9 @@ public class ContractServiceTest {
 
     @BeforeEach
     void setUp() {
+        ZoneId zone = ZoneId.systemDefault();
+        contractService = new ContractService(contractRepository, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
+
         Credentials employerCredentials = Credentials.builder()
                 .email(EMPLOYER_EMAIL)
                 .password("Test123@-encoded")
@@ -97,7 +106,7 @@ public class ContractServiceTest {
 
         Contract savedContract = contractArgumentCaptor.getValue();
 
-        assert application.equals(savedContract.getInternshipApplication());
+        assert internship.equals(savedContract.getInternship());
     }
 
     @Test
@@ -118,6 +127,22 @@ public class ContractServiceTest {
     }
 
     @Test
+    void shouldSetCreationDateWhenCreatingContract() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+
+        // Act
+        contractService.createContract(application);
+
+        // Assert
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        Contract savedContract = contractArgumentCaptor.getValue();
+
+        assert NOW.equals(savedContract.getCreatedAt());
+    }
+
+    @Test
     void shouldReturnSavedContractWhenCreatingContract() throws Exception {
         // Arrange
         when(contractRepository.save(any(Contract.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -131,13 +156,39 @@ public class ContractServiceTest {
     }
 
     // ==========================================
+    // Contract List Tests
+    // ==========================================
+
+    @Test
+    void shouldReturnContractsOfSessionWhenGettingContracts() {
+        // Arrange
+        Contract contract = new Contract(offeredApplication(), NOW);
+        contract.setId(30L);
+
+        when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract));
+
+        // Act
+        List<ContractResponseDto> contracts = contractService.getContracts(internship.getSession());
+
+        // Assert
+        assert contracts.size() == 1;
+        assert "Jane Doe".equals(contracts.getFirst().studentName());
+        assert "Company Name".equals(contracts.getFirst().companyName());
+        assert "Software Developer".equals(contracts.getFirst().internship().title());
+        assert new BigDecimal("25.00").equals(contracts.getFirst().internship().compensationAmount());
+        assert internship.getStartDate().plusWeeks(16).minusDays(1).equals(contracts.getFirst().internshipEndDate());
+        assert contracts.getFirst().managerName() == null;
+        assert contracts.getFirst().managerSignedAt() == null;
+    }
+
+    // ==========================================
     // Contract Creation Validation Tests
     // ==========================================
 
     @Test
     void shouldThrowContractAlreadyExistsExceptionWhenContractAlreadyExistsForApplication() {
         // Arrange
-        when(contractRepository.existsByInternshipApplicationId(APPLICATION_ID)).thenReturn(true);
+        when(contractRepository.existsByStudentAndInternship(student, internship)).thenReturn(true);
 
         // Act + Assert
         assertThrows(ContractAlreadyExistsException.class, () -> contractService.createContract(offeredApplication()));
@@ -181,7 +232,7 @@ public class ContractServiceTest {
     @Test
     void shouldThrowContractAlreadyExistsExceptionBeforeCheckingApplicationDecision() {
         // Arrange
-        when(contractRepository.existsByInternshipApplicationId(APPLICATION_ID)).thenReturn(true);
+        when(contractRepository.existsByStudentAndInternship(student, internship)).thenReturn(true);
 
         InternshipApplication application = applicationWithDecision(EmployerDecision.REJECTED);
 

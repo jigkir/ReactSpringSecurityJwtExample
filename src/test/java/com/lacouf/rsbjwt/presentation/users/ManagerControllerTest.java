@@ -13,6 +13,7 @@ import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.AccountStatus;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
@@ -410,6 +411,24 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.status").value("REJECTED"));
 
         verify(accountAccessService).denyStudentAccess(2L);
+    }
+
+    @Test
+    void shouldReturnContractsOfChosenSession() throws Exception {
+        // Arrange
+        ContractResponseDto contract = new ContractResponseDto(30L, internshipWith(ReviewStatus.APPROVED, null), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", null, LocalDateTime.of(2026, 11, 10, 14, 30), null, null, null);
+
+        when(managerService.getContracts(1L)).thenReturn(List.of(contract));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts").param("sessionId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].studentName").value("Marie Tremblay"))
+                .andExpect(jsonPath("$[0].internship.compensationAmount").value(25.00))
+                .andExpect(jsonPath("$[0].internshipEndDate").value("2027-05-02"));
+
+        verify(managerService).getContracts(1L);
     }
 
     // ---------- Helpers ----------

@@ -18,9 +18,9 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import InternshipCard from '../internship/InternshipCard.jsx';
-import InternshipFilters, {useInternshipFilters} from '../internship/InternshipFilters.jsx';
-import InternshipForm from '../internship/InternshipForm.jsx';
+import InternshipCard from '../employer/internship/InternshipCard.jsx';
+import InternshipFilters, {useInternshipFilters} from '../employer/internship/InternshipFilters.jsx';
+import InternshipForm from '../employer/internship/InternshipForm.jsx';
 import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 import Button from '../../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
@@ -33,7 +33,6 @@ import {
 } from '../../api/Api.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
-import {MAX_PREVIEW_ITEMS} from '../../home/PreviewLoaders.js';
 import PreviewState from '../../home/PreviewState.jsx';
 import {useSession} from "../../../utils/useSession.js";
 
@@ -64,9 +63,9 @@ const ManagerInternships = ({preview = false}) => {
     );
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
-    // Home preview: only the first offers still waiting for review
+    // Home preview: all offers still waiting for review
     const shown = preview
-        ? visible.filter((i) => i.status === "PENDING").slice(0, MAX_PREVIEW_ITEMS)
+        ? visible.filter((i) => i.status === "PENDING")
         : visible;
 
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${

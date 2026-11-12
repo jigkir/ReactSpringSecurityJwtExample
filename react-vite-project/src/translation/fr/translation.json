@@ -586,7 +586,9 @@
     "statuses": {
       "upcoming": "À venir",
       "past": "Passée",
-      "cancelled": "Annulée"
+      "cancelled": "Annulée",
+      "rejected": "Rejettée",
+      "accepted": "Acceptée"
     },
     "types": {
       "ONLINE": "En ligne",
@@ -601,6 +603,32 @@
       "all": "Tous les statuts",
       "allTypes": "Tous les types",
       "noResults": "Aucune entrevue ne correspond aux filtres."
+    }
+  },
+  "employerInterviews": {
+    "title": "Entrevues",
+    "subtitle": "Entrevues que vous avez planifiés avec des étudiants",
+    "loading": "Chargement des entrevues…",
+    "loadError": "Impossible de charger les entrevues.",
+    "empty": "Vous n’avez encore planifié aucun entrevue.",
+    "invalidDate": "Date non valide",
+    "details": "Détails de la rencontre",
+    "notProvided": "Non fourni",
+    "rejectionReason": "Motif du refus",
+    "statuses": {
+      "upcoming": "À venir",
+      "past": "Passé",
+      "cancelled": "Annulé"
+    },
+    "types": {
+      "ONLINE": "En ligne",
+      "IN_PERSON": "En personne",
+      "PHONE": "Par téléphone"
+    },
+    "decisions": {
+      "PENDING": "En attente",
+      "ACCEPTED": "Accepté",
+      "REJECTED": "Refusé"
     }
   },
   "viewApplication": {

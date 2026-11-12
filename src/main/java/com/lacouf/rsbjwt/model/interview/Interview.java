@@ -43,6 +43,7 @@ public class Interview {
     private MeetingType meetingType;
 
     @Getter
+    @Setter
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private InterviewStatus interviewStatus;
@@ -62,6 +63,7 @@ public class Interview {
         this.meetingType = meetingType;
         this.meetingDetails = meetingDetails;
         this.interviewStatus = InterviewStatus.SCHEDULED;
+        this.rejectionMessage = "";
     }
 
     public void update(String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {

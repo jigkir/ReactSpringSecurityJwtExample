@@ -14,7 +14,8 @@ public record InterviewStudentResponseDTO(
     String interviewDate,
     String meetingType,
     String meetingDetails,
-    String interviewStatus
+    String interviewStatus,
+    String rejectionMessage
 ) {
     public static InterviewStudentResponseDTO of(Interview interview) {
         InternshipApplication application = interview.getInternshipApplication();
@@ -30,7 +31,8 @@ public record InterviewStudentResponseDTO(
                 interview.getInterviewDate().toString(),
                 interview.getMeetingType().name(),
                 interview.getMeetingDetails(),
-                interview.getInterviewStatus().name()
+                interview.getInterviewStatus().name(),
+                interview.getRejectionMessage()
         );
     }
 }

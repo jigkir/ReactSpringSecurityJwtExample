@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getApplicationCardClasses} from "../../../styles/AppStyles.jsx";
-import Button from "../../../styles/Button.jsx";
-import Badge from "../../../styles/Badge.jsx";
-import PdfPreview from "../../documents/PdfPreview.jsx";
+import {getApplicationCardClasses} from "../../../../styles/AppStyles.jsx";
+import Button from "../../../../styles/Button.jsx";
+import Badge from "../../../../styles/Badge.jsx";
+import PdfPreview from "../../../documents/PdfPreview.jsx";
 import InterviewPicker from "./interview/InterviewPicker.jsx";
 import {
     createInterview,
@@ -11,9 +11,9 @@ import {
     getApplicationTranscript,
     getEmployerInterviewsByApplicationId,
     updateInterview
-} from "../../api/Api.jsx";
-import {blobUrlFromFile} from "../../../utils/documents.js";
-import {useToggleSet} from "../../../utils/useToggleSet.js";
+} from "../../../api/Api.jsx";
+import {blobUrlFromFile} from "../../../../utils/documents.js";
+import {useToggleSet} from "../../../../utils/useToggleSet.js";
 
 const COVER_LETTER = "COVER_LETTER";
 const TRANSCRIPT = "TRANSCRIPT";

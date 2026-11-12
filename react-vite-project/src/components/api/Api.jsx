@@ -294,7 +294,7 @@ export async function updateManagerInternship(internshipId, internship) {
 
 // endregion
 
-//region Manager Interviews
+//region Manager EmployerInterviews
 
 export async function updateInterview(interviewId, interviewRequest) {
     const response = await fetcher(`employer/interviews/${interviewId}`, {
@@ -368,11 +368,34 @@ export async function getApplicationCount() {
 
 //endregion
 
-//region Student Interviews
+//region Student EmployerInterviews
 
 export async function getStudentInterviews() {
     const response = await fetcher("student/interviews", {method: "GET"});
     return handleResponse(response);
+}
+
+export async function acceptInterviews(interviewId) {
+    const response = await fetcher(`student/interviews/${interviewId}/accept`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
+export async function denyInterviews(interviewId, comment) {
+    const response = await fetcher(`student/interviews/${interviewId}/refuse`,
+        {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({comment})
+        }
+        );
+    return handleEmpty(response);
+}
+
+//endregion
+
+//region Employer EmployerInterviews
+export async function getEmployerInterviews() {
+    return handleResponse(await fetcher("employer/interviews", {method: "GET"}));
 }
 
 //endregion

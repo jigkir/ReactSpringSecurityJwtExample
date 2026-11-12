@@ -8,7 +8,7 @@ import Signup from './components/page/auth/Signup.jsx';
 import {checkUserStatus, getCurrentUser} from './components/api/Api.jsx';
 import ErrorPage from './components/ErrorPage.jsx';
 import Logout from './components/page/auth/Logout.jsx';
-import PostInternship from './components/page/internship/PostInternship.jsx';
+import PostInternship from './components/page/employer/internship/PostInternship.jsx';
 import Home from './components/Home.jsx';
 import Portfolio from './components/page/portfolio/Portfolio.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
@@ -16,13 +16,14 @@ import ManagerInternships from './components/page/manager/Internships.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
-import ViewApplications from "./components/page/application/ViewApplications.jsx";
-import Applications from "./components/page/application/Applications.jsx";
+import ViewApplications from "./components/page/employer/application/ViewApplications.jsx";
+import Applications from "./components/page/employer/application/Applications.jsx";
 import Interviews from "./components/page/student/Interviews.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
 import Users from "./components/page/Users.jsx";
+import EmployerInterviews from "./components/page/employer/interview/EmployerInterviews.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -127,6 +128,7 @@ function App() {
                             <Route path="/internships" element={<PostInternship user={user}/>}/>
                             <Route path="/applications" element={<Applications user={user}/>}/>
                             <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
+                            <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>

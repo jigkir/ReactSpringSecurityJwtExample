@@ -23,6 +23,7 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
@@ -165,6 +166,7 @@ public class EmployerService {
 
         return internshipApplicationRepository.findByInternship_PostedBy_Credentials_EmailAndInternship_SessionAndInternship_DeletedFalse(email, session)
                 .stream()
+                .filter(this::isVisibleToEmployer)
                 .map(ReceivedInternshipApplicationResponseDto::of)
                 .toList();
     }
@@ -414,5 +416,12 @@ public class EmployerService {
 
     private void closeNewInternshipApplicationNotification(long applicationId) {
         notificationService.closeNotificationsOfType(NotificationType.NEW_INTERNSHIP_APPLICATION, applicationId);
+    }
+
+    private boolean isVisibleToEmployer(InternshipApplication application) {
+        boolean employed = application.getStudent().getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED;
+        boolean wasOffered = application.getStudentInternshipConsent() != StudentInternshipConsent.NOT_APPLICABLE;
+
+        return !employed || wasOffered;
     }
 }
