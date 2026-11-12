@@ -59,6 +59,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ManagerServiceTest {
+    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
 
     @InjectMocks
     private ManagerService managerService;
@@ -889,6 +890,23 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldSignContractWithoutPasswordWhenManagerDevSigns() throws Exception {
+        // Arrange
+        Manager manager = manager();
+        ContractResponseDto signedContract = new ContractResponseDto(30L, InternshipResponseDto.of(internship), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));
+
+        when(managerRepository.findByCredentialsEmail(MANAGER_EMAIL)).thenReturn(Optional.of(manager));
+        when(contractService.signAsManager(30L, manager)).thenReturn(signedContract);
+
+        // Act
+        ContractResponseDto result = managerService.devSignContract(MANAGER_EMAIL, 30L);
+
+        // Assert
+        assert signedContract.equals(result);
+        verifyNoInteractions(userAppService);
+    }
+
+    @Test
     void shouldReturnPendingContractsOfAllSessionsWhenGettingPendingContracts() {
         // Arrange
         ContractResponseDto contract = new ContractResponseDto(30L, InternshipResponseDto.of(internship), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", null, LocalDateTime.of(2026, 11, 10, 14, 30), null, null, null);
@@ -900,7 +918,7 @@ public class ManagerServiceTest {
 
         // Assert
         assert List.of(contract).equals(result);
-        
+
         verifyNoInteractions(academicSessionService);
     }
 
@@ -922,5 +940,11 @@ public class ManagerServiceTest {
 
     private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
         return new InternshipRequestDto("Développeur backend", "Stage en développement backend", "Java, Spring Boot", 16, "Montréal", WorkMode.HYBRID, startDate, internship.getApplicationDeadline(), compensationAmount, false);
+    }
+
+    private static Manager manager() {
+        Credentials credentials = Credentials.builder().email(MANAGER_EMAIL).role(Role.MANAGER).build();
+
+        return new Manager("John", "Doe", credentials, "450-555-0000");
     }
 }

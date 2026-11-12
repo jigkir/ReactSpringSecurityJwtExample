@@ -2,10 +2,14 @@ package com.lacouf.rsbjwt.presentation.dev;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,23 +18,27 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import(GlobalExceptionHandler.class)
 @WebMvcTest(DevController.class)
 public class DevControllerTest {
+    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private UserAppService userAppService;
+    @MockitoBean
+    private ManagerService managerService;
+
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
@@ -99,5 +107,28 @@ public class DevControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(userAppService);
+    }
+
+    @Test
+    void shouldSignContractAsManagerWithoutPasswordWhenDevSigning() throws Exception {
+        // Arrange
+        ContractResponseDto signedContract = new ContractResponseDto(30L, null, null, "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));
+
+        when(managerService.devSignContract(MANAGER_EMAIL, 30L)).thenReturn(signedContract);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/dev/contracts/30/manager-signature").param("email", MANAGER_EMAIL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.managerSignedAt").value("2026-11-11T09:00:00"));
+    }
+
+    @Test
+    void shouldReturnConflictWhenDevSigningContractAlreadySignedByManager() throws Exception {
+        // Arrange
+        when(managerService.devSignContract(MANAGER_EMAIL, 30L)).thenThrow(new ContractAlreadySignedException(30L, ContractParty.MANAGER));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/dev/contracts/30/manager-signature").param("email", MANAGER_EMAIL))
+                .andExpect(status().isConflict());
     }
 }

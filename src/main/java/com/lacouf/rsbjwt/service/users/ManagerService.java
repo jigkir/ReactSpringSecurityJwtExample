@@ -208,15 +208,23 @@ public class ManagerService {
     }
 
     public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
-        Manager manager = managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+        Manager manager = findManagerByEmail(email);
 
         userAppService.verifyIfSignaturePasswordIsIncorrect(manager, password);
 
         return contractService.signAsManager(contractId, manager);
     }
 
+    public ContractResponseDto devSignContract(String email, long contractId) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException {
+        return contractService.signAsManager(contractId, findManagerByEmail(email));
+    }
+
     public DocumentFileResponseDto getContractFile(long contractId, ContractLanguage language) throws ContractNotFoundException {
         return contractService.getContractFile(contractId, language);
+    }
+
+    private Manager findManagerByEmail(String email) throws UserNotFoundException {
+        return managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
