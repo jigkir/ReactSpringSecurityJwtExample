@@ -142,9 +142,12 @@ function ApplicationCard({
                                     </h3>
                                     {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
                                     {isHired && (
-                                        <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                        {t("viewApplication.hired")}
-                                    </span>
+                                        <Badge
+                                            bounce={false}
+                                            className="bg-green-600"
+                                        >
+                                            {t("viewApplication.hired")}
+                                        </Badge>
                                     )}
                                 </div>
                                 <p className={`${s.description} min-w-0 break-all`}>

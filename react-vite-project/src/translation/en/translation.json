@@ -578,7 +578,7 @@
     "backBtn": "Back to my offers",
     "selectedCount_one": "{{count}} student selected",
     "selectedCount_other": "{{count}} students selected",
-    "hire": "Hire",
+    "hire": "Hire candidates",
     "hireSuccess": "The selected students have been successfully hired.",
     "hired": "Hired",
     "selectStudent": "Select {{name}}",

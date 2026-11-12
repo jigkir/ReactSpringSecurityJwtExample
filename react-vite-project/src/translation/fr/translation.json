@@ -639,7 +639,7 @@
     "backBtn": "Retour à mes offres",
     "selectedCount_one": "{{count}} étudiant sélectionné",
     "selectedCount_other": "{{count}} étudiants sélectionnés",
-    "hire": "Embaucher",
+    "hire": "Embaucher des candidats",
     "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
     "hired": "Embauché",
     "selectStudent": "Sélectionner {{name}}",
