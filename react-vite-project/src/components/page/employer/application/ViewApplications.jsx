@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getApplicationCv, getApplications, getEmployerInternships, offerInternshipsToStudents} from "../../api/Api.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships, offerInternshipsToStudents} from "../../../api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../../../styles/Button.jsx";
 import {base64ToBlobUrl} from "../../../../utils/documents.js";
