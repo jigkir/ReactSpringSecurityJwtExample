@@ -18,6 +18,7 @@ import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,9 @@ public class ContractServiceTest {
     private ContractService contractService;
 
     @Mock
+    private ContractPdfGenerator contractPdfGenerator;
+
+    @Mock
     private ContractRepository contractRepository;
 
     @Captor
@@ -51,7 +56,6 @@ public class ContractServiceTest {
     private static final String STUDENT_EMAIL = "student@example.com";
     private static final String EMPLOYER_EMAIL = "email@example.com";
     private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
-    private static final String MANAGER_PASSWORD = "John123#";
 
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 10, 14, 30);
 
@@ -62,7 +66,7 @@ public class ContractServiceTest {
     @BeforeEach
     void setUp() {
         ZoneId zone = ZoneId.systemDefault();
-        contractService = new ContractService(contractRepository, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
+        contractService = new ContractService(contractPdfGenerator, contractRepository, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
 
         Credentials employerCredentials = Credentials.builder()
                 .email(EMPLOYER_EMAIL)
@@ -220,6 +224,26 @@ public class ContractServiceTest {
         assert NOW.minusDays(1).equals(contract.getManagerSignedAt());
 
         verify(contractRepository, never()).save(any(Contract.class));
+    }
+
+    // ==========================================
+    // Contract File Tests
+    // ==========================================
+
+    @Test
+    void shouldReturnGeneratedPdfWhenGettingContractFile() throws Exception {
+        // Arrange
+        Contract contract = contract();
+
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+        when(contractPdfGenerator.generate(contract)).thenReturn("pdf".getBytes());
+
+        // Act
+        DocumentFileResponseDto file = contractService.getContractFile(30L);
+
+        // Assert
+        assert "contrat-30.pdf".equals(file.fileName());
+        assert Arrays.equals("pdf".getBytes(), file.content());
     }
 
     // ==========================================

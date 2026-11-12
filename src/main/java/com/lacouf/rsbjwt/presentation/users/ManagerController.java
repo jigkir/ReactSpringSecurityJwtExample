@@ -126,4 +126,9 @@ public class ManagerController {
     public ResponseEntity<ContractResponseDto> signContract(Authentication authentication, @PathVariable long contractId, @Valid @RequestBody SignatureRequestDto signature) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
         return ResponseEntity.ok(managerService.signContract(authentication.getName(), contractId, signature.password()));
     }
+
+    @GetMapping("/contracts/{contractId}/file")
+    public ResponseEntity<DocumentFileResponseDto> getContractFile(@PathVariable long contractId) throws ContractNotFoundException {
+        return ResponseEntity.ok(managerService.getContractFile(contractId));
+    }
 }

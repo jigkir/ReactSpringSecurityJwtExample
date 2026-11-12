@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
@@ -499,6 +500,18 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
                         .contentType(MediaType.APPLICATION_JSON).content(SIGNATURE_BODY))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnContractFile() throws Exception {
+        // Arrange
+        when(managerService.getContractFile(30L)).thenReturn(new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes()));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts/30/file"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("contrat-30.pdf"))
+                .andExpect(jsonPath("$.content").value("cGRm"));
     }
 
     // ---------- Helpers ----------

@@ -11,6 +11,7 @@ import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +21,15 @@ import java.util.List;
 
 @Service
 public class ContractService {
+    private static final String FILE_NAME_PREFIX = "contrat-";
+    private static final String PDF_EXTENSION = ".pdf";
 
+    private final ContractPdfGenerator contractPdfGenerator;
     private final ContractRepository contractRepository;
     private final Clock clock;
 
-    public ContractService(ContractRepository contractRepository, Clock clock) {
+    public ContractService(ContractPdfGenerator contractPdfGenerator, ContractRepository contractRepository, Clock clock) {
+        this.contractPdfGenerator = contractPdfGenerator;
         this.contractRepository = contractRepository;
         this.clock = clock;
     }
@@ -45,11 +50,22 @@ public class ContractService {
 
     @Transactional
     public ContractResponseDto signAsManager(long contractId, Manager manager) throws ContractNotFoundException, ContractAlreadySignedException {
-        Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new ContractNotFoundException(contractId));
+        Contract contract = findContract(contractId);
 
         contract.signAsManager(manager, getSigningTime(contract, ContractParty.MANAGER));
 
         return ContractResponseDto.of(contractRepository.save(contract));
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentFileResponseDto getContractFile(long contractId) throws ContractNotFoundException {
+        Contract contract = findContract(contractId);
+
+        return new DocumentFileResponseDto(contractId, FILE_NAME_PREFIX + contractId + PDF_EXTENSION, contractPdfGenerator.generate(contract));
+    }
+
+    private Contract findContract(long contractId) throws ContractNotFoundException {
+        return contractRepository.findById(contractId).orElseThrow(() -> new ContractNotFoundException(contractId));
     }
 
     private LocalDateTime getSigningTime(Contract contract, ContractParty party) throws ContractAlreadySignedException {

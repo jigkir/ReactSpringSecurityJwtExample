@@ -210,6 +210,10 @@ public class ManagerService {
         return contractService.signAsManager(contractId, manager);
     }
 
+    public DocumentFileResponseDto getContractFile(long contractId) throws ContractNotFoundException {
+        return contractService.getContractFile(contractId);
+    }
+
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
     }

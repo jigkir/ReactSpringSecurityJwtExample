@@ -887,6 +887,20 @@ public class ManagerServiceTest {
         assert List.of(contract).equals(result);
     }
 
+    @Test
+    void shouldReturnContractFileWhenGettingContractFile() throws Exception {
+        // Arrange
+        DocumentFileResponseDto file = new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes());
+
+        when(contractService.getContractFile(30L)).thenReturn(file);
+
+        // Act
+        DocumentFileResponseDto result = managerService.getContractFile(30L);
+
+        // Assert
+        assert file.equals(result);
+    }
+
     // ---------- Helpers ----------
 
     private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
