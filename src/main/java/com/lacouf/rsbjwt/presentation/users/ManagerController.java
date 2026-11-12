@@ -1,10 +1,14 @@
 package com.lacouf.rsbjwt.presentation.users;
 
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.service.dto.request.contract.SignatureRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
@@ -17,6 +21,7 @@ import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -115,5 +120,10 @@ public class ManagerController {
     @GetMapping("/contracts")
     public ResponseEntity<List<ContractResponseDto>> getContracts(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
         return ResponseEntity.ok(managerService.getContracts(sessionId));
+    }
+
+    @PutMapping("/contracts/{contractId}/signature")
+    public ResponseEntity<ContractResponseDto> signContract(Authentication authentication, @PathVariable long contractId, @Valid @RequestBody SignatureRequestDto signature) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
+        return ResponseEntity.ok(managerService.signContract(authentication.getName(), contractId, signature.password()));
     }
 }

@@ -1,13 +1,16 @@
 package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
+import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
@@ -26,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -60,6 +65,12 @@ public class ManagerControllerTest {
              "applicationDeadline": "2026-12-01", "compensationAmount": 27.00, "compensationNegotiable": false}
             """;
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
+
+    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
+    private static final String MANAGER_PASSWORD = "John123#";
+    private static final String SIGNATURE_BODY = "{\"termsAccepted\": true, \"password\": \"John123#\"}";
+
+    private final Authentication managerAuthentication = new UsernamePasswordAuthenticationToken(MANAGER_EMAIL, null);
 
     @Test
     void shouldReturnVisibleCvsOfChosenSession() throws Exception {
@@ -429,6 +440,65 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$[0].internshipEndDate").value("2027-05-02"));
 
         verify(managerService).getContracts(1L);
+    }
+
+    @Test
+    void shouldSignContractAsAuthenticatedManager() throws Exception {
+        // Arrange
+        ContractResponseDto signedContract = new ContractResponseDto(30L, internshipWith(ReviewStatus.APPROVED, null), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));
+
+        when(managerService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD)).thenReturn(signedContract);
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
+                        .contentType(MediaType.APPLICATION_JSON).content(SIGNATURE_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.managerName").value("John Doe"))
+                .andExpect(jsonPath("$.managerSignedAt").value("2026-11-11T09:00:00"));
+
+        verify(managerService).signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenContractTermsAreNotAccepted() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"termsAccepted\": false, \"password\": \"John123#\"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(managerService);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenSignaturePasswordIsBlank() throws Exception {
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"termsAccepted\": true, \"password\": \" \"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(managerService);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenSignaturePasswordIsIncorrect() throws Exception {
+        // Arrange
+        when(managerService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD)).thenThrow(new IncorrectSignaturePasswordException());
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
+                        .contentType(MediaType.APPLICATION_JSON).content(SIGNATURE_BODY))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnConflictWhenContractIsAlreadySignedByManager() throws Exception {
+        // Arrange
+        when(managerService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD)).thenThrow(new ContractAlreadySignedException(30L, ContractParty.MANAGER));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
+                        .contentType(MediaType.APPLICATION_JSON).content(SIGNATURE_BODY))
+                .andExpect(status().isConflict());
     }
 
     // ---------- Helpers ----------

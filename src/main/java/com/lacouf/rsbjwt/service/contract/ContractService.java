@@ -4,7 +4,9 @@ import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
@@ -39,6 +41,23 @@ public class ContractService {
         return contractRepository.findByInternship_Session(session).stream()
                 .map(ContractResponseDto::of)
                 .toList();
+    }
+
+    @Transactional
+    public ContractResponseDto signAsManager(long contractId, Manager manager) throws ContractNotFoundException, ContractAlreadySignedException {
+        Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new ContractNotFoundException(contractId));
+
+        contract.signAsManager(manager, getSigningTime(contract, ContractParty.MANAGER));
+
+        return ContractResponseDto.of(contractRepository.save(contract));
+    }
+
+    private LocalDateTime getSigningTime(Contract contract, ContractParty party) throws ContractAlreadySignedException {
+        if (contract.isSignedBy(party)) {
+            throw new ContractAlreadySignedException(contract.getId(), party);
+        }
+
+        return LocalDateTime.now(clock);
     }
 
     private void checkIfContractCanBeCreated(InternshipApplication application) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {

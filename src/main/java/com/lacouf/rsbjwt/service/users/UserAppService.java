@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.*;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -88,6 +89,12 @@ public class UserAppService {
 
     public String formatPhoneNumber(String phoneNumber) {
         return phoneNumber.replaceFirst(PHONE_NUMBER_PATTERN, PHONE_NUMBER_FORMAT);
+    }
+
+    public void verifyIfSignaturePasswordIsIncorrect(UserApp user, String rawPassword) throws IncorrectSignaturePasswordException {
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IncorrectSignaturePasswordException();
+        }
     }
 
     private void verifyIfEmailIsAlreadyUsed(String email) throws UserAlreadyExistsException {
