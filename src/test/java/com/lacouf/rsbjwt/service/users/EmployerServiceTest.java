@@ -1103,4 +1103,85 @@ public class EmployerServiceTest {
         assertEquals(StudentInternshipConsent.ACCEPTED, application.getStudentInternshipConsent());
         verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
     }
+
+    // ---------- Internship offered notification ----------
+
+    @Test
+    void shouldNotifyStudentWhenInternshipIsOffered() throws Exception {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act
+        employerService.offerInternshipsToStudents(List.of(INTERNSHIP_APPLICATION_ID), EMPLOYER_EMAIL);
+
+        // Assert
+        verify(notificationService).notifyInternshipOffered(application);
+    }
+
+    @Test
+    void shouldNotifyEveryStudentWhenInternshipsAreOffered() throws Exception {
+        // Arrange
+        InternshipApplication first = receivedInternshipApplication();
+        InternshipApplication second = receivedInternshipApplication();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(20L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(first));
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(21L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(second));
+
+        // Act
+        employerService.offerInternshipsToStudents(List.of(20L, 21L), EMPLOYER_EMAIL);
+
+        // Assert
+        verify(notificationService).notifyInternshipOffered(first);
+        verify(notificationService).notifyInternshipOffered(second);
+    }
+
+    @Test
+    void shouldNotNotifyStudentWhenOfferingInternshipForRejectedApplication() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.REJECTED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(ApplicationRejectedException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(INTERNSHIP_APPLICATION_ID), EMPLOYER_EMAIL));
+
+        verify(notificationService, never()).notifyInternshipOffered(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldNotNotifyStudentWhenInternshipWasAlreadyOffered() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(InternshipAlreadyOfferedException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(INTERNSHIP_APPLICATION_ID), EMPLOYER_EMAIL));
+
+        verify(notificationService, never()).notifyInternshipOffered(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldNotNotifyStudentWhenOfferingInternshipForUnknownApplication() {
+        // Arrange
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(99L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipApplicationNotFoundException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(99L), EMPLOYER_EMAIL));
+
+        verify(notificationService, never()).notifyInternshipOffered(any(InternshipApplication.class));
+    }
 }

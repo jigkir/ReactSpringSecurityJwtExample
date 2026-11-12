@@ -336,6 +336,8 @@ public class EmployerService {
             application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
             application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
             internshipApplicationRepository.save(application);
+
+            notificationService.notifyInternshipOffered(application);
         }
     }
 

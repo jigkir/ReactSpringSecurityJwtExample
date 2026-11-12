@@ -34,6 +34,12 @@ public class Notification {
 
     private Long targetId;
 
+    @Column
+    private String companyName;
+
+    @Column
+    private String internshipTitle;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -50,5 +56,12 @@ public class Notification {
         this.targetId = targetId;
         this.user = user;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public Notification(NotificationType notificationType, String message, Long targetId, UserApp user,
+                        String companyName, String internshipTitle) {
+        this(notificationType, message, targetId, user);
+        this.companyName = companyName;
+        this.internshipTitle = internshipTitle;
     }
 }

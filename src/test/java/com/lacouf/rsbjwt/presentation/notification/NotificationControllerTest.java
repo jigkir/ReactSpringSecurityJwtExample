@@ -65,7 +65,7 @@ class NotificationControllerTest {
     void shouldReturnUnreadNotificationsOfConnectedUser() throws Exception {
         // Arrange
         NotificationDto notification = new NotificationDto(5L, "CV Approved", "Your CV has been approved.",
-                NotificationStatus.UNREAD, TargetType.CV, NotificationType.CV_APPROVED, 1L, LocalDateTime.now());
+                NotificationStatus.UNREAD, TargetType.CV, NotificationType.CV_APPROVED, 1L, null, null, LocalDateTime.now());
 
         when(notificationService.getUnreadNotifications("student@example.com")).thenReturn(List.of(notification));
 
@@ -77,5 +77,25 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$[0].targetId").value(1));
 
         verify(notificationService).getUnreadNotifications("student@example.com");
+    }
+
+    @Test
+    void shouldReturnCompanyAndInternshipTitleWhenInternshipWasOffered() throws Exception {
+        // Arrange
+        NotificationDto notification = new NotificationDto(6L, "Internship Offer Received",
+                "Company Name has offered you the internship \"Software Developer\".",
+                NotificationStatus.UNREAD, TargetType.INTERNSHIP_APPLICATION, NotificationType.INTERNSHIP_OFFERED, 20L,
+                "Company Name", "Software Developer", LocalDateTime.now());
+
+        when(notificationService.getUnreadNotifications("student@example.com")).thenReturn(List.of(notification));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/notifications").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].notificationType").value("INTERNSHIP_OFFERED"))
+                .andExpect(jsonPath("$[0].targetType").value("INTERNSHIP_APPLICATION"))
+                .andExpect(jsonPath("$[0].targetId").value(20))
+                .andExpect(jsonPath("$[0].companyName").value("Company Name"))
+                .andExpect(jsonPath("$[0].internshipTitle").value("Software Developer"));
     }
 }

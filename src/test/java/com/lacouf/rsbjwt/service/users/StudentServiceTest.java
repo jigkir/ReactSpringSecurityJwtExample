@@ -1476,6 +1476,58 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldCloseInternshipOfferedNotificationWhenStudentOpensOffers() throws Exception {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication application = offeredApplication();
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(application));
+
+        // Act
+        studentService.getOffers(STUDENT_EMAIL);
+
+        // Assert
+        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
+    }
+
+    @Test
+    void shouldCloseInternshipOfferedNotificationOfEveryOfferWhenStudentOpensOffers() throws Exception {
+        // Arrange
+        internship.setStatus(ReviewStatus.APPROVED);
+
+        InternshipApplication first = offeredApplication();
+        InternshipApplication second = offeredApplication();
+        second.setId(21L);
+
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(first, second));
+
+        // Act
+        studentService.getOffers(STUDENT_EMAIL);
+
+        // Assert
+        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
+        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 21L, dummyStudent);
+    }
+
+    @Test
+    void shouldNotCloseAnyNotificationWhenStudentHasNoOffers() throws Exception {
+        // Arrange
+        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
+        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of());
+
+        // Act
+        List<InternshipApplicationResponseDto> offers = studentService.getOffers(STUDENT_EMAIL);
+
+        // Assert
+        assert offers.isEmpty();
+
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldAcceptOfferSuccessfully() throws Exception {
         // Arrange
         dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
