@@ -50,6 +50,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -339,7 +340,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInternshipsOfEmployer() throws Exception {
         // Arrange
-        when(employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null)).thenReturn(List.of(internshipResponse()));
+        when(employerService.getInternshipsOfEmployer(eq(EMPLOYER_EMAIL), any(), any())).thenReturn(List.of(internshipResponse()));
 
         // Act + Assert
         mockMvc.perform(get("/api/employer/internships").principal(authentication))
@@ -349,7 +350,20 @@ public class EmployerControllerTest {
                 .andExpect(jsonPath("$[0].title").value("Software Developer"))
                 .andExpect(jsonPath("$[0].employerId").value(1));
 
-        verify(employerService).getInternshipsOfEmployer(EMPLOYER_EMAIL, null);
+        verify(employerService).getInternshipsOfEmployer(eq(EMPLOYER_EMAIL), any(), any());
+    }
+
+    @Test
+    void shouldPassLanguageOfRequestToService() throws Exception {
+        // Arrange
+        when(employerService.getInternshipsOfEmployer(eq(EMPLOYER_EMAIL), any(), eq("fr"))).thenReturn(List.of(internshipResponse()));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/internships").principal(authentication).locale(Locale.FRENCH))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        verify(employerService).getInternshipsOfEmployer(eq(EMPLOYER_EMAIL), any(), eq("fr"));
     }
 
     @Test

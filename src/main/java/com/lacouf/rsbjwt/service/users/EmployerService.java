@@ -162,7 +162,7 @@ public class EmployerService {
                 .map(InternshipResponseDto::of)
                 .toList();
 
-        if (dtos.isEmpty()) {
+        if (dtos.isEmpty() || lang == null) {
             return dtos;
         }
 
