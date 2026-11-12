@@ -2,7 +2,6 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
@@ -11,6 +10,7 @@ import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableEx
 import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -503,15 +503,26 @@ public class ManagerControllerTest {
     }
 
     @Test
-    void shouldReturnContractFile() throws Exception {
+    void shouldReturnContractFileInLanguageChosenByUser() throws Exception {
         // Arrange
-        when(managerService.getContractFile(30L)).thenReturn(new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes()));
+        when(managerService.getContractFile(30L, ContractLanguage.EN)).thenReturn(new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes()));
 
         // Act + Assert
-        mockMvc.perform(get("/api/manager/contracts/30/file"))
+        mockMvc.perform(get("/api/manager/contracts/30/file").param("language", "EN"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileName").value("contrat-30.pdf"))
                 .andExpect(jsonPath("$.content").value("cGRm"));
+
+        verify(managerService).getContractFile(30L, ContractLanguage.EN);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenContractLanguageIsNotSupported() throws Exception {
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts/30/file").param("language", "DE"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(managerService);
     }
 
     // ---------- Helpers ----------

@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -41,7 +42,7 @@ public class ContractPdfGeneratorTest {
         Contract contract = contractOf(internship(new BigDecimal("25.00"), false, "Développer des applications web"));
 
         // Act
-        String text = textOf(contractPdfGenerator.generate(contract));
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
 
         // Assert
         assert text.contains("CONTRAT DE STAGE");
@@ -70,7 +71,7 @@ public class ContractPdfGeneratorTest {
         Contract contract = contractOf(internship(new BigDecimal("25.00"), false, "Développer des applications web"));
 
         // Act
-        String text = textOf(contractPdfGenerator.generate(contract));
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
 
         // Assert
         assert !text.contains("Horaire");
@@ -83,7 +84,7 @@ public class ContractPdfGeneratorTest {
         Contract contract = contractOf(internship(new BigDecimal("25.00"), false, "Développer des applications web"));
 
         // Act
-        String text = textOf(contractPdfGenerator.generate(contract));
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
 
         // Assert
         assert text.contains("Le Collège s'engage à :");
@@ -98,7 +99,7 @@ public class ContractPdfGeneratorTest {
         Contract contract = contractOf(internship(null, true, "Développer des applications web"));
 
         // Act
-        String text = textOf(contractPdfGenerator.generate(contract));
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
 
         // Assert
         assert text.contains("Non précisé dans l'offre");
@@ -112,7 +113,7 @@ public class ContractPdfGeneratorTest {
         contract.signAsManager(manager(), MANAGER_SIGNED_AT);
 
         // Act
-        String text = textOf(contractPdfGenerator.generate(contract));
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
 
         // Assert
         assert text.contains("John Doe");
@@ -126,11 +127,33 @@ public class ContractPdfGeneratorTest {
         Contract contract = contractOf(internship(new BigDecimal("25.00"), false, "Développer des applications web"));
 
         // Act
-        String text = textOf(contractPdfGenerator.generate(contract));
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
 
         // Assert
         assert text.contains("À désigner");
         assert text.split("En attente de signature", -1).length - 1 == 3;
+    }
+
+    @Test
+    void shouldWriteContractInEnglishWhenUserChoosesEnglish() throws IOException {
+        // Arrange
+        Contract contract = contractOf(internship(new BigDecimal("25.00"), true, "Develop web applications"));
+        contract.signAsManager(manager(), MANAGER_SIGNED_AT);
+
+        // Act
+        String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.EN));
+
+        // Assert
+        assert text.contains("INTERNSHIP CONTRACT");
+        assert text.contains("Represented by Jean Dupont");
+        assert text.contains("Hybrid");
+        assert text.contains("From January 11, 2027 to May 2, 2027");
+        assert text.contains("$25.00 per hour");
+        assert text.contains("OFFER DESCRIPTION");
+        assert text.contains("Yes");
+        assert text.contains("The employer agrees to:");
+        assert text.contains("Signed on November 11, 2026 at 09:00");
+        assert text.contains("Pending signature");
     }
 
     @Test
@@ -139,7 +162,7 @@ public class ContractPdfGeneratorTest {
         Contract contract = contractOf(internship(new BigDecimal("25.00"), false, "Tâche du stagiaire.\n".repeat(80)));
 
         // Act
-        byte[] pdf = contractPdfGenerator.generate(contract);
+        byte[] pdf = contractPdfGenerator.generate(contract, ContractLanguage.FR);
 
         // Assert
         try (PdfDocument document = pdfDocumentOf(pdf)) {

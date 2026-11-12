@@ -4,6 +4,7 @@ import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Manager;
@@ -58,10 +59,10 @@ public class ContractService {
     }
 
     @Transactional(readOnly = true)
-    public DocumentFileResponseDto getContractFile(long contractId) throws ContractNotFoundException {
+    public DocumentFileResponseDto getContractFile(long contractId, ContractLanguage language) throws ContractNotFoundException {
         Contract contract = findContract(contractId);
 
-        return new DocumentFileResponseDto(contractId, FILE_NAME_PREFIX + contractId + PDF_EXTENSION, contractPdfGenerator.generate(contract));
+        return new DocumentFileResponseDto(contractId, FILE_NAME_PREFIX + contractId + PDF_EXTENSION, contractPdfGenerator.generate(contract, language));
     }
 
     private Contract findContract(long contractId) throws ContractNotFoundException {

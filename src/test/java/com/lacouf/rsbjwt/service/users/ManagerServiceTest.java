@@ -11,6 +11,7 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -892,10 +893,10 @@ public class ManagerServiceTest {
         // Arrange
         DocumentFileResponseDto file = new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes());
 
-        when(contractService.getContractFile(30L)).thenReturn(file);
+        when(contractService.getContractFile(30L, ContractLanguage.EN)).thenReturn(file);
 
         // Act
-        DocumentFileResponseDto result = managerService.getContractFile(30L);
+        DocumentFileResponseDto result = managerService.getContractFile(30L, ContractLanguage.EN);
 
         // Assert
         assert file.equals(result);

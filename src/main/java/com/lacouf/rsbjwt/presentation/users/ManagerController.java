@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.service.dto.request.contract.SignatureRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
@@ -128,7 +129,7 @@ public class ManagerController {
     }
 
     @GetMapping("/contracts/{contractId}/file")
-    public ResponseEntity<DocumentFileResponseDto> getContractFile(@PathVariable long contractId) throws ContractNotFoundException {
-        return ResponseEntity.ok(managerService.getContractFile(contractId));
+    public ResponseEntity<DocumentFileResponseDto> getContractFile(@PathVariable long contractId, @RequestParam ContractLanguage language) throws ContractNotFoundException {
+        return ResponseEntity.ok(managerService.getContractFile(contractId, language));
     }
 }

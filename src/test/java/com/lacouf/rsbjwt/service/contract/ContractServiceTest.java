@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -236,10 +237,10 @@ public class ContractServiceTest {
         Contract contract = contract();
 
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
-        when(contractPdfGenerator.generate(contract)).thenReturn("pdf".getBytes());
+        when(contractPdfGenerator.generate(contract, ContractLanguage.EN)).thenReturn("pdf".getBytes());
 
         // Act
-        DocumentFileResponseDto file = contractService.getContractFile(30L);
+        DocumentFileResponseDto file = contractService.getContractFile(30L, ContractLanguage.EN);
 
         // Assert
         assert "contrat-30.pdf".equals(file.fileName());

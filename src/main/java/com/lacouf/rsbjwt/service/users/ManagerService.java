@@ -12,6 +12,7 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -210,8 +211,8 @@ public class ManagerService {
         return contractService.signAsManager(contractId, manager);
     }
 
-    public DocumentFileResponseDto getContractFile(long contractId) throws ContractNotFoundException {
-        return contractService.getContractFile(contractId);
+    public DocumentFileResponseDto getContractFile(long contractId, ContractLanguage language) throws ContractNotFoundException {
+        return contractService.getContractFile(contractId, language);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {

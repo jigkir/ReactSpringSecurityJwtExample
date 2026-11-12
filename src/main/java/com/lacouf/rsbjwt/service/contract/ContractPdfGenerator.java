@@ -19,6 +19,7 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -37,10 +38,9 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 
 // Builds the contract PDF on demand from the contract stored in the database (the PDF itself is never stored).
-// The texts come from messages.properties
+// The texts come from messages.properties (French) and messages_en.properties (English)
 @Component
 public class ContractPdfGenerator {
-    private static final Locale CONTRACT_LOCALE = Locale.CANADA_FRENCH;
     private static final String MESSAGE_PREFIX = "contract.pdf.";
     private static final String WORK_MODE_KEY_PREFIX = "workMode.";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
@@ -77,8 +77,8 @@ public class ContractPdfGenerator {
         this.messageSource = messageSource;
     }
 
-    public byte[] generate(Contract contract) {
-        ContractTexts texts = new ContractTexts(messageSource, CONTRACT_LOCALE);
+    public byte[] generate(Contract contract, ContractLanguage language) {
+        ContractTexts texts = new ContractTexts(messageSource, language.getLocale());
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PdfDocument pdf = new PdfDocument(new PdfWriter(output));
 
