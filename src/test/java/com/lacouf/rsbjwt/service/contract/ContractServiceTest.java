@@ -187,6 +187,20 @@ public class ContractServiceTest {
         assert contracts.getFirst().managerSignedAt() == null;
     }
 
+    @Test
+    void shouldReturnContractsNotSignedByManagerWhenGettingPendingContracts() {
+        // Arrange
+        when(contractRepository.findByManagerSignedAtIsNull()).thenReturn(List.of(contract()));
+
+        // Act
+        List<ContractResponseDto> contracts = contractService.getPendingContracts();
+
+        // Assert
+        assert contracts.size() == 1;
+        assert "Jane Doe".equals(contracts.getFirst().studentName());
+        assert contracts.getFirst().managerSignedAt() == null;
+    }
+
     // ==========================================
     // Manager Signature Tests
     // ==========================================

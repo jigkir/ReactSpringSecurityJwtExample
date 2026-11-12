@@ -889,6 +889,22 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldReturnPendingContractsOfAllSessionsWhenGettingPendingContracts() {
+        // Arrange
+        ContractResponseDto contract = new ContractResponseDto(30L, InternshipResponseDto.of(internship), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", null, LocalDateTime.of(2026, 11, 10, 14, 30), null, null, null);
+
+        when(contractService.getPendingContracts()).thenReturn(List.of(contract));
+
+        // Act
+        List<ContractResponseDto> result = managerService.getPendingContracts();
+
+        // Assert
+        assert List.of(contract).equals(result);
+        
+        verifyNoInteractions(academicSessionService);
+    }
+
+    @Test
     void shouldReturnContractFileWhenGettingContractFile() throws Exception {
         // Arrange
         DocumentFileResponseDto file = new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes());

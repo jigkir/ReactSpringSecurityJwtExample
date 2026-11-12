@@ -444,6 +444,23 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnPendingContracts() throws Exception {
+        // Arrange
+        ContractResponseDto contract = new ContractResponseDto(30L, internshipWith(ReviewStatus.APPROVED, null), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", null, LocalDateTime.of(2026, 11, 10, 14, 30), null, null, null);
+
+        when(managerService.getPendingContracts()).thenReturn(List.of(contract));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].studentName").value("Marie Tremblay"))
+                .andExpect(jsonPath("$[0].managerSignedAt").doesNotExist());
+
+        verify(managerService).getPendingContracts();
+    }
+
+    @Test
     void shouldSignContractAsAuthenticatedManager() throws Exception {
         // Arrange
         ContractResponseDto signedContract = new ContractResponseDto(30L, internshipWith(ReviewStatus.APPROVED, null), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));

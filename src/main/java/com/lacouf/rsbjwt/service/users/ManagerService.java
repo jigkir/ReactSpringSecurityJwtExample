@@ -203,6 +203,10 @@ public class ManagerService {
         return contractService.getContracts(academicSessionService.findSessionOrCurrent(sessionId));
     }
 
+    public List<ContractResponseDto> getPendingContracts() {
+        return contractService.getPendingContracts();
+    }
+
     public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
         Manager manager = managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
 

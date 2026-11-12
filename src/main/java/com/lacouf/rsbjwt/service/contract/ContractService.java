@@ -48,6 +48,13 @@ public class ContractService {
                 .map(ContractResponseDto::of)
                 .toList();
     }
+    
+    @Transactional(readOnly = true)
+    public List<ContractResponseDto> getPendingContracts() {
+        return contractRepository.findByManagerSignedAtIsNull().stream()
+                .map(ContractResponseDto::of)
+                .toList();
+    }
 
     @Transactional
     public ContractResponseDto signAsManager(long contractId, Manager manager) throws ContractNotFoundException, ContractAlreadySignedException {
