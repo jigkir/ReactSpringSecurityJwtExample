@@ -32,6 +32,7 @@ function ApplicationCard({
                              onInterviewSent,
                              selected = false,
                              onSelect,
+                             selectionMode = false,
                              hiring = false,
                              showCvFileName = true
                          }) {
@@ -110,155 +111,163 @@ function ApplicationCard({
 
     return (
         <div className={s.card}>
-            {/* Wrapper ensures everything stacks vertically inside the card */}
-            <div className="w-full flex flex-col">
-                {/* Top row: Student Info on the left, View button on the right */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={selected}
-                                        onChange={() => onSelect(application.id)}
-                                        disabled={!canHire || hiring}
-                                        aria-label={t("viewApplication.selectStudent", {
-                                            name: `${student?.firstName} ${student?.lastName}`
-                                        })}
-                                        className="h-5 w-5 accent-blue-600 cursor-pointer disabled:cursor-not-allowed"
-                                    />
-                                </label>
-                                <h3 className={s.title}>
-                                    {student?.firstName} {student?.lastName}
-                                </h3>
-                                {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
-                                {isHired && (
-                                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
+            <div className="flex w-full min-w-0 items-stretch gap-3 sm:gap-4">
+                {selectionMode && typeof onSelect === "function" && (
+                    <div className={`flex shrink-0 items-center justify-center border-r pr-3 sm:pr-4 ${
+                        dark ? "border-slate-600" : "border-gray-300"
+                    }`}>
+                        <label className="flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() => onSelect(application.id)}
+                                disabled={!canHire || hiring}
+                                aria-label={t("viewApplication.selectStudent", {
+                                    name: `${student?.firstName} ${student?.lastName}`
+                                })}
+                                className="h-5 w-5 accent-blue-600 cursor-pointer disabled:cursor-not-allowed"
+                            />
+                        </label>
+                    </div>
+                )}
+
+                <div className="min-w-0 flex-1 flex flex-col">
+                    {/* Top row: Student Info on the left, View button on the right */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className={s.title}>
+                                        {student?.firstName} {student?.lastName}
+                                    </h3>
+                                    {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
+                                    {isHired && (
+                                        <span className="text-sm font-medium text-green-600 dark:text-green-400">
                                         {t("viewApplication.hired")}
                                     </span>
+                                    )}
+                                </div>
+                                <p className={`${s.description} min-w-0 break-all`}>
+                                    {student?.email}
+                                </p>
+                                {internshipTitle && (
+                                    <p className={`${s.description} font-medium`}>{internshipTitle}</p>
                                 )}
                             </div>
-                            <p className={`${s.description} min-w-0 break-all`}>
-                                {student?.email}
-                            </p>
-                            {internshipTitle && (
-                                <p className={`${s.description} font-medium`}>{internshipTitle}</p>
+
+                            {showCvFileName && (
+                                <span className={s.fileName} title={cvFileName}>
+                                {cvFileName || t("applicationCard.noCv")}
+                            </span>
                             )}
                         </div>
 
-                        {showCvFileName && (
-                            <span className={s.fileName} title={cvFileName}>
-                                {cvFileName || t("applicationCard.noCv")}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto sm:ml-auto sm:min-w-52">
-                        <Button
-                            tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
-                            dark={dark}
-                            className="w-full"
-                            icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
-                            onClick={onToggleInterviewPicker}
-                            aria-expanded={isInterviewSelectOpen}
-                        >
-                            {interviewLabel}
-                        </Button>
-                        {/* Each preview button is blue while closed and red while its preview is open */}
-                        {hasCoverLetter && (
+                        <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto sm:ml-auto sm:min-w-52">
                             <Button
-                                tone={isCoverLetterOpen ? "danger" : "accent"}
+                                tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
+                                dark={dark}
+                                className="w-full"
+                                icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
+                                onClick={onToggleInterviewPicker}
+                                aria-expanded={isInterviewSelectOpen}
+                            >
+                                {interviewLabel}
+                            </Button>
+                            {/* Each preview button is blue while closed and red while its preview is open */}
+                            {hasCoverLetter && (
+                                <Button
+                                    tone={isCoverLetterOpen ? "danger" : "accent"}
+                                    lockTone
+                                    dark={dark}
+                                    className="w-full"
+                                    icon={isCoverLetterOpen ? "close" : "visibility"}
+                                    onClick={() => openDocs.toggle(COVER_LETTER)}
+                                    aria-expanded={isCoverLetterOpen}
+                                >
+                                    {t("applicationCard.coverLetter")}
+                                </Button>
+                            )}
+                            {hasTranscript && (
+                                <Button
+                                    tone={isTranscriptOpen ? "danger" : "accent"}
+                                    lockTone
+                                    dark={dark}
+                                    className="w-full"
+                                    icon={isTranscriptOpen ? "close" : "visibility"}
+                                    onClick={() => openDocs.toggle(TRANSCRIPT)}
+                                    aria-expanded={isTranscriptOpen}
+                                >
+                                    {t("applicationCard.transcript")}
+                                </Button>
+                            )}
+                            <Button
+                                tone={isPreviewOpen ? "danger" : "accent"}
                                 lockTone
                                 dark={dark}
                                 className="w-full"
-                                icon={isCoverLetterOpen ? "close" : "visibility"}
-                                onClick={() => openDocs.toggle(COVER_LETTER)}
-                                aria-expanded={isCoverLetterOpen}
+                                icon={isPreviewOpen ? "close" : "visibility"}
+                                onClick={onTogglePreview}
+                                aria-expanded={isPreviewOpen}
                             >
-                                {t("applicationCard.coverLetter")}
+                                {viewLabel}
                             </Button>
-                        )}
-                        {hasTranscript && (
-                            <Button
-                                tone={isTranscriptOpen ? "danger" : "accent"}
-                                lockTone
-                                dark={dark}
-                                className="w-full"
-                                icon={isTranscriptOpen ? "close" : "visibility"}
-                                onClick={() => openDocs.toggle(TRANSCRIPT)}
-                                aria-expanded={isTranscriptOpen}
-                            >
-                                {t("applicationCard.transcript")}
-                            </Button>
-                        )}
-                        <Button
-                            tone={isPreviewOpen ? "danger" : "accent"}
-                            lockTone
-                            dark={dark}
-                            className="w-full"
-                            icon={isPreviewOpen ? "close" : "visibility"}
-                            onClick={onTogglePreview}
-                            aria-expanded={isPreviewOpen}
-                        >
-                            {viewLabel}
-                        </Button>
+                        </div>
                     </div>
-                </div>
 
-                {/* Inline Interview Time Selector */}
-                {isInterviewSelectOpen && (
-                    <div className="w-full pt-4 mt-4">
-                        {interviewLoading ? (
-                            <p>{t("interview.loading")}</p>
-                        ) : interviewError ? (
-                            <p role="alert" className="text-red-500">
-                                {t("interview.loadError")}
-                            </p>
-                        ) : (
-                            <InterviewPicker
-                                application={application}
+                    {/* Inline Interview Time Selector */}
+                    {isInterviewSelectOpen && (
+                        <div className="w-full pt-4 mt-4">
+                            {interviewLoading ? (
+                                <p>{t("interview.loading")}</p>
+                            ) : interviewError ? (
+                                <p role="alert" className="text-red-500">
+                                    {t("interview.loadError")}
+                                </p>
+                            ) : (
+                                <InterviewPicker
+                                    application={application}
+                                    dark={dark}
+                                    onClose={() => setIsInterviewSelectOpen(false)}
+                                    onSendOffer={handleSendOffer}
+                                    interview={interview}
+                                />
+                            )}
+                        </div>
+                    )}
+
+                    {/* Inline cover letter preview */}
+                    {hasCoverLetter && isCoverLetterOpen && (
+                        <div className="w-full pt-4 mt-4">
+                            <PdfPreview
+                                doc={{id: application.id, fileName: application.coverLetterFileName}}
                                 dark={dark}
-                                onClose={() => setIsInterviewSelectOpen(false)}
-                                onSendOffer={handleSendOffer}
-                                interview={interview}
+                                getUrl={getCoverLetterUrl}
                             />
-                        )}
-                    </div>
-                )}
+                        </div>
+                    )}
 
-                {/* Inline cover letter preview */}
-                {hasCoverLetter && isCoverLetterOpen && (
-                    <div className="w-full pt-4 mt-4">
-                        <PdfPreview
-                            doc={{id: application.id, fileName: application.coverLetterFileName}}
-                            dark={dark}
-                            getUrl={getCoverLetterUrl}
-                        />
-                    </div>
-                )}
+                    {/* Inline transcript preview */}
+                    {hasTranscript && isTranscriptOpen && (
+                        <div className="w-full pt-4 mt-4">
+                            <PdfPreview
+                                doc={{id: application.id, fileName: application.transcriptFileName}}
+                                dark={dark}
+                                getUrl={getTranscriptUrl}
+                            />
+                        </div>
+                    )}
 
-                {/* Inline transcript preview */}
-                {hasTranscript && isTranscriptOpen && (
-                    <div className="w-full pt-4 mt-4">
-                        <PdfPreview
-                            doc={{id: application.id, fileName: application.transcriptFileName}}
-                            dark={dark}
-                            getUrl={getTranscriptUrl}
-                        />
-                    </div>
-                )}
-
-                {/* Inline CV preview */}
-                {isPreviewOpen && (
-                    <div className="w-full pt-4 mt-4">
-                        <PdfPreview
-                            doc={{id: application.id, fileName: cvFileName}}
-                            dark={dark}
-                            getUrl={getUrl}
-                        />
-                    </div>
-                )}
+                    {/* Inline CV preview */}
+                    {isPreviewOpen && (
+                        <div className="w-full pt-4 mt-4">
+                            <PdfPreview
+                                doc={{id: application.id, fileName: cvFileName}}
+                                dark={dark}
+                                getUrl={getUrl}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

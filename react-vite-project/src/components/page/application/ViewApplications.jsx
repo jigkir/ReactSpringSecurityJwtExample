@@ -26,6 +26,7 @@ function ViewApplications({user}) {
     const [loading, setLoading] = useState(true);
     const [allowed, setAllowed] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
+    const [selectionMode, setSelectionMode] = useState(false);
     const [hiring, setHiring] = useState(false);
     const [hireSuccessCount, setHireSuccessCount] = useState(0);
     const [hireError, setHireError] = useState(null);
@@ -39,6 +40,7 @@ function ViewApplications({user}) {
     // Reset selection when navigating to another internship
     useEffect(() => {
         setSelectedIds([]);
+        setSelectionMode(false);
         setHireSuccessCount(0);
         setHireError(null);
     }, [Nid]);
@@ -118,24 +120,40 @@ function ViewApplications({user}) {
     const allSelected = eligibleIds.length > 0 && eligibleIds.every((applicationId) => selectedIds.includes(applicationId));
 
     const toggleSelection = (applicationId) => {
-        if (hiring || !eligibleIds.includes(applicationId)) return;
+        if (!selectionMode || hiring || !eligibleIds.includes(applicationId)) return;
 
         setSelectedIds((prev) => prev.includes(applicationId) ? prev.filter((id) => id !== applicationId) : [...prev, applicationId]);
-
         setHireSuccessCount(0);
         setHireError(null);
     };
 
     const toggleSelectAll = () => {
-        if (hiring) return;
+        if (!selectionMode || hiring) return;
 
         setSelectedIds(allSelected ? [] : eligibleIds);
         setHireSuccessCount(0);
         setHireError(null);
     };
 
-    const handleHire = async () => {
+    const startHiring = () => {
+        if (hiring || eligibleIds.length === 0) return;
+
+        setSelectionMode(true);
+        setSelectedIds([]);
+        setHireSuccessCount(0);
+        setHireError(null);
+    };
+
+    const cancelHiring = () => {
         if (hiring) return;
+
+        setSelectionMode(false);
+        setSelectedIds([]);
+        setHireError(null);
+    };
+
+    const handleHire = async () => {
+        if (!selectionMode || hiring) return;
 
         const ids = selectedIds.filter((applicationId) => eligibleIds.includes(applicationId));
 
@@ -154,6 +172,7 @@ function ViewApplications({user}) {
             } : application));
 
             setSelectedIds([]);
+            setSelectionMode(false);
             setHireSuccessCount(ids.length);
 
             // Synchronize with the backend
@@ -231,39 +250,73 @@ function ViewApplications({user}) {
 
             {/* Applications */}
             <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
-                {hasItems && (<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                {hasItems && (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        {selectionMode ? (
+                            <>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                    <label className={`flex items-center gap-2 cursor-pointer ${
+                                        dark ? "text-slate-300" : "text-gray-700"
+                                    }`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allSelected}
+                                            onChange={toggleSelectAll}
+                                            disabled={hiring || eligibleIds.length === 0}
+                                            className="h-5 w-5 accent-blue-600 disabled:cursor-not-allowed"
+                                        />
+                                        {t("viewApplication.selectAll")}
+                                    </label>
 
-                            <label
-                                className={`flex items-center gap-2 cursor-pointer ${dark ? "text-slate-300" : "text-gray-700"}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={allSelected}
-                                    onChange={toggleSelectAll}
-                                    disabled={hiring || eligibleIds.length === 0}
-                                    className="h-5 w-5 accent-blue-600 disabled:cursor-not-allowed"
-                                />
-                                {t("viewApplication.selectAll")}
-                            </label>
+                                    <span className={`text-sm ${
+                                        dark ? "text-slate-400" : "text-gray-500"
+                                    }`}>
+                        {t("viewApplication.selectedCount", {
+                            count: selectedIds.length
+                        })}
+                    </span>
+                                </div>
 
-                            <span className={`text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
-                                {t("viewApplication.selectedCount", {
-                                    count: selectedIds.length
-                                })}
-                            </span>
-                        </div>
+                                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                    <Button
+                                        tone="danger"
+                                        dark={dark}
+                                        disabled={hiring}
+                                        onClick={cancelHiring}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        {t("viewApplication.cancelHire")}
+                                    </Button>
 
-                        <Button
-                            tone="primary"
-                            dark={dark}
-                            disabled={selectedIds.length === 0 || hiring}
-                            onClick={handleHire}
-                            className="w-full sm:w-auto"
-                        >
-                            {hiring ? t("viewApplication.hiring") : t("viewApplication.hire")}
-                        </Button>
-                    </div>)}
+                                    <Button
+                                        tone="primary"
+                                        dark={dark}
+                                        disabled={selectedIds.length === 0 || hiring}
+                                        onClick={handleHire}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        {hiring
+                                            ? t("viewApplication.hiring")
+                                            : t("viewApplication.confirmHire")}
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex w-full justify-end">
+                                <Button
+                                    tone="primary"
+                                    dark={dark}
+                                    disabled={eligibleIds.length === 0}
+                                    onClick={startHiring}
+                                    className="w-full sm:w-auto"
+                                >
+                                    {t("viewApplication.hire")}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Confirmation */}
                 {hireSuccessCount > 0 && (<p
@@ -297,8 +350,9 @@ function ViewApplications({user}) {
                                 onTogglePreview={() => togglePreview(application.id)}
                                 getUrl={getUrl}
                                 onInterviewSent={handleInterviewSent}
+                                selectionMode={selectionMode}
                                 selected={selectedIds.includes(application.id)}
-                                onSelect={toggleSelection}
+                                onSelect={selectionMode ? toggleSelection : undefined}
                                 hiring={hiring}
                             />);
                     })) : !listError ? (

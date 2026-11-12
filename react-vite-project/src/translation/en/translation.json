@@ -586,7 +586,9 @@
     "hiring": "Hiring...",
     "hireSuccess_one": "{{count}} student has been hired successfully.",
     "hireSuccess_other": "{{count}} students have been hired successfully.",
-    "refreshError": "Hiring succeeded, but the application list could not be refreshed."
+    "refreshError": "Hiring succeeded, but the application list could not be refreshed.",
+    "cancelHire": "Cancel",
+    "confirmHire": "Confirm hiring"
   },
   "dev": {
     "label": "Dev",

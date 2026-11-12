@@ -619,7 +619,9 @@
     "hiring": "Embauche en cours...",
     "hireSuccess_one": "{{count}} étudiant a bien été embauché.",
     "hireSuccess_other": "{{count}} étudiants ont bien été embauchés.",
-    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée."
+    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée.",
+    "cancelHire": "Annuler",
+    "confirmHire": "Confirmer l'embauche"
   },
   "dev": {
     "label": "Dev",
