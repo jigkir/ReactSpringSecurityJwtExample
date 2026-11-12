@@ -155,7 +155,6 @@ public class EmployerService {
     }
 
     public List<InternshipResponseDto> getInternshipsOfEmployer(String email, Long sessionId, String lang) throws AcademicSessionNotFoundException {
-        IO.println(lang);
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
         List<Internship> internships = internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(email, session);
 
