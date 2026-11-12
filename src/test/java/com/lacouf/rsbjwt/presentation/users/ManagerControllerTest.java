@@ -10,6 +10,7 @@ import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableEx
 import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -443,6 +444,23 @@ public class ManagerControllerTest {
     }
 
     @Test
+    void shouldReturnPendingContracts() throws Exception {
+        // Arrange
+        ContractResponseDto contract = new ContractResponseDto(30L, internshipWith(ReviewStatus.APPROVED, null), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", null, LocalDateTime.of(2026, 11, 10, 14, 30), null, null, null);
+
+        when(managerService.getPendingContracts()).thenReturn(List.of(contract));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].studentName").value("Marie Tremblay"))
+                .andExpect(jsonPath("$[0].managerSignedAt").doesNotExist());
+
+        verify(managerService).getPendingContracts();
+    }
+
+    @Test
     void shouldSignContractAsAuthenticatedManager() throws Exception {
         // Arrange
         ContractResponseDto signedContract = new ContractResponseDto(30L, internshipWith(ReviewStatus.APPROVED, null), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));
@@ -499,6 +517,29 @@ public class ManagerControllerTest {
         mockMvc.perform(put("/api/manager/contracts/30/signature").principal(managerAuthentication)
                         .contentType(MediaType.APPLICATION_JSON).content(SIGNATURE_BODY))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnContractFileInLanguageChosenByUser() throws Exception {
+        // Arrange
+        when(managerService.getContractFile(30L, ContractLanguage.EN)).thenReturn(new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes()));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts/30/file").param("language", "EN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("contrat-30.pdf"))
+                .andExpect(jsonPath("$.content").value("cGRm"));
+
+        verify(managerService).getContractFile(30L, ContractLanguage.EN);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenContractLanguageIsNotSupported() throws Exception {
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/contracts/30/file").param("language", "DE"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(managerService);
     }
 
     // ---------- Helpers ----------

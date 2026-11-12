@@ -12,6 +12,7 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -202,12 +203,28 @@ public class ManagerService {
         return contractService.getContracts(academicSessionService.findSessionOrCurrent(sessionId));
     }
 
+    public List<ContractResponseDto> getPendingContracts() {
+        return contractService.getPendingContracts();
+    }
+
     public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
-        Manager manager = managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+        Manager manager = findManagerByEmail(email);
 
         userAppService.verifyIfSignaturePasswordIsIncorrect(manager, password);
 
         return contractService.signAsManager(contractId, manager);
+    }
+
+    public ContractResponseDto devSignContract(String email, long contractId) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException {
+        return contractService.signAsManager(contractId, findManagerByEmail(email));
+    }
+
+    public DocumentFileResponseDto getContractFile(long contractId, ContractLanguage language) throws ContractNotFoundException {
+        return contractService.getContractFile(contractId, language);
+    }
+
+    private Manager findManagerByEmail(String email) throws UserNotFoundException {
+        return managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {

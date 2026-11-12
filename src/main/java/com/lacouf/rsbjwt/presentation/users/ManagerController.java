@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.service.dto.request.contract.SignatureRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
@@ -122,8 +123,18 @@ public class ManagerController {
         return ResponseEntity.ok(managerService.getContracts(sessionId));
     }
 
+    @GetMapping("/contracts/pending")
+    public ResponseEntity<List<ContractResponseDto>> getPendingContracts() {
+        return ResponseEntity.ok(managerService.getPendingContracts());
+    }
+
     @PutMapping("/contracts/{contractId}/signature")
     public ResponseEntity<ContractResponseDto> signContract(Authentication authentication, @PathVariable long contractId, @Valid @RequestBody SignatureRequestDto signature) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
         return ResponseEntity.ok(managerService.signContract(authentication.getName(), contractId, signature.password()));
+    }
+
+    @GetMapping("/contracts/{contractId}/file")
+    public ResponseEntity<DocumentFileResponseDto> getContractFile(@PathVariable long contractId, @RequestParam ContractLanguage language) throws ContractNotFoundException {
+        return ResponseEntity.ok(managerService.getContractFile(contractId, language));
     }
 }
