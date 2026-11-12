@@ -588,7 +588,8 @@
       "past": "Passée",
       "cancelled": "Annulée",
       "rejected": "Rejettée",
-      "accepted": "Acceptée"
+      "accepted": "Acceptée",
+      "rescheduled": "Reporté"
     },
     "types": {
       "ONLINE": "En ligne",
