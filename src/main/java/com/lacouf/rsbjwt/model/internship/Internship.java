@@ -125,6 +125,10 @@ public class Internship {
         this.rejectionComment = comment;
     }
 
+    public LocalDate getEndDate() {
+        return startDate.plusWeeks(durationInWeeks).minusDays(1);
+    }
+
     public void setId(long id) {
         this.id = id;
     }

@@ -578,7 +578,7 @@
     "backBtn": "Back to my offers",
     "selectedCount_one": "{{count}} student selected",
     "selectedCount_other": "{{count}} students selected",
-    "hire": "Hire",
+    "hire": "Hire candidates",
     "hireSuccess": "The selected students have been successfully hired.",
     "hired": "Hired",
     "selectStudent": "Select {{name}}",
@@ -586,7 +586,9 @@
     "hiring": "Hiring...",
     "hireSuccess_one": "{{count}} student has been hired successfully.",
     "hireSuccess_other": "{{count}} students have been hired successfully.",
-    "refreshError": "Hiring succeeded, but the application list could not be refreshed."
+    "refreshError": "Hiring succeeded, but the application list could not be refreshed.",
+    "cancelHire": "Cancel",
+    "confirmHire": "Confirm hiring"
   },
   "dev": {
     "label": "Dev",
@@ -615,7 +617,10 @@
     "statuses": {
       "upcoming": "Upcoming",
       "past": "Past",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "rejected": "Rejected",
+      "accepted": "Accepted",
+      "rescheduled": "Rescheduled"
     },
     "types": {
       "ONLINE": "Online (video call)",
@@ -630,7 +635,37 @@
       "all": "All statuses",
       "allTypes": "All types",
       "noResults": "No interviews match your filters."
-    }
+    },
+    "rejectionReason": "Rejection reason",
+    "rescheduledReason": "Reschedule request details",
+    "chooseNewDate": "Choose new date and time",
+    "reasonMessage": "Reason / Message:",
+    "rejectionReasonLabel": "Rejection reason:",
+    "reschedulePlaceholder": "Explain why you need to reschedule...",
+    "rejectPlaceholder": "Specify the reason for rejecting...",
+    "confirmNewMessage": "Confirm new message",
+    "confirmRejection": "Confirm rejection",
+    "confirmReschedule": "Confirm reschedule",
+    "cancel": "Cancel",
+    "accept": "Accept",
+    "editReschedule": "Edit reschedule",
+    "changeDate": "Change date",
+    "editMessage": "Edit message",
+    "reject": "Reject"
+  },
+  "employerInterviews": {
+    "title": "Interviews",
+    "subtitle": "Interviews you have scheduled with students",
+    "loading": "Loading interviews…",
+    "loadError": "Could not load interviews.",
+    "empty": "You have not scheduled any interviews yet.",
+    "invalidDate": "Invalid date",
+    "details": "Meeting details",
+    "notProvided": "Not provided",
+    "rejectionReason": "Reason for declining",
+    "statuses": {"upcoming": "Upcoming", "past": "Past", "cancelled": "Cancelled"},
+    "types": {"ONLINE": "Online", "IN_PERSON": "In person", "PHONE": "Phone"},
+    "decisions": {"PENDING": "Awaiting response", "ACCEPTED": "Accepted", "REJECTED": "Declined"}
   },
   "expiredUser": {
     "pendingBadge": "Waiting for supervisor approval",

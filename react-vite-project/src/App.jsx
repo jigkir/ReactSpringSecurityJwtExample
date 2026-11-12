@@ -23,6 +23,7 @@ import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
 import Users from "./components/page/Users.jsx";
+import EmployerInterviews from "./components/page/employer/interview/EmployerInterviews.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -127,6 +128,7 @@ function App() {
                             <Route path="/internships" element={<PostInternship user={user}/>}/>
                             <Route path="/applications" element={<Applications user={user}/>}/>
                             <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
+                            <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>

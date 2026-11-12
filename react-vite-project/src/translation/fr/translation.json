@@ -587,8 +587,9 @@
       "upcoming": "À venir",
       "past": "Passée",
       "cancelled": "Annulée",
-      "rejected" : "Rejettée",
-      "accepted" : "Acceptée"
+      "rejected": "Rejettée",
+      "accepted": "Acceptée",
+      "rescheduled": "Reporté"
     },
     "types": {
       "ONLINE": "En ligne",
@@ -603,6 +604,48 @@
       "all": "Tous les statuts",
       "allTypes": "Tous les types",
       "noResults": "Aucune entrevue ne correspond aux filtres."
+    },
+    "rejectionReason": "Raison de rejection",
+    "rescheduledReason": "Détails de la demande de report",
+    "chooseNewDate": "Choisissez une nouvelle date et heure",
+    "reasonMessage": "Motif / Message :",
+    "rejectionReasonLabel": "Motif du refus :",
+    "reschedulePlaceholder": "Expliquez pourquoi vous devez reporter...",
+    "rejectPlaceholder": "Précisez le motif du refus...",
+    "confirmNewMessage": "Confirmer le nouveau message",
+    "confirmRejection": "Confirmer le refus",
+    "confirmReschedule": "Confirmer le report",
+    "cancel": "Annuler",
+    "accept": "Accepter",
+    "editReschedule": "Modifier le report",
+    "changeDate": "Changer la date",
+    "editMessage": "Modifier le message",
+    "reject": "Refuser"
+  },
+  "employerInterviews": {
+    "title": "Entrevues",
+    "subtitle": "Entrevues que vous avez planifiés avec des étudiants",
+    "loading": "Chargement des entrevues…",
+    "loadError": "Impossible de charger les entrevues.",
+    "empty": "Vous n’avez encore planifié aucun entrevue.",
+    "invalidDate": "Date non valide",
+    "details": "Détails de la rencontre",
+    "notProvided": "Non fourni",
+    "rejectionReason": "Motif du refus",
+    "statuses": {
+      "upcoming": "À venir",
+      "past": "Passé",
+      "cancelled": "Annulé"
+    },
+    "types": {
+      "ONLINE": "En ligne",
+      "IN_PERSON": "En personne",
+      "PHONE": "Par téléphone"
+    },
+    "decisions": {
+      "PENDING": "En attente",
+      "ACCEPTED": "Accepté",
+      "REJECTED": "Refusé"
     }
   },
   "viewApplication": {
@@ -613,7 +656,7 @@
     "backBtn": "Retour à mes offres",
     "selectedCount_one": "{{count}} étudiant sélectionné",
     "selectedCount_other": "{{count}} étudiants sélectionnés",
-    "hire": "Embaucher",
+    "hire": "Embaucher des candidats",
     "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
     "hired": "Embauché",
     "selectStudent": "Sélectionner {{name}}",
@@ -621,7 +664,9 @@
     "hiring": "Embauche en cours...",
     "hireSuccess_one": "{{count}} étudiant a bien été embauché.",
     "hireSuccess_other": "{{count}} étudiants ont bien été embauchés.",
-    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée."
+    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée.",
+    "cancelHire": "Annuler",
+    "confirmHire": "Confirmer l'embauche"
   },
   "dev": {
     "label": "Dev",

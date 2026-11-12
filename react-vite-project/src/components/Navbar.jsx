@@ -21,7 +21,8 @@ const NAV_BY_ROLE = {
     EMPLOYER: [{to: "/internships", labelKey: "navbar.postInternship"}, {
         to: "/applications",
         labelKey: "navbar.applications"
-    },],
+    },
+        {to: "/employer/interviews", labelKey: "navbar.interviews"}],
     TEACHER: [],
 };
 

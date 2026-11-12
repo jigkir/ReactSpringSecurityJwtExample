@@ -1,13 +1,18 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -22,7 +27,9 @@ import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -48,8 +55,9 @@ public class ManagerService {
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
+    private final ContractService contractService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService, ContractService contractService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
@@ -59,6 +67,7 @@ public class ManagerService {
         this.userAppService = userAppService;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
+        this.contractService = contractService;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -188,6 +197,34 @@ public class ManagerService {
         }
 
         return InternshipResponseDto.of(internship);
+    }
+
+    public List<ContractResponseDto> getContracts(Long sessionId) throws AcademicSessionNotFoundException {
+        return contractService.getContracts(academicSessionService.findSessionOrCurrent(sessionId));
+    }
+
+    public List<ContractResponseDto> getPendingContracts() {
+        return contractService.getPendingContracts();
+    }
+
+    public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
+        Manager manager = findManagerByEmail(email);
+
+        userAppService.verifyIfSignaturePasswordIsIncorrect(manager, password);
+
+        return contractService.signAsManager(contractId, manager);
+    }
+
+    public ContractResponseDto devSignContract(String email, long contractId) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException {
+        return contractService.signAsManager(contractId, findManagerByEmail(email));
+    }
+
+    public DocumentFileResponseDto getContractFile(long contractId, ContractLanguage language) throws ContractNotFoundException {
+        return contractService.getContractFile(contractId, language);
+    }
+
+    private Manager findManagerByEmail(String email) throws UserNotFoundException {
+        return managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
