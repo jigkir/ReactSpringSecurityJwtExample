@@ -1,10 +1,14 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
@@ -196,6 +200,14 @@ public class ManagerService {
 
     public List<ContractResponseDto> getContracts(Long sessionId) throws AcademicSessionNotFoundException {
         return contractService.getContracts(academicSessionService.findSessionOrCurrent(sessionId));
+    }
+
+    public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
+        Manager manager = managerRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+
+        userAppService.verifyIfSignaturePasswordIsIncorrect(manager, password);
+
+        return contractService.signAsManager(contractId, manager);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {

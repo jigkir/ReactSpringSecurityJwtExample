@@ -49,6 +49,11 @@ public class Contract {
         return internship.getPostedBy();
     }
 
+    public void signAsManager(Manager manager, LocalDateTime signedAt) {
+        this.manager = manager;
+        this.managerSignedAt = signedAt;
+    }
+
     public LocalDateTime getSignedAtOf(ContractParty party) {
         return switch (party) {
             case STUDENT -> studentSignedAt;

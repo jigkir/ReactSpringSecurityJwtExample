@@ -1,22 +1,19 @@
 package com.lacouf.rsbjwt.service.contract;
 
-import com.lacouf.rsbjwt.exception.contract.ApplicationNotOfferedException;
-import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadyExistsException;
-import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
+import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.Employer;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
@@ -33,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -49,8 +47,12 @@ public class ContractServiceTest {
     private ArgumentCaptor<Contract> contractArgumentCaptor;
 
     private static final long APPLICATION_ID = 20L;
+
     private static final String STUDENT_EMAIL = "student@example.com";
     private static final String EMPLOYER_EMAIL = "email@example.com";
+    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
+    private static final String MANAGER_PASSWORD = "John123#";
+
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 10, 14, 30);
 
     private Employer employer;
@@ -162,8 +164,7 @@ public class ContractServiceTest {
     @Test
     void shouldReturnContractsOfSessionWhenGettingContracts() {
         // Arrange
-        Contract contract = new Contract(offeredApplication(), NOW);
-        contract.setId(30L);
+        Contract contract = contract();
 
         when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract));
 
@@ -179,6 +180,46 @@ public class ContractServiceTest {
         assert internship.getStartDate().plusWeeks(16).minusDays(1).equals(contracts.getFirst().internshipEndDate());
         assert contracts.getFirst().managerName() == null;
         assert contracts.getFirst().managerSignedAt() == null;
+    }
+
+    // ==========================================
+    // Manager Signature Tests
+    // ==========================================
+
+    @Test
+    void shouldSignAsManagerWhenManagerHasNotSignedYet() throws Exception {
+        // Arrange
+        Contract contract = contract();
+        Manager manager = manager();
+
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+        when(contractRepository.save(contract)).thenReturn(contract);
+
+        // Act
+        ContractResponseDto contractResponseDto = contractService.signAsManager(30L, manager);
+
+        // Assert
+        assert manager.equals(contract.getManager());
+        assert NOW.equals(contract.getManagerSignedAt());
+        assert "John Doe".equals(contractResponseDto.managerName());
+        assert NOW.equals(contractResponseDto.managerSignedAt());
+        assert contractResponseDto.studentSignedAt() == null;
+    }
+
+    @Test
+    void shouldThrowContractAlreadySignedExceptionWhenManagerSignsTwice() {
+        // Arrange
+        Contract contract = contract();
+        contract.signAsManager(manager(), NOW.minusDays(1));
+
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+
+        // Act + Assert
+        assertThrows(ContractAlreadySignedException.class, () -> contractService.signAsManager(30L, manager()));
+
+        assert NOW.minusDays(1).equals(contract.getManagerSignedAt());
+
+        verify(contractRepository, never()).save(any(Contract.class));
     }
 
     // ==========================================
@@ -263,5 +304,18 @@ public class ContractServiceTest {
 
     private InternshipApplication offeredApplication() {
         return applicationWithDecision(EmployerDecision.INTERNSHIP_OFFERED);
+    }
+
+    private Contract contract() {
+        Contract contract = new Contract(offeredApplication(), NOW);
+        contract.setId(30L);
+
+        return contract;
+    }
+
+    private static Manager manager() {
+        Credentials credentials = Credentials.builder().email(MANAGER_EMAIL).role(Role.MANAGER).build();
+
+        return new Manager("John", "Doe", credentials, "450-555-0000");
     }
 }

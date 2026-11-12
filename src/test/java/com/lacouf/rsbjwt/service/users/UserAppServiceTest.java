@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -269,6 +270,28 @@ class UserAppServiceTest {
         assert ("514-123-4567").equals(formattedPhoneNumber);
     }
 
+    @Test
+    void shouldAcceptSignaturePasswordWhenItMatchesTheUser() {
+        // Arrange
+        Manager manager = managerWithEncodedPassword();
+
+        when(passwordEncoder.matches(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
+
+        // Act + Assert
+        assertDoesNotThrow(() -> userAppService.verifyIfSignaturePasswordIsIncorrect(manager, RAW_PASSWORD));
+    }
+
+    @Test
+    void shouldThrowIncorrectSignaturePasswordExceptionWhenPasswordDoesNotMatchTheUser() {
+        // Arrange
+        Manager manager = managerWithEncodedPassword();
+
+        when(passwordEncoder.matches("wrong password", ENCODED_PASSWORD)).thenReturn(false);
+
+        // Act + Assert
+        assertThrows(IncorrectSignaturePasswordException.class, () -> userAppService.verifyIfSignaturePasswordIsIncorrect(manager, "wrong password"));
+    }
+
     // ==========================================
     // Dev Mode Tests
     // ==========================================
@@ -376,5 +399,13 @@ class UserAppServiceTest {
 
         // Assert
         assert result.isEmpty();
+    }
+
+    // ---------- Helpers ----------
+
+    private static Manager managerWithEncodedPassword() {
+        Credentials credentials = Credentials.builder().email(EMAIL).password(ENCODED_PASSWORD).role(Role.MANAGER).build();
+
+        return new Manager("Jane", "Doe", credentials, "514-123-4567");
     }
 }
