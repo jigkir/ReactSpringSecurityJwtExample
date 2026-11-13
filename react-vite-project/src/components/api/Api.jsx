@@ -383,22 +383,31 @@ export async function acceptInterviews(interviewId) {
 export async function denyInterviews(interviewId, comment) {
     const response = await fetcher(`student/interviews/${interviewId}/refuse`,
         {
-        method: "PUT",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({comment})
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({comment})
         }
-        );
+    );
     return handleEmpty(response);
 }
 
-export async function rescheduleInterviews(interviewId, comment, interviewDate){
+export async function rescheduleInterviews(interviewId, comment, interviewDate) {
     const response = await fetcher(`student/interviews/${interviewId}/reschedule`,
         {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({comment,interviewDate})
-        } );
+            body: JSON.stringify({comment, interviewDate})
+        });
     return handleEmpty(response);
+}
+
+//endregion
+
+//region Student offers
+// -> InternshipApplicationResponseDto[] (opening this list closes the INTERNSHIP_OFFERED notifications)
+export async function getStudentOffers() {
+    const response = await fetcher("student/applications/offers", {method: "GET"});
+    return handleResponse(response);
 }
 
 //endregion

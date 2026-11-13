@@ -87,7 +87,10 @@
     "interviewUpdatedNotification": "Interview invitation updated",
     "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}",
     "sessionSelector": "Session",
-    "sessionsLoadError": "Unable to load the sessions."
+    "sessionsLoadError": "Unable to load the sessions.",
+    "offers": "Offers received",
+    "internshipOfferedNotification": "Internship offer received",
+    "internshipOfferedNotificationDetail": "{{company}} — {{title}}"
   },
   "managerPage": {
     "pageInfo": "Manager home page",
@@ -663,9 +666,21 @@
     "details": "Meeting details",
     "notProvided": "Not provided",
     "rejectionReason": "Reason for declining",
-    "statuses": {"upcoming": "Upcoming", "past": "Past", "cancelled": "Cancelled"},
-    "types": {"ONLINE": "Online", "IN_PERSON": "In person", "PHONE": "Phone"},
-    "decisions": {"PENDING": "Awaiting response", "ACCEPTED": "Accepted", "REJECTED": "Declined"}
+    "statuses": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "cancelled": "Cancelled"
+    },
+    "types": {
+      "ONLINE": "Online",
+      "IN_PERSON": "In person",
+      "PHONE": "Phone"
+    },
+    "decisions": {
+      "PENDING": "Awaiting response",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Declined"
+    }
   },
   "expiredUser": {
     "pendingBadge": "Waiting for supervisor approval",
@@ -678,6 +693,19 @@
     "pendingStudent": "Your internship supervisor must approve your student account access, because it expired or you signed up after December. We've notified them of your sign-in attempt. This page updates automatically once access is approved.",
     "rejectedTeacher": "Your teacher account validation request was reviewed and declined by the administration. Please contact your department head for help.",
     "rejectedStudent": "Your internship supervisor reviewed and declined your access request. Please contact your program coordinator for help."
+  },
+  "studentOffers": {
+    "title": "Internship offers received",
+    "subtitle": "Employers who decided to hire you appear here.",
+    "loading": "Loading offers…",
+    "loadError": "Unable to load offers. They will refresh automatically.",
+    "empty": "You haven't received any internship offers yet.",
+    "applicationDate": "Application sent on",
+    "consent": {
+      "PENDING": "Awaiting your answer",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Declined"
+    }
   },
   "users": {
     "statuses": {
