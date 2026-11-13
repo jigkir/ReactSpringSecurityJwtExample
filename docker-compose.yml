@@ -15,7 +15,7 @@ services:
   libretranslate:
     image: libretranslate/libretranslate
     container_name: rsbjwt-libretranslate
-    command: ["--load-only", "fr,en"]
+    command: ["--load-only", "fr,en", "--threads", "4"]
     ports:
       - "5000:5000"
     volumes:

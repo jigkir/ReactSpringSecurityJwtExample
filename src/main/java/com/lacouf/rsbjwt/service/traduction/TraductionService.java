@@ -83,58 +83,48 @@ public class TraductionService {
         return text;
     }
 
+    public boolean needsTranslation(String text) {
+        if (text == null || text.isBlank()) return false;
+        return text.chars().anyMatch(Character::isLetter);
+    }
+
     private String normalizeLang(String lang) {
         if (lang == null || lang.isBlank()) return null;
-        String code = lang.toLowerCase().split("[-_,;]")[0].trim(); // fr-CA -> fr
+        String code = lang.toLowerCase().split("[-_,;]")[0].trim();
         return (code.equals("fr") || code.equals("en")) ? code : null;
     }
 
     public String traductStringToLanguage(String text, String targetLang) {
+        if (!needsTranslation(text)) {
+            return text;
+        }
         String target = normalizeLang(targetLang);
-        if (text == null || text.isBlank() || target == null) {
+        if (target == null) {
             return text;
         }
 
-        String result = callLibre(text, "auto", target);
-
-        if (result.trim().equalsIgnoreCase(text.trim())) {
-            String otherLang = target.equals("en") ? "fr" : "en";
-            result = callLibre(text, otherLang, target);
-        }
-        return result;
+        String source = target.equals("en") ? "fr" : "en";
+        return callLibre(text, source, target);
     }
-
 
     public List<InternshipResponseDto> translateInternships(List<InternshipResponseDto> dtos, String targetLang) {
         if (dtos == null || dtos.isEmpty() || normalizeLang(targetLang) == null) {
             return dtos;
         }
 
-        return dtos.parallelStream()
-                .map(dto -> {
-                    try {
-                        return new InternshipResponseDto(
-                                dto.id(),
-                                dto.title(),
-                                dto.description(),
-                                dto.requiredSkills(),
-                                dto.durationInWeeks(),
-                                dto.location(),
-                                dto.workMode(),
-                                dto.startDate(),
-                                dto.applicationDeadline(),
-                                dto.compensationAmount(),
-                                dto.compensationNegotiable(),
-                                dto.status(),
-                                traductStringToLanguage(dto.rejectionComment(), targetLang),
-                                dto.employerId(),
-                                dto.employerEmail(),
-                                dto.discipline(),
-                                dto.uploadedAt()
-                        );
-                    } catch (Exception e) {
-                        return dto;
-                    }
-                }).toList();
+        return dtos.stream()
+                .map(dto -> needsTranslation(dto.rejectionComment())
+                        ? withRejectionComment(dto, traductStringToLanguage(dto.rejectionComment(), targetLang))
+                        : dto)
+                .toList();
+    }
+
+    private InternshipResponseDto withRejectionComment(InternshipResponseDto dto, String comment) {
+        return new InternshipResponseDto(
+                dto.id(), dto.title(), dto.description(), dto.requiredSkills(),
+                dto.durationInWeeks(), dto.location(), dto.workMode(), dto.startDate(),
+                dto.applicationDeadline(), dto.compensationAmount(), dto.compensationNegotiable(),
+                dto.status(), comment, dto.employerId(), dto.employerEmail(),
+                dto.discipline(), dto.uploadedAt());
     }
 }
