@@ -9,6 +9,9 @@ import {useNotifications} from './NotificationsProvider.jsx';
 const INTERVIEW_TARGET = "INTERVIEW";
 export const interviewAnchor = (id) => `interview-${id}`;
 
+const OFFER_TYPE = "INTERNSHIP_OFFERED";
+export const offerAnchor = (id) => `offer-${id}`;
+
 // Company, title and date of the student's interviews, loaded only while the menu is open
 function useInterviewsById(enabled, version) {
     const [byId, setById] = useState({});
@@ -84,6 +87,26 @@ export default function NotificationMenu({dark}) {
             return (
                 <Link to={item.to} className={menuClasses.link} onClick={() => setOpen(false)}>
                     <span>{t(item.labelKey, {amount: item.count})}</span>
+                </Link>
+            );
+        }
+
+        if (item.notificationType === OFFER_TYPE) {
+            return (
+                <Link
+                    to={{pathname: item.to, hash: `#${offerAnchor(notification.targetId)}`}}
+                    className={menuClasses.link}
+                    onClick={() => setOpen(false)}
+                >
+                    <span className="block font-semibold">{t(item.labelKey)}</span>
+                    {(notification.companyName || notification.internshipTitle) && (
+                        <span className="block text-xs opacity-80">
+                            {t("navbar.internshipOfferedNotificationDetail", {
+                                company: notification.companyName,
+                                title: notification.internshipTitle,
+                            })}
+                        </span>
+                    )}
                 </Link>
             );
         }

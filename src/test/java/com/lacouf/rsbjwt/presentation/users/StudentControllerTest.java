@@ -16,11 +16,14 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
+import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
@@ -933,6 +936,26 @@ public class StudentControllerTest {
                         .principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(0));
+    }
+
+    @Test
+    void shouldReturnCompanyNameAndTitleOfOfferedInternship() throws Exception {
+        // Arrange
+        StudentCvResponseDto cv = new StudentCvResponseDto(5L, "cv.pdf", 1024L, LocalDateTime.now(), DocumentVisibility.VISIBLE, ReviewStatus.APPROVED, null);
+        InternshipApplicationResponseDto offer = new InternshipApplicationResponseDto(20L, 10L, "Software Developer", "Company Name", cv, null, null,
+                LocalDate.now(), InternshipApplicationStatus.READ, StudentInternshipConsent.PENDING);
+
+        when(studentService.getOffers(STUDENT_EMAIL)).thenReturn(List.of(offer));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/student/applications/offers")
+                        .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].id").value(20))
+                .andExpect(jsonPath("$[0].internshipTitle").value("Software Developer"))
+                .andExpect(jsonPath("$[0].companyName").value("Company Name"))
+                .andExpect(jsonPath("$[0].studentInternshipConsent").value("PENDING"));
     }
 
     @Test

@@ -26,6 +26,8 @@ const NOTIFICATION_TYPE = {
 
     INTERVIEW_CONVOCATION: "INTERVIEW_CONVOCATION",
     INTERVIEW_UPDATED: "INTERVIEW_UPDATED",
+
+    INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
 };
 
 export const TARGET_TYPE = {
@@ -40,6 +42,7 @@ const PAGE = {
     STUDENT_CVS: "/portfolio",
     STUDENT_INTERNSHIPS: "/internship",
     STUDENT_INTERVIEWS: "/interviews",
+    STUDENT_OFFERS: "/offers",
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
     MANAGER_USERS: "/users",
@@ -114,6 +117,14 @@ const NOTIFICATION_ITEMS = {
             labelKey: "navbar.interviewUpdatedNotification",
             to: PAGE.STUDENT_INTERVIEWS,
             detailed: true,
+        },
+        {
+            id: "internshipOffered",
+            notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFERED,
+            targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
+            labelKey: "navbar.internshipOfferedNotification",
+            to: PAGE.STUDENT_OFFERS,
+            detailed: true, // one menu line per offer (company, title)
         },
     ],
     [ROLE.EMPLOYER]: [

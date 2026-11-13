@@ -376,11 +376,18 @@ public class StudentService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<InternshipApplicationResponseDto> getOffers(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        return applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED)
-                .stream()
+        List<InternshipApplication> offers =
+                applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED).stream()
+                        .filter(offer -> isVisibleToStudents(offer.getInternship()))
+                        .toList();
+
+        offers.forEach(offer -> notificationService.closeNotificationOfRecipient(
+                NotificationType.INTERNSHIP_OFFERED, offer.getId(), student));
+
+        return offers.stream()
                 .map(InternshipApplicationResponseDto::of)
                 .toList();
     }
@@ -545,6 +552,7 @@ public class StudentService {
         return interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(interviewId, email)
                 .orElseThrow(() -> new InterviewNotFoundException(interviewId));
     }
+
     @Transactional
     public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);

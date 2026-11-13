@@ -345,6 +345,8 @@ public class EmployerService {
             application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
             application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
             internshipApplicationRepository.save(application);
+
+            notificationService.notifyInternshipOffered(application);
         }
     }
 
@@ -420,7 +422,10 @@ public class EmployerService {
 
     private void closeNewInternshipApplicationNotifications(Internship internship) {
         internshipApplicationRepository.findByInternship(internship)
-                .forEach(application -> closeNewInternshipApplicationNotification(application.getId()));
+                .forEach(application -> {
+                    closeNewInternshipApplicationNotification(application.getId());
+                    notificationService.closeNotificationsOfType(NotificationType.INTERNSHIP_OFFERED, application.getId());
+                });
     }
 
     private void closeNewInternshipApplicationNotification(long applicationId) {

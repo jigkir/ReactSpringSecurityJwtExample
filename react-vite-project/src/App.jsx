@@ -19,6 +19,7 @@ import StudentInternships from "./components/page/student/Internships.jsx";
 import ViewApplications from "./components/page/employer/application/ViewApplications.jsx";
 import Applications from "./components/page/employer/application/Applications.jsx";
 import Interviews from "./components/page/student/Interviews.jsx";
+import Offers from "./components/page/student/Offers.jsx";
 import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
@@ -114,6 +115,7 @@ function App() {
                             <Route path="/cv" element={<Navigate to="/portfolio" replace/>}/>
                             <Route path="/internship" element={<StudentInternships/>}/>
                             <Route path="/interviews" element={<Interviews/>}/>
+                            <Route path="/offers" element={<Offers/>}/>
                         </Route>
 
                         {/* Manager */}

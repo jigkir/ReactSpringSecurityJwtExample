@@ -15,6 +15,8 @@ public record NotificationDto(
         TargetType targetType,
         NotificationType notificationType,
         Long targetId,
+        String companyName,
+        String internshipTitle,
         LocalDateTime createdAt
 ) {
 
@@ -27,6 +29,8 @@ public record NotificationDto(
                 notification.getTargetType(),
                 notification.getNotificationType(),
                 notification.getTargetId(),
+                notification.getCompanyName(),
+                notification.getInternshipTitle(),
                 notification.getCreatedAt()
         );
     }

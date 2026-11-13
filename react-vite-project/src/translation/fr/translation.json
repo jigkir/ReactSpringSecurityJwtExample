@@ -87,7 +87,10 @@
     "interviewUpdatedNotification": "Convocation en entrevue modifiée",
     "interviewNotificationDetail": "{{company}} — {{title}}, le {{date}}",
     "sessionSelector": "Session",
-    "sessionsLoadError": "Impossible de charger les sessions."
+    "sessionsLoadError": "Impossible de charger les sessions.",
+    "offers": "Offres reçues",
+    "internshipOfferedNotification": "Offre de stage reçue",
+    "internshipOfferedNotificationDetail": "{{company}} — {{title}}"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",
@@ -690,6 +693,19 @@
     "pendingStudent": "L'accès à votre compte étudiant doit être approuvé par votre superviseur de stage, parce qu'il a expiré ou que vous vous êtes inscrit après décembre. Nous l'avons avisé de votre tentative de connexion. Cette page se mettra à jour automatiquement dès que l'accès sera approuvé.",
     "rejectedTeacher": "Votre demande de validation de compte de professeur a été examinée et refusée par l'administration. Veuillez communiquer avec votre chef de département.",
     "rejectedStudent": "Votre superviseur de stage a examiné et refusé votre demande d'accès. Veuillez communiquer directement avec votre coordonnateur de programme."
+  },
+  "studentOffers": {
+    "title": "Offres de stage reçues",
+    "subtitle": "Les employeurs qui ont décidé de vous embaucher apparaissent ici.",
+    "loading": "Chargement des offres…",
+    "loadError": "Impossible de charger les offres. Elles s'actualiseront automatiquement.",
+    "empty": "Vous n'avez reçu aucune offre de stage pour le moment.",
+    "applicationDate": "Candidature envoyée le",
+    "consent": {
+      "PENDING": "En attente de votre réponse",
+      "ACCEPTED": "Acceptée",
+      "REJECTED": "Refusée"
+    }
   },
   "users": {
     "statuses": {
