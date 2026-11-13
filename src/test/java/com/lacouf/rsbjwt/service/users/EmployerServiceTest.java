@@ -287,6 +287,36 @@ public class EmployerServiceTest {
     }
 
     @Test
+    void shouldCloseInternshipOfferedNotificationsWhenInternshipIsDeleted() throws InternshipNotFoundException {
+        // Arrange
+        InternshipApplication secondApplication = receivedInternshipApplication();
+        secondApplication.setId(21L);
+
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(internshipApplicationRepository.findByInternship(internship)).thenReturn(List.of(receivedInternshipApplication(), secondApplication));
+
+        // Act
+        employerService.deleteInternship(10L, EMPLOYER_EMAIL);
+
+        // Assert
+        verify(notificationService).closeNotificationsOfType(NotificationType.INTERNSHIP_OFFERED, INTERNSHIP_APPLICATION_ID);
+        verify(notificationService).closeNotificationsOfType(NotificationType.INTERNSHIP_OFFERED, 21L);
+    }
+
+    @Test
+    void shouldNotCloseInternshipOfferedNotificationsWhenDeletedInternshipHasNoApplication() throws InternshipNotFoundException {
+        // Arrange
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(internshipApplicationRepository.findByInternship(internship)).thenReturn(List.of());
+
+        // Act
+        employerService.deleteInternship(10L, EMPLOYER_EMAIL);
+
+        // Assert
+        verify(notificationService, never()).closeNotificationsOfType(eq(NotificationType.INTERNSHIP_OFFERED), anyLong());
+    }
+
+    @Test
     void shouldReturnInternshipsOfEmployer() throws AcademicSessionNotFoundException {
         // Arrange
         when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);

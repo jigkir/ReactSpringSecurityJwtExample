@@ -376,11 +376,13 @@ public class StudentService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<InternshipApplicationResponseDto> getOffers(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
         List<InternshipApplication> offers =
-                applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED);
+                applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED).stream()
+                        .filter(offer -> isVisibleToStudents(offer.getInternship()))
+                        .toList();
 
         offers.forEach(offer -> notificationService.closeNotificationOfRecipient(
                 NotificationType.INTERNSHIP_OFFERED, offer.getId(), student));

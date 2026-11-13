@@ -413,7 +413,10 @@ public class EmployerService {
 
     private void closeNewInternshipApplicationNotifications(Internship internship) {
         internshipApplicationRepository.findByInternship(internship)
-                .forEach(application -> closeNewInternshipApplicationNotification(application.getId()));
+                .forEach(application -> {
+                    closeNewInternshipApplicationNotification(application.getId());
+                    notificationService.closeNotificationsOfType(NotificationType.INTERNSHIP_OFFERED, application.getId());
+                });
     }
 
     private void closeNewInternshipApplicationNotification(long applicationId) {

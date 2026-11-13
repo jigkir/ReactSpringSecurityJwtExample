@@ -188,8 +188,9 @@ class NotificationServiceTest {
 
         Notification saved = notificationCaptor.getValue();
 
-        assert ("Internship Offer Received").equals(saved.getTitle());
-        assert ("Company Name has offered you the internship \"Software Developer\".").equals(saved.getMessage());
+        assert ("You're Hired").equals(saved.getTitle());
+        assert ("Congratulations! Company Name wants to hire you for the internship \"Software Developer\".")
+                .equals(saved.getMessage());
         assert (NotificationType.INTERNSHIP_OFFERED).equals(saved.getNotificationType());
         assert (NotificationStatus.UNREAD).equals(saved.getStatus());
         assert (TargetType.INTERNSHIP_APPLICATION).equals(saved.getTargetType());
