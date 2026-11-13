@@ -12,5 +12,16 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  libretranslate:
+    image: libretranslate/libretranslate
+    container_name: rsbjwt-libretranslate
+    command: ["--load-only", "fr,en"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - libretranslate_models:/home/libretranslate/.local
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  libretranslate_models:
