@@ -17,6 +17,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTranscript;
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
@@ -1614,6 +1615,11 @@ public class StudentServiceTest {
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
 
+        Contract contract = new Contract(application, LocalDateTime.of(2026, 11, 14, 10, 0));
+        contract.setId(30L);
+
+        when(contractService.createContract(application)).thenReturn(contract);
+
         // Act
         studentService.acceptOffer(STUDENT_EMAIL, 20L);
 
@@ -1622,6 +1628,31 @@ public class StudentServiceTest {
         verify(applicationRepository).save(application);
 
         assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+    }
+
+    @Test
+    void shouldNotifyManagersOfContractToSignWhenStudentAcceptsOffer() throws Exception {
+        // Arrange
+        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
+
+        InternshipApplication application = offeredApplication();
+
+        Contract contract = new Contract(application, LocalDateTime.of(2026, 11, 14, 10, 0));
+        contract.setId(30L);
+
+        Manager firstManager = new Manager();
+        Manager secondManager = new Manager();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+        when(contractService.createContract(application)).thenReturn(contract);
+        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
+
+        // Act
+        studentService.acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN, 30L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN, 30L, secondManager);
     }
 
     @Test

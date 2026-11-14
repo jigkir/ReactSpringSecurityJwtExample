@@ -207,20 +207,30 @@ public class ManagerService {
         return contractService.getPendingContracts();
     }
 
+    @Transactional
     public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
         Manager manager = findManagerByEmail(email);
 
         userAppService.verifyIfSignaturePasswordIsIncorrect(manager, password);
 
-        return contractService.signAsManager(contractId, manager);
+        return signAsManager(contractId, manager);
     }
 
+    @Transactional
     public ContractResponseDto devSignContract(String email, long contractId) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException {
-        return contractService.signAsManager(contractId, findManagerByEmail(email));
+        return signAsManager(contractId, findManagerByEmail(email));
     }
 
     public DocumentFileResponseDto getContractFile(long contractId, ContractLanguage language) throws ContractNotFoundException {
         return contractService.getContractFile(contractId, language);
+    }
+
+    private ContractResponseDto signAsManager(long contractId, Manager manager) throws ContractNotFoundException, ContractAlreadySignedException {
+        ContractResponseDto signedContract = contractService.signAsManager(contractId, manager);
+
+        notificationService.closeNotificationsOfType(NotificationType.CONTRACT_TO_SIGN, contractId);
+
+        return signedContract;
     }
 
     private Manager findManagerByEmail(String email) throws UserNotFoundException {

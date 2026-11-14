@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.service.users;
 
+import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
@@ -12,6 +13,7 @@ import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -60,6 +62,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ManagerServiceTest {
     private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
+    private static final String MANAGER_PASSWORD = "John123#";
 
     @InjectMocks
     private ManagerService managerService;
@@ -903,7 +906,28 @@ public class ManagerServiceTest {
 
         // Assert
         assert signedContract.equals(result);
+
         verifyNoInteractions(userAppService);
+        verify(notificationService).closeNotificationsOfType(NotificationType.CONTRACT_TO_SIGN, 30L);
+    }
+
+    @Test
+    void shouldCloseContractToSignNotificationsWhenManagerSignsContract() throws Exception {
+        // Arrange
+        Manager manager = manager();
+        ContractResponseDto signedContract = new ContractResponseDto(30L, InternshipResponseDto.of(internship), LocalDate.of(2027, 5, 2), "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));
+
+        when(managerRepository.findByCredentialsEmail(MANAGER_EMAIL)).thenReturn(Optional.of(manager));
+        when(contractService.signAsManager(30L, manager)).thenReturn(signedContract);
+
+        // Act
+        ContractResponseDto result = managerService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD);
+
+        // Assert
+        assert signedContract.equals(result);
+
+        verify(userAppService).verifyIfSignaturePasswordIsIncorrect(manager, MANAGER_PASSWORD);
+        verify(notificationService).closeNotificationsOfType(NotificationType.CONTRACT_TO_SIGN, 30L);
     }
 
     @Test

@@ -90,7 +90,8 @@
     "sessionsLoadError": "Unable to load the sessions.",
     "offers": "Offers received",
     "internshipOfferedNotification": "Internship offer received",
-    "internshipOfferedNotificationDetail": "{{company}} — {{title}}"
+    "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
+    "contractToSignNotification": "{{amount}} contract(s) to sign"
   },
   "managerPage": {
     "pageInfo": "Manager home page",

@@ -15,7 +15,9 @@ public enum NotificationType {
     INTERVIEW_CONVOCATION(TargetType.INTERVIEW, "Interview Invitation", "You have been invited to an interview."),
     INTERVIEW_UPDATED(TargetType.INTERVIEW, "Interview Updated", "Your interview details have been updated."),
 
-    STUDENT_ACCESS_REQUESTED(TargetType.STUDENT_ACCOUNT, "Student Access Requested", null);
+    STUDENT_ACCESS_REQUESTED(TargetType.STUDENT_ACCOUNT, "Student Access Requested", null),
+
+    CONTRACT_TO_SIGN(TargetType.CONTRACT, "New Contract To Sign", "A new internship contract is waiting for your signature.");
 
     private final TargetType targetType;
     private final String title;
