@@ -5,11 +5,13 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.UserApp;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Getter
 @Entity
@@ -49,11 +51,6 @@ public class Contract {
         return internship.getPostedBy();
     }
 
-    public void signAsManager(Manager manager, LocalDateTime signedAt) {
-        this.manager = manager;
-        this.managerSignedAt = signedAt;
-    }
-
     public LocalDateTime getSignedAtOf(ContractParty party) {
         return switch (party) {
             case STUDENT -> studentSignedAt;
@@ -64,5 +61,32 @@ public class Contract {
 
     public boolean isSignedBy(ContractParty party) {
         return getSignedAtOf(party) != null;
+    }
+
+    public Optional<ContractParty> findPartyOf(UserApp user) {
+        if (user instanceof Manager) {
+            return Optional.of(ContractParty.MANAGER);
+        }
+
+        return Optional.empty();
+    }
+
+    public boolean isPartyOf(UserApp user) {
+        return findPartyOf(user).isPresent();
+    }
+
+    public boolean isWaitingForSignatureOf(UserApp user) {
+        return findPartyOf(user).filter(party -> !isSignedBy(party)).isPresent();
+    }
+
+    public void sign(ContractParty party, UserApp signer, LocalDateTime signedAt) {
+        switch (party) {
+            case STUDENT -> this.studentSignedAt = signedAt;
+            case EMPLOYER -> this.employerSignedAt = signedAt;
+            case MANAGER -> {
+                this.manager = (Manager) signer;
+                this.managerSignedAt = signedAt;
+            }
+        }
     }
 }

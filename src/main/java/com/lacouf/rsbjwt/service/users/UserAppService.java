@@ -48,7 +48,7 @@ public class UserAppService {
 
     // Dev Mode only (called from DevController): token for any user, no password
     public JWTAuthResponse devLoginAs(String email) throws UserNotFoundException {
-        UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+        UserApp user = findUserByEmail(email);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities());
 
         accountAccessService.notifyManagersIfAccessIsPending(authentication.getName());
@@ -57,9 +57,11 @@ public class UserAppService {
     }
 
     public UserResponseDto getUserByEmail(String email) throws UserNotFoundException {
-        UserApp user = userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
+        return UserResponseDto.of(findUserByEmail(email));
+    }
 
-        return UserResponseDto.of(user);
+    public UserApp findUserByEmail(String email) throws UserNotFoundException {
+        return userAppRepository.findByCredentialsEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
     // Dev Mode only (called from DevController)
