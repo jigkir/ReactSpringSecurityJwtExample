@@ -113,8 +113,8 @@ function Offers() {
                             className="font-medium">{t("studentOffers.applicationDate")}</span> {offer.applicationDate}
                     </span>
                     <div className="flex gap-2" hidden={consent !== "PENDING"}>
-                        <Button icon="check" dark={dark} onClick={() => handleAccept(offer.id)}>Accept</Button>
-                        <Button icon="close" dark={dark} onClick={() => handleDeny(offer.id)}>Reject</Button>
+                        <Button icon="check" dark={dark} onClick={() => handleAccept(offer.id)}>{t("studentInterviews.accept")}</Button>
+                        <Button icon="close" dark={dark} onClick={() => handleDeny(offer.id)}>{t("studentInterviews.reject")}</Button>
                     </div>
                 </div>
 
