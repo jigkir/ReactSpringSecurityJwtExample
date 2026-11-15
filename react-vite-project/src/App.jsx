@@ -13,6 +13,7 @@ import Home from './components/Home.jsx';
 import Portfolio from './components/page/portfolio/Portfolio.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import ManagerInternships from './components/page/manager/Internships.jsx';
+import Contracts from './components/page/manager/Contracts.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
@@ -122,6 +123,7 @@ function App() {
                         <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
                             <Route path="/manager/cvs" element={<ManagerCv/>}/>
                             <Route path="/manager/internships" element={<ManagerInternships/>}/>
+                            <Route path="/manager/contracts" element={<Contracts/>}/>
                             <Route path="/users" element={<Users user={user}/>}/>
                         </Route>
 

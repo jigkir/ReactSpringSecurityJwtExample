@@ -9,21 +9,26 @@ import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 import SessionSelect from "./session/SessionSelect.jsx";
 
 // Links by role. Every label is a translation key (`labelKey`).
+const link = (to, labelKey) => ({to, labelKey});
+
 const NAV_BY_ROLE = {
-    STUDENT: [{to: "/portfolio", labelKey: "navbar.portfolio"}, {
-        to: "/internship",
-        labelKey: "navbar.internships"
-    }, {to: "/interviews", labelKey: "navbar.interviews"},
-        {to: "/offers", labelKey: "navbar.offers"}],
-    MANAGER: [{to: "/manager/cvs", labelKey: "navbar.cv"}, {
-        to: "/manager/internships",
-        labelKey: "navbar.internships"
-    }, {to: "/users", labelKey: "navbar.users"}],
-    EMPLOYER: [{to: "/internships", labelKey: "navbar.postInternship"}, {
-        to: "/applications",
-        labelKey: "navbar.applications"
-    },
-        {to: "/employer/interviews", labelKey: "navbar.interviews"}],
+    STUDENT: [
+        link("/portfolio", "navbar.portfolio"),
+        link("/internship", "navbar.internships"),
+        link("/interviews", "navbar.interviews"),
+        link("/offers", "navbar.offers"),
+    ],
+    MANAGER: [
+        link("/manager/cvs", "navbar.cv"),
+        link("/manager/internships", "navbar.internships"),
+        link("/manager/contracts", "navbar.contracts"),
+        link("/users", "navbar.users"),
+    ],
+    EMPLOYER: [
+        link("/internships", "navbar.postInternship"),
+        link("/applications", "navbar.applications"),
+        link("/employer/interviews", "navbar.interviews"),
+    ],
     TEACHER: [],
 };
 

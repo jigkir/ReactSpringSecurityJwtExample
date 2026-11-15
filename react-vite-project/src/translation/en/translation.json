@@ -62,6 +62,7 @@
     "cv": "CV review",
     "portfolio": "My portfolio",
     "internships": "Internships",
+    "contracts": "Contracts",
     "cvReview": "CVs to review",
     "users": "Users",
     "hello": "Hello,",
@@ -354,6 +355,7 @@
     "employerApplicationsLink": "Review applications received",
     "managerCvLink": "Review CVs waiting for approval",
     "managerInternshipsLink": "Review internship offers",
+    "managerContractsLink": "Sign pending contracts",
     "noPreviews": "Nothing to show here for your role yet.",
     "preview": {
       "empty": "Nothing here yet.",
@@ -423,6 +425,60 @@
     "rejectBtnAria": "Reject: {{title}}",
     "editBtnAria": "Edit offer: {{title}}",
     "editReasonBtnAria": "Edit reason: {{title}}"
+  },
+  "managerContracts": {
+    "title": "Internship contracts",
+    "subtitle": "Review the contracts of the selected session and sign the ones waiting for you. You can download the PDF in French or English at any time.",
+    "loading": "Loading contracts…",
+    "empty": "No contracts for this session yet.",
+    "loadError": "Unable to load contracts. Check your connection and try again.",
+    "retryBtn": "Reload contracts",
+    "actionFailed": "The action failed. Please try again.",
+    "notFound": "This contract no longer exists. The list has been refreshed.",
+    "status": {
+      "toSign": "Waiting for your signature",
+      "signed": "Signed"
+    },
+    "parties": {
+      "student": "Student",
+      "employer": "Employer",
+      "company": "Company",
+      "manager": "College manager"
+    },
+    "hourlyRate": "Hourly rate",
+    "negotiable": "Negotiable",
+    "yes": "Yes",
+    "no": "No",
+    "notSpecified": "Not specified",
+    "period": "{{start}} → {{end}}",
+    "periodTitle": "Internship period",
+    "signatures": {
+      "title": "Signatures",
+      "pending": "Awaiting signature",
+      "signedAt": "Signed on {{date}}",
+      "signedBy": "Signed on {{date}} by {{name}}"
+    },
+    "sign": {
+      "open": "Sign the contract",
+      "title": "Sign this contract",
+      "accept": "I accept the terms of the contract",
+      "passwordLabel": "Account password",
+      "passwordHint": "Confirm your identity with your account password.",
+      "devHint": "Dev mode: no password required.",
+      "submit": "Sign the contract",
+      "submitting": "Signing…",
+      "cancel": "Cancel",
+      "errorTerms": "You must accept the terms of the contract before signing.",
+      "errorPassword": "Enter your account password to sign.",
+      "errorWrongPassword": "Incorrect password. The contract was not signed.",
+      "errorAlreadySigned": "This contract has already been signed."
+    },
+    "download": {
+      "group": "Download the contract as a PDF",
+      "fr": "PDF (Français)",
+      "en": "PDF (English)",
+      "failed": "Unable to download the PDF. Please try again."
+    }
   },
   "studentInternship": {
     "title": "Available internships",

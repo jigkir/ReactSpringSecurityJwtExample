@@ -62,6 +62,7 @@
     "cv": "Validation des CV",
     "portfolio": "Mon portfolio",
     "internships": "Stages",
+    "contracts": "Contrats",
     "cvReview": "CV à valider",
     "users": "Utilisateurs",
     "hello": "Bonjour,",
@@ -354,6 +355,7 @@
     "employerApplicationsLink": "Consulter les candidatures reçues",
     "managerCvLink": "Valider les CV en attente",
     "managerInternshipsLink": "Réviser les offres de stage",
+    "managerContractsLink": "Signer les contrats en attente",
     "noPreviews": "Rien à afficher pour votre rôle pour le moment.",
     "preview": {
       "empty": "Rien pour l'instant.",
@@ -423,6 +425,60 @@
     "rejectBtnAria": "Refuser : {{title}}",
     "editBtnAria": "Modifier l'offre : {{title}}",
     "editReasonBtnAria": "Modifier le motif : {{title}}"
+  },
+  "managerContracts": {
+    "title": "Contrats de stage",
+    "subtitle": "Consultez les contrats de la session choisie et signez ceux qui attendent votre signature. Vous pouvez télécharger le PDF en français ou en anglais en tout temps.",
+    "loading": "Chargement des contrats…",
+    "empty": "Aucun contrat pour cette session pour l'instant.",
+    "loadError": "Impossible de charger les contrats. Vérifiez votre connexion et réessayez.",
+    "retryBtn": "Recharger les contrats",
+    "actionFailed": "L'action a échoué. Veuillez réessayer.",
+    "notFound": "Ce contrat n'existe plus. La liste a été actualisée.",
+    "status": {
+      "toSign": "En attente de votre signature",
+      "signed": "Signé"
+    },
+    "parties": {
+      "student": "Étudiant",
+      "employer": "Employeur",
+      "company": "Entreprise",
+      "manager": "Gestionnaire du collège"
+    },
+    "hourlyRate": "Salaire horaire",
+    "negotiable": "Négociable",
+    "yes": "Oui",
+    "no": "Non",
+    "notSpecified": "Non précisé",
+    "period": "{{start}} → {{end}}",
+    "periodTitle": "Période du stage",
+    "signatures": {
+      "title": "Signatures",
+      "pending": "En attente de signature",
+      "signedAt": "Signé le {{date}}",
+      "signedBy": "Signé le {{date}} par {{name}}"
+    },
+    "sign": {
+      "open": "Signer le contrat",
+      "title": "Signer ce contrat",
+      "accept": "J'accepte les termes du contrat",
+      "passwordLabel": "Mot de passe du compte",
+      "passwordHint": "Confirmez votre identité avec le mot de passe de votre compte.",
+      "devHint": "Mode Dev : aucun mot de passe requis.",
+      "submit": "Signer le contrat",
+      "submitting": "Signature en cours…",
+      "cancel": "Annuler",
+      "errorTerms": "Vous devez accepter les termes du contrat avant de signer.",
+      "errorPassword": "Entrez le mot de passe de votre compte pour signer.",
+      "errorWrongPassword": "Mot de passe incorrect. Le contrat n'a pas été signé.",
+      "errorAlreadySigned": "Ce contrat a déjà été signé."
+    },
+    "download": {
+      "group": "Télécharger le contrat en PDF",
+      "fr": "PDF (Français)",
+      "en": "PDF (English)",
+      "failed": "Impossible de télécharger le PDF. Veuillez réessayer."
+    }
   },
   "studentInternship": {
     "title": "Stages disponibles",
@@ -701,6 +757,8 @@
     "loading": "Chargement des offres…",
     "loadError": "Impossible de charger les offres. Elles s'actualiseront automatiquement.",
     "empty": "Vous n'avez reçu aucune offre de stage pour le moment.",
+    "acceptFailed": "Impossible d'accepter cette offre. Elle a peut-être changé : la liste a été actualisée.",
+    "denyFailed": "Impossible de refuser cette offre. Veuillez réessayer.",
     "applicationDate": "Candidature envoyée le",
     "consent": {
       "PENDING": "En attente de votre réponse",
