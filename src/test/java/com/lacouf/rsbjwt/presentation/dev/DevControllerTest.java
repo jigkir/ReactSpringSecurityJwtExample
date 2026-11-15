@@ -6,10 +6,10 @@ import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
+import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class DevControllerTest {
     @MockitoBean
     private UserAppService userAppService;
     @MockitoBean
-    private ManagerService managerService;
+    private ContractService contractService;
 
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
@@ -110,25 +110,25 @@ public class DevControllerTest {
     }
 
     @Test
-    void shouldSignContractAsManagerWithoutPasswordWhenDevSigning() throws Exception {
+    void shouldSignContractWithoutPasswordWhenDevSigning() throws Exception {
         // Arrange
         ContractResponseDto signedContract = new ContractResponseDto(30L, null, null, "Marie Tremblay", "Jean Dupont", "Tech Corp", "John Doe", LocalDateTime.of(2026, 11, 10, 14, 30), null, null, LocalDateTime.of(2026, 11, 11, 9, 0));
 
-        when(managerService.devSignContract(MANAGER_EMAIL, 30L)).thenReturn(signedContract);
+        when(contractService.devSignContract(MANAGER_EMAIL, 30L)).thenReturn(signedContract);
 
         // Act + Assert
-        mockMvc.perform(put("/api/dev/contracts/30/manager-signature").param("email", MANAGER_EMAIL))
+        mockMvc.perform(put("/api/dev/contracts/30/signature").param("email", MANAGER_EMAIL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.managerSignedAt").value("2026-11-11T09:00:00"));
     }
 
     @Test
-    void shouldReturnConflictWhenDevSigningContractAlreadySignedByManager() throws Exception {
+    void shouldReturnConflictWhenDevSigningContractAlreadySignedByParty() throws Exception {
         // Arrange
-        when(managerService.devSignContract(MANAGER_EMAIL, 30L)).thenThrow(new ContractAlreadySignedException(30L, ContractParty.MANAGER));
+        when(contractService.devSignContract(MANAGER_EMAIL, 30L)).thenThrow(new ContractAlreadySignedException(30L, ContractParty.MANAGER));
 
         // Act + Assert
-        mockMvc.perform(put("/api/dev/contracts/30/manager-signature").param("email", MANAGER_EMAIL))
+        mockMvc.perform(put("/api/dev/contracts/30/signature").param("email", MANAGER_EMAIL))
                 .andExpect(status().isConflict());
     }
 }

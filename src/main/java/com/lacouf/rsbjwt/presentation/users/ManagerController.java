@@ -1,28 +1,21 @@
 package com.lacouf.rsbjwt.presentation.users;
 
-import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
-import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.contract.ContractLanguage;
-import com.lacouf.rsbjwt.service.dto.request.contract.SignatureRequestDto;
-import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
-import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
-import com.lacouf.rsbjwt.service.users.ManagerService;
 import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRejectionDto;
+import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
+import com.lacouf.rsbjwt.service.users.ManagerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -116,25 +109,5 @@ public class ManagerController {
     @PutMapping("/students/{studentId}/deny")
     public ResponseEntity<StudentAccessResponseDto> denyStudentAccess(@PathVariable long studentId) throws UserNotFoundException {
         return ResponseEntity.ok(accountAccessService.denyStudentAccess(studentId));
-    }
-
-    @GetMapping("/contracts")
-    public ResponseEntity<List<ContractResponseDto>> getContracts(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(managerService.getContracts(sessionId));
-    }
-
-    @GetMapping("/contracts/pending")
-    public ResponseEntity<List<ContractResponseDto>> getPendingContracts() {
-        return ResponseEntity.ok(managerService.getPendingContracts());
-    }
-
-    @PutMapping("/contracts/{contractId}/signature")
-    public ResponseEntity<ContractResponseDto> signContract(Authentication authentication, @PathVariable long contractId, @Valid @RequestBody SignatureRequestDto signature) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
-        return ResponseEntity.ok(managerService.signContract(authentication.getName(), contractId, signature.password()));
-    }
-
-    @GetMapping("/contracts/{contractId}/file")
-    public ResponseEntity<DocumentFileResponseDto> getContractFile(@PathVariable long contractId, @RequestParam ContractLanguage language) throws ContractNotFoundException {
-        return ResponseEntity.ok(managerService.getContractFile(contractId, language));
     }
 }

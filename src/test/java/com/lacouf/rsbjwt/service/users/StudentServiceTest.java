@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.exception.document.*;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotApprovedException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVNotVisibleException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
+import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -17,7 +18,6 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTranscript;
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
@@ -26,6 +26,7 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
+import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -42,6 +43,7 @@ import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
+import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -57,19 +59,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRejectedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRescheduledException;
-import com.lacouf.rsbjwt.exception.interview.InterviewInvalidDateException;
-import com.lacouf.rsbjwt.exception.interview.InterviewInvalidMessageException;
-import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
-import com.lacouf.rsbjwt.model.interview.StudentDecision;
-import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1615,11 +1609,6 @@ public class StudentServiceTest {
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
 
-        Contract contract = new Contract(application, LocalDateTime.of(2026, 11, 14, 10, 0));
-        contract.setId(30L);
-
-        when(contractService.createContract(application)).thenReturn(contract);
-
         // Act
         studentService.acceptOffer(STUDENT_EMAIL, 20L);
 
@@ -1628,31 +1617,6 @@ public class StudentServiceTest {
         verify(applicationRepository).save(application);
 
         assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
-    }
-
-    @Test
-    void shouldNotifyManagersOfContractToSignWhenStudentAcceptsOffer() throws Exception {
-        // Arrange
-        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
-
-        InternshipApplication application = offeredApplication();
-
-        Contract contract = new Contract(application, LocalDateTime.of(2026, 11, 14, 10, 0));
-        contract.setId(30L);
-
-        Manager firstManager = new Manager();
-        Manager secondManager = new Manager();
-
-        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
-        when(contractService.createContract(application)).thenReturn(contract);
-        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
-
-        // Act
-        studentService.acceptOffer(STUDENT_EMAIL, 20L);
-
-        // Assert
-        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN, 30L, firstManager);
-        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN, 30L, secondManager);
     }
 
     @Test

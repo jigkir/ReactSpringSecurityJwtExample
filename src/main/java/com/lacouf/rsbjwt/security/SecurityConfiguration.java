@@ -64,6 +64,9 @@ public class SecurityConfiguration {
     // NOTIFICATIONS PATH
     private static final String NOTIFICATIONS_PATH = "/api/notifications/**";
 
+    // CONTRACTS PATH
+    private static final String CONTRACTS_PATH = "/api/contracts/**";
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
@@ -91,6 +94,9 @@ public class SecurityConfiguration {
 
                         // NOTIFICATIONS
                         .requestMatchers(NOTIFICATIONS_PATH).hasAnyAuthority(Role.STUDENT.name(), Role.MANAGER.name(), Role.EMPLOYER.name())
+
+                        // CONTRACTS
+                        .requestMatchers(CONTRACTS_PATH).hasAuthority(Role.MANAGER.name())
 
                         // ROLES
                         .requestMatchers(STUDENT_PATH).hasAuthority(Role.STUDENT.name())
