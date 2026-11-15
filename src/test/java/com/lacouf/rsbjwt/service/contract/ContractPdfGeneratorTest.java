@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -110,7 +111,7 @@ public class ContractPdfGeneratorTest {
     void shouldShowManagerSigningTimeAndPendingPartiesWhenOnlyManagerSigned() throws IOException {
         // Arrange
         Contract contract = contractOf(internship(new BigDecimal("25.00"), false, "Développer des applications web"));
-        contract.signAsManager(manager(), MANAGER_SIGNED_AT);
+        contract.sign(ContractParty.MANAGER, manager(), MANAGER_SIGNED_AT);
 
         // Act
         String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.FR));
@@ -138,7 +139,7 @@ public class ContractPdfGeneratorTest {
     void shouldWriteContractInEnglishWhenUserChoosesEnglish() throws IOException {
         // Arrange
         Contract contract = contractOf(internship(new BigDecimal("25.00"), true, "Develop web applications"));
-        contract.signAsManager(manager(), MANAGER_SIGNED_AT);
+        contract.sign(ContractParty.MANAGER, manager(), MANAGER_SIGNED_AT);
 
         // Act
         String text = textOf(contractPdfGenerator.generate(contract, ContractLanguage.EN));

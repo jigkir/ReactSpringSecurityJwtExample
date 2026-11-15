@@ -410,6 +410,16 @@ export async function getStudentOffers() {
     return handleResponse(response);
 }
 
+export async function acceptOffer(applicationId){
+    const response = await fetcher(`student/applications/offers/${applicationId}/accept`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
+export async function denyOffer(applicationId){
+    const response = await fetcher(`student/applications/offers/${applicationId}/refuse`, {method: "PUT"});
+    return handleEmpty(response);
+}
+
 //endregion
 
 //region Employer EmployerInterviews

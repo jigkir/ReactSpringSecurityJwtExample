@@ -3,8 +3,9 @@ import {useLocation, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getInternshipCardClasses, getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import Icon from "../../../styles/Icon.jsx";
-import {getStudentOffers} from "../../api/Api.jsx";
+import {acceptOffer, denyOffer, getStudentOffers} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
+import Button from "../../../styles/Button.jsx";
 
 const CONSENT_ICON = {PENDING: "hourglass_bottom", ACCEPTED: "check_circle", REJECTED: "close"};
 
@@ -59,6 +60,24 @@ function Offers() {
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
     }, [hash, offers]);
 
+   const handleAccept = async (offerId) =>{
+       try {
+           await acceptOffer(offerId);
+           await load();
+       }catch {
+
+       }
+   }
+
+    const handleDeny = async (offerId) =>{
+        try {
+            await denyOffer(offerId);
+            await load();
+        }catch {
+
+        }
+    }
+
     const renderCard = (offer) => {
         const consent = CONSENT_ICON[offer.studentInternshipConsent] ? offer.studentInternshipConsent : "PENDING";
         const highlighted = hash === `#offer-${offer.id}`;
@@ -86,13 +105,20 @@ function Offers() {
                     </span>
                 </div>
 
-                <div className={`${cardS.detailsRow} mt-4`}>
+
+                <div className={`${cardS.detailsRow} mt-4 justify-between`}>
                     <span className={cardS.detailBadge}>
                         <Icon name="event" size={20}/>
                         <span
                             className="font-medium">{t("studentOffers.applicationDate")}</span> {offer.applicationDate}
                     </span>
+                    <div className="flex gap-2" hidden={consent !== "PENDING"}>
+                        <Button icon="check" dark={dark} onClick={() => handleAccept(offer.id)}>Accept</Button>
+                        <Button icon="close" dark={dark} onClick={() => handleDeny(offer.id)}>Reject</Button>
+                    </div>
                 </div>
+
+
             </article>
         );
     };

@@ -21,7 +21,6 @@ import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTranscript;
@@ -400,12 +399,10 @@ public class StudentService {
             throw new StudentConsentNotPendingException(applicationId);
         }
 
-        Contract contract = contractService.createContract(application);
+        contractService.createContract(application);
 
         application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
         applicationRepository.save(application);
-
-        notifyManagersOfContractToSign(contract);
     }
 
     @Transactional
@@ -506,11 +503,6 @@ public class StudentService {
     private void notifyManagersOfSubmittedCv(CV cv) {
         managerRepository.findAll()
                 .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.CV_SUBMITTED_FOR_REVIEW, cv.getId(), manager));
-    }
-
-    private void notifyManagersOfContractToSign(Contract contract) {
-        managerRepository.findAll()
-                .forEach(manager -> notificationService.notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN, contract.getId(), manager));
     }
 
     private void notifyEmployerOfNewApplication(InternshipApplication internshipApplication) {

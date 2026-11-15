@@ -1,6 +1,8 @@
 package com.lacouf.rsbjwt.service.contract;
 
 import com.lacouf.rsbjwt.exception.contract.*;
+import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
@@ -8,9 +10,11 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -18,8 +22,12 @@ import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
+import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.notification.NotificationService;
+import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +49,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ContractServiceTest {
 
+    private static final long APPLICATION_ID = 20L;
+
+    private static final String STUDENT_EMAIL = "student@example.com";
+    private static final String EMPLOYER_EMAIL = "email@example.com";
+    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
+    private static final String MANAGER_PASSWORD = "John123#";
+    private static final String OTHER_EMAIL = "other@example.com";
+
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 10, 14, 30);
+
     private ContractService contractService;
 
     @Mock
@@ -48,17 +66,18 @@ public class ContractServiceTest {
 
     @Mock
     private ContractRepository contractRepository;
+    @Mock
+    private ManagerRepository managerRepository;
+
+    @Mock
+    private UserAppService userAppService;
+    @Mock
+    private AcademicSessionService academicSessionService;
+    @Mock
+    private NotificationService notificationService;
 
     @Captor
     private ArgumentCaptor<Contract> contractArgumentCaptor;
-
-    private static final long APPLICATION_ID = 20L;
-
-    private static final String STUDENT_EMAIL = "student@example.com";
-    private static final String EMPLOYER_EMAIL = "email@example.com";
-    private static final String MANAGER_EMAIL = "gestion.stages@claurendeau.qc.ca";
-
-    private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 10, 14, 30);
 
     private Employer employer;
     private Internship internship;
@@ -67,7 +86,7 @@ public class ContractServiceTest {
     @BeforeEach
     void setUp() {
         ZoneId zone = ZoneId.systemDefault();
-        contractService = new ContractService(contractPdfGenerator, contractRepository, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
+        contractService = new ContractService(contractPdfGenerator, contractRepository, managerRepository, userAppService, academicSessionService, notificationService, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
 
         Credentials employerCredentials = Credentials.builder()
                 .email(EMPLOYER_EMAIL)
@@ -105,6 +124,8 @@ public class ContractServiceTest {
         // Arrange
         InternshipApplication application = offeredApplication();
 
+        saveContractWithId();
+
         // Act
         contractService.createContract(application);
 
@@ -120,6 +141,8 @@ public class ContractServiceTest {
     void shouldCopyStudentAndEmployerFromApplicationWhenCreatingContract() throws Exception {
         // Arrange
         InternshipApplication application = offeredApplication();
+
+        saveContractWithId();
 
         // Act
         contractService.createContract(application);
@@ -138,6 +161,8 @@ public class ContractServiceTest {
         // Arrange
         InternshipApplication application = offeredApplication();
 
+        saveContractWithId();
+
         // Act
         contractService.createContract(application);
 
@@ -150,16 +175,21 @@ public class ContractServiceTest {
     }
 
     @Test
-    void shouldReturnSavedContractWhenCreatingContract() throws Exception {
+    void shouldNotifyEveryManagerOfContractToSignWhenCreatingContract() throws Exception {
         // Arrange
-        when(contractRepository.save(any(Contract.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Manager firstManager = manager();
+        Manager secondManager = manager();
+
+        saveContractWithId();
+
+        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
 
         // Act
-        Contract contract = contractService.createContract(offeredApplication());
+        contractService.createContract(offeredApplication());
 
         // Assert
-        assert contract != null;
-        assert student.equals(contract.getStudent());
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, secondManager);
     }
 
     // ==========================================
@@ -167,14 +197,16 @@ public class ContractServiceTest {
     // ==========================================
 
     @Test
-    void shouldReturnContractsOfSessionWhenGettingContracts() {
+    void shouldReturnContractsOfChosenSessionWhenManagerGetsContracts() throws UserNotFoundException, AcademicSessionNotFoundException {
         // Arrange
         Contract contract = contract();
 
         when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract));
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(internship.getSession());
 
         // Act
-        List<ContractResponseDto> contracts = contractService.getContracts(internship.getSession());
+        List<ContractResponseDto> contracts = contractService.getContracts(MANAGER_EMAIL, 1L);
 
         // Assert
         assert contracts.size() == 1;
@@ -188,16 +220,19 @@ public class ContractServiceTest {
     }
 
     @Test
-    void shouldReturnContractsNotSignedByManagerWhenGettingPendingContracts() {
+    void shouldReturnOnlyContractsNotSignedByManagerWhenManagerGetsContractsToSign() throws Exception {
         // Arrange
-        when(contractRepository.findByManagerSignedAtIsNull()).thenReturn(List.of(contract()));
+        Contract signedContract = contract();
+        signedContract.sign(ContractParty.MANAGER, manager(), NOW.minusDays(1));
+
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
+        when(contractRepository.findAll()).thenReturn(List.of(contract(), signedContract));
 
         // Act
-        List<ContractResponseDto> contracts = contractService.getPendingContracts();
+        List<ContractResponseDto> contracts = contractService.getContractsToSign(MANAGER_EMAIL);
 
         // Assert
         assert contracts.size() == 1;
-        assert "Jane Doe".equals(contracts.getFirst().studentName());
         assert contracts.getFirst().managerSignedAt() == null;
     }
 
@@ -206,37 +241,86 @@ public class ContractServiceTest {
     // ==========================================
 
     @Test
-    void shouldSignAsManagerWhenManagerHasNotSignedYet() throws Exception {
+    void shouldSignAsManagerAndCloseNotificationsWhenManagerSignsContract() throws Exception {
         // Arrange
         Contract contract = contract();
         Manager manager = manager();
 
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager);
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
         when(contractRepository.save(contract)).thenReturn(contract);
 
         // Act
-        ContractResponseDto contractResponseDto = contractService.signAsManager(30L, manager);
+        ContractResponseDto contractResponseDto = contractService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD);
 
         // Assert
         assert manager.equals(contract.getManager());
-        assert NOW.equals(contract.getManagerSignedAt());
-        assert "John Doe".equals(contractResponseDto.managerName());
         assert NOW.equals(contractResponseDto.managerSignedAt());
         assert contractResponseDto.studentSignedAt() == null;
+
+        verify(userAppService).verifyIfSignaturePasswordIsIncorrect(manager, MANAGER_PASSWORD);
+        verify(notificationService).closeNotificationsOfType(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L);
     }
 
     @Test
-    void shouldThrowContractAlreadySignedExceptionWhenManagerSignsTwice() {
+    void shouldNotSignContractWhenSignaturePasswordIsIncorrect() throws Exception {
+        // Arrange
+        Manager manager = manager();
+
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager);
+
+        doThrow(new IncorrectSignaturePasswordException()).when(userAppService).verifyIfSignaturePasswordIsIncorrect(manager, MANAGER_PASSWORD);
+
+        // Act + Assert
+        assertThrows(IncorrectSignaturePasswordException.class, () -> contractService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD));
+
+        verifyNoInteractions(contractRepository, notificationService);
+    }
+
+    @Test
+    void shouldSignWithoutPasswordWhenDevSigningContract() throws Exception {
         // Arrange
         Contract contract = contract();
-        contract.signAsManager(manager(), NOW.minusDays(1));
 
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+        when(contractRepository.save(contract)).thenReturn(contract);
+
+        // Act
+        contractService.devSignContract(MANAGER_EMAIL, 30L);
+
+        // Assert
+        assert NOW.equals(contract.getManagerSignedAt());
+
+        verify(userAppService, never()).verifyIfSignaturePasswordIsIncorrect(any(), any());
+    }
+
+    @Test
+    void shouldThrowContractAlreadySignedExceptionWhenPartySignsTwice() throws Exception {
+        // Arrange
+        Contract contract = contract();
+        contract.sign(ContractParty.MANAGER, manager(), NOW.minusDays(1));
+
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
 
         // Act + Assert
-        assertThrows(ContractAlreadySignedException.class, () -> contractService.signAsManager(30L, manager()));
+        assertThrows(ContractAlreadySignedException.class, () -> contractService.devSignContract(MANAGER_EMAIL, 30L));
 
         assert NOW.minusDays(1).equals(contract.getManagerSignedAt());
+
+        verify(contractRepository, never()).save(any(Contract.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldThrowContractNotFoundExceptionWhenSignerIsNotPartyOfContract() throws Exception {
+        // Arrange
+        when(userAppService.findUserByEmail(OTHER_EMAIL)).thenReturn(otherStudent());
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract()));
+
+        // Act + Assert
+        assertThrows(ContractNotFoundException.class, () -> contractService.devSignContract(OTHER_EMAIL, 30L));
 
         verify(contractRepository, never()).save(any(Contract.class));
     }
@@ -252,9 +336,10 @@ public class ContractServiceTest {
 
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
         when(contractPdfGenerator.generate(contract, ContractLanguage.EN)).thenReturn("pdf".getBytes());
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
 
         // Act
-        DocumentFileResponseDto file = contractService.getContractFile(30L, ContractLanguage.EN);
+        DocumentFileResponseDto file = contractService.getContractFile(MANAGER_EMAIL, 30L, ContractLanguage.EN);
 
         // Assert
         assert "contrat-30.pdf".equals(file.fileName());
@@ -356,5 +441,21 @@ public class ContractServiceTest {
         Credentials credentials = Credentials.builder().email(MANAGER_EMAIL).role(Role.MANAGER).build();
 
         return new Manager("John", "Doe", credentials, "450-555-0000");
+    }
+
+    private void saveContractWithId() {
+        when(contractRepository.save(any(Contract.class))).thenAnswer(invocation -> {
+            Contract contract = invocation.getArgument(0);
+            contract.setId(30L);
+            return contract;
+        });
+    }
+
+    private static Student otherStudent() {
+        Credentials credentials = Credentials.builder().email(OTHER_EMAIL).role(Role.STUDENT).build();
+        Student otherStudent = new Student("Paul", "Martin", "7654321", credentials, Discipline.COMPUTER_SCIENCE, null);
+        otherStudent.setId(99L);
+
+        return otherStudent;
     }
 }
