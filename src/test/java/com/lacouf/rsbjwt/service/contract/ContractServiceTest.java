@@ -448,6 +448,18 @@ public class ContractServiceTest {
         assert "Jane Doe".equals(contracts.getFirst().studentName());
     }
 
+    @Test
+    void shouldNotifyStudentOfContractToSignWhenCreatingContract() throws Exception {
+        // Arrange
+        saveContractWithId();
+
+        // Act
+        contractService.createContract(offeredApplication());
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_STUDENT, 30L, student);
+    }
+
     // ---------- Helpers ----------
 
     private InternshipApplication application() {

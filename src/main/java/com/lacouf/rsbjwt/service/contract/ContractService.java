@@ -59,6 +59,7 @@ public class ContractService {
         notifyManagersOfContractToSign(contract);
 
         notificationService.notifyIfAbsent(ContractParty.EMPLOYER.getContractToSignNotification(), contract.getId(), contract.getEmployer());
+        notificationService.notifyIfAbsent(ContractParty.STUDENT.getContractToSignNotification(), contract.getId(), contract.getStudent());
     }
 
     @Transactional(readOnly = true)
