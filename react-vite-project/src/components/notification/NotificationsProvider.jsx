@@ -28,6 +28,8 @@ const NOTIFICATION_TYPE = {
     INTERVIEW_UPDATED: "INTERVIEW_UPDATED",
 
     INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
+
+    CONTRACT_TO_SIGN: "CONTRACT_TO_SIGN",
 };
 
 export const TARGET_TYPE = {
@@ -36,6 +38,7 @@ export const TARGET_TYPE = {
     INTERNSHIP_APPLICATION: "INTERNSHIP_APPLICATION",
     STUDENT_ACCOUNT: "STUDENT_ACCOUNT",
     INTERVIEW: "INTERVIEW",
+    CONTRACT: "CONTRACT",
 };
 
 const PAGE = {
@@ -43,9 +46,12 @@ const PAGE = {
     STUDENT_INTERNSHIPS: "/internship",
     STUDENT_INTERVIEWS: "/interviews",
     STUDENT_OFFERS: "/offers",
+
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
+    MANAGER_CONTRACTS: "/manager/contracts",
     MANAGER_USERS: "/users",
+
     EMPLOYER_INTERNSHIPS: "/internships",
     EMPLOYER_APPLICATIONS: "/applications",
 };
@@ -77,7 +83,15 @@ const NOTIFICATION_ITEMS = {
             targetType: TARGET_TYPE.STUDENT_ACCOUNT,
             labelKey: "navbar.pendingUserNotification",
             to: PAGE.MANAGER_USERS
-        }
+        },
+        {
+            id: "contractToSign",
+            notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN,
+            targetType: TARGET_TYPE.CONTRACT,
+            labelKey: "navbar.contractToSignNotification",
+            to: PAGE.MANAGER_CONTRACTS,
+            sessionScoped: true,
+        },
     ],
     [ROLE.STUDENT]: [
         {

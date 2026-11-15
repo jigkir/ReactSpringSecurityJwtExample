@@ -90,7 +90,8 @@
     "sessionsLoadError": "Impossible de charger les sessions.",
     "offers": "Offres reçues",
     "internshipOfferedNotification": "Offre de stage reçue",
-    "internshipOfferedNotificationDetail": "{{company}} — {{title}}"
+    "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
+    "contractToSignNotification": "{{amount}} contrat(s) à signer"
   },
   "managerPage": {
     "pageInfo": "Page d'accueil du gestionnaire",

@@ -15,7 +15,11 @@ public enum NotificationType {
     INTERVIEW_CONVOCATION(TargetType.INTERVIEW, "Interview Invitation", "You have been invited to an interview."),
     INTERVIEW_UPDATED(TargetType.INTERVIEW, "Interview Updated", "Your interview details have been updated."),
 
-    STUDENT_ACCESS_REQUESTED(TargetType.STUDENT_ACCOUNT, "Student Access Requested", null);
+    STUDENT_ACCESS_REQUESTED(TargetType.STUDENT_ACCOUNT, "Student Access Requested", null),
+
+    CONTRACT_TO_SIGN_BY_MANAGER(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE),
+    CONTRACT_TO_SIGN_BY_EMPLOYER(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE),
+    CONTRACT_TO_SIGN_BY_STUDENT(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE);
 
     private final TargetType targetType;
     private final String title;
@@ -37,5 +41,10 @@ public enum NotificationType {
 
     public String getMessage() {
         return message;
+    }
+
+    private static final class ContractToSign {
+        private static final String TITLE = "New Contract To Sign";
+        private static final String MESSAGE = "A new internship contract is waiting for your signature.";
     }
 }
