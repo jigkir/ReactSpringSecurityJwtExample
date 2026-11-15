@@ -74,6 +74,10 @@ public class Contract {
             return Optional.of(ContractParty.EMPLOYER);
         }
 
+        if (userId.equals(student.getId())) {
+            return Optional.of(ContractParty.STUDENT);
+        }
+
         return Optional.empty();
     }
 

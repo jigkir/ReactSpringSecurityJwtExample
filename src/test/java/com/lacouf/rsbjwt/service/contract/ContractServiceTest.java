@@ -432,6 +432,22 @@ public class ContractServiceTest {
         verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_EMPLOYER, 30L, employer);
     }
 
+    @Test
+    void shouldReturnContractsOfStudentWhenStudentGetsContracts() throws Exception {
+        // Arrange
+        givenUserWithEmail(student);
+
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(internship.getSession());
+        when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract()));
+
+        // Act
+        List<ContractResponseDto> contracts = contractService.getContracts(STUDENT_EMAIL, null);
+
+        // Assert
+        assert contracts.size() == 1;
+        assert "Jane Doe".equals(contracts.getFirst().studentName());
+    }
+
     // ---------- Helpers ----------
 
     private InternshipApplication application() {
