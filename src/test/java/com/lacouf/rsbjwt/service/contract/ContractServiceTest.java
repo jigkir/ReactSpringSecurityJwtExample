@@ -420,6 +420,18 @@ public class ContractServiceTest {
         assert "Company Name".equals(contracts.getFirst().companyName());
     }
 
+    @Test
+    void shouldNotifyEmployerOfContractToSignWhenCreatingContract() throws Exception {
+        // Arrange
+        saveContractWithId();
+
+        // Act
+        contractService.createContract(offeredApplication());
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_EMPLOYER, 30L, employer);
+    }
+
     // ---------- Helpers ----------
 
     private InternshipApplication application() {

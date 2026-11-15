@@ -57,6 +57,8 @@ public class ContractService {
         Contract contract = contractRepository.save(new Contract(application, LocalDateTime.now(clock)));
 
         notifyManagersOfContractToSign(contract);
+
+        notificationService.notifyIfAbsent(ContractParty.EMPLOYER.getContractToSignNotification(), contract.getId(), contract.getEmployer());
     }
 
     @Transactional(readOnly = true)
