@@ -64,8 +64,14 @@ public class Contract {
     }
 
     public Optional<ContractParty> findPartyOf(UserApp user) {
+        Long userId = user.getId();
+
         if (user instanceof Manager) {
             return Optional.of(ContractParty.MANAGER);
+        }
+
+        if (userId.equals(getEmployer().getId())) {
+            return Optional.of(ContractParty.EMPLOYER);
         }
 
         return Optional.empty();
