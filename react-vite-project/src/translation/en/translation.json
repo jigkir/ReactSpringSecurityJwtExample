@@ -664,6 +664,7 @@
     "loadError": "Could not load interviews.",
     "empty": "You have not scheduled any interviews yet.",
     "invalidDate": "Invalid date",
+    "message": "Meeting message",
     "details": "Meeting details",
     "notProvided": "Not provided",
     "rejectionReason": "Reason for declining",

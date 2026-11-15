@@ -4,7 +4,7 @@ import {getApplicationCardClasses} from "../../../../styles/AppStyles.jsx";
 import Button from "../../../../styles/Button.jsx";
 import Badge from "../../../../styles/Badge.jsx";
 import PdfPreview from "../../../documents/PdfPreview.jsx";
-import InterviewPicker from "./interview/InterviewPicker.jsx";
+import InterviewPicker from "../interview/InterviewPicker.jsx";
 import {
     createInterview,
     getApplicationCoverLetter,
