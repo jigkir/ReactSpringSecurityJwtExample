@@ -689,6 +689,7 @@
     "loadError": "Impossible de charger les entrevues.",
     "empty": "Vous n’avez encore planifié aucun entrevue.",
     "invalidDate": "Date non valide",
+    "message": "Message de la rencontre",
     "details": "Détails de la rencontre",
     "notProvided": "Non fourni",
     "rejectionReason": "Motif du refus",

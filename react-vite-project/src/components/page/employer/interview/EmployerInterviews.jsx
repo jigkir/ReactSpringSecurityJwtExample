@@ -3,16 +3,22 @@ import {useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getInternshipCardClasses, getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
 import Icon from "../../../../styles/Icon.jsx";
-import {getEmployerInterviews} from "../../../api/Api.jsx";
+import {getEmployerInterviews, updateInterview} from "../../../api/Api.jsx";
 import {usePolling} from "../../../../utils/usePolling.js";
+import InterviewPicker from "./InterviewPicker.jsx";
+import Button from "../../../../styles/Button.jsx";
 
 const isCancelled = (i) => i.interviewStatus === "CANCELLED";
 
+const getTime = (i) => {
+    const time = new Date(i.interviewDate).getTime();
+    return Number.isNaN(time) ? null : time;
+};
+
 const getStatus = (i) => {
     if (isCancelled(i)) return "cancelled";
-    const time = i.interviewDate;
-    if (time !== null && time < Date.now()) return "past";
-    return "upcoming";
+    const time = getTime(i);
+    return time !== null && time < Date.now() ? "past" : "upcoming";
 };
 
 // Upcoming (soonest first) → past (most recent first) → cancelled
@@ -27,19 +33,20 @@ const sortInterviews = (list) => {
     });
 };
 
-// Adjust to whatever your employer DTO returns
 const studentName = (i) =>
     i.studentName ?? (i.student ? `${i.student.firstName} ${i.student.lastName}` : "");
 
-function EmployerInterviews({user}) {
+
+function EmployerInterviews({user, preview = false}) {
     const {dark} = useOutletContext();
-    const {t, i18n} = useTranslation();
+    const {t} = useTranslation();
     const s = getPostInternshipClasses(dark);
     const cardS = getInternshipCardClasses(dark);
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const [interviews, setInterviews] = useState(null); // null = loading
     const [loadFailed, setLoadFailed] = useState(false);
+    const [editingId, setEditingId] = useState(null);   // interview whose picker is open
 
     const load = useCallback(async () => {
         try {
@@ -53,19 +60,30 @@ function EmployerInterviews({user}) {
     }, []);
 
     useEffect(() => {
-        if (!isLoggedIn) return;
-        void load();
-    }, [load]);
+        if (isLoggedIn) void load();
+    }, [isLoggedIn, load]);
 
-    usePolling(load);
+    usePolling(load, isLoggedIn);
 
-    const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
+    // Same contract as ApplicationCard: returns {success} or {success: false, message: {key}}
+    const handleSendOffer = async (interview, payload) => {
+        try {
+            await updateInterview(interview.id, payload);
+            await load(); // show the new date / message right away
+            return {success: true};
+        } catch (err) {
+            return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
+        }
+    };
+
     const muted = dark ? "text-slate-400" : "text-slate-500";
 
     const renderCard = (interview) => {
         const status = getStatus(interview);
         const accent = status === "cancelled" ? "border-l-red-500"
             : status === "past" ? "border-l-slate-400" : "border-l-emerald-500";
+        const isOpen = editingId === interview.id;
+        const canEdit = !preview && status !== "cancelled";
 
         return (
             <article key={interview.id} className={`${cardS.card} border-l-4 ${accent}`}>
@@ -97,6 +115,11 @@ function EmployerInterviews({user}) {
                 </div>
 
                 <div className="mt-3 space-y-1 break-words">
+                    <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.message")}</p>
+                    <p>{interview.message || t("employerInterviews.notProvided")}</p>
+                </div>
+
+                <div className="mt-3 space-y-1 break-words">
                     <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.details")}</p>
                     <p>{interview.meetingDetails || t("employerInterviews.notProvided")}</p>
                 </div>
@@ -107,9 +130,50 @@ function EmployerInterviews({user}) {
                         <p className="text-sm whitespace-pre-wrap">{interview.studentRejectionComment}</p>
                     </div>
                 )}
+
+                {canEdit && (
+                    <div className="mt-4 flex justify-end">
+                        <Button
+                            tone={isOpen ? "danger" : "warning"}
+                            dark={dark}
+                            icon={isOpen ? "close" : "edit"}
+                            aria-expanded={isOpen}
+                            onClick={() => setEditingId(isOpen ? null : interview.id)}
+                        >
+                            {isOpen
+                                ? t("employerInternship.closeInterviewPicker")
+                                : t("employerInternship.editInterviewPicker")}
+                        </Button>
+                    </div>
+                )}
+
+                {/* Inline picker: key resets the form if another interview is opened */}
+                {canEdit && isOpen && (
+                    <div className="w-full pt-4 mt-4">
+                        <InterviewPicker
+                            key={interview.id}
+                            dark={dark}
+                            interview={interview}
+                            onClose={() => setEditingId(null)}
+                            onSendOffer={(payload) => handleSendOffer(interview, payload)}
+                        />
+                    </div>
+                )}
             </article>
         );
     };
+
+    const sorted = interviews ? sortInterviews(interviews) : [];
+
+    // Home preview (HomePreviews.jsx already passes `preview`)
+    if (preview) {
+        return (
+            <PreviewState dark={dark} error={loadFailed && interviews === null}
+                          loading={interviews === null} empty={sorted.length === 0}>
+                {sorted.map(renderCard)}
+            </PreviewState>
+        );
+    }
 
     let body;
     if (loadFailed && interviews === null) {
@@ -119,7 +183,7 @@ function EmployerInterviews({user}) {
     } else if (interviews.length === 0) {
         body = <p className={s.emptyText}>{t("employerInterviews.empty")}</p>;
     } else {
-        body = sortInterviews(interviews).map(renderCard);
+        body = sorted.map(renderCard);
     }
 
     return (
