@@ -31,7 +31,7 @@ import PdfPreview from './PdfPreview.jsx';
 import {getCvDocumentsClasses, getStatusBorder} from '../../styles/AppStyles.jsx';
 
 // Full-width buttons inside the vertical action stack
-export const ROW_BTN = "w-full";
+export const ROW_BTN = "w-full min-w-0 text-center";
 
 const STATUS_KEY = {
     PENDING: "cvDocuments.statusPending",
@@ -70,13 +70,13 @@ function DocumentRow({
     const viewLabel = isOpen ? t("cvPreview.closeBtn") : t(previewKey);
 
     const columns = status
-        ? "@2xl:grid-cols-[minmax(12rem,1fr)_auto_auto]"
-        : "@2xl:grid-cols-[minmax(12rem,1fr)_auto]";
-    const rowClass = `grid grid-cols-1 gap-4 px-6 py-4 ${columns} @2xl:items-center @2xl:gap-6 transition-colors duration-150 ${
+        ? "@2xl:grid-cols-[minmax(0,1fr)_fit-content(13rem)_fit-content(14rem)]"
+        : "@2xl:grid-cols-[minmax(0,1fr)_fit-content(14rem)]";
+    const rowClass = `grid grid-cols-1 gap-4 px-4 py-4 sm:px-6 ${columns} @2xl:items-center @2xl:gap-6 transition-colors duration-150 ${
         dark ? "hover:bg-slate-700/40" : "hover:bg-gray-50"
     }`;
 
-    let itemClass = "@container";
+    let itemClass = "@container min-w-0 max-w-full";
     if (preview) itemClass += ` ${th.card} overflow-hidden`;
     else if (bordered) itemClass += ` rounded-xl border-2 ${getStatusBorder(status, dark) ?? ""}`;
 
@@ -100,18 +100,18 @@ function DocumentRow({
 
                 {/* Status pill */}
                 {status && (
-                    <div className="flex flex-wrap items-center gap-2 @2xl:flex-col @2xl:items-start">
-                        <span className={`${th.pillBase} ${th.statusPill(status)} gap-1`}>
-                            <Icon name={STATUS_ICON[status] ?? STATUS_ICON.PENDING} size={14}/>
-                            {t(statusKeys[status] ?? statusKeys.PENDING)}
+                    <div className="flex min-w-0 flex-wrap items-center gap-2 @2xl:flex-col @2xl:items-start">
+                        <span className={`${th.pillBase} ${th.statusPill(status)} gap-1 text-left`}>
+                            <Icon name={STATUS_ICON[status] ?? STATUS_ICON.PENDING} size={14} className="shrink-0"/>
+                            <span className="min-w-0 break-words">
+                                {t(statusKeys[status] ?? statusKeys.PENDING)}
+                            </span>
                         </span>
                     </div>
                 )}
 
                 {/* Actions: one vertical stack, every button the same width */}
-                <div className="flex flex-col items-stretch gap-2 @2xl:min-w-44 @2xl:justify-self-end">
-                    {/* Preview stays available in every state (also while rejecting / deleting).
-                        Red while the preview is open, like the employer side. */}
+                <div className="flex min-w-0 flex-col items-stretch gap-2 @2xl:justify-self-end @2xl:w-full">
                     <Button tone={isOpen ? "danger" : "accent"} lockTone dark={dark}
                             icon={isOpen ? "close" : "visibility"}
                             onClick={onToggle}

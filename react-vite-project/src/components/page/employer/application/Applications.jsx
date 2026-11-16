@@ -20,7 +20,7 @@ import Icon from '../../../../styles/Icon.jsx';
 import Badge from '../../../../styles/Badge.jsx';
 import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
 import {getApplicationCv, getApplications, getEmployerInternships} from '../../../api/Api.jsx';
-import {base64ToBlobUrl} from '../../../../utils/documents.js';
+import {base64ToBlobUrl} from '../../../../utils/Documents.js';
 import {matchesSearch, toNum} from '../../../../utils/Sort.jsx';
 import {
     TARGET_TYPE,

@@ -14,6 +14,7 @@ import Portfolio from './components/page/portfolio/Portfolio.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import ManagerInternships from './components/page/manager/Internships.jsx';
 import Contracts from './components/page/manager/Contracts.jsx';
+import ContractFile from './components/contracts/ContractFile.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import StudentInternships from "./components/page/student/Internships.jsx";
@@ -91,7 +92,7 @@ function App() {
 
     return (
         <SessionProvider userId={user?.isLoggedIn ? user.id : null}>
-            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-dvh`}>
+            <div className={`${dark ? "app-dark" : "app-light"} flex flex-col min-h-dvh w-full min-w-0 max-w-full`}>
                 <Routes>
                     <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
                                                 toggleDark={toggleDark}/>}>
@@ -124,6 +125,7 @@ function App() {
                             <Route path="/manager/cvs" element={<ManagerCv/>}/>
                             <Route path="/manager/internships" element={<ManagerInternships/>}/>
                             <Route path="/manager/contracts" element={<Contracts/>}/>
+                            <Route path="/manager/contracts/:id" element={<ContractFile/>}/>
                             <Route path="/users" element={<Users user={user}/>}/>
                         </Route>
 

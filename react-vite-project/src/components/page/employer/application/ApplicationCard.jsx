@@ -12,7 +12,7 @@ import {
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../../api/Api.jsx";
-import {blobUrlFromFile} from "../../../../utils/documents.js";
+import {blobUrlFromFile} from "../../../../utils/Documents.js";
 import {useToggleSet} from "../../../../utils/useToggleSet.js";
 
 const COVER_LETTER = "COVER_LETTER";
