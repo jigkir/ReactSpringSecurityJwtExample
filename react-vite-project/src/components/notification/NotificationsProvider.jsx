@@ -29,7 +29,7 @@ const NOTIFICATION_TYPE = {
 
     INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
 
-    CONTRACT_TO_SIGN: "CONTRACT_TO_SIGN",
+    CONTRACT_TO_SIGN_BY_MANAGER: "CONTRACT_TO_SIGN_BY_MANAGER",
 };
 
 export const TARGET_TYPE = {
@@ -86,7 +86,7 @@ const NOTIFICATION_ITEMS = {
         },
         {
             id: "contractToSign",
-            notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN,
+            notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN_BY_MANAGER,
             targetType: TARGET_TYPE.CONTRACT,
             labelKey: "navbar.contractToSignNotification",
             to: PAGE.MANAGER_CONTRACTS,

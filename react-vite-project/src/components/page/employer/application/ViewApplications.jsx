@@ -1,10 +1,15 @@
 import {useCallback, useEffect, useState} from "react";
 import {Navigate, NavLink, useOutletContext, useParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getApplicationCv, getApplications, getEmployerInternships, offerInternshipsToStudents} from "../../../api/Api.jsx";
+import {
+    getApplicationCv,
+    getApplications,
+    getEmployerInternships,
+    offerInternshipsToStudents
+} from "../../../api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../../../styles/Button.jsx";
-import {base64ToBlobUrl} from "../../../../utils/documents.js";
+import {base64ToBlobUrl} from "../../../../utils/Documents.js";
 import {sortApplication} from "../../../../utils/Sort.jsx";
 import {translateWarning} from "../../../../utils/CommonFields.jsx";
 import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
@@ -248,75 +253,75 @@ function ViewApplications({user}) {
             </h1>
         </div>
 
-            {/* Applications */}
-            <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
+        {/* Applications */}
+        <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
 
-                {hasItems && (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        {selectionMode ? (
-                            <>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                                    <label className={`flex items-center gap-2 cursor-pointer ${
-                                        dark ? "text-slate-300" : "text-gray-700"
-                                    }`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={allSelected}
-                                            onChange={toggleSelectAll}
-                                            disabled={hiring || eligibleIds.length === 0}
-                                            className="h-5 w-5 accent-blue-600 disabled:cursor-not-allowed"
-                                        />
-                                        {t("viewApplication.selectAll")}
-                                    </label>
+            {hasItems && (
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {selectionMode ? (
+                        <>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <label className={`flex items-center gap-2 cursor-pointer ${
+                                    dark ? "text-slate-300" : "text-gray-700"
+                                }`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={allSelected}
+                                        onChange={toggleSelectAll}
+                                        disabled={hiring || eligibleIds.length === 0}
+                                        className="h-5 w-5 accent-blue-600 disabled:cursor-not-allowed"
+                                    />
+                                    {t("viewApplication.selectAll")}
+                                </label>
 
-                                    <span className={`text-sm ${
-                                        dark ? "text-slate-400" : "text-gray-500"
-                                    }`}>
+                                <span className={`text-sm ${
+                                    dark ? "text-slate-400" : "text-gray-500"
+                                }`}>
                         {t("viewApplication.selectedCount", {
                             count: selectedIds.length
                         })}
                     </span>
-                                </div>
+                            </div>
 
-                                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                                    <Button
-                                        tone="danger"
-                                        dark={dark}
-                                        disabled={hiring}
-                                        onClick={cancelHiring}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        {t("viewApplication.cancelHire")}
-                                    </Button>
+                            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                <Button
+                                    tone="danger"
+                                    dark={dark}
+                                    disabled={hiring}
+                                    onClick={cancelHiring}
+                                    className="w-full sm:w-auto"
+                                >
+                                    {t("viewApplication.cancelHire")}
+                                </Button>
 
-                                    <Button
-                                        tone="primary"
-                                        dark={dark}
-                                        disabled={selectedIds.length === 0 || hiring}
-                                        onClick={handleHire}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        {hiring
-                                            ? t("viewApplication.hiring")
-                                            : t("viewApplication.confirmHire")}
-                                    </Button>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex w-full justify-end">
                                 <Button
                                     tone="primary"
                                     dark={dark}
-                                    disabled={eligibleIds.length === 0}
-                                    onClick={startHiring}
+                                    disabled={selectedIds.length === 0 || hiring}
+                                    onClick={handleHire}
                                     className="w-full sm:w-auto"
                                 >
-                                    {t("viewApplication.hire")}
+                                    {hiring
+                                        ? t("viewApplication.hiring")
+                                        : t("viewApplication.confirmHire")}
                                 </Button>
                             </div>
-                        )}
-                    </div>
-                )}
+                        </>
+                    ) : (
+                        <div className="flex w-full justify-end">
+                            <Button
+                                tone="primary"
+                                dark={dark}
+                                disabled={eligibleIds.length === 0}
+                                onClick={startHiring}
+                                className="w-full sm:w-auto"
+                            >
+                                {t("viewApplication.hire")}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Confirmation */}
             {hireSuccessCount > 0 && (<p
@@ -341,26 +346,26 @@ function ViewApplications({user}) {
             {hasItems ? (applications.map((application) => {
                 const isPreviewOpen = openPreviewIds.includes(application.id);
 
-                        return (<ApplicationCard
-                                key={application.id}
-                                application={application}
-                                isNew={isNew(application)}
-                                dark={dark}
-                                isPreviewOpen={isPreviewOpen}
-                                onTogglePreview={() => togglePreview(application.id)}
-                                getUrl={getUrl}
-                                onInterviewSent={handleInterviewSent}
-                                selectionMode={selectionMode}
-                                selected={selectedIds.includes(application.id)}
-                                onSelect={selectionMode ? toggleSelection : undefined}
-                                hiring={hiring}
-                            />);
-                    })) : !listError ? (
-                    <p className={`text-sm py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`}>
-                        {t("viewApplication.empty")}
-                    </p>) : null}
-            </div>
-        </div>);
+                return (<ApplicationCard
+                    key={application.id}
+                    application={application}
+                    isNew={isNew(application)}
+                    dark={dark}
+                    isPreviewOpen={isPreviewOpen}
+                    onTogglePreview={() => togglePreview(application.id)}
+                    getUrl={getUrl}
+                    onInterviewSent={handleInterviewSent}
+                    selectionMode={selectionMode}
+                    selected={selectedIds.includes(application.id)}
+                    onSelect={selectionMode ? toggleSelection : undefined}
+                    hiring={hiring}
+                />);
+            })) : !listError ? (
+                <p className={`text-sm py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`}>
+                    {t("viewApplication.empty")}
+                </p>) : null}
+        </div>
+    </div>);
 }
 
 export default ViewApplications;

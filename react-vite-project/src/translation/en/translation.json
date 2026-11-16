@@ -62,6 +62,7 @@
     "cv": "CV review",
     "portfolio": "My portfolio",
     "internships": "Internships",
+    "contracts": "Contracts",
     "cvReview": "CVs to review",
     "users": "Users",
     "hello": "Hello,",
@@ -81,7 +82,7 @@
     "newInternshipApplicationNotification": "{{amount}} new application(s) received",
     "notificationLoadError": "Unable to load notifications. They will refresh automatically.",
     "notificationMarkAsReadError": "Unable to mark notifications as read. Please try again.",
-    "pendingUserNotification": "{{amount}} user acces to review",
+    "pendingUserNotification": "{{amount}} user access to review",
     "interviews": "Interviews",
     "interviewConvocationNotification": "New interview invitation",
     "interviewUpdatedNotification": "Interview invitation updated",
@@ -354,6 +355,7 @@
     "employerApplicationsLink": "Review applications received",
     "managerCvLink": "Review CVs waiting for approval",
     "managerInternshipsLink": "Review internship offers",
+    "managerContractsLink": "Sign pending contracts",
     "noPreviews": "Nothing to show here for your role yet.",
     "preview": {
       "empty": "Nothing here yet.",
@@ -423,6 +425,131 @@
     "rejectBtnAria": "Reject: {{title}}",
     "editBtnAria": "Edit offer: {{title}}",
     "editReasonBtnAria": "Edit reason: {{title}}"
+  },
+  "managerContracts": {
+    "title": "Internship contracts",
+    "subtitle": "Review the contracts of the selected session and sign the ones waiting for you. You can download the PDF in French or English at any time.",
+    "loading": "Loading contracts…",
+    "empty": "No contracts for this session yet.",
+    "loadError": "Unable to load contracts. Check your connection and try again.",
+    "retryBtn": "Reload contracts",
+    "actionFailed": "The action failed. Please try again.",
+    "notFound": "This contract no longer exists. The list has been refreshed.",
+    "document": {
+      "title": "Internship contract",
+      "createdAt": "Created on {{date}}",
+      "introduction": "This contract sets out the internship conditions agreed upon by the College, the employer and the intern. It takes effect once all three parties have signed it.",
+      "commitmentsInPdf": "The commitments of the College, the employer and the intern are detailed in the contract."
+    },
+    "sections": {
+      "parties": "The parties",
+      "terms": "Internship terms",
+      "description": "Offer description",
+      "commitments": "Commitments of the parties"
+    },
+    "commitments": {
+      "college": {
+        "title": "The College agrees to:",
+        "items": [
+          "provide the intern with educational supervision and follow-up during the internship;",
+          "communicate with the company supervisor during the internship and step in if difficulties arise;",
+          "assess the intern's learning, taking the company's evaluation into account."
+        ]
+      },
+      "employer": {
+        "title": "The employer agrees to:",
+        "items": [
+          "assign the intern tasks related to their program of study, as described in this contract;",
+          "designate a supervisor who welcomes and guides the intern and informs them of company rules, including occupational health and safety;",
+          "pay the intern according to the terms of this contract and comply with the labour standards in force;",
+          "evaluate the intern at the end of the internship and inform the College of any problematic situation."
+        ]
+      },
+      "student": {
+        "title": "The intern agrees to:",
+        "items": [
+          "follow company rules, be punctual and keep company information confidential;",
+          "carry out the assigned tasks professionally and tell their supervisor about any difficulty;",
+          "notify the employer and the College of any absence;",
+          "submit the work and internship reports requested by the College."
+        ]
+      }
+    },
+    "status": {
+      "toSign": "Waiting for your signature",
+      "signed": "Signed"
+    },
+    "parties": {
+      "college": "College",
+      "employer": "Employer",
+      "student": "Intern",
+      "managerRole": "Internship manager",
+      "managerPending": "To be assigned",
+      "representedBy": "Represented by {{name}}",
+      "intern": "Student on internship"
+    },
+    "terms": {
+      "position": "Position",
+      "location": "Location",
+      "workMode": "Work mode",
+      "period": "Period",
+      "periodValue": "From {{start}} to {{end}}",
+      "duration": "Duration",
+      "hourlyRate": "Hourly rate",
+      "hourlyRateValue": "{{amount}} per hour",
+      "negotiable": "Negotiable salary"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "notSpecified": "Not specified in the offer",
+    "read": {
+      "open": "Read the contract",
+      "close": "Hide the contract"
+    },
+    "signatures": {
+      "title": "Electronic signatures",
+      "explanation": "Each party signs electronically in the platform by accepting the terms of the contract and confirming their password.",
+      "party": "Party",
+      "name": "Name",
+      "status": "Status",
+      "pending": "Awaiting signature",
+      "signedAt": "Signed on {{date}}"
+    },
+    "sign": {
+      "open": "Sign the contract",
+      "title": "Sign this contract",
+      "accept": "I have read the contract and I accept its terms",
+      "passwordLabel": "Account password",
+      "passwordHint": "Confirm your identity with your account password.",
+      "devHint": "Dev mode: no password required.",
+      "submit": "Sign the contract",
+      "submitting": "Signing…",
+      "cancel": "Cancel",
+      "errorTerms": "You must accept the terms of the contract before signing.",
+      "errorPassword": "Enter your account password to sign.",
+      "errorWrongPassword": "Incorrect password. The contract was not signed.",
+      "errorAlreadySigned": "This contract has already been signed."
+    },
+    "download": {
+      "group": "Download the contract as a PDF",
+      "fr": "PDF (Français)",
+      "en": "PDF (English)",
+      "open": "Download the contract",
+      "failed": "Unable to download the PDF. Please try again."
+    },
+    "file": {
+      "title": "Internship contract",
+      "subtitle": "Read the contract as a PDF, in French or in English, and download it.",
+      "back": "Back to contracts",
+      "languageGroup": "Language of the contract",
+      "language": {
+        "fr": "Français",
+        "en": "English"
+      },
+      "downloadCurrent": "Download the PDF ({{language}})",
+      "downloadBoth": "Download both PDFs",
+      "downloading": "Downloading…"
+    }
   },
   "studentInternship": {
     "title": "Available internships",
@@ -702,6 +829,8 @@
     "loading": "Loading offers…",
     "loadError": "Unable to load offers. They will refresh automatically.",
     "empty": "You haven't received any internship offers yet.",
+    "acceptFailed": "Unable to accept this offer. It may have changed: the list has been refreshed.",
+    "denyFailed": "Unable to decline this offer. Please try again.",
     "applicationDate": "Application sent on",
     "consent": {
       "PENDING": "Awaiting your answer",

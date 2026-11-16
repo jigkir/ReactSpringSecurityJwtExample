@@ -9,7 +9,7 @@
 #           5 internships | 6 npm i | 7 approbation des internships |
 #           8 lettres et relevés | 9 candidatures | 10 session passée | 11 Léa expirée |
 #           12 convocations d'Emma et de Chloé | 13 offres en attente | 14 Noah inscrit après décembre |
-#           15 offre de stage faite à Emma
+#           15 offre de stage faite à Emma| 16 contrats d'Olivier et de Samuel |
 
 set -uo pipefail
 
@@ -32,6 +32,7 @@ STEPS=(
   13-pending-internships
   14-late-student
   15-offers
+  16-contracts
 )
 
 run_step() {

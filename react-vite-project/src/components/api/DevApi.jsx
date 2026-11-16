@@ -10,3 +10,9 @@ export async function getDevUsers() {
 export async function devLoginAs(email) {
     return handleResponse(await fetcher(`dev/login-as?email=${encodeURIComponent(email)}`, {method: "POST"}));
 }
+
+// PUT /api/dev/contracts/{id}/signature?email=... -> ContractResponseDto (no password, no checkbox)
+export async function devSignContract(contractId, email) {
+    return handleResponse(await fetcher(
+        `dev/contracts/${contractId}/signature?email=${encodeURIComponent(email)}`, {method: "PUT"}));
+}

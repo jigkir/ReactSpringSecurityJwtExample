@@ -62,6 +62,7 @@
     "cv": "Validation des CV",
     "portfolio": "Mon portfolio",
     "internships": "Stages",
+    "contracts": "Contrats",
     "cvReview": "CV à valider",
     "users": "Utilisateurs",
     "hello": "Bonjour,",
@@ -354,6 +355,7 @@
     "employerApplicationsLink": "Consulter les candidatures reçues",
     "managerCvLink": "Valider les CV en attente",
     "managerInternshipsLink": "Réviser les offres de stage",
+    "managerContractsLink": "Signer les contrats en attente",
     "noPreviews": "Rien à afficher pour votre rôle pour le moment.",
     "preview": {
       "empty": "Rien pour l'instant.",
@@ -423,6 +425,131 @@
     "rejectBtnAria": "Refuser : {{title}}",
     "editBtnAria": "Modifier l'offre : {{title}}",
     "editReasonBtnAria": "Modifier le motif : {{title}}"
+  },
+  "managerContracts": {
+    "title": "Contrats de stage",
+    "subtitle": "Consultez les contrats de la session sélectionnée et signez ceux qui attendent votre signature. Vous pouvez télécharger le PDF en français ou en anglais en tout temps.",
+    "loading": "Chargement des contrats…",
+    "empty": "Aucun contrat pour cette session pour le moment.",
+    "loadError": "Impossible de charger les contrats. Vérifiez votre connexion et réessayez.",
+    "retryBtn": "Recharger les contrats",
+    "actionFailed": "L'action a échoué. Veuillez réessayer.",
+    "notFound": "Ce contrat n'existe plus. La liste a été actualisée.",
+    "document": {
+      "title": "Contrat de stage",
+      "createdAt": "Créé le {{date}}",
+      "introduction": "Le présent contrat établit les conditions du stage convenues entre le Collège, l'employeur et le stagiaire. Il entre en vigueur lorsque les trois parties l'ont signé.",
+      "commitmentsInPdf": "Les engagements du Collège, de l'employeur et du stagiaire sont détaillés dans le contrat."
+    },
+    "sections": {
+      "parties": "Les parties",
+      "terms": "Conditions du stage",
+      "description": "Description de l'offre",
+      "commitments": "Engagements des parties"
+    },
+    "commitments": {
+      "college": {
+        "title": "Le Collège s'engage à :",
+        "items": [
+          "assurer l'encadrement pédagogique du stagiaire et le suivi du stage;",
+          "communiquer avec le superviseur de l'entreprise pendant le stage et intervenir en cas de difficulté;",
+          "évaluer les apprentissages du stagiaire en tenant compte de l'évaluation de l'entreprise."
+        ]
+      },
+      "employer": {
+        "title": "L'employeur s'engage à :",
+        "items": [
+          "confier au stagiaire des tâches liées à son programme d'études, telles que décrites dans ce contrat;",
+          "désigner un superviseur qui accueille et encadre le stagiaire et l'informe des règles de l'entreprise, notamment en santé et sécurité au travail;",
+          "rémunérer le stagiaire selon les conditions de ce contrat et respecter les normes du travail en vigueur;",
+          "évaluer le stagiaire à la fin du stage et informer le Collège de toute situation problématique."
+        ]
+      },
+      "student": {
+        "title": "Le stagiaire s'engage à :",
+        "items": [
+          "respecter les règlements de l'entreprise, être ponctuel et garder confidentielles les informations de l'entreprise;",
+          "accomplir les tâches confiées avec professionnalisme et informer son superviseur de toute difficulté;",
+          "aviser l'employeur et le Collège de toute absence;",
+          "remettre au Collège les travaux et les rapports de stage demandés."
+        ]
+      }
+    },
+    "status": {
+      "toSign": "En attente de votre signature",
+      "signed": "Signé"
+    },
+    "parties": {
+      "college": "Collège",
+      "employer": "Employeur",
+      "student": "Stagiaire",
+      "managerRole": "Gestionnaire de stage",
+      "managerPending": "À désigner",
+      "representedBy": "Représenté par {{name}}",
+      "intern": "Étudiant en stage"
+    },
+    "terms": {
+      "position": "Poste",
+      "location": "Lieu",
+      "workMode": "Mode de travail",
+      "period": "Période",
+      "periodValue": "Du {{start}} au {{end}}",
+      "duration": "Durée",
+      "hourlyRate": "Salaire horaire",
+      "hourlyRateValue": "{{amount}} de l'heure",
+      "negotiable": "Salaire négociable"
+    },
+    "yes": "Oui",
+    "no": "Non",
+    "notSpecified": "Non précisé dans l'offre",
+    "read": {
+      "open": "Lire le contrat",
+      "close": "Masquer le contrat"
+    },
+    "signatures": {
+      "title": "Signatures électroniques",
+      "explanation": "Chaque partie signe électroniquement dans la plateforme en acceptant les termes du contrat et en confirmant son mot de passe.",
+      "party": "Partie",
+      "name": "Nom",
+      "status": "Statut",
+      "pending": "En attente de signature",
+      "signedAt": "Signé le {{date}}"
+    },
+    "sign": {
+      "open": "Signer le contrat",
+      "title": "Signer ce contrat",
+      "accept": "J'ai lu le contrat et j'en accepte les termes",
+      "passwordLabel": "Mot de passe du compte",
+      "passwordHint": "Confirmez votre identité avec le mot de passe de votre compte.",
+      "devHint": "Mode Dev : aucun mot de passe requis.",
+      "submit": "Signer le contrat",
+      "submitting": "Signature en cours…",
+      "cancel": "Annuler",
+      "errorTerms": "Vous devez accepter les termes du contrat avant de signer.",
+      "errorPassword": "Entrez le mot de passe de votre compte pour signer.",
+      "errorWrongPassword": "Mot de passe incorrect. Le contrat n'a pas été signé.",
+      "errorAlreadySigned": "Ce contrat a déjà été signé."
+    },
+    "download": {
+      "group": "Télécharger le contrat en PDF",
+      "fr": "PDF (Français)",
+      "en": "PDF (English)",
+      "open": "Télécharger le contrat",
+      "failed": "Impossible de télécharger le PDF. Veuillez réessayer."
+    },
+    "file": {
+      "title": "Contrat de stage",
+      "subtitle": "Lisez le contrat en PDF, en français ou en anglais, et téléchargez-le.",
+      "back": "Retour aux contrats",
+      "languageGroup": "Langue du contrat",
+      "language": {
+        "fr": "Français",
+        "en": "English"
+      },
+      "downloadCurrent": "Télécharger le PDF ({{language}})",
+      "downloadBoth": "Télécharger les deux PDF",
+      "downloading": "Téléchargement…"
+    }
   },
   "studentInternship": {
     "title": "Stages disponibles",
@@ -591,9 +718,9 @@
       "upcoming": "À venir",
       "past": "Passée",
       "cancelled": "Annulée",
-      "rejected": "Rejettée",
+      "rejected": "Rejetée",
       "accepted": "Acceptée",
-      "rescheduled": "Reporté"
+      "rescheduled": "Reportée"
     },
     "types": {
       "ONLINE": "En ligne",
@@ -609,7 +736,7 @@
       "allTypes": "Tous les types",
       "noResults": "Aucune entrevue ne correspond aux filtres."
     },
-    "rejectionReason": "Raison de rejection",
+    "rejectionReason": "Raison du refus",
     "rescheduledReason": "Détails de la demande de report",
     "chooseNewDate": "Choisissez une nouvelle date et heure",
     "reasonMessage": "Motif / Message :",
@@ -628,10 +755,10 @@
   },
   "employerInterviews": {
     "title": "Entrevues",
-    "subtitle": "Entrevues que vous avez planifiés avec des étudiants",
+    "subtitle": "Entrevues que vous avez planifiées avec des étudiants",
     "loading": "Chargement des entrevues…",
     "loadError": "Impossible de charger les entrevues.",
-    "empty": "Vous n’avez encore planifié aucun entrevue.",
+    "empty": "Vous n’avez encore planifié aucune entrevue.",
     "invalidDate": "Date non valide",
     "message": "Message de la rencontre",
     "details": "Détails de la rencontre",
@@ -702,6 +829,8 @@
     "loading": "Chargement des offres…",
     "loadError": "Impossible de charger les offres. Elles s'actualiseront automatiquement.",
     "empty": "Vous n'avez reçu aucune offre de stage pour le moment.",
+    "acceptFailed": "Impossible d'accepter cette offre. Elle a peut-être changé : la liste a été actualisée.",
+    "denyFailed": "Impossible de refuser cette offre. Veuillez réessayer.",
     "applicationDate": "Candidature envoyée le",
     "consent": {
       "PENDING": "En attente de votre réponse",

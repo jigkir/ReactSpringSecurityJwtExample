@@ -25,7 +25,7 @@ import Icon from '../../../styles/Icon.jsx';
 import {getSelectClass} from '../../../styles/FormControls.jsx';
 import {getCvUploadClasses} from '../../../styles/AppStyles.jsx';
 import {uploadDocument} from '../../api/Api.jsx';
-import {ACCEPTED_EXT, bytesToMb, validateFile} from '../../../utils/documents.js';
+import {ACCEPTED_EXT, bytesToMb, validateFile} from '../../../utils/Documents.js';
 import {DOC_TYPE_KEYS, DOC_TYPES, guessDocType} from '../../../utils/DocumentTypes.js';
 import {translateWarning} from '../../../utils/CommonFields.jsx';
 

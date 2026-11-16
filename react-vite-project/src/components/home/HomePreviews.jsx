@@ -12,6 +12,7 @@ import StudentInternships from '../page/student/Internships.jsx';
 import Interviews from '../page/student/Interviews.jsx';
 import ManagerCv from '../page/manager/Cv.jsx';
 import ManagerInternships from '../page/manager/Internships.jsx';
+import Contracts from '../page/manager/Contracts.jsx';
 import PostInternship from '../page/employer/internship/PostInternship.jsx';
 import Applications from '../page/employer/application/Applications.jsx';
 import EmployerInterviews from "../page/employer/interview/EmployerInterviews.jsx";
@@ -46,6 +47,11 @@ export const PREVIEWS_BY_ROLE = {
             to: "/manager/internships",
             titleKey: "home.managerInternshipsLink",
             render: () => <ManagerInternships preview/>
+        },
+        {
+            to: "/manager/contracts",
+            titleKey: "home.managerContractsLink",
+            render: () => <Contracts preview/>
         },
     ],
     TEACHER: [],
