@@ -107,8 +107,7 @@ export function getAuthClasses(dark) {
             dark ? card.dark : card.light,
         ].join(" "),
 
-        pageClass: "flex-1 flex items-center justify-center p-4",
-
+        pageClass: "flex-1 flex items-center justify-center p-4 w-full min-w-0 max-w-full",
         titleClass: [
             "text-2xl font-bold text-center mb-6",
             dark ? "text-white" : "text-gray-800",
@@ -236,7 +235,7 @@ export function getMainContainerClasses(dark) {
 // region PostInternship
 export function getPostInternshipClasses(dark) {
     return {
-        page: `p-4 md:p-10 flex flex-col flex-1`,
+        page: `p-4 md:p-10 flex flex-col flex-1 w-full min-w-0`,
         headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? "border-slate-700" : "border-gray-200"}`,
         title: `text-3xl font-bold ${dark ? "text-white" : "text-gray-900"}`,
         subtitle: `mt-1 ${dark ? "text-slate-400" : "text-gray-600"}`,
@@ -305,7 +304,7 @@ export function getInternshipFormClasses(dark) {
 
 // region Button
 export const CV_BUTTON_BASE =
-    "group inline-flex items-center justify-center gap-1.5 rounded-lg border " +
+    "group inline-flex items-center justify-center gap-1.5 rounded-lg border text-center " +
     "transition duration-200 not-disabled:active:scale-95 motion-reduce:not-disabled:active:scale-100 " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
     "disabled:opacity-40 disabled:cursor-not-allowed";

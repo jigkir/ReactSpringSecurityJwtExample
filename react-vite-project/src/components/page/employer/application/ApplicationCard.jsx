@@ -4,7 +4,7 @@ import {getApplicationCardClasses} from "../../../../styles/AppStyles.jsx";
 import Button from "../../../../styles/Button.jsx";
 import Badge from "../../../../styles/Badge.jsx";
 import PdfPreview from "../../../documents/PdfPreview.jsx";
-import InterviewPicker from "./interview/InterviewPicker.jsx";
+import InterviewPicker from "../interview/InterviewPicker.jsx";
 import {
     createInterview,
     getApplicationCoverLetter,
@@ -12,7 +12,7 @@ import {
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../../api/Api.jsx";
-import {blobUrlFromFile} from "../../../../utils/documents.js";
+import {blobUrlFromFile} from "../../../../utils/Documents.js";
 import {useToggleSet} from "../../../../utils/useToggleSet.js";
 
 const COVER_LETTER = "COVER_LETTER";

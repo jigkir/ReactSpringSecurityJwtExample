@@ -4,7 +4,7 @@ import {getCvDocumentsClasses, getInternshipCardClasses} from '../../../../style
 import Button from '../../../../styles/Button.jsx';
 import Icon from '../../../../styles/Icon.jsx';
 import Badge from '../../../../styles/Badge.jsx';
-import {formatDate} from '../../../../utils/documents.js';
+import {formatDate} from '../../../../utils/Documents.js';
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",

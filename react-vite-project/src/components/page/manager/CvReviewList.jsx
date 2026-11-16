@@ -36,7 +36,7 @@ import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow
 import {approveCv, getManagerCvFile, getPendingCvs, getPublicCvs, rejectCv} from '../../api/Api.jsx';
 import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
-import {blobUrlFromFile, formatDate} from '../../../utils/documents.js';
+import {blobUrlFromFile, formatDate} from '../../../utils/Documents.js';
 import {CV_SORT_OPTIONS, useCvFilters} from '../../../utils/Sort.jsx';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
