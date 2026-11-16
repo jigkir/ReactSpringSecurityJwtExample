@@ -9,7 +9,7 @@ import {
     Field,
     FirstNameField,
     LastNameField,
-    PasswordField,
+    PasswordField, PhoneNumberField,
     SubmitButton,
     translateWarning,
     validateField,
@@ -191,18 +191,12 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
-            <Field
-                id="phoneNumber" label={t("employer.phoneNumber")} warning={translateWarning(t, warnings.phoneNumber)}
-                labelClass={labelClass} errorClass={errorClass}
-            >
-                <input
-                    id="phoneNumber" name="phoneNumber" type="tel"
-                    inputMode="numeric"
-                    value={form.phoneNumber}
-                    onChange={handlePhoneChange}
-                    maxLength={10} required className={fieldClass}
-                />
-            </Field>
+            <PhoneNumberField
+            value={form.phoneNumber}
+            onChange={handlePhoneChange}
+            warning={translateWarning(t, warnings.phoneNumber)}
+            labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
+            />
 
             <PasswordField
                 value={form.password} onChange={handleChange} warning={translateWarning(t, warnings.password)}

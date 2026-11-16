@@ -34,6 +34,12 @@ export const PREVIEWS_BY_ROLE = {
             titleKey: "home.employerApplicationsLink",
             render: (user) => <Applications user={user} preview/>
         },
+        {
+            to: "/employer/interviews",
+            titleKey: "navbar.interviews",
+            render: () => <EmployerInterviews preview/>
+
+        }
     ],
     MANAGER: [
         {to: "/manager/cvs", titleKey: "home.managerCvLink", render: () => <ManagerCv preview/>},
@@ -47,11 +53,6 @@ export const PREVIEWS_BY_ROLE = {
             titleKey: "home.managerContractsLink",
             render: () => <Contracts preview/>
         },
-        {
-            to: "/employer/interviews",
-            titleKey: "navbar.interviews",
-            render: () => <EmployerInterviews preview/>
-        }
     ],
     TEACHER: [],
 };
