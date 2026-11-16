@@ -96,7 +96,7 @@ public class SecurityConfiguration {
                         .requestMatchers(NOTIFICATIONS_PATH).hasAnyAuthority(Role.STUDENT.name(), Role.MANAGER.name(), Role.EMPLOYER.name())
 
                         // CONTRACTS
-                        .requestMatchers(CONTRACTS_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(CONTRACTS_PATH).hasAnyAuthority(Role.MANAGER.name(), Role.EMPLOYER.name(), Role.STUDENT.name())
 
                         // ROLES
                         .requestMatchers(STUDENT_PATH).hasAuthority(Role.STUDENT.name())

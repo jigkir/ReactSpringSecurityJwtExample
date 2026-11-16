@@ -17,10 +17,7 @@ import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
-import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.model.user.Manager;
-import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
+import com.lacouf.rsbjwt.model.user.*;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
@@ -407,6 +404,62 @@ public class ContractServiceTest {
         verify(contractRepository, never()).save(any(Contract.class));
     }
 
+    @Test
+    void shouldReturnContractsOfEmployerWhenEmployerGetsContracts() throws Exception {
+        // Arrange
+        givenUserWithEmail(employer);
+
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(internship.getSession());
+        when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract()));
+
+        // Act
+        List<ContractResponseDto> contracts = contractService.getContracts(EMPLOYER_EMAIL, null);
+
+        // Assert
+        assert contracts.size() == 1;
+        assert "Company Name".equals(contracts.getFirst().companyName());
+    }
+
+    @Test
+    void shouldNotifyEmployerOfContractToSignWhenCreatingContract() throws Exception {
+        // Arrange
+        saveContractWithId();
+
+        // Act
+        contractService.createContract(offeredApplication());
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_EMPLOYER, 30L, employer);
+    }
+
+    @Test
+    void shouldReturnContractsOfStudentWhenStudentGetsContracts() throws Exception {
+        // Arrange
+        givenUserWithEmail(student);
+
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(internship.getSession());
+        when(contractRepository.findByInternship_Session(internship.getSession())).thenReturn(List.of(contract()));
+
+        // Act
+        List<ContractResponseDto> contracts = contractService.getContracts(STUDENT_EMAIL, null);
+
+        // Assert
+        assert contracts.size() == 1;
+        assert "Jane Doe".equals(contracts.getFirst().studentName());
+    }
+
+    @Test
+    void shouldNotifyStudentOfContractToSignWhenCreatingContract() throws Exception {
+        // Arrange
+        saveContractWithId();
+
+        // Act
+        contractService.createContract(offeredApplication());
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_STUDENT, 30L, student);
+    }
+
     // ---------- Helpers ----------
 
     private InternshipApplication application() {
@@ -457,5 +510,9 @@ public class ContractServiceTest {
         otherStudent.setId(99L);
 
         return otherStudent;
+    }
+
+    private void givenUserWithEmail(UserApp user) throws UserNotFoundException {
+        when(userAppService.findUserByEmail(user.getEmail())).thenReturn(user);
     }
 }
