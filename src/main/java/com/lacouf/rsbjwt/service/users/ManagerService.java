@@ -205,7 +205,7 @@ public class ManagerService {
 
     @Transactional(readOnly = true)
     public List<InternshipTrackingResponseDto> getInternshipTrackings() {
-        return internshipTrackingRepository.getAll().stream().map(InternshipTrackingResponseDto::of).toList();
+        return internshipTrackingRepository.findAll().stream().map(InternshipTrackingResponseDto::of).toList();
     }
 
     @Transactional(readOnly = true)

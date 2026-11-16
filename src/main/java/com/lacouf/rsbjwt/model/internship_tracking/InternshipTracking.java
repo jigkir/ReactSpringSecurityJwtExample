@@ -6,6 +6,7 @@ import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Optional;
 
@@ -13,6 +14,7 @@ import java.util.Optional;
 public class InternshipTracking {
 
     @Getter
+    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
