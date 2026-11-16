@@ -26,6 +26,7 @@ import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
+import com.lacouf.rsbjwt.repository.internship_tracking.TeacherStudentCount;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.TeacherRepository;
@@ -34,6 +35,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
@@ -44,6 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ManagerService {
@@ -209,12 +213,22 @@ public class ManagerService {
     }
 
     @Transactional(readOnly = true)
-    public List<TeacherSummaryDto> getAssignableTeachers(long trackingId) throws InternshipTrackingNotFoundException {
+    public List<TeacherAssignmentDto> getAssignableTeachers(long trackingId) throws InternshipTrackingNotFoundException {
         InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
                 .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
 
-        return teacherRepository.findByDiscipline(tracking.getStudent().getDiscipline()).stream()
-                .map(TeacherSummaryDto::of)
+        List<Teacher> teachers = teacherRepository.findByDiscipline(tracking.getStudent().getDiscipline());
+
+        if (teachers.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Long> counts = internshipTrackingRepository
+                .countByTeacherIds(teachers.stream().map(Teacher::getId).toList()).stream()
+                .collect(Collectors.toMap(TeacherStudentCount::getTeacherId, TeacherStudentCount::getTotal));
+
+        return teachers.stream()
+                .map(teacher -> TeacherAssignmentDto.of(teacher, counts.getOrDefault(teacher.getId(), 0L)))
                 .toList();
     }
 
@@ -234,15 +248,6 @@ public class ManagerService {
         tracking.assignTeacher(teacher);
 
         return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
-    }
-
-    @Transactional(readOnly = true)
-    public long countStudentsAssignedToTeacher(long teacherId) throws UserNotFoundException {
-        if (!teacherRepository.existsById(teacherId)) {
-            throw new UserNotFoundException();
-        }
-
-        return internshipTrackingRepository.countByTeacherId(teacherId);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {

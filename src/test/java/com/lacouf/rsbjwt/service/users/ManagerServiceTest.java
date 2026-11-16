@@ -39,7 +39,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -902,7 +902,7 @@ public class ManagerServiceTest {
         when(teacherRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(teacher(5L, Discipline.COMPUTER_SCIENCE)));
 
         // Act
-        List<TeacherSummaryDto> result = managerService.getAssignableTeachers(1L);
+        List<TeacherAssignmentDto> result = managerService.getAssignableTeachers(1L);
 
         // Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -1000,45 +1000,6 @@ public class ManagerServiceTest {
 
         assert !tracking.hasTeacher();
         verify(internshipTrackingRepository, never()).save(any(InternshipTracking.class));
-    }
-
-    @Test
-    void shouldReturnNumberOfStudentsAssignedToTeacher() throws UserNotFoundException {
-        // Arrange
-        when(teacherRepository.existsById(5L)).thenReturn(true);
-        when(internshipTrackingRepository.countByTeacherId(5L)).thenReturn(3L);
-
-        // Act
-        long result = managerService.countStudentsAssignedToTeacher(5L);
-
-        // Assert
-        assert result == 3L;
-
-        verify(internshipTrackingRepository).countByTeacherId(5L);
-    }
-
-    @Test
-    void shouldReturnZeroWhenTeacherHasNoAssignedStudents() throws UserNotFoundException {
-        // Arrange
-        when(teacherRepository.existsById(5L)).thenReturn(true);
-        when(internshipTrackingRepository.countByTeacherId(5L)).thenReturn(0L);
-
-        // Act
-        long result = managerService.countStudentsAssignedToTeacher(5L);
-
-        // Assert
-        assert result == 0L;
-    }
-
-    @Test
-    void shouldThrowUserNotFoundWhenCountingStudentsOfUnknownTeacher() {
-        // Arrange
-        when(teacherRepository.existsById(99L)).thenReturn(false);
-
-        // Act + Assert
-        assertThrows(UserNotFoundException.class, () -> managerService.countStudentsAssignedToTeacher(99L));
-
-        verifyNoInteractions(internshipTrackingRepository);
     }
 
     // ---------- Helpers ----------

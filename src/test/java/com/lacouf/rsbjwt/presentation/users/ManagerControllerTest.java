@@ -22,6 +22,7 @@ import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
@@ -65,6 +66,7 @@ public class ManagerControllerTest {
             """;
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
     private static final TeacherSummaryDto TEACHER = new TeacherSummaryDto(5L, "Paul", "Roy", Discipline.COMPUTER_SCIENCE, "paul@example.com");
+    private static final TeacherAssignmentDto ASSIGNABLE_TEACHER = new TeacherAssignmentDto(5L, "Paul", "Roy", Discipline.COMPUTER_SCIENCE, "paul@example.com", 3L);
 
     @Test
     void shouldReturnVisibleCvsOfChosenSession() throws Exception {
@@ -436,7 +438,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnAssignableTeachers() throws Exception {
         // Arrange
-        when(managerService.getAssignableTeachers(1L)).thenReturn(List.of(TEACHER));
+        when(managerService.getAssignableTeachers(1L)).thenReturn(List.of(ASSIGNABLE_TEACHER));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internship-trackings/1/teachers"))
@@ -498,17 +500,6 @@ public class ManagerControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/manager/internship-trackings/1/teacher/5"))
                 .andExpect(status().isConflict());
-    }
-
-    @Test
-    void shouldReturnNumberOfStudentsAssignedToTeacher() throws Exception {
-        // Arrange
-        when(managerService.countStudentsAssignedToTeacher(5L)).thenReturn(3L);
-
-        // Act + Assert
-        mockMvc.perform(get("/api/manager/teachers/5/students/count"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("3"));
     }
 
     // ---------- Helpers ----------
