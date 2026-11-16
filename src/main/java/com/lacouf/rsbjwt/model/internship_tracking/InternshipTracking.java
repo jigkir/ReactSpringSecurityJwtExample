@@ -7,6 +7,8 @@ import com.lacouf.rsbjwt.model.user.Teacher;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.util.Optional;
+
 @Entity
 public class InternshipTracking {
 

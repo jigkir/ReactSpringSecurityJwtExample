@@ -3,8 +3,11 @@ package com.lacouf.rsbjwt.service.users;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
+import com.lacouf.rsbjwt.exception.internship_tracking.InternshipTrackingNotFoundException;
+import com.lacouf.rsbjwt.exception.internship_tracking.TeacherDisciplineMismatchException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.auth.Credentials;
@@ -18,16 +21,20 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.model.user.Teacher;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.repository.users.TeacherRepository;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -46,19 +53,21 @@ public class ManagerService {
     private final StudentRepository studentRepository;
     private final InternshipApplicationRepository applicationRepository;
     private final InternshipTrackingRepository internshipTrackingRepository;
+    private final TeacherRepository teacherRepository;
 
     private final NotificationService notificationService;
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
         this.applicationRepository = applicationRepository;
         this.internshipTrackingRepository = internshipTrackingRepository;
+        this.teacherRepository = teacherRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipService = internshipService;
@@ -193,6 +202,41 @@ public class ManagerService {
 
         return InternshipResponseDto.of(internship);
     }
+
+    @Transactional(readOnly = true)
+    public List<InternshipTrackingResponseDto> getInternshipTrackings() {
+        return internshipTrackingRepository.getAll().stream().map(InternshipTrackingResponseDto::of).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeacherSummaryDto> getAssignableTeachers(long trackingId) throws InternshipTrackingNotFoundException {
+        InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
+                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+
+        return teacherRepository.findByDiscipline(tracking.getStudent().getDiscipline()).stream()
+                .map(TeacherSummaryDto::of)
+                .toList();
+    }
+
+
+    @Transactional
+    public InternshipTrackingResponseDto assignTeacher(long trackingId, long teacherId)
+            throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
+        InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
+                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(UserNotFoundException::new);
+
+        if (!teacher.getDiscipline().equals(tracking.getStudent().getDiscipline())) {
+            throw new TeacherDisciplineMismatchException(teacherId, trackingId);
+        }
+
+        tracking.assignTeacher(teacher);
+
+        return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
+    }
+
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));
