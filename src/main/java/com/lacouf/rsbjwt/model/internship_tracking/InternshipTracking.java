@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.model.internship_tracking;
 
+import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
@@ -25,9 +26,9 @@ public class InternshipTracking {
 
     protected InternshipTracking() {}
 
-    public InternshipTracking(Student student, Internship internship) {
-        this.student = student;
-        this.internship = internship;
+    public InternshipTracking(Contract contract) {
+        this.student = contract.getStudent();
+        this.internship = contract.getInternship();
     }
 
     public void assignTeacher(Teacher teacher) {
