@@ -12,7 +12,6 @@ import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,11 +33,11 @@ public class TraductionService {
         return System.currentTimeMillis() >= unavailableUntil;
     }
 
-    private void markUnavailable(String reason) {
-        boolean firstTime = isAvailable(); // only log when we newly detect the outage
+    private void markUnavailable() {
+        boolean firstTime = isAvailable();
         unavailableUntil = System.currentTimeMillis() + RETRY_AFTER_MS;
         if (firstTime) {
-            System.err.println("LibreTranslate unavailable (" + reason + "), translation disabled for "
+            System.err.println("LibreTranslate unavailable (" + "cannot connect" + "), translation disabled for "
                     + (RETRY_AFTER_MS / 1000) + "s");
         }
     }
@@ -74,7 +73,7 @@ public class TraductionService {
                 System.err.println("LibreTranslate error " + response.statusCode() + ": " + response.body());
             }
         } catch (ConnectException | HttpConnectTimeoutException e) {
-            markUnavailable("cannot connect");
+            markUnavailable();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
