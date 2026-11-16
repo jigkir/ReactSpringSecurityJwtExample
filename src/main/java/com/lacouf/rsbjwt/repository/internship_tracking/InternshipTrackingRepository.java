@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InternshipTrackingRepository extends JpaRepository<InternshipTracking, Long> {
+    long countByTeacherId(long teacherId);
 }

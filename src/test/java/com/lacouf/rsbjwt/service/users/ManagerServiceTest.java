@@ -1002,6 +1002,45 @@ public class ManagerServiceTest {
         verify(internshipTrackingRepository, never()).save(any(InternshipTracking.class));
     }
 
+    @Test
+    void shouldReturnNumberOfStudentsAssignedToTeacher() throws UserNotFoundException {
+        // Arrange
+        when(teacherRepository.existsById(5L)).thenReturn(true);
+        when(internshipTrackingRepository.countByTeacherId(5L)).thenReturn(3L);
+
+        // Act
+        long result = managerService.countStudentsAssignedToTeacher(5L);
+
+        // Assert
+        assert result == 3L;
+
+        verify(internshipTrackingRepository).countByTeacherId(5L);
+    }
+
+    @Test
+    void shouldReturnZeroWhenTeacherHasNoAssignedStudents() throws UserNotFoundException {
+        // Arrange
+        when(teacherRepository.existsById(5L)).thenReturn(true);
+        when(internshipTrackingRepository.countByTeacherId(5L)).thenReturn(0L);
+
+        // Act
+        long result = managerService.countStudentsAssignedToTeacher(5L);
+
+        // Assert
+        assert result == 0L;
+    }
+
+    @Test
+    void shouldThrowUserNotFoundWhenCountingStudentsOfUnknownTeacher() {
+        // Arrange
+        when(teacherRepository.existsById(99L)).thenReturn(false);
+
+        // Act + Assert
+        assertThrows(UserNotFoundException.class, () -> managerService.countStudentsAssignedToTeacher(99L));
+
+        verifyNoInteractions(internshipTrackingRepository);
+    }
+
     // ---------- Helpers ----------
 
     private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {

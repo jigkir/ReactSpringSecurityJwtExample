@@ -218,7 +218,6 @@ public class ManagerService {
                 .toList();
     }
 
-
     @Transactional
     public InternshipTrackingResponseDto assignTeacher(long trackingId, long teacherId)
             throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
@@ -237,6 +236,14 @@ public class ManagerService {
         return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
     }
 
+    @Transactional(readOnly = true)
+    public long countStudentsAssignedToTeacher(long teacherId) throws UserNotFoundException {
+        if (!teacherRepository.existsById(teacherId)) {
+            throw new UserNotFoundException();
+        }
+
+        return internshipTrackingRepository.countByTeacherId(teacherId);
+    }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
         return internshipRepository.findByIdAndDeletedFalse(internshipId).orElseThrow(() -> new InternshipNotFoundException(internshipId));

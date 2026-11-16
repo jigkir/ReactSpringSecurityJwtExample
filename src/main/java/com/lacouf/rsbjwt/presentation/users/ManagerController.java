@@ -129,4 +129,9 @@ public class ManagerController {
     public ResponseEntity<InternshipTrackingResponseDto> assignTeacher(@PathVariable long trackingId, @PathVariable long teacherId) throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
         return ResponseEntity.ok(managerService.assignTeacher(trackingId, teacherId));
     }
+
+    @GetMapping("/teachers/{teacherId}/students/count")
+    public ResponseEntity<Long> countStudentsAssignedToTeacher(@PathVariable long teacherId) throws UserNotFoundException {
+        return ResponseEntity.ok(managerService.countStudentsAssignedToTeacher(teacherId));
+    }
 }

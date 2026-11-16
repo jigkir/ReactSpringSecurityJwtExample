@@ -41,8 +41,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Import(GlobalExceptionHandler.class)
 @WebMvcTest(ManagerController.class)
@@ -499,6 +498,17 @@ public class ManagerControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/manager/internship-trackings/1/teacher/5"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnNumberOfStudentsAssignedToTeacher() throws Exception {
+        // Arrange
+        when(managerService.countStudentsAssignedToTeacher(5L)).thenReturn(3L);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/teachers/5/students/count"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("3"));
     }
 
     // ---------- Helpers ----------
