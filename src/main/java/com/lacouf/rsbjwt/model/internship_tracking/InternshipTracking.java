@@ -5,21 +5,27 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
 public class InternshipTracking {
+
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
 
+    @Getter
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
+    @Getter
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "internship_id", nullable = false)
     private Internship internship;
