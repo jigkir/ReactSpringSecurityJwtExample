@@ -419,9 +419,9 @@ public class StudentService {
     }
 
     @Transactional
-    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
+    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException, InterviewAlreadyRescheduledException {
         Interview interview = findStudentInterview(email, interviewId);
-        verifyInterviewIsNotCanceled(interview);
+        verifyInterviewIsPending(interview);
         if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
             throw new InterviewAlreadyAcceptedException(interviewId);
         }
@@ -472,6 +472,16 @@ public class StudentService {
         interviewRepository.save(interview);
 
 
+    }
+
+    private void verifyInterviewIsPending(Interview interview) throws InterviewCancelledException, InterviewAlreadyAcceptedException, InterviewAlreadyRescheduledException {
+        verifyInterviewIsNotCanceled(interview);
+        if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED) {
+            throw new InterviewAlreadyRescheduledException(interview.getId());
+        }
+        if(interview.getStudentDecision() == StudentDecision.ACCEPTED) {
+            throw new InterviewAlreadyAcceptedException(interview.getId());
+        }
     }
 
     private void verifyInterviewIsNotCanceled(Interview interview) throws InterviewCancelledException {
