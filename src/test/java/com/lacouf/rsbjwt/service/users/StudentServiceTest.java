@@ -1648,6 +1648,27 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldRefuseOtherPendingOffersAndNotifyTheirEmployerWhenStudentAcceptsOffer() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        InternshipApplication otherOffer = offeredApplication(21L);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+        when(applicationRepository.findByStudentAndStudentInternshipConsent(dummyStudent, StudentInternshipConsent.PENDING)).thenReturn(List.of(otherOffer));
+
+        // Act
+        studentService.acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        assert StudentInternshipConsent.REJECTED.equals(otherOffer.getStudentInternshipConsent());
+
+        verify(applicationRepository).save(otherOffer);
+        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 21L, dummyStudent);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REFUSED, 21L, employer);
+    }
+
+    @Test
     void shouldThrowInternshipApplicationNotFoundExceptionWhenAcceptingUnknownOffer() {
         // Arrange
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());
@@ -2080,10 +2101,16 @@ public class StudentServiceTest {
     }
 
     private InternshipApplication offeredApplication() {
+        return offeredApplication(20L);
+    }
+
+    private InternshipApplication offeredApplication(long applicationId) {
         InternshipApplication application = new InternshipApplication(internship, approvedVisibleCv(5L), dummyStudent);
-        application.setId(20L);
+
+        application.setId(applicationId);
         application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
         application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
+
         return application;
     }
 

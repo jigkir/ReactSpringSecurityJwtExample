@@ -415,7 +415,7 @@ public class StudentService {
             throw new StudentConsentNotPendingException(applicationId);
         }
 
-        refuseAndNotifyEmployer(application, NotificationType.INTERNSHIP_OFFER_REFUSED);
+        refuseAndNotifyEmployer(application);
     }
 
     @Transactional
@@ -478,6 +478,8 @@ public class StudentService {
         studentRepository.save(student);
 
         cancelOtherUpcomingInterviews(student, acceptedApplication.getId());
+
+        refusePendingOffers(student);
     }
 
     private void cancelOtherUpcomingInterviews(Student student, long acceptedApplicationId) {
@@ -495,14 +497,19 @@ public class StudentService {
         notificationService.notifyIfAbsent(NotificationType.INTERVIEW_CANCELLED_STUDENT_HIRED, interview.getId(), interview.getEmployer());
     }
 
-    private void refuseAndNotifyEmployer(InternshipApplication application, NotificationType employerNotification) {
+    private void refusePendingOffers(Student student) {
+        applicationRepository.findByStudentAndStudentInternshipConsent(student, StudentInternshipConsent.PENDING)
+                .forEach(this::refuseAndNotifyEmployer);
+    }
+
+    private void refuseAndNotifyEmployer(InternshipApplication application) {
         application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
         applicationRepository.save(application);
 
         Internship internship = application.getInternship();
 
         notificationService.closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, application.getId(), application.getStudent());
-        notificationService.notifyIfAbsent(employerNotification, application.getId(), internship.getPostedBy());
+        notificationService.notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REFUSED, application.getId(), internship.getPostedBy());
     }
 
     private void verifyInterviewIsPending(Interview interview) throws InterviewCancelledException, InterviewAlreadyAcceptedException, InterviewAlreadyRescheduledException {

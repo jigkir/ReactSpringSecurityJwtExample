@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.repository.application;
 
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -38,4 +39,6 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
     Set<Long> findInternshipIdsByStudent(@Param("student") Student student);
 
     List<InternshipApplication> findByStudentAndEmployerDecision(Student student, EmployerDecision employerDecision);
+
+    List<InternshipApplication> findByStudentAndStudentInternshipConsent(Student student, StudentInternshipConsent studentInternshipConsent);
 }
