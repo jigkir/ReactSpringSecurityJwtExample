@@ -58,7 +58,6 @@ import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponse
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -437,9 +436,9 @@ public class StudentService {
         Interview interview = findStudentInterview(email, interviewId);
         verifyInterviewIsNotCanceled(interview);
         if (rejectionMessage == null || rejectionMessage.isBlank()) {
-            throw new InterviewInvalidMessageException("Interview with ID" + interviewId + " requires a message to be rejected");
+            throw new InterviewInvalidMessageException("Interview with ID " + interviewId + " requires a message to be rejected");
         }
-        if (interview.getStudentDecision().equals(StudentDecision.REJECTED) && rejectionMessage.equals(interview.getRejectionMessage())) {
+        if (interview.getStudentDecision() == StudentDecision.REJECTED && rejectionMessage.equals(interview.getRejectionMessage())) {
             throw new InterviewAlreadyRejectedException(interviewId);
         }
         interview.setStudentDecision(StudentDecision.REJECTED);
@@ -449,29 +448,25 @@ public class StudentService {
     }
 
     @Transactional
-    public void rescheduleInterviewOffer(String email, long interviewId, @Valid InterviewReschedulingDto rescheduling) throws InterviewNotFoundException, InterviewAlreadyRescheduledException, InterviewInvalidDateException, InterviewCancelledException {
+    public void rescheduleInterviewOffer(String email, long interviewId, InterviewReschedulingDto rescheduling) throws InterviewNotFoundException, InterviewAlreadyRescheduledException, InterviewInvalidDateException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
-        String rejectionMessage = rescheduling.comment();
+        String rejectionMessage = rescheduling.comment() == null || rescheduling.comment().isBlank() ? null : rescheduling.comment();
         LocalDateTime reschedulingTime = rescheduling.interviewDate();
         verifyInterviewIsNotCanceled(interview);
 
         if (reschedulingTime == null || reschedulingTime.isBefore(LocalDateTime.now())) {
             throw new InterviewInvalidDateException("Interview with ID " + interviewId + " requires a time in the future to be rescheduled");
         }
-        if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED && Objects.equals(rejectionMessage, interview.getRejectionMessage()) && reschedulingTime.equals(interview.getInterviewDate())) {
+        if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED
+                && Objects.equals(rejectionMessage, interview.getRejectionMessage())
+                && reschedulingTime.equals(interview.getInterviewDate())) {
             throw new InterviewAlreadyRescheduledException(interviewId);
         }
-        if (rejectionMessage == null || rejectionMessage.isBlank()) {
-            interview.setRejectionMessage(null);
-        }else{
-            interview.setRejectionMessage(rejectionMessage);
-        }
+        interview.setRejectionMessage(rejectionMessage);
         interview.setStudentDecision(StudentDecision.RESCHEDULE_REQUESTED);
         interview.setInterviewDate(reschedulingTime);
 
         interviewRepository.save(interview);
-
-
     }
 
     private void verifyInterviewIsNotCanceled(Interview interview) throws InterviewCancelledException {
