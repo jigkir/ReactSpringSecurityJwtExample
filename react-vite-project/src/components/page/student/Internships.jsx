@@ -16,6 +16,9 @@ import {usePolling} from "../../../utils/usePolling.js";
 import PreviewState from '../../home/PreviewState.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../utils/useSession.js";
+import Icon from "../../../styles/Icon.jsx";
+
+const ACCEPTED_OFFER = "ACCEPTED";
 
 // <StudentInternships />          full page (route /internship)
 // <StudentInternships preview />  Home page block: the newest offers only, no header, no filters
@@ -144,6 +147,8 @@ function StudentInternships({preview = false}) {
 
     usePolling(load);
 
+    const hired = appliedInternships.some((application) => application.studentInternshipConsent === ACCEPTED_OFFER);
+
     const cards = shown.map(internship => {
         const application = appliedInternships.find((a) => a.internshipId === internship.id);
 
@@ -166,6 +171,7 @@ function StudentInternships({preview = false}) {
                 onChanged={handleApplicationChanged}
                 onLettersChanged={loadLetters}
                 onTranscriptsChanged={loadTranscripts}
+                hired={hired}
             />)}
         />);
     });
@@ -216,6 +222,9 @@ function StudentInternships({preview = false}) {
         </div>
 
         <div className={s.listSection}>
+            {hired && (<p className={s.infoBanner} role="note">
+                {t("studentInternship.hiredNote")}
+            </p>)}
             {!loading && !error && internships.length > 0 && (<InternshipFilters
                 dark={dark}
                 filters={filters}

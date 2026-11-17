@@ -244,6 +244,7 @@ export function getPostInternshipClasses(dark) {
         scrollArea: "flex-1 space-y-4",
         emptyText: `text-center py-8 ${dark ? "text-slate-400" : "text-gray-500"}`,
         errorText: `p-4 rounded-lg text-center ${dark ? "bg-red-900/20 text-red-400" : "bg-red-50 text-red-500"}`,
+        infoBanner: `mb-4 p-4 rounded-lg border-l-4 flex items-center gap-3 font-semibold ${dark ? "bg-indigo-900/30 border-indigo-500 text-indigo-200" : "bg-indigo-200 border-indigo-700 text-indigo-900 shadow-sm"}`,
         loadingText: `text-center py-8 ${dark ? "text-slate-400" : "text-gray-500"}`,
     };
 }

@@ -22,7 +22,7 @@ const maxId = (list) => list.reduce((max, d) => Math.max(max, d.id), -1);
 
 function ApplyControls({
                            internshipId, cvs, letters = [], transcripts = [], dark, application,
-                           onChanged, onLettersChanged, onTranscriptsChanged
+                           onChanged, onLettersChanged, onTranscriptsChanged, hired
                        }) {
     const {t} = useTranslation();
     const [open, setOpen] = useState(false);
@@ -50,6 +50,10 @@ function ApplyControls({
 
     if (application?.internshipApplicationStatus === READ_BY_EMPLOYER) {
         return <SentDocuments application={application} dark={dark}/>;
+    }
+    
+    if (hired) {
+        return application ? <SentDocuments application={application} dark={dark}/> : null;
     }
 
     // The CV picked by the student, otherwise the CV already sent, otherwise the first approved CV
@@ -91,7 +95,7 @@ function ApplyControls({
         ? submit(() => updateApplicationCV(application.id, selectedCvId, letterArg, transcriptArg),
             "cvUpdated", "studentInternship.alreadyReadByEmployer")
         : submit(() => applyForInternship(internshipId, selectedCvId, letterArg, transcriptArg),
-            "applied", "studentInternship.alreadyApplied");
+            "applied", "studentInternship.applyConflict");
 
     // After an upload: reload the letters and transcripts, and tick the new ones
     const handleUploaded = async () => {
