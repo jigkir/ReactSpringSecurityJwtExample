@@ -19,6 +19,8 @@ import PreviewState from '../../../home/PreviewState.jsx';
 import {useSession} from "../../../../utils/useSession.js";
 import {TARGET_TYPE, useCloseShownNotifications} from "../../../notification/NotificationsProvider.jsx";
 
+const HTTP_CONFLICT = 409;
+
 // <PostInternship user />          full page (route /internships)
 // <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
 function PostInternship({user, preview = false}) {
@@ -34,6 +36,9 @@ function PostInternship({user, preview = false}) {
     const formRef = useRef(null);
     const {selectedSession} = useSession();
     const canEditOffers = Boolean(selectedSession?.target); // offers of past sessions are archives
+
+    // An offer with applications is locked: students applied to its current content
+    const canEdit = (internship) => canEditOffers && !applicationCount[internship.id];
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -115,6 +120,10 @@ function PostInternship({user, preview = false}) {
             }
             return {success: true};
         } catch (err) {
+            if (editing && err.status === HTTP_CONFLICT) return {
+                success: false,
+                message: {key: "postInternship.editLockedError"}
+            };
             return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
         }
     };
@@ -135,7 +144,7 @@ function PostInternship({user, preview = false}) {
     const cards = shown.map((internship) => (
         <InternshipCard key={internship.id}
                         internship={internship}
-                        OnEdit={preview || !canEditOffers ? undefined : openEdit}
+                        OnEdit={preview || !canEdit(internship) ? undefined : openEdit}
                         OnDelete={preview ? undefined : handleDelete}
                         dark={dark}
                         showStatusBorder={filters.status !== "ALL"}

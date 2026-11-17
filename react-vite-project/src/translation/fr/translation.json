@@ -402,7 +402,8 @@
     "createGenericError": "Impossible d'enregistrer l'offre de stage. Veuillez réessayer.",
     "deleteError": "Impossible de supprimer l'offre de stage.",
     "deleteGenericError": "Impossible de supprimer l'offre de stage. Veuillez réessayer.",
-    "countError": "Impossible de récupérer le nombre de candidatures."
+    "countError": "Impossible de récupérer le nombre de candidatures.",
+    "editLockedError": "Cette offre a déjà reçu des candidatures : elle ne peut plus être modifiée."
   },
   "managerInternships": {
     "title": "Offres de stage",

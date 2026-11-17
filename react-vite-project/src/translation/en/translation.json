@@ -402,7 +402,8 @@
     "createGenericError": "Unable to save the internship offer. Please try again.",
     "deleteError": "Unable to delete the internship offer.",
     "deleteGenericError": "Unable to delete the internship offer. Please try again.",
-    "countError": "Unable to retrieve the number of applications."
+    "countError": "Unable to retrieve the number of applications.",
+    "editLockedError": "This offer has already received applications: it can no longer be edited."
   },
   "managerInternships": {
     "title": "Internship offers",

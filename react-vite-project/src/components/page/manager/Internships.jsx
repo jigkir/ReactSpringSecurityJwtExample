@@ -189,7 +189,7 @@ const ManagerInternships = ({preview = false}) => {
         return (
             <>
                 {/* Once approved, the manager can correct the offer himself */}
-                {isApproved && (
+                {isApproved && !internship.hasApplications && (
                     <Button tone="warning" dark={dark} icon="edit" disabled={busy}
                             onClick={() => openEdit(internship)}
                             aria-label={t("managerInternships.editBtnAria", {title: internship.title})}>
