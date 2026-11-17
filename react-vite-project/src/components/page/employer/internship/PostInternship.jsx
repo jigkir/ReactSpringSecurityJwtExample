@@ -23,7 +23,7 @@ import {TARGET_TYPE, useCloseShownNotifications} from "../../../notification/Not
 // <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
 function PostInternship({user, preview = false}) {
     const {dark} = useOutletContext();
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [internships, setInternships] = useState([]);
@@ -39,6 +39,8 @@ function PostInternship({user, preview = false}) {
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
     const shown = visible;
+
+    const lang = i18n.resolvedLanguage ?? i18n.language;
 
     const shownInternshipIds = useMemo(
         () => (preview || loading ? null : internships.map((internship) => internship.id)),
@@ -57,7 +59,7 @@ function PostInternship({user, preview = false}) {
         } finally {
             setLoading(false);
         }
-    }, [selectedSession]);
+    }, [selectedSession, lang]);
 
     const fetchApplicationCount = useCallback(async () => {
         try {
