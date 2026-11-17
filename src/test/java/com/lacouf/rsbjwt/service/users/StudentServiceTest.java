@@ -1607,7 +1607,6 @@ public class StudentServiceTest {
     @Test
     void shouldAcceptOfferSuccessfully() throws Exception {
         // Arrange
-        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
         InternshipApplication application = offeredApplication();
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
@@ -1620,6 +1619,9 @@ public class StudentServiceTest {
         verify(applicationRepository).save(application);
 
         assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        assert dummyStudent.isEmployed();
+        
+        verify(studentRepository).save(dummyStudent);
     }
 
     @Test
@@ -1652,7 +1654,6 @@ public class StudentServiceTest {
     @Test
     void shouldNotChangeConsentOrEmploymentStatusWhenContractCreationFails() throws Exception {
         // Arrange
-        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
         InternshipApplication application = offeredApplication();
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));

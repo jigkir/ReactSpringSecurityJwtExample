@@ -24,7 +24,6 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
@@ -446,7 +445,8 @@ public class EmployerService {
     }
 
     private boolean isVisibleToEmployer(InternshipApplication application) {
-        boolean employed = application.getStudent().getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED;
+        Student student = application.getStudent();
+        boolean employed = student.isEmployed();
         boolean wasOffered = application.getStudentInternshipConsent() != StudentInternshipConsent.NOT_APPLICABLE;
 
         return !employed || wasOffered;

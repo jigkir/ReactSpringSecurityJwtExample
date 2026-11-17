@@ -34,7 +34,6 @@ import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
@@ -245,7 +244,7 @@ public class StudentService {
 
         Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
 
-        if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
+        if (student.isEmployed()) {
             throw new StudentAlreadyEmployedException(student.getId());
         }
 
@@ -399,6 +398,8 @@ public class StudentService {
 
         application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
         applicationRepository.save(application);
+
+        hire(application);
     }
 
     @Transactional
@@ -466,6 +467,14 @@ public class StudentService {
         interview.setInterviewDate(reschedulingTime);
 
         interviewRepository.save(interview);
+    }
+
+    private void hire(InternshipApplication acceptedApplication) {
+        Student student = acceptedApplication.getStudent();
+
+        student.markAsEmployed();
+
+        studentRepository.save(student);
     }
 
     private void refuseAndNotifyEmployer(InternshipApplication application, NotificationType employerNotification) {

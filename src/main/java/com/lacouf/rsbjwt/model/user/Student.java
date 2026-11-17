@@ -7,7 +7,6 @@ import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +23,6 @@ public class Student extends UserApp {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private Set<CV> cvs = new HashSet<>();
 
-    @Setter
     @Getter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -106,6 +104,14 @@ public class Student extends UserApp {
 
     public void removeFromFavorites(Internship internship) {
         favoriteInternships.remove(internship);
+    }
+
+    public void markAsEmployed() {
+        this.studentInternshipStatus = StudentInternshipStatus.EMPLOYED;
+    }
+
+    public boolean isEmployed() {
+        return studentInternshipStatus == StudentInternshipStatus.EMPLOYED;
     }
 
     public AcademicSession getAccessSession() {
