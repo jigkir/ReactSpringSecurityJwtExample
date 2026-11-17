@@ -7,4 +7,4 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cd "$HERE/../react-vite-project" || exit 1
 printf '\n\033[1;36m==> npm run dev\033[0m\n'
-npm run dev
+VITE_DEV_MODE=true npm run dev

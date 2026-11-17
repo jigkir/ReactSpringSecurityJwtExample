@@ -6,33 +6,40 @@ import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
+import com.lacouf.rsbjwt.exception.internship_tracking.InternshipTrackingNotFoundException;
+import com.lacouf.rsbjwt.exception.internship_tracking.TeacherDisciplineMismatchException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
+import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
-import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.model.user.Manager;
-import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.UserApp;
+import com.lacouf.rsbjwt.model.user.*;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
+import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
+import com.lacouf.rsbjwt.repository.users.TeacherRepository;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -77,6 +84,10 @@ public class ManagerServiceTest {
     private InternshipRepository internshipRepository;
     @Mock
     private InternshipApplicationRepository applicationRepository;
+    @Mock
+    private InternshipTrackingRepository internshipTrackingRepository;
+    @Mock
+    private TeacherRepository teacherRepository;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
@@ -868,9 +879,153 @@ public class ManagerServiceTest {
                 "Offer is no good.", 1L, internship.getPostedBy());
     }
 
+    // ---------- Internship tracking ----------
+
+    @Test
+    void shouldReturnInternshipTrackings() {
+        // Arrange
+        when(internshipTrackingRepository.findAll()).thenReturn(List.of(tracking()));
+
+        // Act
+        List<InternshipTrackingResponseDto> result = managerService.getInternshipTrackings();
+
+        // Assert
+        assert (Integer.valueOf(1)).equals(result.size());
+        assert ("Marie").equals(result.getFirst().student().firstName());
+        assert result.getFirst().teacher() == null;
+    }
+
+    @Test
+    void shouldReturnTeachersOfStudentDisciplineWhenGettingAssignableTeachers() throws InternshipTrackingNotFoundException {
+        // Arrange
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking()));
+        when(teacherRepository.findByDiscipline(Discipline.COMPUTER_SCIENCE)).thenReturn(List.of(teacher(5L, Discipline.COMPUTER_SCIENCE)));
+
+        // Act
+        List<TeacherAssignmentDto> result = managerService.getAssignableTeachers(1L);
+
+        // Assert
+        assert (Integer.valueOf(1)).equals(result.size());
+
+        verify(teacherRepository).findByDiscipline(Discipline.COMPUTER_SCIENCE);
+    }
+
+    @Test
+    void shouldThrowInternshipTrackingNotFoundWhenGettingTeachersOfUnknownTracking() {
+        // Arrange
+        when(internshipTrackingRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipTrackingNotFoundException.class, () -> managerService.getAssignableTeachers(99L));
+
+        verifyNoInteractions(teacherRepository);
+    }
+
+    @Test
+    void shouldAssignTeacherToInternshipTracking() throws Exception {
+        // Arrange
+        InternshipTracking tracking = tracking();
+        Teacher teacher = teacher(5L, Discipline.COMPUTER_SCIENCE);
+
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking));
+        when(teacherRepository.findById(5L)).thenReturn(Optional.of(teacher));
+        when(internshipTrackingRepository.save(tracking)).thenReturn(tracking);
+
+        // Act
+        InternshipTrackingResponseDto result = managerService.assignTeacher(1L, 5L);
+
+        // Assert
+        assert teacher.equals(tracking.getTeacher());
+        assert result.teacher() != null;
+
+        verify(internshipTrackingRepository).save(tracking);
+    }
+
+    @Test
+    void shouldAllowChangingTeacherOfInternshipTracking() throws Exception {
+        // Arrange
+        InternshipTracking tracking = tracking();
+        Teacher firstTeacher = teacher(5L, Discipline.COMPUTER_SCIENCE);
+        Teacher secondTeacher = teacher(6L, Discipline.COMPUTER_SCIENCE);
+
+        tracking.assignTeacher(firstTeacher);
+
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking));
+        when(teacherRepository.findById(6L)).thenReturn(Optional.of(secondTeacher));
+        when(internshipTrackingRepository.save(tracking)).thenReturn(tracking);
+
+        // Act
+        managerService.assignTeacher(1L, 6L);
+
+        // Assert
+        assert secondTeacher.equals(tracking.getTeacher());
+    }
+
+    @Test
+    void shouldThrowInternshipTrackingNotFoundWhenAssigningTeacherToUnknownTracking() {
+        // Arrange
+        when(internshipTrackingRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(InternshipTrackingNotFoundException.class, () -> managerService.assignTeacher(99L, 5L));
+
+        verify(internshipTrackingRepository, never()).save(any(InternshipTracking.class));
+    }
+
+    @Test
+    void shouldThrowUserNotFoundWhenAssigningUnknownTeacher() {
+        // Arrange
+        InternshipTracking tracking = tracking();
+
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking));
+        when(teacherRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(UserNotFoundException.class, () -> managerService.assignTeacher(1L, 99L));
+
+        assert !tracking.hasTeacher();
+        verify(internshipTrackingRepository, never()).save(any(InternshipTracking.class));
+    }
+
+    @Test
+    void shouldThrowTeacherDisciplineMismatchWhenTeacherIsOfAnotherDiscipline() {
+        // Arrange
+        InternshipTracking tracking = tracking();
+
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking));
+        when(teacherRepository.findById(5L)).thenReturn(Optional.of(teacher(5L, otherDiscipline())));
+
+        // Act + Assert
+        assertThrows(TeacherDisciplineMismatchException.class, () -> managerService.assignTeacher(1L, 5L));
+
+        assert !tracking.hasTeacher();
+        verify(internshipTrackingRepository, never()).save(any(InternshipTracking.class));
+    }
+
     // ---------- Helpers ----------
 
     private InternshipRequestDto internshipRequestWith(LocalDate startDate, BigDecimal compensationAmount) {
         return new InternshipRequestDto("Développeur backend", "Stage en développement backend", "Java, Spring Boot", 16, "Montréal", WorkMode.HYBRID, startDate, internship.getApplicationDeadline(), compensationAmount, false);
+    }
+
+    private InternshipTracking tracking() {
+        InternshipApplication application = new InternshipApplication(internship, cv, cv.getStudent());
+        application.setId(20L);
+
+        InternshipTracking tracking = new InternshipTracking(new Contract(application, LocalDateTime.of(2026, 11, 10, 14, 30)));
+        tracking.setId(1L);
+
+        return tracking;
+    }
+
+    private static Teacher teacher(long id, Discipline discipline) {
+        Teacher teacher = new Teacher("Paul", "Roy","T" + id, Credentials.builder().email("teacher" + id + "@example.com").role(Role.TEACHER).build(),  discipline);
+        teacher.setId(id);
+
+        return teacher;
+    }
+
+    private static Discipline otherDiscipline() {
+        return Arrays.stream(Discipline.values()).filter(discipline -> discipline != Discipline.COMPUTER_SCIENCE).findFirst().orElseThrow();
     }
 }
