@@ -10,25 +10,32 @@
  * - "Download this PDF": saves the language currently shown.
  * - "Download both": saves the French and the English PDFs one after the other.
  *
+ * Downloaded file name: {language}-{docType}-{studentName}.{extension}
+ *   e.g. fr-contract-Alex_Tremblay.pdf
+ * The student name comes from the link state set by ContractCard ({studentName}).
+ * When the page is opened directly (no link state) the student name is skipped.
+ *
  * Access control is handled by <RequireRole roles={["MANAGER"]}/> in App.jsx,
  * and enforced again by the backend.
  */
 
 import {useCallback, useState} from 'react';
-import {Link, useOutletContext, useParams} from 'react-router-dom';
+import {Link, useLocation, useOutletContext, useParams} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
 import {getAuthClasses, getPostInternshipClasses} from '../../styles/AppStyles.jsx';
 import {getContractFile} from '../api/Api.jsx';
-import {blobUrlFromFile, saveFile} from '../../utils/Documents.js';
+import {blobUrlFromFile, buildFileName, saveFile} from '../../utils/Documents.js';
 import PdfPreview from '../documents/PdfPreview.jsx';
 
 const LANGUAGES = ["FR", "EN"];
+const DOC_TYPE = "contract";
 
 const ContractFile = () => {
     const {t, i18n} = useTranslation();
     const {dark} = useOutletContext();
     const {id} = useParams();
+    const {state} = useLocation();
     const {pageClass} = getAuthClasses(dark);
     const s = getPostInternshipClasses(dark);
 
@@ -37,6 +44,7 @@ const ContractFile = () => {
     const [downloadFailed, setDownloadFailed] = useState(false);
 
     const contractId = Number(id);
+    const studentName = state?.studentName;
 
     // Stable reference per language: PdfPreview reloads the PDF when it changes
     const getContractUrl = useCallback(
@@ -49,7 +57,13 @@ const ContractFile = () => {
         setDownloadFailed(false);
         try {
             for (const lang of languages) {
-                saveFile(await getContractFile(contractId, lang));
+                const file = await getContractFile(contractId, lang);
+                saveFile(file, buildFileName({
+                    language: lang,
+                    docType: DOC_TYPE,
+                    studentName,
+                    originalName: file.fileName,
+                }));
             }
         } catch {
             setDownloadFailed(true);

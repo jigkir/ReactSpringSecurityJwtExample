@@ -60,12 +60,34 @@ export function blobUrlFromFile(file) {
     return base64ToBlobUrl(file.content);
 }
 
+// ─── Download file names ──────────────────────────────────────────────────────
+
+const ILLEGAL_FILENAME_CHARS = /[\\/:*?"<>|]/g;
+
+// "Alex  Tremblay" -> "Alex_Tremblay"
+const toFilePart = (text) =>
+    String(text).replace(ILLEGAL_FILENAME_CHARS, "").trim().replace(/\s+/g, "_");
+
+/**
+ * "{language}-{docType}-{studentName}.{extension}"
+ * The extension comes from the API file name (falls back to "pdf").
+ * Missing parts are skipped.
+ */
+export function buildFileName({language, docType, studentName, originalName}) {
+    const extension = originalName?.includes(".") ? originalName.split(".").pop() : "pdf";
+    const base = [language?.toLowerCase(), docType, studentName]
+        .filter(Boolean)
+        .map(toFilePart)
+        .join("-");
+    return `${base}.${extension}`;
+}
+
 /** Saves an API file {fileName, content (Base64)} through a temporary link. */
-export function saveFile(file) {
+export function saveFile(file, fileName = file.fileName) {
     const url = blobUrlFromFile(file);
     const link = document.createElement("a");
     link.href = url;
-    link.download = file.fileName;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
