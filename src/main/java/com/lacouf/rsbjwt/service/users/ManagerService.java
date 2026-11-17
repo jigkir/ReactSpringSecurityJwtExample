@@ -214,8 +214,7 @@ public class ManagerService {
 
     @Transactional(readOnly = true)
     public List<TeacherAssignmentDto> getAssignableTeachers(long trackingId) throws InternshipTrackingNotFoundException {
-        InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
-                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+        InternshipTracking tracking = findTracking(trackingId);
 
         List<Teacher> teachers = teacherRepository.findByDiscipline(tracking.getStudent().getDiscipline());
 
@@ -235,8 +234,7 @@ public class ManagerService {
     @Transactional
     public InternshipTrackingResponseDto assignTeacher(long trackingId, long teacherId)
             throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
-        InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
-                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+        InternshipTracking tracking = findTracking(trackingId);
 
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(UserNotFoundException::new);
@@ -248,6 +246,11 @@ public class ManagerService {
         tracking.assignTeacher(teacher);
 
         return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
+    }
+
+    private InternshipTracking findTracking(long trackingId) throws InternshipTrackingNotFoundException {
+        return internshipTrackingRepository.findById(trackingId)
+                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
