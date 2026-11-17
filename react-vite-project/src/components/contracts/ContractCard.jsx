@@ -7,7 +7,8 @@
  * its date and time.
  * Actions: sign (inline form, only while the manager has not signed) and "Download the contract",
  * which opens the contract page (/manager/contracts/:id) where the PDF can be read in French or
- * English and downloaded (see ContractFile.jsx).
+ * English and downloaded (see ContractFile.jsx). The student name is passed through the link
+ * state so the downloaded files are named {language}-contract-{studentName}.pdf.
  *
  * Props
  *   contract  ContractResponseDto
@@ -275,6 +276,7 @@ function ContractCard({contract, dark, devMode = false, onSign}) {
                 <Button
                     as={Link}
                     to={`/manager/contracts/${contract.id}`}
+                    state={{studentName: contract.studentName}}
                     tone="accent"
                     lockTone
                     dark={dark}
