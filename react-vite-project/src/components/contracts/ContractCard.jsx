@@ -1,20 +1,21 @@
 /**
- * ContractCard.jsx — One internship contract, as the manager sees it.
+ * ContractCard.jsx — One internship contract, as the connected party (manager or employer) sees it.
  *
  * Shows the offer details (position, location, work mode, period, duration, hourly rate,
  * negotiable, description, required skills), the parties (student, employer, company, signing
  * manager), the commitments of the three parties and the signature state of each party with
  * its date and time.
- * Actions: sign (inline form, only while the manager has not signed) and "Download the contract",
- * which opens the contract page (/manager/contracts/:id) where the PDF can be read in French or
+ * Actions: sign (inline form, only while the connected party has not signed) and "Download the
+ * contract", which opens the contract page ({basePath}/:id) where the PDF can be read in French or
  * English and downloaded (see ContractFile.jsx). The student name is passed through the link
  * state so the downloaded files are named {language}-contract-{studentName}.pdf.
  *
  * Props
- *   contract  ContractResponseDto
- *   dark      boolean
- *   devMode   boolean   Dev mode: signing needs no password
- *   onSign    function  async (contract, {termsAccepted, password}) => {success, message?}
+ *   contract      ContractResponseDto
+ *   dark          boolean
+ *   devMode       boolean   Dev mode: signing needs no password
+ *   contractRole  {signedAtField, basePath}  see utils/ContractRole.js (default: manager)
+ *   onSign        function  async (contract, {termsAccepted, password}) => {success, message?}
  */
 
 import {useState} from 'react';
@@ -23,6 +24,7 @@ import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
 import Icon from '../../styles/Icon.jsx';
 import {getCvDocumentsClasses, getInternshipCardClasses} from '../../styles/AppStyles.jsx';
+import {CONTRACT_ROLES} from '../../utils/ContractRole.js';
 import SignContractForm from './SignContractForm.jsx';
 
 const COMMITMENT_PARTIES = ["college", "employer", "student"];
@@ -72,7 +74,7 @@ function CommitmentList({dark, party}) {
     );
 }
 
-function ContractCard({contract, dark, devMode = false, onSign}) {
+function ContractCard({contract, dark, devMode = false, onSign, contractRole = CONTRACT_ROLES.MANAGER}) {
     const {t, i18n} = useTranslation();
     const s = getInternshipCardClasses(dark);
     const th = getCvDocumentsClasses(dark);
@@ -80,7 +82,8 @@ function ContractCard({contract, dark, devMode = false, onSign}) {
     const [signOpen, setSignOpen] = useState(false);
 
     const {internship} = contract;
-    const managerSigned = Boolean(contract.managerSignedAt);
+    // Has the CONNECTED party (manager or employer) signed?
+    const signedByMe = Boolean(contract[contractRole.signedAtField]);
     const skills = parseSkills(internship.requiredSkills);
     const isFrench = i18n.resolvedLanguage?.startsWith("fr");
     const locale = isFrench ? "fr-CA" : "en-CA";
@@ -166,9 +169,9 @@ function ContractCard({contract, dark, devMode = false, onSign}) {
                     <span className="text-sm opacity-90">
                         {t("managerContracts.document.createdAt", {date: formatDate(new Date(contract.createdAt))})}
                     </span>
-                    <span className={`${th.pillBase} ${th.statusPill(managerSigned ? "APPROVED" : "PENDING")} gap-1`}>
-                        <Icon name={managerSigned ? "check_circle" : "schedule"} size={14}/>
-                        {t(managerSigned ? "managerContracts.status.signed" : "managerContracts.status.toSign")}
+                    <span className={`${th.pillBase} ${th.statusPill(signedByMe ? "APPROVED" : "PENDING")} gap-1`}>
+                        <Icon name={signedByMe ? "check_circle" : "schedule"} size={14}/>
+                        {t(signedByMe ? "managerContracts.status.signed" : "managerContracts.status.toSign")}
                     </span>
                 </div>
             </div>
@@ -258,7 +261,7 @@ function ContractCard({contract, dark, devMode = false, onSign}) {
             </section>
 
             {/* Sign form */}
-            {!managerSigned && signOpen && (
+            {!signedByMe && signOpen && (
                 <SignContractForm
                     dark={dark}
                     devMode={devMode}
@@ -275,7 +278,7 @@ function ContractCard({contract, dark, devMode = false, onSign}) {
             >
                 <Button
                     as={Link}
-                    to={`/manager/contracts/${contract.id}`}
+                    to={`${contractRole.basePath}/${contract.id}`}
                     state={{studentName: contract.studentName}}
                     tone="accent"
                     lockTone
@@ -284,7 +287,7 @@ function ContractCard({contract, dark, devMode = false, onSign}) {
                 >
                     {t("managerContracts.download.open")}
                 </Button>
-                {!managerSigned && !signOpen && (
+                {!signedByMe && !signOpen && (
                     <Button tone="success" lockTone dark={dark} icon="edit" onClick={() => setSignOpen(true)}>
                         {t("managerContracts.sign.open")}
                     </Button>

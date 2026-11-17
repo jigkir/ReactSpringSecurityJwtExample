@@ -30,6 +30,7 @@ const NAV_BY_ROLE = {
         link("/internships", "navbar.postInternship"),
         link("/applications", "navbar.applications"),
         link("/employer/interviews", "navbar.interviews"),
+        link("/employer/contracts", "navbar.contracts"),
     ],
     TEACHER: [],
 };

@@ -30,6 +30,7 @@ const NOTIFICATION_TYPE = {
     INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
 
     CONTRACT_TO_SIGN_BY_MANAGER: "CONTRACT_TO_SIGN_BY_MANAGER",
+    CONTRACT_TO_SIGN_BY_EMPLOYER: "CONTRACT_TO_SIGN_BY_EMPLOYER",
 };
 
 export const TARGET_TYPE = {
@@ -54,6 +55,7 @@ const PAGE = {
 
     EMPLOYER_INTERNSHIPS: "/internships",
     EMPLOYER_APPLICATIONS: "/applications",
+    EMPLOYER_CONTRACTS: "/employer/contracts",
 };
 
 // A notification closes when its page is opened (clicking it opens that page).
@@ -164,6 +166,14 @@ const NOTIFICATION_ITEMS = {
             targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
             labelKey: "navbar.newInternshipApplicationNotification",
             to: PAGE.EMPLOYER_APPLICATIONS,
+            sessionScoped: true,
+        },
+        {
+            id: "contractToSign",
+            notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN_BY_EMPLOYER,
+            targetType: TARGET_TYPE.CONTRACT,
+            labelKey: "navbar.contractToSignNotification",
+            to: PAGE.EMPLOYER_CONTRACTS,
             sessionScoped: true,
         },
     ],

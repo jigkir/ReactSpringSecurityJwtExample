@@ -135,6 +135,8 @@ function App() {
                             <Route path="/applications" element={<Applications user={user}/>}/>
                             <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
                             <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
+                            <Route path="/employer/contracts" element={<Contracts/>}/>
+                            <Route path="/employer/contracts/:id" element={<ContractFile/>}/>
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
