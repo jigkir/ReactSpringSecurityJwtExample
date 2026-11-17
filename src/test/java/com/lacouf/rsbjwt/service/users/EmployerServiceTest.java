@@ -48,6 +48,7 @@ import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -80,6 +81,8 @@ public class EmployerServiceTest {
     private UserAppService userAppService;
     @Mock
     private AcademicSessionService academicSessionService;
+    @Mock
+    private TraductionService traductionService;
 
     @Mock
     private EmployerRepository employerRepository;
@@ -320,16 +323,61 @@ public class EmployerServiceTest {
     void shouldReturnInternshipsOfEmployer() throws AcademicSessionNotFoundException {
         // Arrange
         when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
-        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession)).thenReturn(List.of(internship));
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession))
+                .thenReturn(List.of(internship));
 
         // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null);
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null, null);
 
         // Assert
         assert (Integer.valueOf(1)).equals(response.size());
         assert (Long.valueOf(10L)).equals(response.getFirst().id());
         assert ("Software Developer").equals(response.getFirst().title());
         assert (Long.valueOf(1L)).equals(response.getFirst().employerId());
+
+        verify(traductionService, never()).translateInternships(any(), any());
+    }
+
+    @Test
+    void shouldTranslateInternshipsWhenLanguageIsProvided() throws AcademicSessionNotFoundException {
+        // Arrange
+        InternshipResponseDto original = InternshipResponseDto.of(internship);
+        InternshipResponseDto translated = new InternshipResponseDto(
+                original.id(), "Développeur logiciel", original.description(), original.requiredSkills(),
+                original.durationInWeeks(), original.location(), original.workMode(), original.startDate(),
+                original.applicationDeadline(), original.compensationAmount(), original.compensationNegotiable(),
+                original.status(), original.rejectionComment(), original.employerId(), original.employerEmail(),
+                original.discipline(), original.uploadedAt());
+
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession))
+                .thenReturn(List.of(internship));
+        when(traductionService.translateInternships(any(), eq("fr"))).thenReturn(List.of(translated));
+
+        // Act
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null, "fr");
+
+        // Assert
+        assert (Integer.valueOf(1)).equals(response.size());
+        assert ("Développeur logiciel").equals(response.getFirst().title());
+
+        verify(traductionService).translateInternships(any(), eq("fr"));
+    }
+
+    @Test
+    void shouldNotTranslateWhenEmployerHasNoInternships() throws AcademicSessionNotFoundException {
+        // Arrange
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession))
+                .thenReturn(List.of());
+
+        // Act
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null, "fr");
+
+        // Assert
+        assert response.isEmpty();
+
+        verify(traductionService, never()).translateInternships(any(), any());
     }
 
     @Test
@@ -342,7 +390,7 @@ public class EmployerServiceTest {
         when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, pastSession)).thenReturn(List.of());
 
         // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, 2L);
+        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, 2L, null);
 
         // Assert
         assert response.isEmpty();
@@ -1007,6 +1055,33 @@ public class EmployerServiceTest {
 
         verify(interviewRepository, never()).save(any(Interview.class));
         assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingInterviewForApplicationWithOfferedInternship() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+
+        LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
+
+        Interview interview = new Interview(employer, application, "Old message",
+                interviewDate, MeetingType.ONLINE, "old-link");
+        interview.setId(30L);
+
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InternshipAlreadyOfferedException.class,
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St")));
+
+        assertEquals("Old message", interview.getMessage());
+        assertEquals(interviewDate, interview.getInterviewDate());
+        assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test

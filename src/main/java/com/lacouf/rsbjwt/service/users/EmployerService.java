@@ -41,6 +41,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,8 +61,9 @@ public class EmployerService {
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
+    private final TraductionService traductionService;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
@@ -71,6 +73,7 @@ public class EmployerService {
         this.interviewRepository = interviewRepository;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
+        this.traductionService = traductionService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -151,13 +154,19 @@ public class EmployerService {
         internshipRepository.save(internship);
     }
 
-    public List<InternshipResponseDto> getInternshipsOfEmployer(String email, Long sessionId) throws AcademicSessionNotFoundException {
+    public List<InternshipResponseDto> getInternshipsOfEmployer(String email, Long sessionId, String lang) throws AcademicSessionNotFoundException {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
         List<Internship> internships = internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(email, session);
 
-        return internships.stream()
+        List<InternshipResponseDto> dtos = internships.stream()
                 .map(InternshipResponseDto::of)
                 .toList();
+
+        if (dtos.isEmpty() || lang == null) {
+            return dtos;
+        }
+
+        return traductionService.translateInternships(dtos, lang);
     }
 
     @Transactional(readOnly = true)
@@ -293,8 +302,13 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
         Interview interview = findModifiableInterview(interviewId, email);
+        InternshipApplication application = interview.getInternshipApplication();
+
+        if (application.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
+            throw new InternshipAlreadyOfferedException(application.getId());
+        }
 
         interview.update(
                 interviewRequestDto.message(),

@@ -1,22 +1,27 @@
 /**
- * ContractReviewList.jsx — Manager view of the internship contracts (list, sign, PDF).
+ * ContractReviewList.jsx — Internship contracts of the connected user (manager, employer or student):
+ * list, sign, PDF.
  *
  * Used by Contracts.jsx.
- * <ContractReviewList />          full page (route /manager/contracts): the contracts of the session chosen
- *                        in the navbar, unsigned first, then newest first.
- * <ContractReviewList preview />  Home page block: the contracts the manager has not signed yet,
+ * <ContractReviewList />          full page (/manager/contracts, /employer/contracts or /student/contracts):
+ *                        the contracts of the session chosen in the navbar, unsigned first, then newest first.
+ * <ContractReviewList preview />  Home page block: the contracts the user has not signed yet,
  *                        every session, no header. A contract leaves this list as soon as it is signed.
+ *
+ * The role (manager / employer / student) only changes which signature field is read
+ * (managerSignedAt / employerSignedAt / studentSignedAt) and the base route of the contract page:
+ * see utils/ContractRole.js.
  *
  * Signing
  *   normal mode  PUT contracts/{id}/signature {termsAccepted, password}
  *   Dev mode     PUT dev/contracts/{id}/signature?email=  (no password)
  * The backend returns the updated contract: it is patched into the list, so the card shows
- * "Signed on … by …" without a reload. Failures never mark the contract as signed.
+ * "Signed on …" without a reload. Failures never mark the contract as signed.
  *
  * Notifications: the full page closes the CONTRACT_TO_SIGN notifications of the contracts it shows
  * (session-scoped, see NotificationsProvider). The Home preview does not.
  *
- * Props: dark, user (needs user.email for Dev signing), preview
+ * Props: dark, user (needs user.email for Dev signing, user.role for the role), preview
  */
 
 import {useCallback, useMemo} from 'react';
@@ -30,17 +35,16 @@ import PreviewState from '../home/PreviewState.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../notification/NotificationsProvider.jsx';
 import {useLoadedList} from '../../utils/useLoadedList.js';
 import {useSession} from '../../utils/useSession.js';
+import {getContractRole} from '../../utils/ContractRole.js';
 import ContractCard from './ContractCard.jsx';
 
 const HTTP = {BAD_REQUEST: 400, NOT_FOUND: 404, CONFLICT: 409};
 
-const isUnsigned = (contract) => !contract.managerSignedAt;
-
 const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
-// Unsigned first, then newest first
-const sortContracts = (list) =>
-    [...list].sort((a, b) => Number(isUnsigned(b)) - Number(isUnsigned(a)) || byNewest(a, b));
+// Unsigned (by the connected user) first, then newest first
+const sortContracts = (list, signedAtField) =>
+    [...list].sort((a, b) => Number(!b[signedAtField]) - Number(!a[signedAtField]) || byNewest(a, b));
 
 // Translation {key, options?} of a failed signature
 function toSignError(err) {
@@ -65,8 +69,11 @@ const ContractReviewList = ({dark, user, preview = false}) => {
     const {devMode} = useDevMode();
     const s = getPostInternshipClasses(dark);
 
+    const contractRole = getContractRole(user);
+    const {signedAtField} = contractRole;
+
     const fetchContracts = useCallback(async () => {
-        // Home preview: unsigned contracts of every session, so the manager never misses one
+        // Home preview: unsigned contracts of every session, so the user never misses one
         if (preview) return getPendingContracts();
         return selectedSession ? getContracts(selectedSession.id) : null; // sessions still loading
     }, [preview, selectedSession]);
@@ -81,8 +88,9 @@ const ContractReviewList = ({dark, user, preview = false}) => {
 
     const shown = useMemo(() => {
         if (!contracts) return null;
-        return sortContracts(preview ? contracts.filter(isUnsigned) : contracts);
-    }, [contracts, preview]);
+        const list = preview ? contracts.filter((contract) => !contract[signedAtField]) : contracts;
+        return sortContracts(list, signedAtField);
+    }, [contracts, preview, signedAtField]);
 
     // Returns {success: true} or {success: false, message: {key}} (the form displays it)
     const handleSign = async (contract, {termsAccepted, password}) => {
@@ -109,6 +117,7 @@ const ContractReviewList = ({dark, user, preview = false}) => {
             contract={contract}
             dark={dark}
             devMode={devMode}
+            contractRole={contractRole}
             onSign={handleSign}
         />
     ));

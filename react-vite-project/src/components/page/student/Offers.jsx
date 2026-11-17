@@ -7,6 +7,7 @@ import {acceptOffer, denyOffer, getStudentOffers} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 import {translateWarning} from "../../../utils/CommonFields.jsx";
 import Button from "../../../styles/Button.jsx";
+import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 
 const CONSENT_ICON = {PENDING: "hourglass_bottom", ACCEPTED: "check_circle", REJECTED: "close"};
 
@@ -31,6 +32,7 @@ const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
 function Offers() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
+    const {refresh: refreshNotifications} = useNotifications();
     const {hash} = useLocation();
     const s = getPostInternshipClasses(dark);
     const cardS = getInternshipCardClasses(dark);
@@ -75,6 +77,7 @@ function Offers() {
             setActionError(err.i18n ?? {key: fallbackKey});
         } finally {
             await load();
+            void refreshNotifications();
             setBusyId(null);
         }
     };

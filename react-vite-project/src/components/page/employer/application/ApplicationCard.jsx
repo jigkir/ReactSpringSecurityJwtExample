@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getApplicationCardClasses} from "../../../../styles/AppStyles.jsx";
+import {getApplicationCardClasses, getCvDocumentsClasses} from "../../../../styles/AppStyles.jsx";
+import Icon from "../../../../styles/Icon.jsx";
 import Button from "../../../../styles/Button.jsx";
 import Badge from "../../../../styles/Badge.jsx";
 import PdfPreview from "../../../documents/PdfPreview.jsx";
@@ -37,6 +38,8 @@ function ApplicationCard({
                              showCvFileName = true
                          }) {
     const s = getApplicationCardClasses(dark);
+    const th = getCvDocumentsClasses(dark);
+    const bigPill = "text-sm! px-3.5! py-1.5! gap-2!";
     const {t} = useTranslation();
     const {student, cvFileName} = application;
     const isHired = application.employerDecision === "INTERNSHIP_OFFERED";
@@ -142,12 +145,10 @@ function ApplicationCard({
                                     </h3>
                                     {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
                                     {isHired && (
-                                        <Badge
-                                            bounce={false}
-                                            className="bg-green-600"
-                                        >
+                                        <span className={`${th.pillBase} ${th.statusPill("APPROVED")} ${bigPill}`}>
+                                            <Icon name="check_circle" size={18}/>
                                             {t("viewApplication.hired")}
-                                        </Badge>
+                                        </span>
                                     )}
                                 </div>
                                 <p className={`${s.description} min-w-0 break-all`}>
@@ -166,16 +167,18 @@ function ApplicationCard({
                         </div>
 
                         <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto sm:ml-auto sm:min-w-52">
-                            <Button
-                                tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
-                                dark={dark}
-                                className="w-full"
-                                icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
-                                onClick={onToggleInterviewPicker}
-                                aria-expanded={isInterviewSelectOpen}
-                            >
-                                {interviewLabel}
-                            </Button>
+                            {!isHired && (
+                                <Button
+                                    tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
+                                    dark={dark}
+                                    className="w-full"
+                                    icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
+                                    onClick={onToggleInterviewPicker}
+                                    aria-expanded={isInterviewSelectOpen}
+                                >
+                                    {interviewLabel}
+                                </Button>
+                            )}
                             {/* Each preview button is blue while closed and red while its preview is open */}
                             {hasCoverLetter && (
                                 <Button
@@ -218,7 +221,7 @@ function ApplicationCard({
                     </div>
 
                     {/* Inline Interview Time Selector */}
-                    {isInterviewSelectOpen && (
+                    {!isHired && isInterviewSelectOpen && (
                         <div className="w-full pt-4 mt-4">
                             {interviewLoading ? (
                                 <p>{t("interview.loading")}</p>

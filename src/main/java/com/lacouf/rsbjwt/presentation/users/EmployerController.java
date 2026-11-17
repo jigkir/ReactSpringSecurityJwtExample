@@ -25,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -60,8 +61,9 @@ public class EmployerController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication, @RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName(), sessionId));
+    public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication, @RequestParam(required = false) Long sessionId, Locale locale) throws AcademicSessionNotFoundException {
+        String language = locale.getLanguage();
+        return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName(), sessionId, language));
     }
 
     @GetMapping("/applications")
@@ -123,7 +125,7 @@ public class EmployerController {
     }
 
     @PutMapping("/interviews/{interviewId}")
-    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+    public ResponseEntity<InterviewEmployerResponseDTO> updateInterview(@PathVariable long interviewId, @Valid @RequestBody InterviewRequestDto interviewRequestDto, Authentication authentication) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
         InterviewEmployerResponseDTO interview = employerService.updateInterview(interviewId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok(interview);
     }

@@ -353,6 +353,8 @@
     "studentInterviewsLink": "View my interviews",
     "employerInternshipsLink": "Manage my internship offers",
     "employerApplicationsLink": "Review applications received",
+    "employerContractsLink": "Sign pending contracts",
+    "studentContractsLink": "Sign pending contracts",
     "managerCvLink": "Review CVs waiting for approval",
     "managerInternshipsLink": "Review internship offers",
     "managerContractsLink": "Sign pending contracts",

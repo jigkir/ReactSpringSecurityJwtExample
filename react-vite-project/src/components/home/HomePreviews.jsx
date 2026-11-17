@@ -19,9 +19,26 @@ import EmployerInterviews from "../page/employer/interview/EmployerInterviews.js
 
 export const PREVIEWS_BY_ROLE = {
     STUDENT: [
-        {to: "/portfolio", titleKey: "home.studentCvLink", render: () => <PortfolioPreview/>},
-        {to: "/internship", titleKey: "home.studentInternshipsLink", render: () => <StudentInternships preview/>},
-        {to: "/interviews", titleKey: "home.studentInterviewsLink", render: () => <Interviews preview/>},
+        {
+            to: "/portfolio",
+            titleKey: "home.studentCvLink",
+            render: () => <PortfolioPreview/>
+        },
+        {
+            to: "/internship",
+            titleKey: "home.studentInternshipsLink",
+            render: () => <StudentInternships preview/>
+        },
+        {
+            to: "/interviews",
+            titleKey: "home.studentInterviewsLink",
+            render: () => <Interviews preview/>
+        },
+        {
+            to: "/student/contracts",
+            titleKey: "home.studentContractsLink",
+            render: () => <Contracts preview/>
+        },
     ],
     EMPLOYER: [
         {
@@ -37,9 +54,13 @@ export const PREVIEWS_BY_ROLE = {
         {
             to: "/employer/interviews",
             titleKey: "navbar.interviews",
-            render: () => <EmployerInterviews preview/>
-
-        }
+            render: (user) => <EmployerInterviews user={user} preview/>
+        },
+        {
+            to: "/employer/contracts",
+            titleKey: "home.employerContractsLink",
+            render: () => <Contracts preview/>
+        },
     ],
     MANAGER: [
         {to: "/manager/cvs", titleKey: "home.managerCvLink", render: () => <ManagerCv preview/>},

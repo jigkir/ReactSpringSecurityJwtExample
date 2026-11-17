@@ -118,8 +118,10 @@ function App() {
                             <Route path="/internship" element={<StudentInternships/>}/>
                             <Route path="/interviews" element={<Interviews/>}/>
                             <Route path="/offers" element={<Offers/>}/>
+                            <Route path="/student/contracts" element={<Contracts/>}/>
+                            <Route path="/student/contracts/:id" element={<ContractFile/>}/>
                         </Route>
-
+                        
                         {/* Manager */}
                         <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
                             <Route path="/manager/cvs" element={<ManagerCv/>}/>
@@ -135,6 +137,8 @@ function App() {
                             <Route path="/applications" element={<Applications user={user}/>}/>
                             <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
                             <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
+                            <Route path="/employer/contracts" element={<Contracts/>}/>
+                            <Route path="/employer/contracts/:id" element={<ContractFile/>}/>
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
