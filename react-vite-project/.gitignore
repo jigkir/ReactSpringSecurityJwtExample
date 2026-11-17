@@ -1,3 +1,6 @@
+# Local development configuration
+src/components/config/Config.jsx
+
 # Dependencies
 node_modules/
 
