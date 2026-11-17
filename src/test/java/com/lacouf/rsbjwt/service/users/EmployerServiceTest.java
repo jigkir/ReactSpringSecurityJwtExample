@@ -1058,6 +1058,33 @@ public class EmployerServiceTest {
     }
 
     @Test
+    void shouldThrowWhenUpdatingInterviewForApplicationWithOfferedInternship() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+
+        LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
+
+        Interview interview = new Interview(employer, application, "Old message",
+                interviewDate, MeetingType.ONLINE, "old-link");
+        interview.setId(30L);
+
+        when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(interview));
+
+        // Act + Assert
+        assertThrows(InternshipAlreadyOfferedException.class,
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St")));
+
+        assertEquals("Old message", interview.getMessage());
+        assertEquals(interviewDate, interview.getInterviewDate());
+        assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldThrowWhenAcceptingRejectedApplicationForInterview() {
         // Arrange
         InternshipApplication application = receivedInternshipApplication();
