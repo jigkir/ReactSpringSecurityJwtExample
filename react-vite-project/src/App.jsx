@@ -13,7 +13,9 @@ import Home from './components/Home.jsx';
 import Portfolio from './components/page/portfolio/Portfolio.jsx';
 import ManagerCv from './components/page/manager/Cv.jsx';
 import ManagerInternships from './components/page/manager/Internships.jsx';
-import Contracts from './components/page/manager/Contracts.jsx';
+import ManagerContracts from './components/page/manager/Contracts.jsx';
+import EmployerContracts from './components/page/employer/contracts/Contracts.jsx';
+import StudentContracts from './components/page/student/contracts/Contracts.jsx';
 import ContractFile from './components/contracts/ContractFile.jsx';
 import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
@@ -118,15 +120,15 @@ function App() {
                             <Route path="/internship" element={<StudentInternships/>}/>
                             <Route path="/interviews" element={<Interviews/>}/>
                             <Route path="/offers" element={<Offers/>}/>
-                            <Route path="/student/contracts" element={<Contracts/>}/>
+                            <Route path="/student/contracts" element={<StudentContracts/>}/>
                             <Route path="/student/contracts/:id" element={<ContractFile/>}/>
                         </Route>
-                        
+
                         {/* Manager */}
                         <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
                             <Route path="/manager/cvs" element={<ManagerCv/>}/>
                             <Route path="/manager/internships" element={<ManagerInternships/>}/>
-                            <Route path="/manager/contracts" element={<Contracts/>}/>
+                            <Route path="/manager/contracts" element={<ManagerContracts/>}/>
                             <Route path="/manager/contracts/:id" element={<ContractFile/>}/>
                             <Route path="/users" element={<Users user={user}/>}/>
                         </Route>
@@ -137,7 +139,7 @@ function App() {
                             <Route path="/applications" element={<Applications user={user}/>}/>
                             <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
                             <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
-                            <Route path="/employer/contracts" element={<Contracts/>}/>
+                            <Route path="/employer/contracts" element={<EmployerContracts/>}/>
                             <Route path="/employer/contracts/:id" element={<ContractFile/>}/>
                         </Route>
 

@@ -12,7 +12,9 @@ import StudentInternships from '../page/student/Internships.jsx';
 import Interviews from '../page/student/Interviews.jsx';
 import ManagerCv from '../page/manager/Cv.jsx';
 import ManagerInternships from '../page/manager/Internships.jsx';
-import Contracts from '../page/manager/Contracts.jsx';
+import ManagerContracts from '../page/manager/Contracts.jsx';
+import EmployerContracts from '../page/employer/contracts/Contracts.jsx';
+import StudentContracts from '../page/student/contracts/Contracts.jsx';
 import PostInternship from '../page/employer/internship/PostInternship.jsx';
 import Applications from '../page/employer/application/Applications.jsx';
 import EmployerInterviews from "../page/employer/interview/EmployerInterviews.jsx";
@@ -37,7 +39,7 @@ export const PREVIEWS_BY_ROLE = {
         {
             to: "/student/contracts",
             titleKey: "home.studentContractsLink",
-            render: () => <Contracts preview/>
+            render: () => <StudentContracts preview/>
         },
     ],
     EMPLOYER: [
@@ -59,7 +61,7 @@ export const PREVIEWS_BY_ROLE = {
         {
             to: "/employer/contracts",
             titleKey: "home.employerContractsLink",
-            render: () => <Contracts preview/>
+            render: () => <EmployerContracts preview/>
         },
     ],
     MANAGER: [
@@ -72,7 +74,7 @@ export const PREVIEWS_BY_ROLE = {
         {
             to: "/manager/contracts",
             titleKey: "home.managerContractsLink",
-            render: () => <Contracts preview/>
+            render: () => <ManagerContracts preview/>
         },
     ],
     TEACHER: [],
