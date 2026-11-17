@@ -50,6 +50,7 @@ import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,7 +73,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class EmployerServiceTest {
 
-    @InjectMocks
     private EmployerService employerService;
 
     @Mock
@@ -101,9 +101,6 @@ public class EmployerServiceTest {
     private ArgumentCaptor<Internship> internshipArgumentCaptor;
     @Captor
     private ArgumentCaptor<Interview> interviewArgumentCaptor;
-
-    @Spy
-    private InternshipService internshipService;
 
     private static EmployerSignUpDto employerSignUpDto;
     private static InternshipRequestDto internshipRequestDto;
@@ -138,6 +135,13 @@ public class EmployerServiceTest {
 
         internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer, currentSession);
         internship.setId(10L);
+    }
+
+    @BeforeEach
+    void createEmployerService() {
+        InternshipService internshipService = new InternshipService(internshipApplicationRepository);
+
+        employerService = new EmployerService(employerRepository, internshipRepository, managerRepository, notificationService, userAppService, traductionService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
     }
 
     @Test
@@ -465,6 +469,19 @@ public class EmployerServiceTest {
         assertThrows(PastSessionInternshipNotEditableException.class, () -> employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL));
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void shouldThrowInternshipWithApplicationsNotEditableWhenEmployerUpdatesInternshipWithApplications() {
+        // Arrange
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(internshipApplicationRepository.existsByInternship(internship)).thenReturn(true);
+
+        // Act + Assert
+        assertThrows(InternshipWithApplicationsNotEditableException.class, () -> employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test

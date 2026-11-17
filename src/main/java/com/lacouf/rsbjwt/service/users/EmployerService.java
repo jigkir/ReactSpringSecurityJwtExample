@@ -122,7 +122,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
+    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException, InternshipWithApplicationsNotEditableException {
         Internship internship = internshipRepository
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));

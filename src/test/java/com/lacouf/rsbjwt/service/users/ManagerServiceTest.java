@@ -2,10 +2,7 @@ package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
-import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
-import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
-import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
-import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
+import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.internship_tracking.InternshipTrackingNotFoundException;
 import com.lacouf.rsbjwt.exception.internship_tracking.TeacherDisciplineMismatchException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
@@ -64,7 +61,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ManagerServiceTest {
 
-    @InjectMocks
     private ManagerService managerService;
 
     @Mock
@@ -92,15 +88,14 @@ public class ManagerServiceTest {
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
 
-    @Spy
-    private InternshipService internshipService;
-
     private CV cv;
     private Internship internship;
     private AcademicSession currentSession;
 
     @BeforeEach
     void setUp() {
+        managerService = new ManagerService(managerRepository, cvRepository, internshipRepository, studentRepository, applicationRepository, internshipTrackingRepository, teacherRepository, notificationService, userAppService, new InternshipService(applicationRepository), academicSessionService);
+
         currentSession = new AcademicSession(Season.WINTER, 2027);
         currentSession.setId(1L);
 
@@ -647,6 +642,21 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldThrowInternshipWithApplicationsNotEditableWhenManagerUpdatesInternshipWithApplications() {
+        //Arrange
+        InternshipRequestDto internshipRequestDto = internshipRequestWith(internship.getStartDate(), new BigDecimal("27.00"));
+
+        when(internshipRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(internship));
+        when(applicationRepository.existsByInternship(internship)).thenReturn(true);
+
+        //Act + assert
+        assertThrows(InternshipWithApplicationsNotEditableException.class, () -> managerService.updateInternship(1L, internshipRequestDto));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldAllowApprovingRejectedInternship() throws InternshipNotFoundException, PastSessionInternshipNotEditableException {
         //Arrange
         internship.reject("Offer is no good.");
@@ -1019,7 +1029,7 @@ public class ManagerServiceTest {
     }
 
     private static Teacher teacher(long id, Discipline discipline) {
-        Teacher teacher = new Teacher("Paul", "Roy","T" + id, Credentials.builder().email("teacher" + id + "@example.com").role(Role.TEACHER).build(),  discipline);
+        Teacher teacher = new Teacher("Paul", "Roy", "T" + id, Credentials.builder().email("teacher" + id + "@example.com").role(Role.TEACHER).build(), discipline);
         teacher.setId(id);
 
         return teacher;

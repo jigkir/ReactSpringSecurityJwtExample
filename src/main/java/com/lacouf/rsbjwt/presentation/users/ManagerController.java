@@ -91,7 +91,7 @@ public class ManagerController {
     }
 
     @PutMapping("/internships/{internshipId}")
-    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto) throws InternshipNotFoundException, InvalidCompensationException, InvalidInternshipDateException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException, InternshipWithApplicationsNotEditableException {
         return ResponseEntity.ok(managerService.updateInternship(internshipId, internshipRequestDto));
     }
 

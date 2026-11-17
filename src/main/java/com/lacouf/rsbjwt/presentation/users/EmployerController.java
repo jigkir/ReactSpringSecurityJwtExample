@@ -50,7 +50,7 @@ public class EmployerController {
     }
 
     @PutMapping("/internships/{internshipId}")
-    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
+    public ResponseEntity<InternshipResponseDto> updateInternship(@PathVariable long internshipId, @Valid @RequestBody InternshipRequestDto internshipRequestDto, Authentication authentication) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException, InternshipWithApplicationsNotEditableException {
         return ResponseEntity.ok(employerService.updateInternship(internshipId, internshipRequestDto, authentication.getName()));
     }
 
@@ -80,6 +80,7 @@ public class EmployerController {
     public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationCoverLetter(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
         return ResponseEntity.ok(employerService.getReceivedInternshipApplicationCoverLetter(applicationId, authentication.getName()));
     }
+
     @GetMapping("/applications/{applicationId}/transcript")
     public ResponseEntity<DocumentFileResponseDto> getReceivedInternshipApplicationAcademicTranscript(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationDocumentNotFoundException {
         return ResponseEntity.ok(employerService.getReceivedInternshipApplicationAcademicTranscript(applicationId, authentication.getName()));

@@ -1,9 +1,11 @@
 package com.lacouf.rsbjwt.service.internship;
 
+import com.lacouf.rsbjwt.exception.internship.InternshipWithApplicationsNotEditableException;
 import com.lacouf.rsbjwt.exception.internship.InvalidCompensationException;
 import com.lacouf.rsbjwt.exception.internship.InvalidInternshipDateException;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,12 @@ public class InternshipService {
     private static final String START_DATE_LABEL = "start date";
     private static final String APPLICATION_DEADLINE_LABEL = "application deadline";
 
+    private final InternshipApplicationRepository internshipApplicationRepository;
+
+    public InternshipService(InternshipApplicationRepository internshipApplicationRepository) {
+        this.internshipApplicationRepository = internshipApplicationRepository;
+    }
+
     public void validateNewInternship(InternshipRequestDto internshipRequestDto) throws InvalidInternshipDateException, InvalidCompensationException {
         validateDateIsInFuture(internshipRequestDto.startDate(), START_DATE_LABEL);
         validateDateIsInFuture(internshipRequestDto.applicationDeadline(), APPLICATION_DEADLINE_LABEL);
@@ -22,7 +30,9 @@ public class InternshipService {
         validateCompensation(internshipRequestDto.compensationAmount(), internshipRequestDto.compensationNegotiable());
     }
 
-    public void updateDetails(Internship internship, InternshipRequestDto internshipRequestDto, AcademicSession session) throws InvalidInternshipDateException, InvalidCompensationException {
+    public void updateDetails(Internship internship, InternshipRequestDto internshipRequestDto, AcademicSession session) throws InvalidInternshipDateException, InvalidCompensationException, InternshipWithApplicationsNotEditableException {
+        verifyIfInternshipHasApplications(internship);
+
         LocalDate startDate = internshipRequestDto.startDate();
         LocalDate applicationDeadline = internshipRequestDto.applicationDeadline();
 
@@ -48,6 +58,12 @@ public class InternshipService {
                 internshipRequestDto.compensationNegotiable(),
                 session
         );
+    }
+
+    private void verifyIfInternshipHasApplications(Internship internship) throws InternshipWithApplicationsNotEditableException {
+        if (internshipApplicationRepository.existsByInternship(internship)) {
+            throw new InternshipWithApplicationsNotEditableException(internship.getId());
+        }
     }
 
     private void validateDateIsInFuture(LocalDate date, String label) throws InvalidInternshipDateException {
