@@ -24,9 +24,7 @@ import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.model.interview.Interview;
-import com.lacouf.rsbjwt.model.interview.MeetingType;
-import com.lacouf.rsbjwt.model.interview.StudentDecision;
+import com.lacouf.rsbjwt.model.interview.*;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -50,7 +48,8 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -1429,22 +1428,24 @@ public class StudentServiceTest {
         when(interviewRepository.findByInternshipApplication_Student(dummyStudent)).thenReturn(List.of(interview));
 
         // Act
-        List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(STUDENT_EMAIL);
+        List<InterviewStudentResponseDto> interviews = studentService.getInterviews(STUDENT_EMAIL);
 
         // Assert
         assert interviews.size() == 1;
 
-        InterviewStudentResponseDTO first = interviews.getFirst();
-        assert Long.valueOf(30L).equals(first.id());
-        assert Long.valueOf(20L).equals(first.applicationId());
+        InterviewStudentResponseDto first = interviews.getFirst();
+        InterviewResponseDto firstInterview = first.interview();
+
+        assert Long.valueOf(30L).equals(firstInterview.id());
+        assert Long.valueOf(20L).equals(firstInterview.applicationId());
         assert "Company Name".equals(first.employerName());
-        assert "Software Developer".equals(first.internshipTitle());
-        assert "Please come to our office".equals(first.message());
-        assert "PENDING".equals(first.studentDecision());
-        assert interviewDate.toString().equals(first.interviewDate());
-        assert "IN_PERSON".equals(first.meetingType());
-        assert "123 Main St".equals(first.meetingDetails());
-        assert "SCHEDULED".equals(first.interviewStatus());
+        assert "Software Developer".equals(firstInterview.internshipTitle());
+        assert "Please come to our office".equals(firstInterview.message());
+        assert "PENDING".equals(firstInterview.studentDecision());
+        assert interviewDate.toString().equals(firstInterview.interviewDate());
+        assert "IN_PERSON".equals(firstInterview.meetingType());
+        assert "123 Main St".equals(firstInterview.meetingDetails());
+        assert "SCHEDULED".equals(firstInterview.interviewStatus());
     }
 
 
@@ -1604,7 +1605,6 @@ public class StudentServiceTest {
     @Test
     void shouldAcceptOfferSuccessfully() throws Exception {
         // Arrange
-        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
         InternshipApplication application = offeredApplication();
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
@@ -1617,6 +1617,34 @@ public class StudentServiceTest {
         verify(applicationRepository).save(application);
 
         assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
+        assert dummyStudent.isEmployed();
+
+        verify(studentRepository).save(dummyStudent);
+    }
+
+    @Test
+    void shouldCancelOtherUpcomingInterviewsAndNotifyTheirEmployerWhenStudentAcceptsOffer() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        Interview acceptedOfferInterview = scheduledInterview();
+        Interview otherInterview = scheduledInterview(21L, 31L);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+        when(interviewRepository.findByInternshipApplication_StudentAndInterviewStatusAndInterviewDateAfter(eq(dummyStudent), eq(InterviewStatus.SCHEDULED), any(LocalDateTime.class)))
+                .thenReturn(List.of(acceptedOfferInterview, otherInterview));
+
+        // Act
+        studentService.acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert (InterviewStatus.CANCELLED).equals(otherInterview.getInterviewStatus());
+        assert (InterviewCancellationReason.STUDENT_HIRED).equals(otherInterview.getCancellationReason());
+        assert (InterviewStatus.SCHEDULED).equals(acceptedOfferInterview.getInterviewStatus());
+
+        verify(interviewRepository).save(otherInterview);
+        verify(interviewRepository, never()).save(acceptedOfferInterview);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERVIEW, 31L);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERVIEW_CANCELLED_STUDENT_HIRED, 31L, employer);
     }
 
     @Test
@@ -1649,7 +1677,6 @@ public class StudentServiceTest {
     @Test
     void shouldNotChangeConsentOrEmploymentStatusWhenContractCreationFails() throws Exception {
         // Arrange
-        dummyStudent.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
         InternshipApplication application = offeredApplication();
 
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
@@ -1680,6 +1707,21 @@ public class StudentServiceTest {
 
         verify(applicationRepository).save(application);
         verifyNoInteractions(contractService);
+    }
+
+    @Test
+    void shouldNotifyEmployerWhenStudentRefusesOffer() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act
+        studentService.refuseOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REFUSED, 20L, employer);
+        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
     }
 
     @Test
@@ -2046,11 +2088,15 @@ public class StudentServiceTest {
     }
 
     private Interview scheduledInterview() {
+        return scheduledInterview(20L, 30L);
+    }
+
+    private Interview scheduledInterview(long applicationId, long interviewId) {
         InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
-        application.setId(20L);
+        application.setId(applicationId);
 
         Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
-        interview.setId(30L);
+        interview.setId(interviewId);
 
         return interview;
     }

@@ -32,6 +32,8 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
 
     long countByInternship(Internship internship);
 
+    boolean existsByInternship(Internship internship);
+
     @Query("select internshipApplication.internship.id from InternshipApplication internshipApplication where internshipApplication.student = :student")
     Set<Long> findInternshipIdsByStudent(@Param("student") Student student);
 

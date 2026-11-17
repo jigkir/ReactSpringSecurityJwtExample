@@ -779,7 +779,8 @@
     "decisions": {
       "PENDING": "En attente",
       "ACCEPTED": "Accepté",
-      "REJECTED": "Refusé"
+      "REJECTED": "Refusé",
+      "RESCHEDULE_REQUESTED": "Report demandé"
     }
   },
   "viewApplication": {

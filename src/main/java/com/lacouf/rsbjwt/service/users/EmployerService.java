@@ -16,6 +16,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -23,8 +24,8 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
@@ -32,7 +33,7 @@ import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -56,6 +57,7 @@ public class EmployerService {
     private final ManagerRepository managerRepository;
     private final InternshipApplicationRepository internshipApplicationRepository;
     private final InterviewRepository interviewRepository;
+    private final ContractRepository contractRepository;
 
     private final NotificationService notificationService;
     private final UserAppService userAppService;
@@ -63,10 +65,11 @@ public class EmployerService {
     private final AcademicSessionService academicSessionService;
     private final TraductionService traductionService;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, ContractRepository contractRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
+        this.contractRepository = contractRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipApplicationRepository = internshipApplicationRepository;
@@ -122,7 +125,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException {
+    public InternshipResponseDto updateInternship(long id, InternshipRequestDto dto, String employerEmail) throws InternshipNotFoundException, InvalidInternshipDateException, InvalidCompensationException, InternshipStartDateOutsideTargetSessionException, PastSessionInternshipNotEditableException, InternshipWithApplicationsNotEditableException {
         Internship internship = internshipRepository
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
@@ -140,9 +143,13 @@ public class EmployerService {
     }
 
     @Transactional
-    public void deleteInternship(long id, String employerEmail) throws InternshipNotFoundException {
+    public void deleteInternship(long id, String employerEmail) throws InternshipNotFoundException, InternshipWithContractNotDeletableException {
         Internship internship = internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
+
+        if (contractRepository.existsByInternship(internship)) {
+            throw new InternshipWithContractNotDeletableException(id);
+        }
 
         internship.markAsDeleted();
 
@@ -279,20 +286,20 @@ public class EmployerService {
     }
 
     @Transactional(readOnly = true)
-    public List<InterviewEmployerResponseDTO> getInterviewsOfEmployer(String email) {
+    public List<InterviewEmployerResponseDto> getInterviewsOfEmployer(String email) {
         return interviewRepository.findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(email)
                 .stream()
-                .map(InterviewEmployerResponseDTO::of)
+                .map(InterviewEmployerResponseDto::of)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<InterviewEmployerResponseDTO> getInterviewsByApplicationId(long applicationId, String email) throws InternshipApplicationNotFoundException {
+    public List<InterviewEmployerResponseDto> getInterviewsByApplicationId(long applicationId, String email) throws InternshipApplicationNotFoundException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
         return interviewRepository.findByInternshipApplication(internshipApplication)
                 .stream()
-                .map(InterviewEmployerResponseDTO::of)
+                .map(InterviewEmployerResponseDto::of)
                 .toList();
     }
 
@@ -302,7 +309,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
+    public InterviewEmployerResponseDto updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
         Interview interview = findModifiableInterview(interviewId, email);
         InternshipApplication application = interview.getInternshipApplication();
 
@@ -322,16 +329,16 @@ public class EmployerService {
         notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
         notifyStudentOfInterview(interview, NotificationType.INTERVIEW_UPDATED);
 
-        return InterviewEmployerResponseDTO.of(interview);
+        return InterviewEmployerResponseDto.of(interview);
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO cancelInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+    public InterviewEmployerResponseDto cancelInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
         Interview interview = findModifiableInterview(interviewId, email);
 
         cancelAndSaveInterview(interview);
 
-        return InterviewEmployerResponseDTO.of(interview);
+        return InterviewEmployerResponseDto.of(interview);
     }
 
     @Transactional(rollbackFor = APIException.class)
@@ -388,7 +395,7 @@ public class EmployerService {
     }
 
     private void cancelAndSaveInterview(Interview interview) {
-        interview.cancel();
+        interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
         interviewRepository.save(interview);
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
@@ -438,7 +445,8 @@ public class EmployerService {
     }
 
     private boolean isVisibleToEmployer(InternshipApplication application) {
-        boolean employed = application.getStudent().getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED;
+        Student student = application.getStudent();
+        boolean employed = student.isEmployed();
         boolean wasOffered = application.getStudentInternshipConsent() != StudentInternshipConsent.NOT_APPLICABLE;
 
         return !employed || wasOffered;

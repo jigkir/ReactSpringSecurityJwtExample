@@ -19,13 +19,15 @@ import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.EmployerSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
@@ -467,7 +469,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInterviewsOfEmployer() throws Exception {
         // Arrange
-        InterviewEmployerResponseDTO interview = interviewResponse();
+        InterviewEmployerResponseDto interview = interviewResponse();
 
         when(employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL)).thenReturn(List.of(interview));
 
@@ -502,8 +504,9 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
         // Arrange
-        InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "");
+        InterviewEmployerResponseDto updated = new InterviewEmployerResponseDto(
+                new InterviewResponseDto(30L, 10L, "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "", null),
+                "Jane Doe");
 
         when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
 
@@ -585,8 +588,9 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
         // Arrange
-        InterviewEmployerResponseDTO cancelled = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "");
+        InterviewEmployerResponseDto cancelled = new InterviewEmployerResponseDto(
+                new InterviewResponseDto(30L, 10L, "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "", InterviewCancellationReason.CANCELLED_BY_EMPLOYER),
+                "Jane Doe");
 
         when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
 
@@ -634,7 +638,7 @@ public class EmployerControllerTest {
     @Test
     void shouldReturnInterviewsByApplicationId() throws Exception {
         // Arrange
-        InterviewEmployerResponseDTO interview = interviewResponse();
+        InterviewEmployerResponseDto interview = interviewResponse();
 
         when(employerService.getInterviewsByApplicationId(20L, EMPLOYER_EMAIL)).thenReturn(List.of(interview));
 
@@ -670,19 +674,22 @@ public class EmployerControllerTest {
         ));
     }
 
-    private static InterviewEmployerResponseDTO interviewResponse() {
-        return new InterviewEmployerResponseDTO(
-                30L,
-                10L,
-                "Jane Doe",
-                "Software Developer",
-                "Please come to our office",
-                "PENDING",
-                "2026-11-01T14:30",
-                "IN_PERSON",
-                "123 Main St",
-                "SCHEDULED",
-                ""
+    private static InterviewEmployerResponseDto interviewResponse() {
+        return new InterviewEmployerResponseDto(
+                new InterviewResponseDto(
+                        30L,
+                        10L,
+                        "Software Developer",
+                        "Please come to our office",
+                        "PENDING",
+                        "2026-11-01T14:30",
+                        "IN_PERSON",
+                        "123 Main St",
+                        "SCHEDULED",
+                        "",
+                        null
+                ),
+                "Jane Doe"
         );
     }
 

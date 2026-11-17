@@ -810,7 +810,8 @@
     "decisions": {
       "PENDING": "Awaiting response",
       "ACCEPTED": "Accepted",
-      "REJECTED": "Declined"
+      "REJECTED": "Declined",
+      "RESCHEDULE_REQUESTED": "Reschedule requested"
     }
   },
   "expiredUser": {

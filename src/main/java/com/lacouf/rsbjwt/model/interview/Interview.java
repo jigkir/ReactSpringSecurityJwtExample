@@ -48,6 +48,9 @@ public class Interview {
     @Enumerated(EnumType.STRING)
     private InterviewStatus interviewStatus;
 
+    @Enumerated(EnumType.STRING)
+    private InterviewCancellationReason cancellationReason;
+
     @Column(nullable = false)
     private String meetingDetails;
 
@@ -74,7 +77,8 @@ public class Interview {
         this.studentDecision = StudentDecision.PENDING;
     }
 
-    public void cancel() {
+    public void cancel(InterviewCancellationReason reason) {
         this.interviewStatus = InterviewStatus.CANCELLED;
+        this.cancellationReason = reason;
     }
 }

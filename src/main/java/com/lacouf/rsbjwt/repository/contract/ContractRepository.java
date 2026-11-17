@@ -12,5 +12,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     boolean existsByStudentAndInternship(Student student, Internship internship);
 
+    boolean existsByInternship(Internship internship);
+
     List<Contract> findByInternship_Session(AcademicSession session);
 }

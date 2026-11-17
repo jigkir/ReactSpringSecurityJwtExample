@@ -115,7 +115,6 @@ public class ContractServiceTest {
 
         student = new Student("Jane", "Doe", "1234567", studentCredentials, Discipline.COMPUTER_SCIENCE, null);
         student.setId(3L);
-        student.setStudentInternshipStatus(StudentInternshipStatus.NOT_EMPLOYED);
     }
 
     // ==========================================
@@ -389,7 +388,7 @@ public class ContractServiceTest {
     @Test
     void shouldThrowStudentAlreadyEmployedExceptionWhenStudentIsAlreadyEmployed() {
         // Arrange
-        student.setStudentInternshipStatus(StudentInternshipStatus.EMPLOYED);
+        student.markAsEmployed();
 
         // Act + Assert
         assertThrows(StudentAlreadyEmployedException.class, () -> contractService.createContract(offeredApplication()));

@@ -28,13 +28,13 @@ import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
 import com.lacouf.rsbjwt.repository.document.DocumentRepository;
 import com.lacouf.rsbjwt.repository.document.student.academictranscript.AcademicTranscriptRepository;
@@ -54,7 +54,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -245,7 +245,7 @@ public class StudentService {
 
         Internship internship = validateInternshipForApplication(internshipId, student.getDiscipline());
 
-        if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
+        if (student.isEmployed()) {
             throw new StudentAlreadyEmployedException(student.getId());
         }
 
@@ -362,11 +362,11 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<InterviewStudentResponseDTO> getInterviews(String email) throws UserNotFoundException {
+    public List<InterviewStudentResponseDto> getInterviews(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
         return interviewRepository.findByInternshipApplication_Student(student).stream()
                 .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
-                .map(InterviewStudentResponseDTO::of)
+                .map(InterviewStudentResponseDto::of)
                 .toList();
     }
 
@@ -399,6 +399,8 @@ public class StudentService {
 
         application.setStudentInternshipConsent(StudentInternshipConsent.ACCEPTED);
         applicationRepository.save(application);
+
+        hire(application);
     }
 
     @Transactional
@@ -413,14 +415,13 @@ public class StudentService {
             throw new StudentConsentNotPendingException(applicationId);
         }
 
-        application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
-        applicationRepository.save(application);
+        refuseAndNotifyEmployer(application, NotificationType.INTERNSHIP_OFFER_REFUSED);
     }
 
     @Transactional
-    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
+    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException, InterviewAlreadyRescheduledException {
         Interview interview = findStudentInterview(email, interviewId);
-        verifyInterviewIsNotCanceled(interview);
+        verifyInterviewIsPending(interview);
         if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
             throw new InterviewAlreadyAcceptedException(interviewId);
         }
@@ -467,6 +468,51 @@ public class StudentService {
         interview.setInterviewDate(reschedulingTime);
 
         interviewRepository.save(interview);
+    }
+
+    private void hire(InternshipApplication acceptedApplication) {
+        Student student = acceptedApplication.getStudent();
+
+        student.markAsEmployed();
+
+        studentRepository.save(student);
+
+        cancelOtherUpcomingInterviews(student, acceptedApplication.getId());
+    }
+
+    private void cancelOtherUpcomingInterviews(Student student, long acceptedApplicationId) {
+        interviewRepository.findByInternshipApplication_StudentAndInterviewStatusAndInterviewDateAfter(student, InterviewStatus.SCHEDULED, LocalDateTime.now())
+                .stream()
+                .filter(interview -> interview.getInternshipApplication().getId() != acceptedApplicationId)
+                .forEach(this::cancelInterviewOfHiredStudent);
+    }
+
+    private void cancelInterviewOfHiredStudent(Interview interview) {
+        interview.cancel(InterviewCancellationReason.STUDENT_HIRED);
+        interviewRepository.save(interview);
+
+        notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
+        notificationService.notifyIfAbsent(NotificationType.INTERVIEW_CANCELLED_STUDENT_HIRED, interview.getId(), interview.getEmployer());
+    }
+
+    private void refuseAndNotifyEmployer(InternshipApplication application, NotificationType employerNotification) {
+        application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
+        applicationRepository.save(application);
+
+        Internship internship = application.getInternship();
+
+        notificationService.closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, application.getId(), application.getStudent());
+        notificationService.notifyIfAbsent(employerNotification, application.getId(), internship.getPostedBy());
+    }
+
+    private void verifyInterviewIsPending(Interview interview) throws InterviewCancelledException, InterviewAlreadyAcceptedException, InterviewAlreadyRescheduledException {
+        verifyInterviewIsNotCanceled(interview);
+        if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED) {
+            throw new InterviewAlreadyRescheduledException(interview.getId());
+        }
+        if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
+            throw new InterviewAlreadyAcceptedException(interview.getId());
+        }
     }
 
     private void verifyInterviewIsNotCanceled(Interview interview) throws InterviewCancelledException {

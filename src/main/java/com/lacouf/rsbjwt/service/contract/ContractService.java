@@ -10,7 +10,6 @@ import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
@@ -140,7 +139,7 @@ public class ContractService {
         }
 
         Student student = application.getStudent();
-        if (student.getStudentInternshipStatus() == StudentInternshipStatus.EMPLOYED) {
+        if (student.isEmployed()) {
             throw new StudentAlreadyEmployedException(student.getId());
         }
     }
