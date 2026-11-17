@@ -293,8 +293,13 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
         Interview interview = findModifiableInterview(interviewId, email);
+        InternshipApplication application = interview.getInternshipApplication();
+
+        if (application.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
+            throw new InternshipAlreadyOfferedException(application.getId());
+        }
 
         interview.update(
                 interviewRequestDto.message(),
