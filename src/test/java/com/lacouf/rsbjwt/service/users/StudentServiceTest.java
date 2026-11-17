@@ -1683,6 +1683,21 @@ public class StudentServiceTest {
     }
 
     @Test
+    void shouldNotifyEmployerWhenStudentRefusesOffer() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+
+        // Act
+        studentService.refuseOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REFUSED, 20L, employer);
+        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
+    }
+
+    @Test
     void shouldThrowInternshipApplicationNotFoundExceptionExceptionWhenRefusingUnknownOffer() {
         // Arrange
         when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.empty());

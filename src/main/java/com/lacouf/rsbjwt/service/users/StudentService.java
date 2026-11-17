@@ -413,8 +413,7 @@ public class StudentService {
             throw new StudentConsentNotPendingException(applicationId);
         }
 
-        application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
-        applicationRepository.save(application);
+        refuseAndNotifyEmployer(application, NotificationType.INTERNSHIP_OFFER_REFUSED);
     }
 
     @Transactional
@@ -469,12 +468,22 @@ public class StudentService {
         interviewRepository.save(interview);
     }
 
+    private void refuseAndNotifyEmployer(InternshipApplication application, NotificationType employerNotification) {
+        application.setStudentInternshipConsent(StudentInternshipConsent.REJECTED);
+        applicationRepository.save(application);
+
+        Internship internship = application.getInternship();
+
+        notificationService.closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, application.getId(), application.getStudent());
+        notificationService.notifyIfAbsent(employerNotification, application.getId(), internship.getPostedBy());
+    }
+
     private void verifyInterviewIsPending(Interview interview) throws InterviewCancelledException, InterviewAlreadyAcceptedException, InterviewAlreadyRescheduledException {
         verifyInterviewIsNotCanceled(interview);
         if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED) {
             throw new InterviewAlreadyRescheduledException(interview.getId());
         }
-        if(interview.getStudentDecision() == StudentDecision.ACCEPTED) {
+        if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
             throw new InterviewAlreadyAcceptedException(interview.getId());
         }
     }
