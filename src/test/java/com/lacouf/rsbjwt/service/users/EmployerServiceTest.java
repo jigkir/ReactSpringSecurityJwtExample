@@ -31,6 +31,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
@@ -94,6 +95,8 @@ public class EmployerServiceTest {
     private InternshipApplicationRepository internshipApplicationRepository;
     @Mock
     private InterviewRepository interviewRepository;
+    @Mock
+    private ContractRepository contractRepository;
 
     @Captor
     private ArgumentCaptor<Employer> employerArgumentCaptor;
@@ -141,7 +144,7 @@ public class EmployerServiceTest {
     void createEmployerService() {
         InternshipService internshipService = new InternshipService(internshipApplicationRepository);
 
-        employerService = new EmployerService(employerRepository, internshipRepository, managerRepository, notificationService, userAppService, traductionService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
+        employerService = new EmployerService(employerRepository, internshipRepository, managerRepository, contractRepository, notificationService, userAppService, traductionService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
     }
 
     @Test
@@ -277,7 +280,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldSoftDeleteInternship() throws InternshipNotFoundException {
+    void shouldSoftDeleteInternship() throws Exception {
         // Arrange
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
         when(internshipApplicationRepository.findByInternship(internship)).thenReturn(List.of(receivedInternshipApplication()));
@@ -294,7 +297,20 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldCloseInternshipOfferedNotificationsWhenInternshipIsDeleted() throws InternshipNotFoundException {
+    void shouldThrowInternshipWithContractNotDeletableWhenEmployerDeletesInternshipWithContract() {
+        // Arrange
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
+        when(contractRepository.existsByInternship(internship)).thenReturn(true);
+
+        // Act + Assert
+        assertThrows(InternshipWithContractNotDeletableException.class, () -> employerService.deleteInternship(10L, EMPLOYER_EMAIL));
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService, interviewRepository);
+    }
+
+    @Test
+    void shouldCloseInternshipOfferedNotificationsWhenInternshipIsDeleted() throws Exception {
         // Arrange
         InternshipApplication secondApplication = receivedInternshipApplication();
         secondApplication.setId(21L);
@@ -311,7 +327,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldNotCloseInternshipOfferedNotificationsWhenDeletedInternshipHasNoApplication() throws InternshipNotFoundException {
+    void shouldNotCloseInternshipOfferedNotificationsWhenDeletedInternshipHasNoApplication() throws Exception {
         // Arrange
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
         when(internshipApplicationRepository.findByInternship(internship)).thenReturn(List.of());
@@ -830,7 +846,7 @@ public class EmployerServiceTest {
     }
 
     @Test
-    void shouldCancelInterviewsWhenInternshipIsDeleted() throws InternshipNotFoundException {
+    void shouldCancelInterviewsWhenInternshipIsDeleted() throws Exception {
         // Arrange
         Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);

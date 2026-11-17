@@ -55,7 +55,7 @@ public class EmployerController {
     }
 
     @DeleteMapping("/internships/{internshipId}")
-    public ResponseEntity<Void> deleteInternship(@PathVariable long internshipId, Authentication authentication) throws InternshipNotFoundException {
+    public ResponseEntity<Void> deleteInternship(@PathVariable long internshipId, Authentication authentication) throws InternshipNotFoundException, InternshipWithContractNotDeletableException {
         employerService.deleteInternship(internshipId, authentication.getName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

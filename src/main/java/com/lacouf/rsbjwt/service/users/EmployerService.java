@@ -25,6 +25,7 @@ import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.EmployerRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
@@ -56,6 +57,7 @@ public class EmployerService {
     private final ManagerRepository managerRepository;
     private final InternshipApplicationRepository internshipApplicationRepository;
     private final InterviewRepository interviewRepository;
+    private final ContractRepository contractRepository;
 
     private final NotificationService notificationService;
     private final UserAppService userAppService;
@@ -63,10 +65,11 @@ public class EmployerService {
     private final AcademicSessionService academicSessionService;
     private final TraductionService traductionService;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, ContractRepository contractRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
+        this.contractRepository = contractRepository;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipApplicationRepository = internshipApplicationRepository;
@@ -140,9 +143,13 @@ public class EmployerService {
     }
 
     @Transactional
-    public void deleteInternship(long id, String employerEmail) throws InternshipNotFoundException {
+    public void deleteInternship(long id, String employerEmail) throws InternshipNotFoundException, InternshipWithContractNotDeletableException {
         Internship internship = internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
+
+        if (contractRepository.existsByInternship(internship)) {
+            throw new InternshipWithContractNotDeletableException(id);
+        }
 
         internship.markAsDeleted();
 
