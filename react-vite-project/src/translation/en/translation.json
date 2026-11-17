@@ -80,6 +80,8 @@
     "internshipRejectedNotification": "{{amount}} of your offer(s) rejected: see the reason",
     "internshipSubmittedForReviewNotification": "{{amount}} new internship offer(s) to review",
     "newInternshipApplicationNotification": "{{amount}} new application(s) received",
+    "internshipOfferRefusedNotification": "{{amount}} internship offer(s) declined by a student",
+    "interviewCancelledNotification": "{{amount}} interview(s) cancelled: the student was hired elsewhere",
     "notificationLoadError": "Unable to load notifications. They will refresh automatically.",
     "notificationMarkAsReadError": "Unable to mark notifications as read. Please try again.",
     "pendingUserNotification": "{{amount}} user access to review",

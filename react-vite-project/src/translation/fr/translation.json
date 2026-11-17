@@ -80,6 +80,8 @@
     "internshipRejectedNotification": "{{amount}} de vos offres refusée(s) : consultez le motif",
     "internshipSubmittedForReviewNotification": "{{amount}} nouvelle(s) offre(s) de stage à valider",
     "newInternshipApplicationNotification": "{{amount}} nouvelle(s) candidature(s) reçue(s)",
+    "internshipOfferRefusedNotification": "{{amount}} offre(s) d'embauche refusée(s) par un étudiant",
+    "interviewCancelledNotification": "{{amount}} entrevue(s) annulée(s) : l'étudiant a été embauché ailleurs",
     "notificationLoadError": "Impossible de charger les notifications. Elles s'actualiseront automatiquement.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues. Veuillez réessayer.",
     "pendingUserNotification": "{{amount}} accès utilisateur à vérifier",

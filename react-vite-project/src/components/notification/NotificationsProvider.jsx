@@ -21,11 +21,13 @@ const NOTIFICATION_TYPE = {
     NEW_INTERNSHIP_OFFER: "NEW_INTERNSHIP_OFFER",
 
     NEW_INTERNSHIP_APPLICATION: "NEW_INTERNSHIP_APPLICATION",
+    INTERNSHIP_OFFER_REFUSED: "INTERNSHIP_OFFER_REFUSED",
 
     STUDENT_ACCESS_REQUESTED: "STUDENT_ACCESS_REQUESTED",
 
     INTERVIEW_CONVOCATION: "INTERVIEW_CONVOCATION",
     INTERVIEW_UPDATED: "INTERVIEW_UPDATED",
+    INTERVIEW_CANCELLED_STUDENT_HIRED: "INTERVIEW_CANCELLED_STUDENT_HIRED",
 
     INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
 
@@ -58,6 +60,7 @@ const PAGE = {
     EMPLOYER_INTERNSHIPS: "/internships",
     EMPLOYER_APPLICATIONS: "/applications",
     EMPLOYER_CONTRACTS: "/employer/contracts",
+    EMPLOYER_INTERVIEWS: "/employer/interviews",
 };
 
 // A notification closes when its page is opened (clicking it opens that page).
@@ -177,6 +180,21 @@ const NOTIFICATION_ITEMS = {
             labelKey: "navbar.newInternshipApplicationNotification",
             to: PAGE.EMPLOYER_APPLICATIONS,
             sessionScoped: true,
+        },
+        {
+            id: "internshipOfferRefused",
+            notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_REFUSED,
+            targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
+            labelKey: "navbar.internshipOfferRefusedNotification",
+            to: PAGE.EMPLOYER_APPLICATIONS,
+            sessionScoped: true,
+        },
+        {
+            id: "interviewCancelled",
+            notificationType: NOTIFICATION_TYPE.INTERVIEW_CANCELLED_STUDENT_HIRED,
+            targetType: TARGET_TYPE.INTERVIEW,
+            labelKey: "navbar.interviewCancelledNotification",
+            to: PAGE.EMPLOYER_INTERVIEWS,
         },
         {
             id: "contractToSign",
