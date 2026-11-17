@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Étape 9 : candidatures, avec ou sans lettre de motivation et relevé de notes
-# Léa (accès expiré à l'étape 11) et Olivier ne postulent pas.
+# Léa (accès expiré à l'étape 11) ne postule pas.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 apply() { # apply <email> <mot de passe> <titre de l'offre> <CV> [lettre de motivation] [relevé de notes]
@@ -34,3 +34,5 @@ apply emma.lavoie@claurendeau.qc.ca 'Emma2026!' "Stagiaire en estimation de coû
 apply chloe.bergeron@claurendeau.qc.ca 'Chloe2026!' "Stagiaire en marketing numérique" CV_Chloe_Bergeron.pdf \
       Lettre_Chloe_Bergeron_Crea_Media.pdf
 apply gabriel.morin@claurendeau.qc.ca 'Gabriel2026!' "Externat en soins infirmiers" CV_Gabriel_Morin.pdf
+# Candidature d'Olivier pour la démo EQ3-307 : l'étape 16 en fait un contrat
+apply olivier.cote@claurendeau.qc.ca 'Olivier2026!' "Technicien en automatisation" CV_Olivier_Cote.pdf

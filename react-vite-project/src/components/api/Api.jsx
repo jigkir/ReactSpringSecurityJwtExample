@@ -175,6 +175,38 @@ export async function rejectCv(cvId, comment) {
 
 // endregion
 
+// region Contracts (shared by every party: /api/contracts, the backend finds the user from the JWT)
+// Contracts of a session where the user is a party (the target session when no sessionId).
+// Returns ContractResponseDto[]
+export async function getContracts(sessionId) {
+    const response = await fetcher(withSession("contracts", sessionId), {method: "GET"});
+    return handleResponse(response);
+}
+
+// Contracts the connected user has not signed yet, every session. Returns ContractResponseDto[]
+export async function getPendingContracts() {
+    const response = await fetcher("contracts/to-sign", {method: "GET"});
+    return handleResponse(response);
+}
+
+// Returns the updated ContractResponseDto. 400 = terms/password problem, 409 = already signed
+export async function signContract(contractId, termsAccepted, password) {
+    const response = await fetcher(`contracts/${contractId}/signature`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({termsAccepted, password}),
+    });
+    return handleResponse(response);
+}
+
+// language: "FR" | "EN". Returns {id, fileName, content (Base64)}
+export async function getContractFile(contractId, language) {
+    const response = await fetcher(`contracts/${contractId}/file?language=${language}`, {method: "GET"});
+    return handleResponse(response);
+}
+
+// endregion
+
 // region Internship
 
 export async function getEmployerInternships(sessionId) {
@@ -410,12 +442,14 @@ export async function getStudentOffers() {
     return handleResponse(response);
 }
 
-export async function acceptOffer(applicationId){
+// Creates the contract. 200 without body; 409 when a contract already exists, the application was
+// rejected, has no offer, or the student is already employed
+export async function acceptOffer(applicationId) {
     const response = await fetcher(`student/applications/offers/${applicationId}/accept`, {method: "PUT"});
     return handleEmpty(response);
 }
 
-export async function denyOffer(applicationId){
+export async function denyOffer(applicationId) {
     const response = await fetcher(`student/applications/offers/${applicationId}/refuse`, {method: "PUT"});
     return handleEmpty(response);
 }

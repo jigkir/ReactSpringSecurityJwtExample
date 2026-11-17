@@ -19,7 +19,7 @@ import DocumentList from './DocumentList.jsx';
 import PortfolioUpload from './PortfolioUpload.jsx';
 import RequiredFilesNotice from './RequiredFilesNotice.jsx';
 import {getCvCount, getMaxCvSize} from '../../api/Api.jsx';
-import {FALLBACK_MAX_BYTES} from '../../../utils/documents.js';
+import {FALLBACK_MAX_BYTES} from '../../../utils/Documents.js';
 import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
 import {usePolling} from '../../../utils/usePolling.js';
 

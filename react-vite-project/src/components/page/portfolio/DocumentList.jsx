@@ -50,7 +50,7 @@ import DocumentListShell from '../../documents/DocumentListShell.jsx';
 import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
 import {getDocumentFile, getDocuments, hideDocument} from '../../api/Api.jsx';
 import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
-import {blobUrlFromFile, formatBytes, formatDate} from '../../../utils/documents.js';
+import {blobUrlFromFile, formatBytes, formatDate} from '../../../utils/Documents.js';
 import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
 import {sortCvsNewest} from '../../../utils/Sort.jsx';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
