@@ -24,7 +24,7 @@ const getInterviewStatus = (interview) => {
     if (interview.studentDecision === "ACCEPTED") return "accepted";
     if (interview.studentDecision === "RESCHEDULE_REQUESTED") return "rescheduled";
 
-    return "upcoming";
+    return "awaitingResponse";
 };
 
 const getMeetingUrl = (details) => {
@@ -74,11 +74,12 @@ export default function InterviewCard({
 
     const meetingUrl = interview.meetingType === "ONLINE" ? getMeetingUrl(interview.meetingDetails) : null;
     const statusIcon = cancelled || rejected ? "close" : past || accepted ? "check_circle" : "schedule";
+    const awaitingResponse = (!cancelled && !past && interview.studentDecision === "PENDING") || rescheduled;
     const accentBorder = cancelled || rejected
         ? "border-l-red-500"
         : past
             ? "border-l-slate-400"
-            : rescheduled
+            : rescheduled || awaitingResponse
                 ? "border-l-amber-500"
                 : "border-l-emerald-500";
 
@@ -86,12 +87,11 @@ export default function InterviewCard({
         ? (dark ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-red-200 bg-red-50 text-red-700")
         : past
             ? (dark ? "border-slate-500/30 bg-slate-500/10 text-slate-200" : "border-slate-300 bg-slate-100 text-slate-700")
-            : rescheduled
+            : rescheduled || awaitingResponse
                 ? (dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-700")
                 : (dark ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-emerald-200 bg-emerald-50 text-emerald-700");
 
     const highlighted = !preview && hash === `#interview-${interview.id}`;
-    const awaitingResponse = (!cancelled && !past && interview.studentDecision === "PENDING") || rescheduled;
     const muted = dark ? "text-white" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
 
@@ -120,18 +120,18 @@ export default function InterviewCard({
                 </div>
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    {awaitingResponse && (
+                     {awaitingResponse ? (
                         <span className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
                             dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-700"
                         }`}>
-                            <Icon name="hourglass_bottom" size={18} />
+                            <Icon name={statusIcon} size={18} />
                             <span>{t("studentInterviews.awaitingResponse")}</span>
                         </span>
-                    )}
-                    <span className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
+                    ) :
+                    (<span className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
                         <Icon name={statusIcon} size={18} />
                         <span>{t(`studentInterviews.statuses.${status}`)}</span>
-                    </span>
+                    </span>)}
                 </div>
             </div>
 
