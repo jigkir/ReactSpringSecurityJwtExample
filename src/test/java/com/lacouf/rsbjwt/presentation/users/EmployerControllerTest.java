@@ -50,10 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -424,6 +421,17 @@ public class EmployerControllerTest {
         mockMvc.perform(get("/api/employer/applications/count").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$['10']").value(2));
+    }
+
+    @Test
+    void shouldReturnIdsOfInternshipsWithContract() throws Exception {
+        // Arrange
+        when(employerService.getInternshipIdsWithContract(EMPLOYER_EMAIL)).thenReturn(Set.of(10L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/employer/internships/with-contract").principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value(10));
     }
 
     @Test

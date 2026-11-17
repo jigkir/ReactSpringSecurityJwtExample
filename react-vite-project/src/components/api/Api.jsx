@@ -398,6 +398,11 @@ export async function getApplicationCount() {
     return handleResponse(response);
 }
 
+export async function getInternshipIdsWithContract() {
+    const response = await fetcher("employer/internships/with-contract", {method: "GET"});
+    return handleResponse(response);
+}
+
 //endregion
 
 //region Student EmployerInterviews

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/employer")
@@ -65,6 +66,11 @@ public class EmployerController {
     public ResponseEntity<List<InternshipResponseDto>> getInternshipsOfEmployer(Authentication authentication, @RequestParam(required = false) Long sessionId, Locale locale) throws AcademicSessionNotFoundException {
         String language = locale.getLanguage();
         return ResponseEntity.ok(employerService.getInternshipsOfEmployer(authentication.getName(), sessionId, language));
+    }
+
+    @GetMapping("/internships/with-contract")
+    public ResponseEntity<Set<Long>> getInternshipIdsWithContract(Authentication authentication) {
+        return ResponseEntity.ok(employerService.getInternshipIdsWithContract(authentication.getName()));
     }
 
     @GetMapping("/applications")

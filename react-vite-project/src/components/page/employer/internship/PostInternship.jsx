@@ -12,7 +12,8 @@ import {
     deleteInternship,
     getApplicationCount,
     getEmployerInternships,
-    updateInternship
+    updateInternship,
+    getInternshipIdsWithContract
 } from '../../../api/Api.jsx';
 import {usePolling} from "../../../../utils/usePolling.js";
 import PreviewState from '../../../home/PreviewState.jsx';
@@ -33,12 +34,15 @@ function PostInternship({user, preview = false}) {
     const [actionError, setActionError] = useState("");
     const [loading, setLoading] = useState(true);
     const [applicationCount, setApplicationCount] = useState({})
+    const [internshipIdsWithContract, setInternshipIdsWithContract] = useState(new Set());
     const formRef = useRef(null);
     const {selectedSession} = useSession();
     const canEditOffers = Boolean(selectedSession?.target); // offers of past sessions are archives
 
     // An offer with applications is locked: students applied to its current content
     const canEdit = (internship) => canEditOffers && !applicationCount[internship.id];
+    // An offer with a contract is kept: the contract refers to it
+    const canDelete = (internship) => !internshipIdsWithContract.has(internship.id);
 
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
@@ -66,21 +70,22 @@ function PostInternship({user, preview = false}) {
         }
     }, [selectedSession, lang]);
 
-    const fetchApplicationCount = useCallback(async () => {
+    const fetchInternshipLocks = useCallback(async () => {
         try {
-            const countData = await getApplicationCount();
+            const [countData, idsWithContract] = await Promise.all([getApplicationCount(), getInternshipIdsWithContract()]);
             setApplicationCount(countData);
+            setInternshipIdsWithContract(new Set(idsWithContract));
         } catch {
             setError({key: "postInternship.countError"});
         }
     }, []);
 
-    // The application counters are only displayed on the full page
+    // The application counters and contract locks are only needed on the full page
     useEffect(() => {
-        if (isLoggedIn && !preview) void fetchApplicationCount();
-    }, [isLoggedIn, preview, fetchApplicationCount]);
+        if (isLoggedIn && !preview) void fetchInternshipLocks();
+    }, [isLoggedIn, preview, fetchInternshipLocks]);
 
-    usePolling(fetchApplicationCount, isLoggedIn && !preview)
+    usePolling(fetchInternshipLocks, isLoggedIn && !preview)
 
     useEffect(() => {
         if (isLoggedIn) void load();
@@ -145,7 +150,7 @@ function PostInternship({user, preview = false}) {
         <InternshipCard key={internship.id}
                         internship={internship}
                         OnEdit={preview || !canEdit(internship) ? undefined : openEdit}
-                        OnDelete={preview ? undefined : handleDelete}
+                        OnDelete={preview || !canDelete(internship) ? undefined : handleDelete}
                         dark={dark}
                         showStatusBorder={filters.status !== "ALL"}
                         applicationCount={applicationCount[internship.id]}/>

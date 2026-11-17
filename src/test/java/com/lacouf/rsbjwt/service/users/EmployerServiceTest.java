@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.answer;
@@ -578,6 +579,18 @@ public class EmployerServiceTest {
 
         // Assert
         assert (Map.of(10L, 2L)).equals(counts);
+    }
+
+    @Test
+    void shouldReturnIdsOfInternshipsWithContractWhenEmployerHasContracts() {
+        // Arrange
+        when(contractRepository.findInternshipIdsOfEmployer(EMPLOYER_EMAIL)).thenReturn(Set.of(10L));
+
+        // Act
+        Set<Long> internshipIds = employerService.getInternshipIdsWithContract(EMPLOYER_EMAIL);
+
+        // Assert
+        assert (Set.of(10L)).equals(internshipIds);
     }
 
     @Test

@@ -221,6 +221,10 @@ public class EmployerService {
                 .collect(Collectors.toMap(Internship::getId, internshipApplicationRepository::countByInternship));
     }
 
+    public Set<Long> getInternshipIdsWithContract(String email) {
+        return contractRepository.findInternshipIdsOfEmployer(email);
+    }
+
     @Transactional
     public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
         InternshipApplication internshipApplication = findApplicationOpenToDecision(applicationId, email);
