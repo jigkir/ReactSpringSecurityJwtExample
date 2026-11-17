@@ -9,7 +9,7 @@ import {translateWarning} from "../../../utils/CommonFields.jsx";
 import Button from "../../../styles/Button.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 
-const CONSENT_ICON = {PENDING: "hourglass_bottom", ACCEPTED: "check_circle", REJECTED: "close"};
+const CONSENT_ICON = {PENDING: "schedule", ACCEPTED: "check_circle", REJECTED: "close"};
 
 const CONSENT_CLASSES = {
     PENDING: {

@@ -749,7 +749,6 @@
     "notProvided": "Not provided",
     "invalidDate": "Date unavailable",
     "statuses": {
-      "upcoming": "Upcoming",
       "past": "Past",
       "cancelled": "Cancelled",
       "rejected": "Rejected",
