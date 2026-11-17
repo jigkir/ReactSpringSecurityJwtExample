@@ -31,6 +31,7 @@ const NOTIFICATION_TYPE = {
 
     CONTRACT_TO_SIGN_BY_MANAGER: "CONTRACT_TO_SIGN_BY_MANAGER",
     CONTRACT_TO_SIGN_BY_EMPLOYER: "CONTRACT_TO_SIGN_BY_EMPLOYER",
+    CONTRACT_TO_SIGN_BY_STUDENT: "CONTRACT_TO_SIGN_BY_STUDENT",
 };
 
 export const TARGET_TYPE = {
@@ -47,6 +48,7 @@ const PAGE = {
     STUDENT_INTERNSHIPS: "/internship",
     STUDENT_INTERVIEWS: "/interviews",
     STUDENT_OFFERS: "/offers",
+    STUDENT_CONTRACTS: "/student/contracts",
 
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
@@ -141,6 +143,14 @@ const NOTIFICATION_ITEMS = {
             labelKey: "navbar.internshipOfferedNotification",
             to: PAGE.STUDENT_OFFERS,
             detailed: true, // one menu line per offer (company, title)
+        },
+        {
+            id: "contractToSign",
+            notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN_BY_STUDENT,
+            targetType: TARGET_TYPE.CONTRACT,
+            labelKey: "navbar.contractToSignNotification",
+            to: PAGE.STUDENT_CONTRACTS,
+            sessionScoped: true,
         },
     ],
     [ROLE.EMPLOYER]: [

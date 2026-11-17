@@ -1,5 +1,5 @@
 /**
- * ContractCard.jsx — One internship contract, as the connected party (manager or employer) sees it.
+ * ContractCard.jsx — One internship contract, as the connected party (manager, employer or student) sees it.
  *
  * Shows the offer details (position, location, work mode, period, duration, hourly rate,
  * negotiable, description, required skills), the parties (student, employer, company, signing
@@ -82,8 +82,9 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
     const [signOpen, setSignOpen] = useState(false);
 
     const {internship} = contract;
-    // Has the CONNECTED party (manager or employer) signed?
+    // Has the CONNECTED party (manager, employer or student) signed?
     const signedByMe = Boolean(contract[contractRole.signedAtField]);
+    const fullySigned = Boolean(contract.studentSignedAt && contract.employerSignedAt && contract.managerSignedAt);
     const skills = parseSkills(internship.requiredSkills);
     const isFrench = i18n.resolvedLanguage?.startsWith("fr");
     const locale = isFrench ? "fr-CA" : "en-CA";
@@ -133,6 +134,7 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
         {key: "college", name: contract.managerName, signedAt: contract.managerSignedAt},
     ];
 
+    const hasActions = fullySigned || (!signedByMe && !signOpen);
     const muted = dark ? "text-slate-400" : "text-gray-500";
     const rowBorder = dark ? "border-slate-700" : "border-gray-200";
     const divider = `border-t pt-3 ${rowBorder}`;
@@ -271,28 +273,32 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
             )}
 
             {/* Actions */}
-            <div
-                role="group"
-                aria-label={t("managerContracts.download.open")}
-                className={`flex flex-wrap items-center justify-end gap-2 ${divider}`}
-            >
-                <Button
-                    as={Link}
-                    to={`${contractRole.basePath}/${contract.id}`}
-                    state={{studentName: contract.studentName}}
-                    tone="accent"
-                    lockTone
-                    dark={dark}
-                    icon="download"
+            {hasActions && (
+                <div
+                    role="group"
+                    aria-label={t("managerContracts.download.open")}
+                    className={`flex flex-wrap items-center justify-end gap-2 ${divider}`}
                 >
-                    {t("managerContracts.download.open")}
-                </Button>
-                {!signedByMe && !signOpen && (
-                    <Button tone="success" lockTone dark={dark} icon="edit" onClick={() => setSignOpen(true)}>
-                        {t("managerContracts.sign.open")}
-                    </Button>
-                )}
-            </div>
+                    {fullySigned && (
+                        <Button
+                            as={Link}
+                            to={`${contractRole.basePath}/${contract.id}`}
+                            state={{studentName: contract.studentName}}
+                            tone="accent"
+                            lockTone
+                            dark={dark}
+                            icon="download"
+                        >
+                            {t("managerContracts.download.open")}
+                        </Button>
+                    )}
+                    {!signedByMe && !signOpen && (
+                        <Button tone="success" lockTone dark={dark} icon="edit" onClick={() => setSignOpen(true)}>
+                            {t("managerContracts.sign.open")}
+                        </Button>
+                    )}
+                </div>
+            )}
         </article>
     );
 }

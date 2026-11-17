@@ -34,6 +34,11 @@ export const PREVIEWS_BY_ROLE = {
             titleKey: "home.studentInterviewsLink",
             render: () => <Interviews preview/>
         },
+        {
+            to: "/student/contracts",
+            titleKey: "home.studentContractsLink",
+            render: () => <Contracts preview/>
+        },
     ],
     EMPLOYER: [
         {

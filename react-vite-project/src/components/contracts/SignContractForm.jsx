@@ -1,7 +1,7 @@
 /**
- * SignContractForm.jsx — Inline form to sign a contract as the manager.
+ * SignContractForm.jsx — Inline form to sign a contract (manager, employer or student).
  *
- * The manager must tick "I accept the terms of the contract" and confirm with the password of
+ * The signer must tick "I accept the terms of the contract" and confirm with the password of
  * their account. Nothing is sent when the box is unticked or the password is empty.
  * In Dev mode the password field is hidden (the dev endpoint needs no password).
  *

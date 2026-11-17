@@ -1,15 +1,16 @@
 /**
- * ContractReviewList.jsx — Internship contracts of the connected user (manager or employer):
+ * ContractReviewList.jsx — Internship contracts of the connected user (manager, employer or student):
  * list, sign, PDF.
  *
  * Used by Contracts.jsx.
- * <ContractReviewList />          full page (/manager/contracts or /employer/contracts): the contracts
- *                        of the session chosen in the navbar, unsigned first, then newest first.
+ * <ContractReviewList />          full page (/manager/contracts, /employer/contracts or /student/contracts):
+ *                        the contracts of the session chosen in the navbar, unsigned first, then newest first.
  * <ContractReviewList preview />  Home page block: the contracts the user has not signed yet,
  *                        every session, no header. A contract leaves this list as soon as it is signed.
  *
- * The role (manager / employer) only changes which signature field is read
- * (managerSignedAt / employerSignedAt) and the base route of the contract page: see utils/ContractRole.js.
+ * The role (manager / employer / student) only changes which signature field is read
+ * (managerSignedAt / employerSignedAt / studentSignedAt) and the base route of the contract page:
+ * see utils/ContractRole.js.
  *
  * Signing
  *   normal mode  PUT contracts/{id}/signature {termsAccepted, password}
