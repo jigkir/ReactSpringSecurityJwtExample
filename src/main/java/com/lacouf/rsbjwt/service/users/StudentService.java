@@ -28,6 +28,7 @@ import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.StudentDecision;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -475,6 +476,23 @@ public class StudentService {
         student.markAsEmployed();
 
         studentRepository.save(student);
+
+        cancelOtherUpcomingInterviews(student, acceptedApplication.getId());
+    }
+
+    private void cancelOtherUpcomingInterviews(Student student, long acceptedApplicationId) {
+        interviewRepository.findByInternshipApplication_StudentAndInterviewStatusAndInterviewDateAfter(student, InterviewStatus.SCHEDULED, LocalDateTime.now())
+                .stream()
+                .filter(interview -> interview.getInternshipApplication().getId() != acceptedApplicationId)
+                .forEach(this::cancelInterviewOfHiredStudent);
+    }
+
+    private void cancelInterviewOfHiredStudent(Interview interview) {
+        interview.cancel(InterviewCancellationReason.STUDENT_HIRED);
+        interviewRepository.save(interview);
+
+        notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
+        notificationService.notifyIfAbsent(NotificationType.INTERVIEW_CANCELLED_STUDENT_HIRED, interview.getId(), interview.getEmployer());
     }
 
     private void refuseAndNotifyEmployer(InternshipApplication application, NotificationType employerNotification) {

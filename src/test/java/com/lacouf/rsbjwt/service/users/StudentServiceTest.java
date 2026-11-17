@@ -24,9 +24,7 @@ import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.model.interview.Interview;
-import com.lacouf.rsbjwt.model.interview.MeetingType;
-import com.lacouf.rsbjwt.model.interview.StudentDecision;
+import com.lacouf.rsbjwt.model.interview.*;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -1620,8 +1618,33 @@ public class StudentServiceTest {
 
         assert StudentInternshipConsent.ACCEPTED.equals(application.getStudentInternshipConsent());
         assert dummyStudent.isEmployed();
-        
+
         verify(studentRepository).save(dummyStudent);
+    }
+
+    @Test
+    void shouldCancelOtherUpcomingInterviewsAndNotifyTheirEmployerWhenStudentAcceptsOffer() throws Exception {
+        // Arrange
+        InternshipApplication application = offeredApplication();
+        Interview acceptedOfferInterview = scheduledInterview();
+        Interview otherInterview = scheduledInterview(21L, 31L);
+
+        when(applicationRepository.findByIdAndStudent_Credentials_Email(20L, STUDENT_EMAIL)).thenReturn(Optional.of(application));
+        when(interviewRepository.findByInternshipApplication_StudentAndInterviewStatusAndInterviewDateAfter(eq(dummyStudent), eq(InterviewStatus.SCHEDULED), any(LocalDateTime.class)))
+                .thenReturn(List.of(acceptedOfferInterview, otherInterview));
+
+        // Act
+        studentService.acceptOffer(STUDENT_EMAIL, 20L);
+
+        // Assert
+        assert (InterviewStatus.CANCELLED).equals(otherInterview.getInterviewStatus());
+        assert (InterviewCancellationReason.STUDENT_HIRED).equals(otherInterview.getCancellationReason());
+        assert (InterviewStatus.SCHEDULED).equals(acceptedOfferInterview.getInterviewStatus());
+
+        verify(interviewRepository).save(otherInterview);
+        verify(interviewRepository, never()).save(acceptedOfferInterview);
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERVIEW, 31L);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERVIEW_CANCELLED_STUDENT_HIRED, 31L, employer);
     }
 
     @Test
@@ -2065,11 +2088,15 @@ public class StudentServiceTest {
     }
 
     private Interview scheduledInterview() {
+        return scheduledInterview(20L, 30L);
+    }
+
+    private Interview scheduledInterview(long applicationId, long interviewId) {
         InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
-        application.setId(20L);
+        application.setId(applicationId);
 
         Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
-        interview.setId(30L);
+        interview.setId(interviewId);
 
         return interview;
     }
