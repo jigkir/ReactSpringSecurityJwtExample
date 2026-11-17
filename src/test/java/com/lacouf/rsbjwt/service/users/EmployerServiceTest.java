@@ -15,10 +15,7 @@ import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.model.interview.Interview;
-import com.lacouf.rsbjwt.model.interview.InterviewStatus;
-import com.lacouf.rsbjwt.model.interview.MeetingType;
-import com.lacouf.rsbjwt.model.interview.StudentDecision;
+import com.lacouf.rsbjwt.model.interview.*;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -766,6 +763,7 @@ public class EmployerServiceTest {
         // Assert
         assertEquals(EmployerDecision.REJECTED, internshipApplication.getEmployerDecision());
         assertEquals(InterviewStatus.CANCELLED, interview.getInterviewStatus());
+        assertEquals(InterviewCancellationReason.CANCELLED_BY_EMPLOYER, interview.getCancellationReason());
 
         verify(interviewRepository).save(interview);
         verify(internshipApplicationRepository).save(internshipApplication);
@@ -819,7 +817,7 @@ public class EmployerServiceTest {
     void shouldThrowWhenCancellingAlreadyCancelledInterview() {
         // Arrange
         Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
-        interview.cancel();
+        interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
@@ -833,7 +831,7 @@ public class EmployerServiceTest {
     void shouldThrowWhenUpdatingCancelledInterview() {
         // Arrange
         Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
-        interview.cancel();
+        interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
@@ -987,7 +985,7 @@ public class EmployerServiceTest {
         // Arrange
         Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);
-        interview.cancel();
+        interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 

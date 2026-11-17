@@ -2,20 +2,22 @@ package com.lacouf.rsbjwt.service.dto.response.interview;
 
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.user.Employer;
 
 public record InterviewStudentResponseDTO(
-    Long id,
-    Long applicationId,
-    String employerName,
-    String internshipTitle,
-    String message,
-    String studentDecision,
-    String interviewDate,
-    String meetingType,
-    String meetingDetails,
-    String interviewStatus,
-    String rejectionMessage
+        Long id,
+        Long applicationId,
+        String employerName,
+        String internshipTitle,
+        String message,
+        String studentDecision,
+        String interviewDate,
+        String meetingType,
+        String meetingDetails,
+        String interviewStatus,
+        String rejectionMessage,
+        InterviewCancellationReason cancellationReason
 ) {
     public static InterviewStudentResponseDTO of(Interview interview) {
         InternshipApplication application = interview.getInternshipApplication();
@@ -32,7 +34,8 @@ public record InterviewStudentResponseDTO(
                 interview.getMeetingType().name(),
                 interview.getMeetingDetails(),
                 interview.getInterviewStatus().name(),
-                interview.getRejectionMessage()
+                interview.getRejectionMessage(),
+                interview.getCancellationReason()
         );
     }
 }

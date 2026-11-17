@@ -16,6 +16,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.Document;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -395,7 +396,7 @@ public class EmployerService {
     }
 
     private void cancelAndSaveInterview(Interview interview) {
-        interview.cancel();
+        interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
         interviewRepository.save(interview);
 
         notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());

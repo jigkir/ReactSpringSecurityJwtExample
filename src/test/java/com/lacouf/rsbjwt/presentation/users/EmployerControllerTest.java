@@ -19,6 +19,7 @@ import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplicationStatus;
 import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
+import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.MeetingType;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
@@ -503,7 +504,7 @@ public class EmployerControllerTest {
     void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO updated = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "");
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "", null);
 
         when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
 
@@ -586,7 +587,7 @@ public class EmployerControllerTest {
     void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
         // Arrange
         InterviewEmployerResponseDTO cancelled = new InterviewEmployerResponseDTO(
-                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "");
+                30L, 10L, "Jane Doe", "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "", InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
         when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
 
@@ -682,7 +683,8 @@ public class EmployerControllerTest {
                 "IN_PERSON",
                 "123 Main St",
                 "SCHEDULED",
-                ""
+                "",
+                null
         );
     }
 
