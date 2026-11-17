@@ -18,7 +18,7 @@
  * CV tab: when a status is picked in the filter, every row gets a coloured border
  * (red = rejected, yellow = pending, green = approved), like the manager page.
  *
- * `preview` (Home page): no card shell, all matching documents,
+ * `preview` (Home page): no card shell, only rejected and pending documents,
  * each one its own card.
  *
  * `selection` ("pick" mode, used when applying to an internship): only APPROVED CVs are listed,
@@ -81,6 +81,7 @@ function DocumentList({
     const picking = Boolean(selection);
     const hasStatusFilter = type === "CV" && !preview && !picking;
 
+    // Home preview: show only rejected and pending documents, with rejected first.
     // ALL: every type merged → rejected, then pending, then the rest; newest first inside each group.
     // Otherwise: rejected → pending → approved, newest first.
     // Pick mode: only approved CVs.
@@ -88,9 +89,12 @@ function DocumentList({
         const types = type === ALL ? DOC_TYPE_KEYS : [type];
         const lists = await Promise.all(types.map(async (k) =>
             (await getDocuments(k)).filter(isVisible).map((d) => ({...d, docType: k}))));
-        const merged = lists.flat().filter((d) => !picking || d.docType !== "CV" || d.status === "APPROVED");
+        const merged = lists.flat().filter((d) => {
+            if (preview) return d.status === "REJECTED" || d.status === "PENDING";
+            return !picking || d.docType !== "CV" || d.status === "APPROVED";
+        });
         return type === ALL ? merged.sort(byStatusThenNewest) : sortCvsNewest(merged);
-    }, [type, picking]);
+    }, [type, picking, preview]);
     const {items: docs, failed, reload} = useLoadedList(fetchDocs);
 
     // Silent refetch when the parent asks for it (after an upload / a type change)
