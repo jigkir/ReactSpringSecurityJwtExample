@@ -16,7 +16,6 @@ import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
-import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import jakarta.validation.Valid;

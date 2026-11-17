@@ -36,7 +36,6 @@ import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvRespo
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
-import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -214,8 +213,7 @@ public class ManagerService {
 
     @Transactional(readOnly = true)
     public List<TeacherAssignmentDto> getAssignableTeachers(long trackingId) throws InternshipTrackingNotFoundException {
-        InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
-                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+        InternshipTracking tracking = findTracking(trackingId);
 
         List<Teacher> teachers = teacherRepository.findByDiscipline(tracking.getStudent().getDiscipline());
 
@@ -235,19 +233,23 @@ public class ManagerService {
     @Transactional
     public InternshipTrackingResponseDto assignTeacher(long trackingId, long teacherId)
             throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
-        InternshipTracking tracking = internshipTrackingRepository.findById(trackingId)
-                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+        InternshipTracking tracking = findTracking(trackingId);
 
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!teacher.getDiscipline().equals(tracking.getStudent().getDiscipline())) {
+        if (teacher.getDiscipline() != tracking.getStudent().getDiscipline()) {
             throw new TeacherDisciplineMismatchException(teacherId, trackingId);
         }
 
         tracking.assignTeacher(teacher);
 
         return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
+    }
+
+    private InternshipTracking findTracking(long trackingId) throws InternshipTrackingNotFoundException {
+        return internshipTrackingRepository.findById(trackingId)
+                .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {
