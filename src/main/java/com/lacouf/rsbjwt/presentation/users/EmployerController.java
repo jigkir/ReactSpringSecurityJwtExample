@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
@@ -92,7 +93,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/{applicationId}/accept")
-    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
+    public ResponseEntity<Void> acceptReceivedInternshipApplicationForInterview(@PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
         employerService.acceptInternshipApplicationForInterview(applicationId, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -104,7 +105,7 @@ public class EmployerController {
     }
 
     @PostMapping("/applications/{applicationId}/interview")
-    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException {
+    public ResponseEntity<Void> createInterview(@Valid @RequestBody InterviewRequestDto interviewRequestDto, @PathVariable long applicationId, Authentication authentication) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
         employerService.createInterview(applicationId, authentication.getName(), interviewRequestDto);
         return ResponseEntity.ok().build();
     }
@@ -138,7 +139,7 @@ public class EmployerController {
     }
 
     @PutMapping("/applications/offer")
-    public ResponseEntity<Void> offerInternshipsToStudents(@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
+    public ResponseEntity<Void> offerInternshipsToStudents(@RequestBody List<Long> applicationIds, Authentication authentication) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
         employerService.offerInternshipsToStudents(applicationIds, authentication.getName());
         return ResponseEntity.ok().build();
     }

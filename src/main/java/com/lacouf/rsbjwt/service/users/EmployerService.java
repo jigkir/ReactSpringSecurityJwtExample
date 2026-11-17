@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service.users;
 import com.lacouf.rsbjwt.exception.APIException;
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.interview.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
@@ -221,17 +222,8 @@ public class EmployerService {
     }
 
     @Transactional
-    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException {
-
-        InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
-
-        if (internshipApplication.getEmployerDecision() == EmployerDecision.REJECTED) {
-            throw new ApplicationRejectedException(applicationId);
-        }
-
-        if (internshipApplication.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
-            throw new InternshipAlreadyOfferedException(applicationId);
-        }
+    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
+        InternshipApplication internshipApplication = findApplicationOpenToDecision(applicationId, email);
 
         if (interviewRepository.existsByInternshipApplicationAndInterviewStatus(internshipApplication, InterviewStatus.SCHEDULED)) {
             throw new InterviewAlreadyExistsException(applicationId);
@@ -255,15 +247,8 @@ public class EmployerService {
     }
 
     @Transactional
-    public void acceptInternshipApplicationForInterview(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
-        InternshipApplication application = findReceivedInternshipApplication(applicationId, email);
-
-        if (application.getEmployerDecision() == EmployerDecision.REJECTED) {
-            throw new ApplicationRejectedException(applicationId);
-        }
-        if (application.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
-            throw new InternshipAlreadyOfferedException(applicationId);
-        }
+    public void acceptInternshipApplicationForInterview(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
+        InternshipApplication application = findApplicationOpenToDecision(applicationId, email);
 
         updateEmployerDecisionForInterview(application, EmployerDecision.ACCEPTED);
     }
@@ -342,23 +327,16 @@ public class EmployerService {
     }
 
     @Transactional(rollbackFor = APIException.class)
-    public void offerInternshipsToStudents(List<Long> applicationIds, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException {
+    public void offerInternshipsToStudents(List<Long> applicationIds, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
 
         for (Long applicationId : new LinkedHashSet<>(applicationIds)) {
-            InternshipApplication application = findReceivedInternshipApplication(applicationId, email);
+            InternshipApplication internshipApplication = findApplicationOpenToDecision(applicationId, email);
 
-            if (application.getEmployerDecision() == EmployerDecision.REJECTED) {
-                throw new ApplicationRejectedException(applicationId);
-            }
-            if (application.getEmployerDecision() == EmployerDecision.INTERNSHIP_OFFERED) {
-                throw new InternshipAlreadyOfferedException(applicationId);
-            }
+            internshipApplication.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
+            internshipApplication.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
+            internshipApplicationRepository.save(internshipApplication);
 
-            application.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
-            application.setStudentInternshipConsent(StudentInternshipConsent.PENDING);
-            internshipApplicationRepository.save(application);
-
-            notificationService.notifyInternshipOffered(application);
+            notificationService.notifyInternshipOffered(internshipApplication);
         }
     }
 
@@ -430,6 +408,26 @@ public class EmployerService {
     private InternshipApplication findReceivedInternshipApplication(long applicationId, String email) throws InternshipApplicationNotFoundException {
         return internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(applicationId, email)
                 .orElseThrow(() -> new InternshipApplicationNotFoundException(applicationId));
+    }
+
+    private InternshipApplication findApplicationOpenToDecision(long applicationId, String email) throws InternshipApplicationNotFoundException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
+        InternshipApplication application = findReceivedInternshipApplication(applicationId, email);
+        EmployerDecision decision = application.getEmployerDecision();
+        Student student = application.getStudent();
+
+        if (decision == EmployerDecision.REJECTED) {
+            throw new ApplicationRejectedException(applicationId);
+        }
+
+        if (decision == EmployerDecision.INTERNSHIP_OFFERED) {
+            throw new InternshipAlreadyOfferedException(applicationId);
+        }
+
+        if (student.isEmployed()) {
+            throw new StudentAlreadyEmployedException(application.getStudent().getId());
+        }
+
+        return application;
     }
 
     private void closeNewInternshipApplicationNotifications(Internship internship) {

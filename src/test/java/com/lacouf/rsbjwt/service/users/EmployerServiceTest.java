@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service.users;
 
 import com.lacouf.rsbjwt.exception.application.*;
 import com.lacouf.rsbjwt.exception.contract.ApplicationRejectedException;
+import com.lacouf.rsbjwt.exception.contract.StudentAlreadyEmployedException;
 import com.lacouf.rsbjwt.exception.internship.*;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.interview.InterviewCancelledException;
@@ -715,6 +716,25 @@ public class EmployerServiceTest {
     }
 
     @Test
+    void shouldThrowStudentAlreadyEmployedWhenCreatingInterviewForEmployedStudent() {
+        // Arrange
+        InternshipApplication internshipApplication = receivedInternshipApplication();
+        Student student = internshipApplication.getStudent();
+
+        student.markAsEmployed();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(internshipApplication));
+
+        // Act + Assert
+        assertThrows(StudentAlreadyEmployedException.class,
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+
+        verify(interviewRepository, never()).save(any(Interview.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldThrowWhenCreatingInterviewThatAlreadyExistsAndIsScheduled() {
         // Arrange
         InternshipApplication internshipApplication = receivedInternshipApplication();
@@ -1224,6 +1244,27 @@ public class EmployerServiceTest {
 
         assertEquals(EmployerDecision.REJECTED, application.getEmployerDecision());
         verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
+    }
+
+    @Test
+    void shouldThrowStudentAlreadyEmployedWhenOfferingInternshipToEmployedStudent() {
+        // Arrange
+        InternshipApplication application = receivedInternshipApplication();
+        Student student = application.getStudent();
+
+        student.markAsEmployed();
+
+        when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(application));
+
+        // Act + Assert
+        assertThrows(StudentAlreadyEmployedException.class,
+                () -> employerService.offerInternshipsToStudents(List.of(INTERNSHIP_APPLICATION_ID), EMPLOYER_EMAIL));
+
+        assert (EmployerDecision.PENDING).equals(application.getEmployerDecision());
+
+        verify(internshipApplicationRepository, never()).save(any(InternshipApplication.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
