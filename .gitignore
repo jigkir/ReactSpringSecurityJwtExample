@@ -38,3 +38,6 @@ build/
 ### Node ###
 node_modules/
 coverage/
+
+### Local frontend configuration ###
+/react-vite-project/src/components/config/Config.jsx
