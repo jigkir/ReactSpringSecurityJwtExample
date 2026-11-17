@@ -151,6 +151,17 @@ function Interviews({ preview = false }) {
         const query = search.trim().toLowerCase();
         const status = getInterviewStatus(interview);
 
+        if (preview) {
+            const time = getInterviewTime(interview);
+            const matchesPreviewSearch =
+                (interview.internshipTitle ?? "").toLowerCase().includes(query)
+                || (interview.employerName ?? "").toLowerCase().includes(query);
+            return interview.studentDecision === "PENDING"
+                && interview.interviewStatus !== "CANCELLED"
+                && (time === null || time >= Date.now())
+                && matchesPreviewSearch;
+        }
+
         const matchesSearch =
             (interview.internshipTitle ?? "").toLowerCase().includes(query) ||
             (interview.employerName ?? "").toLowerCase().includes(query);
@@ -198,7 +209,8 @@ function Interviews({ preview = false }) {
 
     if (preview) {
         return (
-            <PreviewState dark={dark} error={error} loading={loading} empty={shown.length === 0}>
+            <PreviewState dark={dark} error={error} loading={loading}
+                          empty={shown.length === 0} emptyText="studentInterviews.awaitingResponseEmpty">
                 {shown.map(renderCard)}
             </PreviewState>
         );

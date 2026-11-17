@@ -44,11 +44,18 @@ function StudentInternships({preview = false}) {
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
     const groupOf = (internship) => {
-        if (appliedIds.has(internship.id)) return 1; // APPLIED
-        return internship.viewed ? 2 : 0;            // OLD : NEW
+        if (preview) return internship.viewed ? 1 : 0;
+        if (appliedIds.has(internship.id)) return 2; // APPLIED
+        return internship.viewed ? 1 : 0;            // OLD : NEW
     };
-    const ordered = [...visible].sort((a, b) => groupOf(a) - groupOf(b));
-    const shown = ordered;
+    const shown = [...visible].sort((a, b) => {
+        const groupDifference = groupOf(a) - groupOf(b);
+        if (groupDifference !== 0) return groupDifference;
+        if (preview) {
+            return new Date(b.uploadedAt) - new Date(a.uploadedAt);
+        }
+        return 0;
+    });
 
     const unviewedIdsRef = useRef([]);
     useEffect(() => {

@@ -96,9 +96,12 @@ function Applications({user, preview = false}) {
         if (!applications) return [];
 
         // Freeze the "new" state the first time an application is seen
-        register(applications);
-        return applications;
-    }, [applications, register]);
+        const relevantApplications = preview
+            ? applications.filter((application) => application.employerDecision === "PENDING")
+            : applications;
+        register(relevantApplications);
+        return relevantApplications;
+    }, [applications, register, preview]);
 
     // One group per internship that has at least one application: [{id, title, apps, unread}]
     const groups = useMemo(() => {
@@ -162,6 +165,8 @@ function Applications({user, preview = false}) {
         body = <p className={s.errorText} role="alert">{t("applicationsPage.loadError")}</p>;
     } else if (applications === null) {
         body = <p className={s.loadingText} aria-busy="true">{t("applicationsPage.loading")}</p>;
+    } else if (preview && sessionApps.length === 0) {
+        body = <p className={s.emptyText}>{t("applicationsPage.pendingReviewEmpty")}</p>;
     } else if (applications.length === 0) {
         body = <p className={s.emptyText}>{t("applicationsPage.empty")}</p>;
     } else if (visibleGroups.length === 0) {
@@ -211,6 +216,14 @@ function Applications({user, preview = false}) {
         ));
     }
 
+    if (preview && applications !== null && sessionApps.length === 0) {
+        return (
+            <div className={s.scrollArea}>
+                {body}
+            </div>
+        );
+    }
+
     return (
         <div className={s.page}>
             <div className={s.headerSection}>
@@ -221,7 +234,9 @@ function Applications({user, preview = false}) {
             </div>
 
             <div className={s.listSection}>
-                {applications && applications.length > 0 && (
+                {applications && (!preview
+                    ? applications.length > 0
+                    : sessionApps.length > 0) && (
                     <div className="flex flex-wrap items-center gap-2 mb-4">
                         {/* Pick the internship */}
                         <select

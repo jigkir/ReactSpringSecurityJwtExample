@@ -180,7 +180,7 @@ describe("StudentInternships shows offers expanded", () => {
     });
 });
 
-describe("StudentInternships orders NEW, then APPLIED, then OLD", () => {
+describe("StudentInternships orders NEW, then OLD, then APPLIED", () => {
 
     it("shouldListNewOffersBeforeAppliedOffers", async () => {
         // Arrange: Java (id 1) already applied to, React (id 2) is new and not applied to
@@ -198,7 +198,7 @@ describe("StudentInternships orders NEW, then APPLIED, then OLD", () => {
         });
     });
 
-    it("shouldListAppliedOffersBeforeOldOffers", async () => {
+    it("shouldListOldOffersBeforeAppliedOffers", async () => {
         // Arrange: both viewed. Java (id 1) is OLD, React (id 2) is APPLIED
         getStudentInternships.mockResolvedValue([
             {...internship1, viewed: true},
@@ -213,12 +213,12 @@ describe("StudentInternships orders NEW, then APPLIED, then OLD", () => {
         // Assert
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3});
-            expect(titles[0]).toHaveTextContent("Développeur React");
-            expect(titles[1]).toHaveTextContent("Développeur Java");
+            expect(titles[0]).toHaveTextContent("Développeur Java");
+            expect(titles[1]).toHaveTextContent("Développeur React");
         });
     });
 
-    it("shouldPutNewThenAppliedThenOld", async () => {
+    it("shouldPutNewThenOldThenApplied", async () => {
         // Arrange
         getStudentInternships.mockResolvedValue([
             {...internship1, id: 1, title: "Old offer", viewed: true},
@@ -234,7 +234,7 @@ describe("StudentInternships orders NEW, then APPLIED, then OLD", () => {
         // Assert
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3}).map((h) => h.textContent);
-            expect(titles).toEqual(["New offer", "Applied offer", "Old offer"]);
+            expect(titles).toEqual(["New offer", "Old offer", "Applied offer"]);
         });
     });
 });
