@@ -1,9 +1,9 @@
-import { useTranslation } from "react-i18next";
-import { getInternshipCardClasses } from "../../../styles/AppStyles.jsx";
+import {useTranslation} from "react-i18next";
+import {getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
 import Icon from "../../../styles/Icon.jsx";
 import Button from "../../../styles/Button.jsx";
 import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import { Field } from "../../../utils/CommonFields.jsx";
+import {Field} from "../../../utils/CommonFields.jsx";
 
 const getInterviewTime = (interview) => {
     const raw = interview.scheduledAt ?? interview.interviewDate;
@@ -55,7 +55,7 @@ export default function InterviewCard({
                                           onReschedule,
                                           onCloseForm
                                       }) {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const cardS = getInternshipCardClasses(dark);
 
     const time = getInterviewTime(interview);
@@ -69,7 +69,7 @@ export default function InterviewCard({
     const rescheduled = status === "rescheduled";
 
     const formattedDate = validDate
-        ? new Intl.DateTimeFormat(locale, { dateStyle: "long", timeStyle: "short" }).format(new Date(time))
+        ? new Intl.DateTimeFormat(locale, {dateStyle: "long", timeStyle: "short"}).format(new Date(time))
         : t("studentInterviews.invalidDate");
 
     const meetingUrl = interview.meetingType === "ONLINE" ? getMeetingUrl(interview.meetingDetails) : null;
@@ -120,16 +120,18 @@ export default function InterviewCard({
                 </div>
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                     {awaitingResponse ? (
-                        <span className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
-                            dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-700"
-                        }`}>
-                            <Icon name={statusIcon} size={18} />
+                    {awaitingResponse ? (
+                            <span
+                                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
+                                    dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-700"
+                                }`}>
+                            <Icon name={statusIcon} size={18}/>
                             <span>{t("studentInterviews.awaitingResponse")}</span>
                         </span>
-                    ) :
-                    (<span className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
-                        <Icon name={statusIcon} size={18} />
+                        ) :
+                        (<span
+                            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
+                        <Icon name={statusIcon} size={18}/>
                         <span>{t(`studentInterviews.statuses.${status}`)}</span>
                     </span>)}
                 </div>
@@ -137,7 +139,7 @@ export default function InterviewCard({
 
             <div className={`${cardS.detailsRow} mt-4 flex flex-wrap gap-2`}>
                 <span className={`${cardS.detailBadge} max-w-full flex-wrap gap-1.5`}>
-                    <Icon name="event" size={20} />
+                    <Icon name="event" size={20}/>
                     <span className="font-semibold">{t("studentInterviews.date")}:</span>
                     <span>{formattedDate}</span>
                 </span>
@@ -151,7 +153,8 @@ export default function InterviewCard({
                 <div>
                     <p className={`mb-1 text-sm font-semibold ${muted}`}>{t("studentInterviews.details")}</p>
                     {meetingUrl ? (
-                        <a href={meetingUrl} target="_blank" rel="noopener noreferrer" className={`break-all font-medium underline ${dark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"}`}>
+                        <a href={meetingUrl} target="_blank" rel="noopener noreferrer"
+                           className={`break-all font-medium underline ${dark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"}`}>
                             {t("studentInterviews.openLink")}
                         </a>
                     ) : (
@@ -165,8 +168,15 @@ export default function InterviewCard({
                 </div>
 
                 {/* --- Rejection Banner --- */}
+                {cancelled && interview.cancellationReason && (
+                    <p className={`text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`} role="note">
+                        {t(`studentInterviews.cancellationReasons.${interview.cancellationReason}`)}
+                    </p>
+                )}
                 {rejected && interview.rejectionMessage && (
-                    <div className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`} role="note">
+                    <div
+                        className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
+                        role="note">
                         <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                             {t("studentInterviews.rejectionReason")}
                         </p>

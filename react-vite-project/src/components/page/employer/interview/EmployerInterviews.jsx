@@ -95,8 +95,10 @@ function EmployerInterviews({user, preview = false}) {
                             <p className={`mt-1 text-sm ${muted}`}>{studentName(interview)}</p>
                         )}
                     </div>
-                    <span className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold">
-                        <Icon name={status === "cancelled" ? "close" : status === "past" ? "check_circle" : "schedule"} size={18}/>
+                    <span
+                        className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold">
+                        <Icon name={status === "cancelled" ? "close" : status === "past" ? "check_circle" : "schedule"}
+                              size={18}/>
                         {t(`employerInterviews.statuses.${status}`)}
                     </span>
                 </div>
@@ -123,10 +125,17 @@ function EmployerInterviews({user, preview = false}) {
                 <div className="mt-3 space-y-1 break-words">
                     <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.details")}</p>
                     <p>{interview.meetingDetails || t("employerInterviews.notProvided")}</p>
+                    {status === "cancelled" && interview.cancellationReason && (
+                        <p className={`mt-3 text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`}
+                           role="note">
+                            {t(`employerInterviews.cancellationReasons.${interview.cancellationReason}`)}
+                        </p>
+                    )}
                 </div>
 
                 {interview.studentDecision === "REJECTED" && interview.studentRejectionComment && (
-                    <div className={`mt-3 rounded-lg border-l-4 border-red-500 px-3 py-2 ${dark ? "bg-red-900/30" : "bg-red-50"}`}>
+                    <div
+                        className={`mt-3 rounded-lg border-l-4 border-red-500 px-3 py-2 ${dark ? "bg-red-900/30" : "bg-red-50"}`}>
                         <p className="text-xs font-bold uppercase">{t("employerInterviews.rejectionReason")}</p>
                         <p className="text-sm whitespace-pre-wrap">{interview.studentRejectionComment}</p>
                     </div>

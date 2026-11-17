@@ -758,7 +758,11 @@
     "editReschedule": "Modifier le report",
     "changeDate": "Changer la date",
     "editMessage": "Modifier le message",
-    "reject": "Refuser"
+    "reject": "Refuser",
+    "cancellationReasons": {
+      "CANCELLED_BY_EMPLOYER": "L'employeur a annulé cette entrevue.",
+      "STUDENT_HIRED": "Entrevue annulée automatiquement : vous avez accepté une autre offre de stage."
+    }
   },
   "employerInterviews": {
     "title": "Entrevues",
@@ -786,6 +790,10 @@
       "ACCEPTED": "Accepté",
       "REJECTED": "Refusé",
       "RESCHEDULE_REQUESTED": "Report demandé"
+    },
+    "cancellationReasons": {
+      "CANCELLED_BY_EMPLOYER": "Vous avez annulé cette entrevue.",
+      "STUDENT_HIRED": "Entrevue annulée automatiquement : l'étudiant a été embauché ailleurs."
     }
   },
   "viewApplication": {

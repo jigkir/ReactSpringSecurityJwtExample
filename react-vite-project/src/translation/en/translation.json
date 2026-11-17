@@ -793,7 +793,11 @@
     "editReschedule": "Edit reschedule",
     "changeDate": "Change date",
     "editMessage": "Edit message",
-    "reject": "Reject"
+    "reject": "Reject",
+    "cancellationReasons": {
+      "CANCELLED_BY_EMPLOYER": "The employer cancelled this interview.",
+      "STUDENT_HIRED": "Interview cancelled automatically: you accepted another internship offer."
+    }
   },
   "employerInterviews": {
     "title": "Interviews",
@@ -821,6 +825,10 @@
       "ACCEPTED": "Accepted",
       "REJECTED": "Declined",
       "RESCHEDULE_REQUESTED": "Reschedule requested"
+    },
+    "cancellationReasons": {
+      "CANCELLED_BY_EMPLOYER": "You cancelled this interview.",
+      "STUDENT_HIRED": "Interview cancelled automatically: the student was hired elsewhere."
     }
   },
   "expiredUser": {
