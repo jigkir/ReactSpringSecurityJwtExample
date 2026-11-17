@@ -36,7 +36,6 @@ import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvRespo
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
-import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -239,7 +238,7 @@ public class ManagerService {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!teacher.getDiscipline().equals(tracking.getStudent().getDiscipline())) {
+        if (teacher.getDiscipline() != tracking.getStudent().getDiscipline()) {
             throw new TeacherDisciplineMismatchException(teacherId, trackingId);
         }
 
