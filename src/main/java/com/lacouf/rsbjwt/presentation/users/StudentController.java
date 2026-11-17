@@ -24,7 +24,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.users.StudentService;
 import jakarta.validation.Valid;
@@ -223,8 +223,8 @@ public class StudentController {
     }
 
     @GetMapping("/interviews")
-    public ResponseEntity<List<InterviewStudentResponseDTO>> getInterviews(Authentication authentication) throws UserNotFoundException {
-        List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(authentication.getName());
+    public ResponseEntity<List<InterviewStudentResponseDto>> getInterviews(Authentication authentication) throws UserNotFoundException {
+        List<InterviewStudentResponseDto> interviews = studentService.getInterviews(authentication.getName());
         return ResponseEntity.ok(interviews);
     }
 

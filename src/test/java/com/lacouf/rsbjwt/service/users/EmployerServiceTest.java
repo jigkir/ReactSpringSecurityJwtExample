@@ -41,7 +41,8 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -633,18 +634,20 @@ public class EmployerServiceTest {
         when(interviewRepository.findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(EMPLOYER_EMAIL))
                 .thenReturn(List.of(interview));
         // Act
-        List<InterviewEmployerResponseDTO> response = employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL);
+        List<InterviewEmployerResponseDto> response = employerService.getInterviewsOfEmployer(EMPLOYER_EMAIL);
 
         // Assert
         assert (Integer.valueOf(1)).equals(response.size());
 
-        InterviewEmployerResponseDTO first = response.getFirst();
-        assert (Long.valueOf(30L)).equals(first.id());
+        InterviewEmployerResponseDto first = response.getFirst();
+        InterviewResponseDto firstInterview = first.interview();
+
+        assert (Long.valueOf(30L)).equals(firstInterview.id());
         assert ("Jane Doe").equals(first.studentName());
-        assert ("Software Developer").equals(first.internshipTitle());
-        assert ("Please come to our office").equals(first.message());
-        assert ("PENDING").equals(first.studentDecision());
-        assert (interviewDate.toString()).equals(first.interviewDate());
+        assert ("Software Developer").equals(firstInterview.internshipTitle());
+        assert ("Please come to our office").equals(firstInterview.message());
+        assert ("PENDING").equals(firstInterview.studentDecision());
+        assert (interviewDate.toString()).equals(firstInterview.interviewDate());
     }
 
     @Test
@@ -667,7 +670,7 @@ public class EmployerServiceTest {
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
         // Act
-        InterviewEmployerResponseDTO response = employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", newDate, MeetingType.IN_PERSON, "123 Main St"));
+        InterviewEmployerResponseDto response = employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", newDate, MeetingType.IN_PERSON, "123 Main St"));
 
         // Assert
         assertEquals("New message", interview.getMessage());
@@ -676,9 +679,9 @@ public class EmployerServiceTest {
         assertEquals("123 Main St", interview.getMeetingDetails());
         assertEquals(StudentDecision.PENDING, interview.getStudentDecision());
 
-        assertEquals(30L, response.id());
-        assertEquals("New message", response.message());
-        assertEquals(newDate.toString(), response.interviewDate());
+        assertEquals(30L, response.interview().id());
+        assertEquals("New message", response.interview().message());
+        assertEquals(newDate.toString(), response.interview().interviewDate());
 
         verify(interviewRepository).save(interview);
     }
@@ -792,11 +795,11 @@ public class EmployerServiceTest {
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
         // Act
-        InterviewEmployerResponseDTO response = employerService.cancelInterview(30L, EMPLOYER_EMAIL);
+        InterviewEmployerResponseDto response = employerService.cancelInterview(30L, EMPLOYER_EMAIL);
 
         // Assert
         assertEquals(InterviewStatus.CANCELLED, interview.getInterviewStatus());
-        assertEquals(30L, response.id());
+        assertEquals(30L, response.interview().id());
 
         verify(interviewRepository).save(interview);
         verify(notificationService).closeNotificationsOfTarget(TargetType.INTERVIEW, 30L);
@@ -893,18 +896,20 @@ public class EmployerServiceTest {
                 .thenReturn(List.of(interview));
 
         // Act
-        List<InterviewEmployerResponseDTO> response = employerService.getInterviewsByApplicationId(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
+        List<InterviewEmployerResponseDto> response = employerService.getInterviewsByApplicationId(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL);
 
         // Assert
         assertEquals(1, response.size());
 
-        InterviewEmployerResponseDTO first = response.getFirst();
-        assertEquals(30L, first.id());
+        InterviewEmployerResponseDto first = response.getFirst();
+        InterviewResponseDto firstInterview = first.interview();
+
+        assertEquals(30L, firstInterview.id());
         assertEquals("Jane Doe", first.studentName());
-        assertEquals("Software Developer", first.internshipTitle());
-        assertEquals("Please come to our office", first.message());
-        assertEquals("PENDING", first.studentDecision());
-        assertEquals(interviewDate.toString(), first.interviewDate());
+        assertEquals("Software Developer", firstInterview.internshipTitle());
+        assertEquals("Please come to our office", firstInterview.message());
+        assertEquals("PENDING", firstInterview.studentDecision());
+        assertEquals(interviewDate.toString(), firstInterview.interviewDate());
     }
 
     // ---------- Interview notifications ----------

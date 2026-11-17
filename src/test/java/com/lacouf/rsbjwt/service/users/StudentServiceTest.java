@@ -50,7 +50,8 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -1429,22 +1430,24 @@ public class StudentServiceTest {
         when(interviewRepository.findByInternshipApplication_Student(dummyStudent)).thenReturn(List.of(interview));
 
         // Act
-        List<InterviewStudentResponseDTO> interviews = studentService.getInterviews(STUDENT_EMAIL);
+        List<InterviewStudentResponseDto> interviews = studentService.getInterviews(STUDENT_EMAIL);
 
         // Assert
         assert interviews.size() == 1;
 
-        InterviewStudentResponseDTO first = interviews.getFirst();
-        assert Long.valueOf(30L).equals(first.id());
-        assert Long.valueOf(20L).equals(first.applicationId());
+        InterviewStudentResponseDto first = interviews.getFirst();
+        InterviewResponseDto firstInterview = first.interview();
+
+        assert Long.valueOf(30L).equals(firstInterview.id());
+        assert Long.valueOf(20L).equals(firstInterview.applicationId());
         assert "Company Name".equals(first.employerName());
-        assert "Software Developer".equals(first.internshipTitle());
-        assert "Please come to our office".equals(first.message());
-        assert "PENDING".equals(first.studentDecision());
-        assert interviewDate.toString().equals(first.interviewDate());
-        assert "IN_PERSON".equals(first.meetingType());
-        assert "123 Main St".equals(first.meetingDetails());
-        assert "SCHEDULED".equals(first.interviewStatus());
+        assert "Software Developer".equals(firstInterview.internshipTitle());
+        assert "Please come to our office".equals(firstInterview.message());
+        assert "PENDING".equals(firstInterview.studentDecision());
+        assert interviewDate.toString().equals(firstInterview.interviewDate());
+        assert "IN_PERSON".equals(firstInterview.meetingType());
+        assert "123 Main St".equals(firstInterview.meetingDetails());
+        assert "SCHEDULED".equals(firstInterview.interviewStatus());
     }
 
 

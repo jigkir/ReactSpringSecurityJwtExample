@@ -54,7 +54,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.StudentCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.StudentInternshipResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -362,11 +362,11 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<InterviewStudentResponseDTO> getInterviews(String email) throws UserNotFoundException {
+    public List<InterviewStudentResponseDto> getInterviews(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
         return interviewRepository.findByInternshipApplication_Student(student).stream()
                 .filter(interview -> isVisibleToStudents(interview.getInternshipApplication().getInternship()))
-                .map(InterviewStudentResponseDTO::of)
+                .map(InterviewStudentResponseDto::of)
                 .toList();
     }
 

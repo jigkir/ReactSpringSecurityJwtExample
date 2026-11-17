@@ -34,7 +34,7 @@ import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.application.ReceivedInternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDTO;
+import com.lacouf.rsbjwt.service.dto.response.interview.InterviewEmployerResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
@@ -287,20 +287,20 @@ public class EmployerService {
     }
 
     @Transactional(readOnly = true)
-    public List<InterviewEmployerResponseDTO> getInterviewsOfEmployer(String email) {
+    public List<InterviewEmployerResponseDto> getInterviewsOfEmployer(String email) {
         return interviewRepository.findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(email)
                 .stream()
-                .map(InterviewEmployerResponseDTO::of)
+                .map(InterviewEmployerResponseDto::of)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<InterviewEmployerResponseDTO> getInterviewsByApplicationId(long applicationId, String email) throws InternshipApplicationNotFoundException {
+    public List<InterviewEmployerResponseDto> getInterviewsByApplicationId(long applicationId, String email) throws InternshipApplicationNotFoundException {
         InternshipApplication internshipApplication = findReceivedInternshipApplication(applicationId, email);
 
         return interviewRepository.findByInternshipApplication(internshipApplication)
                 .stream()
-                .map(InterviewEmployerResponseDTO::of)
+                .map(InterviewEmployerResponseDto::of)
                 .toList();
     }
 
@@ -310,7 +310,7 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
+    public InterviewEmployerResponseDto updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
         Interview interview = findModifiableInterview(interviewId, email);
         InternshipApplication application = interview.getInternshipApplication();
 
@@ -330,16 +330,16 @@ public class EmployerService {
         notificationService.closeNotificationsOfTarget(TargetType.INTERVIEW, interview.getId());
         notifyStudentOfInterview(interview, NotificationType.INTERVIEW_UPDATED);
 
-        return InterviewEmployerResponseDTO.of(interview);
+        return InterviewEmployerResponseDto.of(interview);
     }
 
     @Transactional
-    public InterviewEmployerResponseDTO cancelInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
+    public InterviewEmployerResponseDto cancelInterview(long interviewId, String email) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException {
         Interview interview = findModifiableInterview(interviewId, email);
 
         cancelAndSaveInterview(interview);
 
-        return InterviewEmployerResponseDTO.of(interview);
+        return InterviewEmployerResponseDto.of(interview);
     }
 
     @Transactional(rollbackFor = APIException.class)

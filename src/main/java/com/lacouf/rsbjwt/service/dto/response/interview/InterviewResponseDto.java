@@ -1,14 +1,13 @@
 package com.lacouf.rsbjwt.service.dto.response.interview;
 
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
+import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
-import com.lacouf.rsbjwt.model.user.Employer;
 
-public record InterviewStudentResponseDTO(
+public record InterviewResponseDto(
         Long id,
         Long applicationId,
-        String employerName,
         String internshipTitle,
         String message,
         String studentDecision,
@@ -19,15 +18,14 @@ public record InterviewStudentResponseDTO(
         String rejectionMessage,
         InterviewCancellationReason cancellationReason
 ) {
-    public static InterviewStudentResponseDTO of(Interview interview) {
+    public static InterviewResponseDto of(Interview interview) {
         InternshipApplication application = interview.getInternshipApplication();
-        Employer employer = interview.getEmployer();
+        Internship internship = application.getInternship();
 
-        return new InterviewStudentResponseDTO(
+        return new InterviewResponseDto(
                 interview.getId(),
                 application.getId(),
-                employer.getCompanyName(),
-                application.getInternship().getTitle(),
+                internship.getTitle(),
                 interview.getMessage(),
                 interview.getStudentDecision().name(),
                 interview.getInterviewDate().toString(),
