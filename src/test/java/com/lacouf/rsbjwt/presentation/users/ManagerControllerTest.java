@@ -6,6 +6,9 @@ import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.InternshipNotFoundException;
 import com.lacouf.rsbjwt.exception.internship.PastSessionInternshipNotEditableException;
+import com.lacouf.rsbjwt.exception.internship_tracking.InternshipTrackingNotFoundException;
+import com.lacouf.rsbjwt.exception.internship_tracking.TeacherDisciplineMismatchException;
+import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -16,8 +19,11 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import org.junit.jupiter.api.Test;
@@ -36,8 +42,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Import(GlobalExceptionHandler.class)
 @WebMvcTest(ManagerController.class)
@@ -60,6 +65,8 @@ public class ManagerControllerTest {
              "applicationDeadline": "2026-12-01", "compensationAmount": 27.00, "compensationNegotiable": false}
             """;
     private static final StudentSummaryDto STUDENT = new StudentSummaryDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE);
+    private static final TeacherSummaryDto TEACHER = new TeacherSummaryDto(5L, "Paul", "Roy", Discipline.COMPUTER_SCIENCE, "paul@example.com");
+    private static final TeacherAssignmentDto ASSIGNABLE_TEACHER = new TeacherAssignmentDto(5L, "Paul", "Roy", Discipline.COMPUTER_SCIENCE, "paul@example.com", 3L);
 
     @Test
     void shouldReturnVisibleCvsOfChosenSession() throws Exception {
@@ -413,6 +420,88 @@ public class ManagerControllerTest {
         verify(accountAccessService).denyStudentAccess(2L);
     }
 
+    @Test
+    void shouldReturnInternshipTrackings() throws Exception {
+        // Arrange
+        when(managerService.getInternshipTrackings()).thenReturn(List.of(trackingWith(null), trackingWith(TEACHER)));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internship-trackings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].teacher").isEmpty())
+                .andExpect(jsonPath("$[1].teacher.email").value("paul@example.com"));
+
+        verify(managerService).getInternshipTrackings();
+    }
+
+    @Test
+    void shouldReturnAssignableTeachers() throws Exception {
+        // Arrange
+        when(managerService.getAssignableTeachers(1L)).thenReturn(List.of(ASSIGNABLE_TEACHER));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internship-trackings/1/teachers"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].email").value("paul@example.com"));
+
+        verify(managerService).getAssignableTeachers(1L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingTeachersOfUnknownTracking() throws Exception {
+        // Arrange
+        when(managerService.getAssignableTeachers(99L)).thenThrow(new InternshipTrackingNotFoundException(99L));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/internship-trackings/99/teachers"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnOkWhenTeacherIsAssigned() throws Exception {
+        // Arrange
+        when(managerService.assignTeacher(1L, 5L)).thenReturn(trackingWith(TEACHER));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internship-trackings/1/teacher/5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.teacher.email").value("paul@example.com"));
+
+        verify(managerService).assignTeacher(1L, 5L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAssigningTeacherToUnknownTracking() throws Exception {
+        // Arrange
+        when(managerService.assignTeacher(99L, 5L)).thenThrow(new InternshipTrackingNotFoundException(99L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internship-trackings/99/teacher/5"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAssigningUnknownTeacher() throws Exception {
+        // Arrange
+        when(managerService.assignTeacher(1L, 99L)).thenThrow(new UserNotFoundException());
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internship-trackings/1/teacher/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnConflictWhenTeacherIsOfAnotherDiscipline() throws Exception {
+        // Arrange
+        when(managerService.assignTeacher(1L, 5L)).thenThrow(new TeacherDisciplineMismatchException(5L, 1L));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/manager/internship-trackings/1/teacher/5"))
+                .andExpect(status().isConflict());
+    }
+
     // ---------- Helpers ----------
 
     private static ManagerCvResponseDto cvWith(ReviewStatus status, String comment) {
@@ -443,5 +532,9 @@ public class ManagerControllerTest {
 
     private static StudentAccessResponseDto studentAccessWith(AccountStatus status) {
         return new StudentAccessResponseDto(2L, "Marie", "Tremblay", "marie@example.com", "2234567", Discipline.COMPUTER_SCIENCE, status);
+    }
+
+    private static InternshipTrackingResponseDto trackingWith(TeacherSummaryDto teacher) {
+        return new InternshipTrackingResponseDto(1, STUDENT, internshipWith(ReviewStatus.APPROVED, null), teacher);
     }
 }
