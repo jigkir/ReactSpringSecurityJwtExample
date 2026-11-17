@@ -16,13 +16,13 @@
 import {useTranslation} from 'react-i18next';
 import {getPostInternshipClasses} from '../../styles/AppStyles.jsx';
 
-const PreviewState = ({dark, loading = false, error = false, empty = false, className = "space-y-4", children}) => {
+const PreviewState = ({dark, loading = false, error = false, empty = false, emptyText, className = "space-y-4", children}) => {
     const {t} = useTranslation();
     const s = getPostInternshipClasses(dark);
 
     if (error) return <p className={s.errorText} role="alert">{t("home.preview.loadError")}</p>;
     if (loading) return <p className={s.loadingText} aria-busy="true">{t("home.preview.loading")}</p>;
-    if (empty) return <p className={s.emptyText}>{t("home.preview.empty")}</p>;
+    if (empty) return <p className={s.emptyText}>{emptyText ? t(emptyText) : t("home.preview.empty")}</p>;
 
     return <div className={className}>{children}</div>;
 };

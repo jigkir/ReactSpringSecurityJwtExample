@@ -378,6 +378,7 @@
     "internshipAria": "Filtrer par offre de stage",
     "allInternships": "Toutes les offres de stage",
     "unknownInternship": "Offre de stage inconnue",
+    "pendingReviewEmpty": "Aucune candidature en attente de révision.",
     "fromInternship": "Candidatures pour l'offre",
     "applicationCount_one": "{{count}} candidature",
     "applicationCount_other": "{{count}} candidatures",
@@ -397,6 +398,7 @@
     "listTitle": "Vos offres",
     "loading": "Chargement de vos offres…",
     "empty": "Vous n'avez publié aucune offre de stage pour l'instant. Cliquez sur « Publier une offre de stage » pour créer votre première offre.",
+    "pendingReviewEmpty": "Aucune offre de stage en attente de révision ou refusée.",
     "loadError": "Impossible de charger vos offres de stage. Elles s'actualiseront automatiquement.",
     "createError": "Impossible de créer l'offre de stage. Vérifiez le formulaire et réessayez.",
     "createGenericError": "Impossible d'enregistrer l'offre de stage. Veuillez réessayer.",
@@ -707,6 +709,7 @@
   "studentInterviews": {
     "title": "Mes entrevues",
     "awaitingResponse": "En attente de réponse",
+    "awaitingResponseEmpty": "Aucune entrevue en attente de réponse.",
     "loading": "Chargement des entrevues...",
     "loadError": "Impossible de charger les entrevues.",
     "empty": "Vous n'avez aucune convocation d'entrevue pour le moment.",

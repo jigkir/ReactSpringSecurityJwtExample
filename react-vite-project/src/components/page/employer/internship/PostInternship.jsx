@@ -47,7 +47,15 @@ function PostInternship({user, preview = false}) {
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
-    const shown = visible;
+    const shown = preview
+        ? internships
+            .filter((internship) => internship.status === "PENDING" || internship.status === "REJECTED")
+            .sort((a, b) => {
+                const statusDifference =
+                    Number(b.status === "REJECTED") - Number(a.status === "REJECTED");
+                return statusDifference || new Date(b.uploadedAt) - new Date(a.uploadedAt);
+            })
+        : visible;
 
     const lang = i18n.resolvedLanguage ?? i18n.language;
 
@@ -159,7 +167,8 @@ function PostInternship({user, preview = false}) {
     // Home preview: same states and spacing as every other Home preview
     if (preview) {
         return (
-            <PreviewState dark={dark} error={Boolean(error)} loading={loading} empty={shown.length === 0}>
+            <PreviewState dark={dark} error={Boolean(error)} loading={loading}
+                          empty={shown.length === 0} emptyText="postInternship.pendingReviewEmpty">
                 {cards}
             </PreviewState>
         );

@@ -17,7 +17,7 @@
  *   Internships: PENDING → APPROVED → REJECTED   (pending offers first, rejected ones never first)
  * The status always comes first; the chosen sort only orders items inside the same status.
  *
- * The student internships page then regroups its list as NEW → APPLIED → OLD
+ * The student internships page then regroups its list as NEW → OLD → APPLIED
  * (see pages/student/Internships.jsx); the chosen sort orders items inside each group.
  */
 

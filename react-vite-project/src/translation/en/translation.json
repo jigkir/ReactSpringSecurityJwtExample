@@ -378,6 +378,7 @@
     "internshipAria": "Filter by internship offer",
     "allInternships": "All internship offers",
     "unknownInternship": "Unknown internship",
+    "pendingReviewEmpty": "No applications pending review.",
     "fromInternship": "Applications for the offer",
     "applicationCount_one": "{{count}} application",
     "applicationCount_other": "{{count}} applications",
@@ -397,6 +398,7 @@
     "listTitle": "Your offers",
     "loading": "Loading your offers…",
     "empty": "You haven't posted any internship offers yet. Click “Post an internship offer” to create your first one.",
+    "pendingReviewEmpty": "No internships pending review or rejected.",
     "loadError": "Unable to load your internship offers. They will refresh automatically.",
     "createError": "Unable to create the internship offer. Please check the form and try again.",
     "createGenericError": "Unable to save the internship offer. Please try again.",
@@ -738,6 +740,7 @@
   "studentInterviews": {
     "title": "My interviews",
     "awaitingResponse": "Awaiting response",
+    "awaitingResponseEmpty": "No interviews awaiting response.",
     "loading": "Loading interviews…",
     "loadError": "Unable to load interviews. They will refresh automatically.",
     "empty": "No interview invitations yet. When an employer invites you, it will appear here.",
