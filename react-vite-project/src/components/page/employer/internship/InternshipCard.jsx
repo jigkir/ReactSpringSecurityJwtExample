@@ -221,7 +221,7 @@ function InternshipCard({
                     ) : <span/>}
 
                     <div className="flex items-center gap-1 ml-auto">
-                        {internship.status === "APPROVED" && (
+                        {internship.status === "APPROVED" && Number(totalApplications) > 0 && (
                             <Button
                                 as={NavLink}
                                 to={`/application/${internship.id}`}
