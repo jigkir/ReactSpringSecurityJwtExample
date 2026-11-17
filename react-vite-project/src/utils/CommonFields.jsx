@@ -252,6 +252,26 @@ export const PasswordField = ({
     );
 };
 
+export const PhoneNumberField = ({
+    value, onChange, warning, labelClass, errorClass, fieldClass,
+}) => {
+    const {t} = useTranslation();
+    return(<Field
+        id="phoneNumber" label={t("employer.phoneNumber")} warning={warning}
+        labelClass={labelClass} errorClass={errorClass}
+    >
+        <input
+            id="phoneNumber" name="phoneNumber" type="tel"
+            inputMode="numeric"
+            pattern="[1-9]{1}[0-9]{9}"
+            value={value}
+            onChange={onChange}
+            maxLength={10} required className={fieldClass}
+        />
+    </Field>);
+}
+
+
 export const ConfirmPasswordField = ({
     value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
     show, onToggleShow,

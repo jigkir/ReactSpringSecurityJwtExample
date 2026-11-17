@@ -5,6 +5,7 @@ import {getInternshipCardClasses, getPostInternshipClasses} from "../../../style
 import Icon from "../../../styles/Icon.jsx";
 import {acceptOffer, denyOffer, getStudentOffers} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
+import {translateWarning} from "../../../utils/CommonFields.jsx";
 import Button from "../../../styles/Button.jsx";
 
 const CONSENT_ICON = {PENDING: "hourglass_bottom", ACCEPTED: "check_circle", REJECTED: "close"};
@@ -36,6 +37,8 @@ function Offers() {
 
     const [offers, setOffers] = useState(null); // null = loading
     const [loadFailed, setLoadFailed] = useState(false);
+    const [busyId, setBusyId] = useState(null);
+    const [actionError, setActionError] = useState(null); // {key, options?}, translated at render
 
     const load = useCallback(async () => {
         try {
@@ -60,32 +63,35 @@ function Offers() {
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
     }, [hash, offers]);
 
-   const handleAccept = async (offerId) =>{
-       try {
-           await acceptOffer(offerId);
-           await load();
-       }catch {
-
-       }
-   }
-
-    const handleDeny = async (offerId) =>{
+    // Accepting creates the contract. A 409 (contract already exists, offer rejected, no offer,
+    // student already employed) means the state changed, so the list is always reloaded.
+    const answer = async (offerId, request, fallbackKey) => {
+        if (busyId !== null) return;
+        setBusyId(offerId);
+        setActionError(null);
         try {
-            await denyOffer(offerId);
+            await request(offerId);
+        } catch (err) {
+            setActionError(err.i18n ?? {key: fallbackKey});
+        } finally {
             await load();
-        }catch {
-
+            setBusyId(null);
         }
-    }
+    };
+
+    const handleAccept = (offerId) => answer(offerId, acceptOffer, "studentOffers.acceptFailed");
+    const handleDeny = (offerId) => answer(offerId, denyOffer, "studentOffers.denyFailed");
 
     const renderCard = (offer) => {
         const consent = CONSENT_ICON[offer.studentInternshipConsent] ? offer.studentInternshipConsent : "PENDING";
         const highlighted = hash === `#offer-${offer.id}`;
+        const busy = busyId === offer.id;
 
         return (
             <article
                 key={offer.id}
                 id={`offer-${offer.id}`}
+                aria-busy={busy}
                 className={`${cardS.card} scroll-mt-20 border-l-4 border-l-emerald-500 ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
             >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -105,20 +111,25 @@ function Offers() {
                     </span>
                 </div>
 
-
                 <div className={`${cardS.detailsRow} mt-4 justify-between`}>
                     <span className={cardS.detailBadge}>
                         <Icon name="event" size={20}/>
                         <span
                             className="font-medium">{t("studentOffers.applicationDate")}</span> {offer.applicationDate}
                     </span>
-                    <div className="flex gap-2" hidden={consent !== "PENDING"}>
-                        <Button icon="check" dark={dark} onClick={() => handleAccept(offer.id)}>{t("studentInterviews.accept")}</Button>
-                        <Button icon="close" dark={dark} onClick={() => handleDeny(offer.id)}>{t("studentInterviews.reject")}</Button>
-                    </div>
+                    {consent === "PENDING" && (
+                        <div className="flex gap-2">
+                            <Button icon="check" dark={dark} disabled={busyId !== null}
+                                    onClick={() => handleAccept(offer.id)}>
+                                {t("studentInterviews.accept")}
+                            </Button>
+                            <Button icon="close" dark={dark} disabled={busyId !== null}
+                                    onClick={() => handleDeny(offer.id)}>
+                                {t("studentInterviews.reject")}
+                            </Button>
+                        </div>
+                    )}
                 </div>
-
-
             </article>
         );
     };
@@ -143,6 +154,9 @@ function Offers() {
                 </div>
             </div>
             <div className={s.listSection}>
+                {actionError && (
+                    <p className={`${s.errorText} mb-4`} role="alert">{translateWarning(t, actionError)}</p>
+                )}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>

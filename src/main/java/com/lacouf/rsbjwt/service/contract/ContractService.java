@@ -8,10 +8,12 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.contract.ContractLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
+import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.StudentInternshipStatus;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
+import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -34,16 +36,18 @@ public class ContractService {
     private final ContractRepository contractRepository;
     private final ManagerRepository managerRepository;
 
+    private final InternshipTrackingRepository internshipTrackingRepository;
     private final UserAppService userAppService;
     private final AcademicSessionService academicSessionService;
     private final NotificationService notificationService;
 
     private final Clock clock;
 
-    public ContractService(ContractPdfGenerator contractPdfGenerator, ContractRepository contractRepository, ManagerRepository managerRepository, UserAppService userAppService, AcademicSessionService academicSessionService, NotificationService notificationService, Clock clock) {
+    public ContractService(ContractPdfGenerator contractPdfGenerator, ContractRepository contractRepository, ManagerRepository managerRepository, InternshipTrackingRepository internshipTrackingRepository, UserAppService userAppService, AcademicSessionService academicSessionService, NotificationService notificationService, Clock clock) {
         this.contractPdfGenerator = contractPdfGenerator;
         this.contractRepository = contractRepository;
         this.managerRepository = managerRepository;
+        this.internshipTrackingRepository = internshipTrackingRepository;
         this.userAppService = userAppService;
         this.academicSessionService = academicSessionService;
         this.notificationService = notificationService;
@@ -57,6 +61,9 @@ public class ContractService {
         Contract contract = contractRepository.save(new Contract(application, LocalDateTime.now(clock)));
 
         notifyManagersOfContractToSign(contract);
+
+        notificationService.notifyIfAbsent(ContractParty.EMPLOYER.getContractToSignNotification(), contract.getId(), contract.getEmployer());
+        notificationService.notifyIfAbsent(ContractParty.STUDENT.getContractToSignNotification(), contract.getId(), contract.getStudent());
     }
 
     @Transactional(readOnly = true)
@@ -145,6 +152,10 @@ public class ContractService {
         contract.sign(party, signer, getSigningTime(contract, party));
 
         notificationService.closeNotificationsOfType(party.getContractToSignNotification(), contractId);
+
+        if (contract.isFullySigned()) {
+            internshipTrackingRepository.save(new InternshipTracking(contract));
+        }
 
         return ContractResponseDto.of(contractRepository.save(contract));
     }

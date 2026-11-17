@@ -3,6 +3,8 @@ package com.lacouf.rsbjwt.presentation.users;
 import com.lacouf.rsbjwt.exception.document.DocumentNotFoundException;
 import com.lacouf.rsbjwt.exception.document.student.cv.CVUsedInApplicationException;
 import com.lacouf.rsbjwt.exception.internship.*;
+import com.lacouf.rsbjwt.exception.internship_tracking.InternshipTrackingNotFoundException;
+import com.lacouf.rsbjwt.exception.internship_tracking.TeacherDisciplineMismatchException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.document.student.cv.CvRejectionDto;
@@ -11,7 +13,10 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
+import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import jakarta.validation.Valid;
@@ -109,5 +114,20 @@ public class ManagerController {
     @PutMapping("/students/{studentId}/deny")
     public ResponseEntity<StudentAccessResponseDto> denyStudentAccess(@PathVariable long studentId) throws UserNotFoundException {
         return ResponseEntity.ok(accountAccessService.denyStudentAccess(studentId));
+    }
+
+    @GetMapping("/internship-trackings")
+    public ResponseEntity<List<InternshipTrackingResponseDto>> getInternshipTrackings() {
+        return ResponseEntity.ok(managerService.getInternshipTrackings());
+    }
+
+    @GetMapping("/internship-trackings/{trackingId}/teachers")
+    public ResponseEntity<List<TeacherAssignmentDto>> getAssignableTeachers(@PathVariable long trackingId) throws InternshipTrackingNotFoundException {
+        return ResponseEntity.ok(managerService.getAssignableTeachers(trackingId));
+    }
+
+    @PutMapping("/internship-trackings/{trackingId}/teacher/{teacherId}")
+    public ResponseEntity<InternshipTrackingResponseDto> assignTeacher(@PathVariable long trackingId, @PathVariable long teacherId) throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
+        return ResponseEntity.ok(managerService.assignTeacher(trackingId, teacherId));
     }
 }

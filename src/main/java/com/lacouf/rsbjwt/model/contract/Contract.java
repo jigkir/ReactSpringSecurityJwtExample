@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 
 @Getter
@@ -64,8 +65,18 @@ public class Contract {
     }
 
     public Optional<ContractParty> findPartyOf(UserApp user) {
+        Long userId = user.getId();
+
         if (user instanceof Manager) {
             return Optional.of(ContractParty.MANAGER);
+        }
+
+        if (userId.equals(getEmployer().getId())) {
+            return Optional.of(ContractParty.EMPLOYER);
+        }
+
+        if (userId.equals(student.getId())) {
+            return Optional.of(ContractParty.STUDENT);
         }
 
         return Optional.empty();
@@ -73,6 +84,10 @@ public class Contract {
 
     public boolean isPartyOf(UserApp user) {
         return findPartyOf(user).isPresent();
+    }
+
+    public boolean isFullySigned() {
+        return Arrays.stream(ContractParty.values()).allMatch(this::isSignedBy);
     }
 
     public boolean isWaitingForSignatureOf(UserApp user) {

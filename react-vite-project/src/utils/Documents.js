@@ -59,3 +59,15 @@ export function blobUrlFromFile(file) {
     if (!file?.content) throw new Error("missing content");
     return base64ToBlobUrl(file.content);
 }
+
+/** Saves an API file {fileName, content (Base64)} through a temporary link. */
+export function saveFile(file) {
+    const url = blobUrlFromFile(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+}

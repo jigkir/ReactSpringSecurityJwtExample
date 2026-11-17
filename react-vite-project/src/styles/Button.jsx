@@ -39,7 +39,7 @@ const Button = ({
 
     return (
         <Component className={classes} {...rest}>
-            {icon && <Icon name={icon} size={18} className={ICON_MOTION[icon] ?? ""}/>}
+            {icon && <Icon name={icon} size={18} className={`shrink-0 ${ICON_MOTION[icon] ?? ""}`}/>}
             {children}
         </Component>
     );

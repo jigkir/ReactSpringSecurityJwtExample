@@ -1,7 +1,18 @@
 @import "tailwindcss";
 
+html,
 body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
     overflow-x: clip;
+}
+
+#root {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 
 @theme {
