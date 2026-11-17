@@ -798,7 +798,11 @@
     "selectedCount_other": "{{count}} étudiants sélectionnés",
     "hire": "Embaucher des candidats",
     "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
-    "hired": "Embauché",
+    "consent": {
+      "PENDING": "Offre envoyée, en attente de réponse",
+      "ACCEPTED": "Offre acceptée",
+      "REJECTED": "Offre refusée"
+    },
     "selectStudent": "Sélectionner {{name}}",
     "selectAll": "Tout sélectionner",
     "hiring": "Embauche en cours...",

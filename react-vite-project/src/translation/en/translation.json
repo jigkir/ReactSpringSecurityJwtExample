@@ -718,7 +718,11 @@
     "selectedCount_other": "{{count}} students selected",
     "hire": "Hire candidates",
     "hireSuccess": "The selected students have been successfully hired.",
-    "hired": "Hired",
+    "consent": {
+      "PENDING": "Offer sent, awaiting answer",
+      "ACCEPTED": "Offer accepted",
+      "REJECTED": "Offer declined"
+    },
     "selectStudent": "Select {{name}}",
     "selectAll": "Select all",
     "hiring": "Hiring...",

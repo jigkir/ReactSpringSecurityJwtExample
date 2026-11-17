@@ -19,6 +19,12 @@ import {useToggleSet} from "../../../../utils/useToggleSet.js";
 const COVER_LETTER = "COVER_LETTER";
 const TRANSCRIPT = "TRANSCRIPT";
 
+const CONSENT_PILL = {
+    PENDING: {status: "PENDING", icon: "hourglass_bottom"},
+    ACCEPTED: {status: "APPROVED", icon: "check_circle"},
+    REJECTED: {status: "REJECTED", icon: "close"},
+};
+
 const getCoverLetterUrl = async (applicationId) => blobUrlFromFile(await getApplicationCoverLetter(applicationId));
 const getTranscriptUrl = async (applicationId) => blobUrlFromFile(await getApplicationTranscript(applicationId));
 
@@ -45,6 +51,7 @@ function ApplicationCard({
     const isHired = application.employerDecision === "INTERNSHIP_OFFERED";
     const isRejected = application.employerDecision === "REJECTED";
     const canHire = !isHired && !isRejected;
+    const consentPill = CONSENT_PILL[application.studentInternshipConsent];
     const viewLabel = isPreviewOpen ? t("cvPreview.closeBtn") : t("cvDocuments.viewCVBtn");
     const [isInterviewSelectOpen, setIsInterviewSelectOpen] = useState(false);
     const [interview, setInterview] = useState(null);
@@ -144,10 +151,11 @@ function ApplicationCard({
                                         {student?.firstName} {student?.lastName}
                                     </h3>
                                     {isNew && <Badge tone="new">{t("viewApplication.new")}</Badge>}
-                                    {isHired && (
-                                        <span className={`${th.pillBase} ${th.statusPill("APPROVED")} ${bigPill}`}>
-                                            <Icon name="check_circle" size={18}/>
-                                            {t("viewApplication.hired")}
+                                    {isHired && consentPill && (
+                                        <span
+                                            className={`${th.pillBase} ${th.statusPill(consentPill.status)} ${bigPill}`}>
+                                            <Icon name={consentPill.icon} size={18}/>
+                                            {t(`viewApplication.consent.${application.studentInternshipConsent}`)}
                                         </span>
                                     )}
                                 </div>
