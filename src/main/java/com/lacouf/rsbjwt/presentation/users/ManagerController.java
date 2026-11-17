@@ -13,6 +13,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
@@ -66,7 +67,7 @@ public class ManagerController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<List<InternshipResponseDto>> getAllInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
+    public ResponseEntity<List<ManagerInternshipResponseDto>> getAllInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
         return ResponseEntity.ok(managerService.getAllInternships(sessionId));
     }
 

@@ -38,6 +38,9 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
     @Query("select internshipApplication.internship.id from InternshipApplication internshipApplication where internshipApplication.student = :student")
     Set<Long> findInternshipIdsByStudent(@Param("student") Student student);
 
+    @Query("select internshipApplication.internship.id from InternshipApplication internshipApplication where internshipApplication.internship.session = :session")
+    Set<Long> findInternshipIdsByInternshipSession(@Param("session") AcademicSession session);
+
     List<InternshipApplication> findByStudentAndEmployerDecision(Student student, EmployerDecision employerDecision);
 
     List<InternshipApplication> findByStudentAndStudentInternshipConsent(Student student, StudentInternshipConsent studentInternshipConsent);

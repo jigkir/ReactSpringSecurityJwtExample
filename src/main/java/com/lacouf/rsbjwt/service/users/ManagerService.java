@@ -34,6 +34,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
@@ -46,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,10 +154,13 @@ public class ManagerService {
         return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
     }
 
-    public List<InternshipResponseDto> getAllInternships(Long sessionId) throws AcademicSessionNotFoundException {
+    public List<ManagerInternshipResponseDto> getAllInternships(Long sessionId) throws AcademicSessionNotFoundException {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+        Set<Long> internshipIdsWithApplications = applicationRepository.findInternshipIdsByInternshipSession(session);
 
-        return internshipRepository.findBySessionAndDeletedFalse(session).stream().map(InternshipResponseDto::of).toList();
+        return internshipRepository.findBySessionAndDeletedFalse(session).stream()
+                .map(internship -> ManagerInternshipResponseDto.of(internship, internshipIdsWithApplications.contains(internship.getId())))
+                .toList();
     }
 
     public InternshipResponseDto getInternshipById(long internshipId) throws InternshipNotFoundException {

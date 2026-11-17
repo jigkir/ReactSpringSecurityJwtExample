@@ -35,6 +35,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
@@ -52,6 +53,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.answer;
@@ -415,11 +417,11 @@ public class ManagerServiceTest {
         when(internshipRepository.findBySessionAndDeletedFalse(currentSession)).thenReturn(List.of(internship));
 
         //Act
-        List<InternshipResponseDto> result = managerService.getAllInternships(null);
+        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(null);
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
-        assert ("Développeur logiciel").equals(result.getFirst().title());
+        assert ("Développeur logiciel").equals(result.getFirst().internship().title());
     }
 
     @Test
@@ -432,10 +434,24 @@ public class ManagerServiceTest {
         when(internshipRepository.findBySessionAndDeletedFalse(pastSession)).thenReturn(List.of());
 
         //Act
-        List<InternshipResponseDto> result = managerService.getAllInternships(2L);
+        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(2L);
 
         //Assert
         assert result.isEmpty();
+    }
+
+    @Test
+    void shouldMarkInternshipsThatHaveApplications() throws AcademicSessionNotFoundException {
+        //Arrange
+        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
+        when(internshipRepository.findBySessionAndDeletedFalse(currentSession)).thenReturn(List.of(internship));
+        when(applicationRepository.findInternshipIdsByInternshipSession(currentSession)).thenReturn(Set.of(internship.getId()));
+
+        //Act
+        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(null);
+
+        //Assert
+        assert result.getFirst().hasApplications();
     }
 
     @Test

@@ -19,6 +19,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
@@ -202,13 +203,16 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnAllInternships() throws Exception {
         // Arrange
-        when(managerService.getAllInternships(null)).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null), internshipWith(ReviewStatus.APPROVED, null)));
+        when(managerService.getAllInternships(null)).thenReturn(List.of(
+                new ManagerInternshipResponseDto(internshipWith(ReviewStatus.PENDING, null), false),
+                new ManagerInternshipResponseDto(internshipWith(ReviewStatus.APPROVED, null), true)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[1].status").value("APPROVED"));
+                .andExpect(jsonPath("$[1].status").value("APPROVED"))
+                .andExpect(jsonPath("$[1].hasApplications").value(true));
 
         verify(managerService).getAllInternships(null);
     }
