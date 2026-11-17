@@ -3,7 +3,7 @@ import {useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getInternshipCardClasses, getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
 import Icon from "../../../../styles/Icon.jsx";
-import {getEmployerInterviews, updateInterview} from "../../../api/Api.jsx";
+import {cancelInterview, getEmployerInterviews, updateInterview} from "../../../api/Api.jsx";
 import {usePolling} from "../../../../utils/usePolling.js";
 import InterviewPicker from "./InterviewPicker.jsx";
 import Button from "../../../../styles/Button.jsx";
@@ -77,6 +77,18 @@ function EmployerInterviews({user, preview = false}) {
         }
     };
 
+    const onCancelInterview = async (interview) => {
+        try {
+            if (interview !== null) {
+                await cancelInterview(interview.id);
+                await load();
+            }
+            return {success: true};
+        }catch (err) {
+            return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
+        }
+    }
+
     const muted = dark ? "text-slate-400" : "text-slate-500";
 
     const renderCard = (interview) => {
@@ -142,7 +154,7 @@ function EmployerInterviews({user, preview = false}) {
                 )}
 
                 {canEdit && (
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex justify-end gap-2">
                         <Button
                             tone={isOpen ? "danger" : "warning"}
                             dark={dark}
@@ -153,6 +165,14 @@ function EmployerInterviews({user, preview = false}) {
                             {isOpen
                                 ? t("employerInternship.closeInterviewPicker")
                                 : t("employerInternship.editInterviewPicker")}
+                        </Button>
+                        <Button
+                            tone={"danger"}
+                            dark={dark}
+                            icon={"close"}
+                            onClick={() => onCancelInterview(interview)}
+                        >
+                            {t("employerInternship.cancelInterview")}
                         </Button>
                     </div>
                 )}

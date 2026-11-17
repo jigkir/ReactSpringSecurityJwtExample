@@ -595,7 +595,8 @@
   "employerInternship": {
     "openInterviewPicker": "Invite to an interview",
     "editInterviewPicker": "Edit interview invitation",
-    "closeInterviewPicker": "Close interview form"
+    "closeInterviewPicker": "Close interview form",
+    "cancelInterview": "Cancel Interview"
   },
   "internshipFilters": {
     "searchPlaceholder": "Search by title, skills or location…",

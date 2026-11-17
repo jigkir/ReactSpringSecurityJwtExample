@@ -7,6 +7,7 @@ import Badge from "../../../../styles/Badge.jsx";
 import PdfPreview from "../../../documents/PdfPreview.jsx";
 import InterviewPicker from "../interview/InterviewPicker.jsx";
 import {
+    cancelInterview,
     createInterview,
     getApplicationCoverLetter,
     getApplicationTranscript,
@@ -105,6 +106,18 @@ function ApplicationCard({
         setIsInterviewSelectOpen((prev) => !prev);
     };
 
+    const onCancelInterview = async () => {
+        try {
+            if (interview !== null) {
+                await cancelInterview(interview.id);
+                setInterview(interviews.filter(i => i.interviewStatus !== "CANCELLED").at(-1) ?? null);
+            }
+            return {success: true};
+        }catch (err) {
+            return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
+        }
+    }
+
     const handleSendOffer = async (payload) => {
         try {
             if (interview !== null) {
@@ -176,16 +189,29 @@ function ApplicationCard({
 
                         <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto sm:ml-auto sm:min-w-52">
                             {!isHired && (
-                                <Button
-                                    tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
-                                    dark={dark}
-                                    className="w-full"
-                                    icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
-                                    onClick={onToggleInterviewPicker}
-                                    aria-expanded={isInterviewSelectOpen}
-                                >
-                                    {interviewLabel}
-                                </Button>
+                                <>
+                                    <Button
+                                        tone={isInterviewSelectOpen ? "danger" : (interview !== null ? "warning" : "accent")}
+                                        dark={dark}
+                                        className="w-full"
+                                        icon={isInterviewSelectOpen ? "close" : (interview !== null ? "edit" : "send")}
+                                        onClick={onToggleInterviewPicker}
+                                        aria-expanded={isInterviewSelectOpen}
+                                    >
+                                        {interviewLabel}
+                                    </Button>
+                                    {interview !== null && interview.interviewStatus !== "CANCELLED" && (
+                                        <Button
+                                            tone={"danger"}
+                                            dark={dark}
+                                            className="w-full"
+                                            icon={"close"}
+                                            onClick={onCancelInterview}
+                                        >
+                                            {t("employerInternship.cancelInterview")}
+                                        </Button>
+                                    )}
+                                </>
                             )}
                             {/* Each preview button is blue while closed and red while its preview is open */}
                             {hasCoverLetter && (

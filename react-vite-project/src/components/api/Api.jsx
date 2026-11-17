@@ -326,7 +326,7 @@ export async function updateManagerInternship(internshipId, internship) {
 
 // endregion
 
-//region Manager EmployerInterviews
+//region EmployerInterviews
 
 export async function updateInterview(interviewId, interviewRequest) {
     const response = await fetcher(`employer/interviews/${interviewId}`, {
@@ -338,8 +338,14 @@ export async function updateInterview(interviewId, interviewRequest) {
 }
 
 
+export async function cancelInterview(interviewId) {
+    const response = await fetcher(`employer/interviews/${interviewId}/cancel`, {
+        method: "PUT",
+    });
+    return handleResponse(response);
+}
+
 export async function createInterview(applicationId, interviewRequest) {
-    console.log("interviewRequest");
     const response = await fetcher(`employer/applications/${applicationId}/interview`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},

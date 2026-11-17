@@ -595,7 +595,8 @@
   "employerInternship": {
     "openInterviewPicker": "Convoquer en entrevue",
     "editInterviewPicker": "Modifier la convocation",
-    "closeInterviewPicker": "Fermer le formulaire d'entrevue"
+    "closeInterviewPicker": "Fermer le formulaire d'entrevue",
+    "cancelInterview": "Annuler l'entrevue"
   },
   "internshipFilters": {
     "searchPlaceholder": "Rechercher par titre, compétences ou lieu…",
