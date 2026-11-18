@@ -12,7 +12,6 @@ import java.util.List;
 
 @Repository
 public interface InternshipTrackingRepository extends JpaRepository<InternshipTracking, Long> {
-    long countByTeacherId(long teacherId);
 
     @Query("SELECT t.teacher.id AS teacherId, COUNT(t) AS total FROM InternshipTracking t WHERE t.teacher.id IN :teacherIds GROUP BY t.teacher.id")
     List<TeacherStudentCount> countByTeacherIds(@Param("teacherIds") Collection<Long> teacherIds);
