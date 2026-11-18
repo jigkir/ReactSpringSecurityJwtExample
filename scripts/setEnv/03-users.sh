@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Étape 3 : inscription des étudiants et des employeurs
+# Étape 3 : inscription des étudiants, des employeurs et des professeurs
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 log "Étudiants"
@@ -20,3 +20,7 @@ employer Patrick  Leblanc  patrick.leblanc@electrosystemes.com          'Patrick
 employer Isabelle Fortin   isabelle.fortin@agencecreamedia.com          'Isabelle123@' "Agence Créa Média"         MARKETING              5145550144
 employer Nathalie Girard   nathalie.girard@cliniquesantelongueuil.com   'Nathalie123@' "Clinique Santé Longueuil"  NURSING                4505550155
 
+
+# ----------------------------------------------------------------- 3c. Professeurs
+log "Professeurs"
+teacher Marie Dubois 10234 marie.dubois@claurendeau.qc.ca 'Marie2026!' ELECTRICAL_ENGINEERING

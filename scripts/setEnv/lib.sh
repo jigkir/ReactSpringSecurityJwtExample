@@ -80,6 +80,11 @@ employer() { # firstName lastName email password company discipline phone
     "{\"firstName\":\"$1\",\"lastName\":\"$2\",\"email\":\"$3\",\"password\":\"$4\",\"companyName\":\"$5\",\"discipline\":\"$6\",\"phoneNumber\":\"$7\"}"
 }
 
+teacher() { # firstName lastName teacherId email password discipline
+  post_json "$API/teacher/signup" \
+    "{\"firstName\":\"$1\",\"lastName\":\"$2\",\"teacherId\":\"$3\",\"email\":\"$4\",\"password\":\"$5\",\"discipline\":\"$6\"}"
+}
+
 upload_document() { # upload_document <token> <chemin API> <dossier> <fichier.pdf>
   local token="$1" path="$2" dir="$3" file="$4"
   [[ -f "$dir/$file" ]] || { echo "  document manquant : $dir/$file"; return; }
