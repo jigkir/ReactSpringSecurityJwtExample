@@ -33,6 +33,7 @@ STEPS=(
   14-late-student
   15-offers
   16-contracts
+  17-corrections-sessions
 )
 
 run_step() {
