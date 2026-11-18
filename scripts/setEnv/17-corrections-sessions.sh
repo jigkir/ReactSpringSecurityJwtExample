@@ -6,6 +6,25 @@
 # Aucune autre étape ni aucune autre démo n'utilise Antoine ou ces deux offres de Marc.
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
+# apply est défini dans 09-applications.sh, mais chaque étape tourne dans son propre sous-shell :
+# on le redéfinit ici pour que l'étape 17 fonctionne seule (./setEnv.sh 17).
+apply() { # apply <email> <mot de passe> <titre de l'offre> <CV> [lettre de motivation] [relevé de notes]
+  local token internship_id cv_id url query=""
+  token=$(login "$1" "$2")
+  [[ -n "$token" ]] || { echo "  pas de jeton (connexion échouée) : candidature de $1 ignorée"; return; }
+
+  internship_id=$(get_json "$API/student/internship" "$token" | id_where title "$3")
+  cv_id=$(get_json "$API/student/cvs/approved" "$token" | id_where fileName "$4")
+  [[ -n "$internship_id" && -n "$cv_id" ]] || { echo "  offre « $3 » ou CV $4 introuvable"; return; }
+
+  [[ -n "${5:-}" ]] && query+="&coverLetterId=$(get_json "$API/student/cover-letters" "$token" | id_where fileName "$5")"
+  [[ -n "${6:-}" ]] && query+="&transcriptId=$(get_json "$API/student/academic-transcripts" "$token" | id_where fileName "$6")"
+
+  url="$API/student/internship/$internship_id/apply/$cv_id"
+  [[ -n "$query" ]] && url+="?${query#&}"
+  request POST "$url" "$token"
+}
+
 STUDENT_EMAIL="antoine.lefebvre@claurendeau.qc.ca"
 STUDENT_PASSWORD='Antoine2026!'
 EMPLOYER_EMAIL="marc.bouchard@logiciellaval.com"

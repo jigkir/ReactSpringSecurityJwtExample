@@ -13,8 +13,8 @@ get_sprint_dates() {
         S2) echo "23-09-2026 07-10-2026";;
         S3) echo "08-10-2026 21-10-2026";;
         S4) echo "22-10-2026 05-11-2026";;
-        S5) echo "05-11-2026 18-11-2026";;
-        S6) echo "18-11-2026 02-12-2026";;
+        S5) echo "05-11-2026 19-11-2026";;
+        S6) echo "19-11-2026 02-12-2026";;
     esac
 }
 
@@ -160,8 +160,93 @@ fi
 
 echo "Running query from $START_DATE to $END_DATE..."
 
-# Execute Java program and suppress stderr (2>/dev/null) to permanently hide debug/auth logs
-JAVA_OUTPUT=$(java -cp JiraCsv-2.2-jar-with-dependencies.jar com.lacouf.JiraCsvMain 420567a26e3 EQ3 "$START_DATE" "$END_DATE" dohaelk005@gmail.com ATATT3xFfGF0p4s2EPvCAh6qXxT9lkY_0Y6k1Ke4V7V8ij9VQRvEtAKJoWxIi9BvjnCB_zJ5nr88l3EvEDDyLQ2F6rWW9WKJAvdooGMO_OWb0tr9ONlnSnk8WHhmTdIfMNMUG8kTPg5pW0Aeia0-5d1vKT3ZujStdOxemFusiLASSAnl0Ma8zbQ=0245D906 2>/dev/null)
+# Fetches ALL worklogs straight from the Jira API (paginated).
+export JIRA_TOKEN="${JIRA_TOKEN:-ATATT3xFfGF0p4s2EPvCAh6qXxT9lkY_0Y6k1Ke4V7V8ij9VQRvEtAKJoWxIi9BvjnCB_zJ5nr88l3EvEDDyLQ2F6rWW9WKJAvdooGMO_OWb0tr9ONlnSnk8WHhmTdIfMNMUG8kTPg5pW0Aeia0-5d1vKT3ZujStdOxemFusiLASSAnl0Ma8zbQ=0245D906}"
+JAVA_OUTPUT=$(python3 - 420567a26e3 EQ3 "$START_DATE" "$END_DATE" dohaelk005@gmail.com <<'PYEOF'
+"""Fetch ALL Jira worklogs (paginated issues + full per-issue worklogs).
+Usage: jira_hours.py SITE PROJECT START(dd-mm-yyyy) END(dd-mm-yyyy) EMAIL
+Token is read from env JIRA_TOKEN. END day is inclusive.
+Set USE_CREATED=1 to date logs by creation time instead of 'started'."""
+import sys, os, json, base64, urllib.request, urllib.parse
+from datetime import datetime, timedelta
+from collections import defaultdict
+
+site, project, start_s, end_s, email = sys.argv[1:6]
+token = os.environ.get("JIRA_TOKEN")
+if not token:
+    sys.exit("Error: set JIRA_TOKEN env variable")
+site = site.replace("https://", "").replace(".atlassian.net", "").strip("/")
+base = f"https://{site}.atlassian.net/rest/api/3"
+auth = "Basic " + base64.b64encode(f"{email}:{token}".encode()).decode()
+start = datetime.strptime(start_s, "%d-%m-%Y")
+end = datetime.strptime(end_s, "%d-%m-%Y") + timedelta(days=1)  # inclusive end day
+date_field = "created" if os.environ.get("USE_CREATED") else "started"
+
+def get(path, params):
+    url = f"{base}{path}?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"Authorization": auth, "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.load(r)
+
+def adf_text(node):
+    if isinstance(node, dict):
+        if node.get("type") == "text":
+            return node.get("text", "")
+        return " ".join(t for t in (adf_text(c) for c in node.get("content", [])) if t)
+    if isinstance(node, list):
+        return " ".join(t for t in (adf_text(c) for c in node) if t)
+    return ""
+
+def parse_dt(s):  # keep Jira's local wall-clock time, drop offset
+    return datetime.strptime(s[:19], "%Y-%m-%dT%H:%M:%S")
+
+def fmt_secs(sec):
+    h, m = divmod(sec // 60, 60)
+    return " ".join(p for p in (f"{h}h" if h else "", f"{m}m" if m else "") if p) or "0m"
+
+# 1) all issues with worklogs in range (padded 1 day for timezone safety), paginated
+jql = (f'project = "{project}" AND worklogDate >= "{(start - timedelta(days=1)):%Y-%m-%d}" '
+       f'AND worklogDate <= "{(end + timedelta(days=1)):%Y-%m-%d}"')
+issues, token_next = [], None
+while True:
+    p = {"jql": jql, "maxResults": 5000, "fields": "summary,parent"}
+    if token_next:
+        p["nextPageToken"] = token_next
+    d = get("/search/jql", p)
+    issues += d.get("issues", [])
+    token_next = d.get("nextPageToken")
+    if not token_next or d.get("isLast"):
+        break
+
+# 2) full worklogs per issue (paginated)
+by_user = defaultdict(list)
+for iss in issues:
+    f = iss["fields"]
+    summ = f["summary"]
+    if f.get("parent"):
+        summ = f["parent"]["fields"]["summary"] + " " + summ
+    at = 0
+    while True:
+        w = get(f"/issue/{iss['key']}/worklog", {"startAt": at, "maxResults": 1000})
+        for wl in w["worklogs"]:
+            t = parse_dt(wl[date_field])
+            if not (start <= t < end):
+                continue
+            by_user[wl["author"]["displayName"]].append(
+                (t, iss["key"], wl["timeSpentSeconds"], summ, adf_text(wl.get("comment")) or "--- EMPTY COMMENT ---"))
+        at += len(w["worklogs"])
+        if not w["worklogs"] or at >= w["total"]:
+            break
+
+for user in sorted(by_user):
+    print(user)
+    tot = 0
+    for t, key, sec, summ, com in sorted(by_user[user]):
+        tot += sec
+        print(f"        {key:<9} {fmt_secs(sec):<7} {t:%d-%m-%Y %H:%M} {summ:<130} {com}")
+    print(f"Total time : {fmt_secs(tot)} \n")
+PYEOF
+)
 
 # Pipe output to AWK for stream-processing and hours aggregation
 echo "$JAVA_OUTPUT" | awk '
