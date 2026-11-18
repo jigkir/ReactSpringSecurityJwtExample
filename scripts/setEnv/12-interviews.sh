@@ -39,3 +39,14 @@ invite isabelle.fortin@agencecreamedia.com 'Isabelle123@' "Stagiaire en marketin
 }
 JSON
 )"
+
+log "Convocation de Lebron James en entrevue"
+invite isabelle.fortin@agencecreamedia.com 'Isabelle123@' "Stagiaire en marketing numérique" "$(cat <<'JSON'
+{
+  "message": "Bonjour Lebron, votre lettre nous a beaucoup plu. Venez nous présenter deux publications que vous avez créées.",
+  "interviewDate": "2026-12-08T10:00:00",
+  "meetingType": "IN_PERSON",
+  "meetingDetails": "Agence Créa Média, 1250 rue Sherbrooke Ouest, bureau 400, Montréal"
+}
+JSON
+)"

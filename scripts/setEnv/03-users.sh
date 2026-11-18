@@ -8,6 +8,7 @@ student Léa     Tremblay 2234567 lea.tremblay@claurendeau.qc.ca   'Lea2026!'   
 student Emma    Lavoie   2256789 emma.lavoie@claurendeau.qc.ca    'Emma2026!'    CIVIL_ENGINEERING
 student Olivier Côté     2267890 olivier.cote@claurendeau.qc.ca   'Olivier2026!' ELECTRICAL_ENGINEERING
 student Chloé   Bergeron 2278901 chloe.bergeron@claurendeau.qc.ca 'Chloe2026!'   MARKETING
+student Lebron  James    2323236 lebron.james@claurendeau.qc.ca   'Lebron2026!'  MARKETING
 student Gabriel Morin    2289012 gabriel.morin@claurendeau.qc.ca  'Gabriel2026!' NURSING
 
 # ----------------------------------------------------------------- 3b. Employeurs

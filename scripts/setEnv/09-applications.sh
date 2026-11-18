@@ -36,3 +36,5 @@ apply chloe.bergeron@claurendeau.qc.ca 'Chloe2026!' "Stagiaire en marketing num�
 apply gabriel.morin@claurendeau.qc.ca 'Gabriel2026!' "Externat en soins infirmiers" CV_Gabriel_Morin.pdf
 # Candidature d'Olivier pour la démo EQ3-307 : l'étape 16 en fait un contrat
 apply olivier.cote@claurendeau.qc.ca 'Olivier2026!' "Technicien en automatisation" CV_Olivier_Cote.pdf
+
+apply lebron.james@claurendeau.qc.ca 'Lebron2026!' "Stagiaire en marketing numérique" CV_Gabriel_Morin.pdf
