@@ -83,6 +83,7 @@
     "newInternshipApplicationNotification": "{{amount}} nouvelle(s) candidature(s) reçue(s)",
     "internshipOfferRefusedNotification": "{{amount}} offre(s) d'embauche refusée(s) par un étudiant",
     "interviewCancelledNotification": "{{amount}} entrevue(s) annulée(s) : l'étudiant a été embauché ailleurs",
+    "interviewRefusedNotification": "{{amount}} convocation(s) d'entrevue refusée(s) par un étudiant",
     "notificationLoadError": "Impossible de charger les notifications. Elles s'actualiseront automatiquement.",
     "notificationMarkAsReadError": "Impossible de marquer les notifications comme lues. Veuillez réessayer.",
     "pendingUserNotification": "{{amount}} accès utilisateur à vérifier",
@@ -717,7 +718,6 @@
   },
   "studentInterviews": {
     "title": "Mes entrevues",
-    "awaitingResponse": "En attente de réponse",
     "awaitingResponseEmpty": "Aucune entrevue en attente de réponse.",
     "loading": "Chargement des entrevues...",
     "loadError": "Impossible de charger les entrevues.",
@@ -730,11 +730,11 @@
     "openLink": "Rejoindre la rencontre",
     "notProvided": "Non précisé",
     "statuses": {
+      "awaitingResponse": "En attente de réponse",
+      "upcoming": "À venir",
+      "rejected": "Refusée",
       "past": "Passée",
-      "cancelled": "Annulée",
-      "rejected": "Rejetée",
-      "accepted": "Acceptée",
-      "rescheduled": "Reportée"
+      "cancelled": "Annulée"
     },
     "types": {
       "ONLINE": "En ligne",
@@ -751,20 +751,11 @@
       "noResults": "Aucune entrevue ne correspond aux filtres."
     },
     "rejectionReason": "Raison du refus",
-    "rescheduledReason": "Détails de la demande de report",
-    "chooseNewDate": "Choisissez une nouvelle date et heure",
-    "reasonMessage": "Motif / Message :",
     "rejectionReasonLabel": "Motif du refus :",
-    "reschedulePlaceholder": "Expliquez pourquoi vous devez reporter...",
     "rejectPlaceholder": "Précisez le motif du refus...",
-    "confirmNewMessage": "Confirmer le nouveau message",
     "confirmRejection": "Confirmer le refus",
-    "confirmReschedule": "Confirmer le report",
     "cancel": "Annuler",
     "accept": "Accepter",
-    "editReschedule": "Modifier le report",
-    "changeDate": "Changer la date",
-    "editMessage": "Modifier le message",
     "reject": "Refuser",
     "cancellationReasons": {
       "CANCELLED_BY_EMPLOYER": "L'employeur a annulé cette entrevue.",
@@ -783,9 +774,11 @@
     "notProvided": "Non fourni",
     "rejectionReason": "Motif du refus",
     "statuses": {
+      "awaitingResponse": "En attente de réponse",
       "upcoming": "À venir",
-      "past": "Passé",
-      "cancelled": "Annulé"
+      "rejected": "Refusée par l'étudiant",
+      "past": "Passée",
+      "cancelled": "Annulée"
     },
     "types": {
       "ONLINE": "En ligne",

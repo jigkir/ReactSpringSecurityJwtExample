@@ -83,6 +83,7 @@
     "newInternshipApplicationNotification": "{{amount}} new application(s) received",
     "internshipOfferRefusedNotification": "{{amount}} internship offer(s) declined by a student",
     "interviewCancelledNotification": "{{amount}} interview(s) cancelled: the student was hired elsewhere",
+    "interviewRefusedNotification": "{{amount}} interview invitation(s) declined by a student",
     "notificationLoadError": "Unable to load notifications. They will refresh automatically.",
     "notificationMarkAsReadError": "Unable to mark notifications as read. Please try again.",
     "pendingUserNotification": "{{amount}} user access to review",
@@ -752,7 +753,6 @@
   },
   "studentInterviews": {
     "title": "My interviews",
-    "awaitingResponse": "Awaiting response",
     "awaitingResponseEmpty": "No interviews awaiting response.",
     "loading": "Loading interviews…",
     "loadError": "Unable to load interviews. They will refresh automatically.",
@@ -765,11 +765,11 @@
     "notProvided": "Not provided",
     "invalidDate": "Date unavailable",
     "statuses": {
+      "awaitingResponse": "Awaiting response",
+      "upcoming": "Upcoming",
+      "rejected": "Declined",
       "past": "Past",
-      "cancelled": "Cancelled",
-      "rejected": "Rejected",
-      "accepted": "Accepted",
-      "rescheduled": "Rescheduled"
+      "cancelled": "Cancelled"
     },
     "types": {
       "ONLINE": "Online (video call)",
@@ -786,20 +786,11 @@
       "noResults": "No interviews match your filters."
     },
     "rejectionReason": "Rejection reason",
-    "rescheduledReason": "Reschedule request details",
-    "chooseNewDate": "Choose new date and time",
-    "reasonMessage": "Reason / Message:",
     "rejectionReasonLabel": "Rejection reason:",
-    "reschedulePlaceholder": "Explain why you need to reschedule...",
     "rejectPlaceholder": "Specify the reason for rejecting...",
-    "confirmNewMessage": "Confirm new message",
     "confirmRejection": "Confirm rejection",
-    "confirmReschedule": "Confirm reschedule",
     "cancel": "Cancel",
     "accept": "Accept",
-    "editReschedule": "Edit reschedule",
-    "changeDate": "Change date",
-    "editMessage": "Edit message",
     "reject": "Reject",
     "cancellationReasons": {
       "CANCELLED_BY_EMPLOYER": "The employer cancelled this interview.",
@@ -818,7 +809,9 @@
     "notProvided": "Not provided",
     "rejectionReason": "Reason for declining",
     "statuses": {
+      "awaitingResponse": "Awaiting response",
       "upcoming": "Upcoming",
+      "rejected": "Declined by the student",
       "past": "Past",
       "cancelled": "Cancelled"
     },

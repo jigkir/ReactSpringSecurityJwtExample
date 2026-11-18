@@ -3,29 +3,8 @@ import {getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
 import Icon from "../../../styles/Icon.jsx";
 import Button from "../../../styles/Button.jsx";
 import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import {Field} from "../../../utils/CommonFields.jsx";
-
-const getInterviewTime = (interview) => {
-    const raw = interview.scheduledAt ?? interview.interviewDate;
-    if (!raw) return null;
-    const time = new Date(raw).getTime();
-    return Number.isNaN(time) ? null : time;
-};
-
-const isCancelled = (interview) => interview.interviewStatus === "CANCELLED";
-
-const getInterviewStatus = (interview) => {
-    if (isCancelled(interview)) return "cancelled";
-
-    const time = getInterviewTime(interview);
-    if (time !== null && time < Date.now()) return "past";
-
-    if (interview.studentDecision === "REJECTED") return "rejected";
-    if (interview.studentDecision === "ACCEPTED") return "accepted";
-    if (interview.studentDecision === "RESCHEDULE_REQUESTED") return "rescheduled";
-
-    return "awaitingResponse";
-};
+import InterviewStatusPill from "../../interview/InterviewStatusPill.jsx";
+import {getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, INTERVIEW_STATUS_ACCENT} from "../../../utils/interviewStatus.js";
 
 const getMeetingUrl = (details) => {
     try {
@@ -43,75 +22,36 @@ export default function InterviewCard({
                                           hash,
                                           preview,
                                           busy,
-                                          activeMode,
+                                          rejecting,
                                           rejectComment,
-                                          nouvelDate,
                                           onRejectCommentChange,
-                                          onNouvelDateChange,
                                           onAccept,
                                           onStartReject,
-                                          onStartReschedule,
                                           onDeny,
-                                          onReschedule,
                                           onCloseForm
                                       }) {
     const {t} = useTranslation();
     const cardS = getInternshipCardClasses(dark);
 
     const time = getInterviewTime(interview);
-    const validDate = time !== null;
-    const cancelled = isCancelled(interview);
-    const past = validDate && time < Date.now();
     const status = getInterviewStatus(interview);
+    const cancelled = status === INTERVIEW_STATUS.CANCELLED;
+    const rejected = status === INTERVIEW_STATUS.REJECTED;
+    const awaitingResponse = status === INTERVIEW_STATUS.AWAITING_RESPONSE;
 
-    const rejected = status === "rejected";
-    const accepted = status === "accepted";
-    const rescheduled = status === "rescheduled";
-
-    const formattedDate = validDate
+    const formattedDate = time !== null
         ? new Intl.DateTimeFormat(locale, {dateStyle: "long", timeStyle: "short"}).format(new Date(time))
         : t("studentInterviews.invalidDate");
 
     const meetingUrl = interview.meetingType === "ONLINE" ? getMeetingUrl(interview.meetingDetails) : null;
-    const statusIcon = cancelled || rejected ? "close" : past || accepted ? "check_circle" : "schedule";
-    const awaitingResponse = (!cancelled && !past && interview.studentDecision === "PENDING") || rescheduled;
-    const accentBorder = cancelled || rejected
-        ? "border-l-red-500"
-        : past
-            ? "border-l-slate-400"
-            : rescheduled || awaitingResponse
-                ? "border-l-amber-500"
-                : "border-l-emerald-500";
-
-    const statusClasses = cancelled || rejected
-        ? (dark ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-red-200 bg-red-50 text-red-700")
-        : past
-            ? (dark ? "border-slate-500/30 bg-slate-500/10 text-slate-200" : "border-slate-300 bg-slate-100 text-slate-700")
-            : rescheduled || awaitingResponse
-                ? (dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-700")
-                : (dark ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-emerald-200 bg-emerald-50 text-emerald-700");
-
     const highlighted = !preview && hash === `#interview-${interview.id}`;
     const muted = dark ? "text-white" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
 
-    const textareaClass = `w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
-    }`;
-
-    const inputClass = `w-full rounded-lg border px-3 py-2 text-sm ${
-        dark ? "bg-slate-700 border-slate-600 text-white" : "bg-white border-gray-300 text-gray-900"
-    }`;
-
-    const isConfirming = activeMode !== null;
-    const isRejecting = activeMode === "REJECT";
-    const isRescheduling = activeMode === "RESCHEDULE";
-    const minDateTime = new Date().toISOString().slice(0, 16);
-
     return (
         <article
             id={`interview-${interview.id}`}
-            className={`${cardS.card} scroll-mt-20 border-l-4 ${accentBorder} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
+            className={`${cardS.card} scroll-mt-20 border-l-4 ${INTERVIEW_STATUS_ACCENT[status]} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
         >
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -120,20 +60,7 @@ export default function InterviewCard({
                 </div>
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    {awaitingResponse ? (
-                            <span
-                                className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
-                                    dark ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-700"
-                                }`}>
-                            <Icon name={statusIcon} size={18}/>
-                            <span>{t("studentInterviews.awaitingResponse")}</span>
-                        </span>
-                        ) :
-                        (<span
-                            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${statusClasses}`}>
-                        <Icon name={statusIcon} size={18}/>
-                        <span>{t(`studentInterviews.statuses.${status}`)}</span>
-                    </span>)}
+                    <InterviewStatusPill dark={dark} status={status} label={t(`studentInterviews.statuses.${status}`)}/>
                 </div>
             </div>
 
@@ -186,53 +113,33 @@ export default function InterviewCard({
                     </div>
                 )}
 
-                {/* --- Action Input Form --- */}
-                {isConfirming && (
-                    <div className="space-y-3 pt-2">
-                        {isRescheduling && (
-                            <Field id={`changeDate-${interview.id}`} label={t("studentInterviews.chooseNewDate")}>
-                                <input
-                                    id={`changeDate-${interview.id}`}
-                                    type="datetime-local"
-                                    name="changeDate"
-                                    min={minDateTime}
-                                    value={nouvelDate}
-                                    onChange={(e) => onNouvelDateChange(e.target.value)}
-                                    className={inputClass}
-                                    required
-                                />
-                            </Field>
-                        )}
-
-                        <div className="space-y-1">
-                            <label className={`block text-sm font-semibold ${muted}`}>
-                                {isRescheduling ? t("studentInterviews.reasonMessage") : t("studentInterviews.rejectionReasonLabel")}
-                            </label>
-                            <AutoResizeTextarea
-                                value={rejectComment}
-                                onChange={(e) => onRejectCommentChange(e.target.value)}
-                                rows={2}
-                                autoFocus
-                                placeholder={isRescheduling ? t("studentInterviews.reschedulePlaceholder") : t("studentInterviews.rejectPlaceholder")}
-                                className={textareaClass}
-                            />
-                        </div>
+                {/* --- Rejection reason (required) --- */}
+                {rejecting && (
+                    <div className="space-y-1 pt-2">
+                        <label htmlFor={`rejectComment-${interview.id}`} className={`block text-sm font-semibold ${muted}`}>
+                            {t("studentInterviews.rejectionReasonLabel")}
+                        </label>
+                        <AutoResizeTextarea
+                            id={`rejectComment-${interview.id}`}
+                            value={rejectComment}
+                            onChange={(e) => onRejectCommentChange(e.target.value)}
+                            rows={2}
+                            autoFocus
+                            placeholder={t("studentInterviews.rejectPlaceholder")}
+                            className={textareaClass}
+                        />
                     </div>
                 )}
 
-                {/* --- Action Buttons --- */}
-                {!cancelled && !past && (
+                {/* --- Action Buttons: only while the student has not answered --- */}
+                {awaitingResponse && (
                     <div className="flex justify-end gap-3 pt-2">
-                        {isConfirming ? (
+                        {rejecting ? (
                             <>
-                                <Button
-                                    dark={dark}
-                                    tone={isRejecting ? "danger" : "warning"}
-                                    icon="check"
-                                    disabled={busy || !rejectComment.trim() || (isRescheduling && !nouvelDate)}
-                                    onClick={() => (isRejecting ? onDeny(interview.id) : onReschedule(interview.id))}
-                                >
-                                    {isRejecting ? (rejected ? t("studentInterviews.confirmNewMessage") : t("studentInterviews.confirmRejection")) : t("studentInterviews.confirmReschedule")}
+                                <Button dark={dark} tone="danger" icon="check"
+                                        disabled={busy || !rejectComment.trim()}
+                                        onClick={() => onDeny(interview.id)}>
+                                    {t("studentInterviews.confirmRejection")}
                                 </Button>
                                 <Button dark={dark} tone="neutral" icon="close" disabled={busy} onClick={onCloseForm}>
                                     {t("studentInterviews.cancel")}
@@ -240,31 +147,13 @@ export default function InterviewCard({
                             </>
                         ) : (
                             <>
-                                {!accepted && !rescheduled && (
-                                    <Button dark={dark} tone="success" icon="check" disabled={busy}
-                                            onClick={() => onAccept(interview.id)}>
-                                        {t("studentInterviews.accept")}
-                                    </Button>
-                                )}
-                                <Button
-                                    dark={dark}
-                                    tone="warning"
-                                    lockTone
-                                    icon="edit"
-                                    disabled={busy}
-                                    onClick={() => onStartReschedule(interview)}
-                                >
-                                    {rescheduled ? t("studentInterviews.editReschedule") : t("studentInterviews.changeDate")}
+                                <Button dark={dark} tone="success" icon="check" disabled={busy}
+                                        onClick={() => onAccept(interview.id)}>
+                                    {t("studentInterviews.accept")}
                                 </Button>
-                                <Button
-                                    dark={dark}
-                                    tone={rejected ? "warning" : "danger"}
-                                    lockTone
-                                    icon={rejected ? "edit" : "close"}
-                                    disabled={busy}
-                                    onClick={() => onStartReject(interview)}
-                                >
-                                    {rejected ? t("studentInterviews.editMessage") : t("studentInterviews.reject")}
+                                <Button dark={dark} tone="danger" icon="close" disabled={busy}
+                                        onClick={() => onStartReject(interview.id)}>
+                                    {t("studentInterviews.reject")}
                                 </Button>
                             </>
                         )}

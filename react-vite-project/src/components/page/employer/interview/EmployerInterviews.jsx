@@ -8,28 +8,17 @@ import {usePolling} from "../../../../utils/usePolling.js";
 import InterviewPicker from "./InterviewPicker.jsx";
 import Button from "../../../../styles/Button.jsx";
 import PreviewState from "../../../home/PreviewState.jsx";
-
-const isCancelled = (i) => i.interviewStatus === "CANCELLED";
-
-const getTime = (i) => {
-    const time = new Date(i.interviewDate).getTime();
-    return Number.isNaN(time) ? null : time;
-};
-
-const getStatus = (i) => {
-    if (isCancelled(i)) return "cancelled";
-    const time = getTime(i);
-    return time !== null && time < Date.now() ? "past" : "upcoming";
-};
+import InterviewStatusPill from "../../../interview/InterviewStatusPill.jsx";
+import {getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, INTERVIEW_STATUS_ACCENT, isCancelled} from "../../../../utils/interviewStatus.js";
 
 // Upcoming (soonest first) → past (most recent first) → cancelled
 const sortInterviews = (list) => {
     const now = Date.now();
-    const group = (i) => (isCancelled(i) ? 2 : (getTime(i) ?? 0) >= now ? 0 : 1);
+    const group = (i) => (isCancelled(i) ? 2 : (getInterviewTime(i) ?? 0) >= now ? 0 : 1);
     return [...list].sort((a, b) => {
         const ga = group(a), gb = group(b);
         if (ga !== gb) return ga - gb;
-        const ta = getTime(a) ?? 0, tb = getTime(b) ?? 0;
+        const ta = getInterviewTime(a) ?? 0, tb = getTime(b) ?? 0;
         return ga === 0 ? ta - tb : tb - ta;
     });
 };
@@ -92,14 +81,14 @@ function EmployerInterviews({user, preview = false}) {
     const muted = dark ? "text-slate-400" : "text-slate-500";
 
     const renderCard = (interview) => {
-        const status = getStatus(interview);
-        const accent = status === "cancelled" ? "border-l-red-500"
+        const status = getInterviewStatus(interview);
+        const accent = status === INTERVIEW_STATUS.CANCELLED ? "border-l-red-500"
             : status === "past" ? "border-l-slate-400" : "border-l-emerald-500";
         const isOpen = editingId === interview.id;
-        const canEdit = !preview && status !== "cancelled";
+        const canEdit = !preview && status !== INTERVIEW_STATUS.CANCELLED && status !== INTERVIEW_STATUS.PAST;
 
         return (
-            <article key={interview.id} className={`${cardS.card} border-l-4 ${accent}`}>
+            <article key={interview.id} className={`${cardS.card} border-l-4 ${INTERVIEW_STATUS_ACCENT[status]}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                         <h2 className={`${cardS.title} break-words`}>{interview.internshipTitle}</h2>
@@ -107,12 +96,7 @@ function EmployerInterviews({user, preview = false}) {
                             <p className={`mt-1 text-sm ${muted}`}>{studentName(interview)}</p>
                         )}
                     </div>
-                    <span
-                        className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold">
-                        <Icon name={status === "cancelled" ? "close" : status === "past" ? "check_circle" : "schedule"}
-                              size={18}/>
-                        {t(`employerInterviews.statuses.${status}`)}
-                    </span>
+                    <InterviewStatusPill dark={dark} status={status} label={t(`employerInterviews.statuses.${status}`)}/>
                 </div>
 
                 <div className={`${cardS.detailsRow} mt-4`}>
@@ -122,11 +106,6 @@ function EmployerInterviews({user, preview = false}) {
                     <span className={cardS.detailBadge}>
                         {t(`employerInterviews.types.${interview.meetingType}`)}
                     </span>
-                    {interview.studentDecision && (
-                        <span className={cardS.detailBadge}>
-                            {t(`employerInterviews.decisions.${interview.studentDecision}`)}
-                        </span>
-                    )}
                 </div>
 
                 <div className="mt-3 space-y-1 break-words">
@@ -137,11 +116,13 @@ function EmployerInterviews({user, preview = false}) {
                 <div className="mt-3 space-y-1 break-words">
                     <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.details")}</p>
                     <p>{interview.meetingDetails || t("employerInterviews.notProvided")}</p>
-                    {status === "cancelled" && interview.cancellationReason && (
-                        <p className={`mt-3 text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`}
-                           role="note">
-                            {t(`employerInterviews.cancellationReasons.${interview.cancellationReason}`)}
-                        </p>
+                    {status === INTERVIEW_STATUS.REJECTED && interview.rejectionMessage && (
+                        <div
+                            className={`mt-3 rounded-lg border-l-4 border-red-500 px-3 py-2 ${dark ? "bg-red-900/30" : "bg-red-50"}`}
+                            role="note">
+                            <p className="text-xs font-bold uppercase">{t("employerInterviews.rejectionReason")}</p>
+                            <p className="text-sm whitespace-pre-wrap break-words">{interview.rejectionMessage}</p>
+                        </div>
                     )}
                 </div>
 

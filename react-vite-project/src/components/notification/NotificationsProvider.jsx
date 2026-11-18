@@ -27,6 +27,7 @@ const NOTIFICATION_TYPE = {
 
     INTERVIEW_CONVOCATION: "INTERVIEW_CONVOCATION",
     INTERVIEW_UPDATED: "INTERVIEW_UPDATED",
+    INTERVIEW_REFUSED: "INTERVIEW_REFUSED",
     INTERVIEW_CANCELLED_STUDENT_HIRED: "INTERVIEW_CANCELLED_STUDENT_HIRED",
 
     INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
@@ -188,6 +189,13 @@ const NOTIFICATION_ITEMS = {
             labelKey: "navbar.internshipOfferRefusedNotification",
             to: PAGE.EMPLOYER_APPLICATIONS,
             sessionScoped: true,
+        },
+        {
+            id: "interviewRefused",
+            notificationType: NOTIFICATION_TYPE.INTERVIEW_REFUSED,
+            targetType: TARGET_TYPE.INTERVIEW,
+            labelKey: "navbar.interviewRefusedNotification",
+            to: PAGE.EMPLOYER_INTERVIEWS,
         },
         {
             id: "interviewCancelled",

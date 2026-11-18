@@ -2,50 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocation, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPostInternshipClasses } from "../../../styles/AppStyles.jsx";
-import { acceptInterviews, denyInterviews, getStudentInterviews, rescheduleInterviews } from "../../api/Api.jsx";
+import { acceptInterviews, denyInterviews, getStudentInterviews } from "../../api/Api.jsx";
 import { usePolling } from "../../../utils/usePolling.js";
 import PreviewState from "../../home/PreviewState.jsx";
 import InterviewCard from "./InterviewCard.jsx";
-
-const getInterviewTime = (interview) => {
-    const raw = interview.scheduledAt ?? interview.interviewDate;
-    if (!raw) return null;
-    const time = new Date(raw).getTime();
-    return Number.isNaN(time) ? null : time;
-};
-
-const isCancelled = (interview) => interview.interviewStatus === "CANCELLED";
-
-const getInterviewStatus = (interview) => {
-    if (isCancelled(interview)) return "cancelled";
-    if (interview.studentDecision === "REJECTED") return "rejected";
-    if (interview.studentDecision === "ACCEPTED") return "accepted";
-    if (interview.studentDecision === "RESCHEDULE_REQUESTED") return "rescheduled";
-
-    const time = getInterviewTime(interview);
-    if (time !== null && time < Date.now()) return "past";
-
-    return "upcoming";
-};
-
-const sortInterviews = (interviews) => {
-    const now = Date.now();
-    const getGroup = (interview) => {
-        if (isCancelled(interview)) return 2;
-        const time = getInterviewTime(interview);
-        return time !== null && time >= now ? 0 : 1;
-    };
-
-    return [...interviews].sort((a, b) => {
-        const groupA = getGroup(a);
-        const groupB = getGroup(b);
-        if (groupA !== groupB) return groupA - groupB;
-
-        const timeA = getInterviewTime(a) ?? 0;
-        const timeB = getInterviewTime(b) ?? 0;
-        return groupA === 0 ? timeA - timeB : timeB - timeA;
-    });
-};
+import { getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, isCancelled } from "../../../utils/interviewStatus.js";
 
 function Interviews({ preview = false }) {
     const { dark } = useOutletContext();
@@ -63,7 +24,7 @@ function Interviews({ preview = false }) {
     const [typeFilter, setTypeFilter] = useState("ALL");
 
     // Form / Action states
-    const [confirmId, setConfirmId] = useState(null);
+    const [rejectingId, setRejectingId] = useState(null);
     const [activeMode, setActiveMode] = useState(null); // "REJECT" | "RESCHEDULE" | null
     const [rejectComment, setRejectComment] = useState("");
     const [nouvelDate, setNouvelDate] = useState("");
@@ -82,6 +43,25 @@ function Interviews({ preview = false }) {
         }
     }, []);
 
+    const sortInterviews = (interviews) => {
+        const now = Date.now();
+        const getGroup = (interview) => {
+            if (isCancelled(interview)) return 2;
+            const time = getInterviewTime(interview);
+            return time !== null && time >= now ? 0 : 1;
+        };
+
+        return [...interviews].sort((a, b) => {
+            const groupA = getGroup(a);
+            const groupB = getGroup(b);
+            if (groupA !== groupB) return groupA - groupB;
+
+            const timeA = getInterviewTime(a) ?? 0;
+            const timeB = getInterviewTime(b) ?? 0;
+            return groupA === 0 ? timeA - timeB : timeB - timeA;
+        });
+    };
+
     useEffect(() => {
         void loadInterviews();
     }, [loadInterviews]);
@@ -89,24 +69,13 @@ function Interviews({ preview = false }) {
     usePolling(loadInterviews);
 
     const closeForm = () => {
-        setConfirmId(null);
-        setActiveMode(null);
+        setRejectingId(null);
         setRejectComment("");
-        setNouvelDate("");
     };
 
     const startReject = (interview) => {
-        setConfirmId(interview.id);
-        setActiveMode("REJECT");
-        setRejectComment(interview.studentRejectionComment ?? "");
-        setNouvelDate("");
-    };
-
-    const startReschedule = (interview) => {
-        setConfirmId(interview.id);
-        setActiveMode("RESCHEDULE");
-        setRejectComment(interview.studentRejectionComment ?? "");
-        setNouvelDate(interview.proposedDate ?? "");
+        setRejectingId(interviewId);
+        setRejectComment("");
     };
 
     const handleAccept = async (interviewId) => {
@@ -134,37 +103,14 @@ function Interviews({ preview = false }) {
         }
     };
 
-    const handleReschedule = async (interviewId) => {
-        setBusyId(interviewId);
-        try {
-            await rescheduleInterviews(interviewId, rejectComment.trim(), nouvelDate);
-            closeForm();
-            await loadInterviews();
-        } catch (err) {
-            console.error("Failed to reschedule interview:", err);
-        } finally {
-            setBusyId(null);
-        }
-    };
-
     const visibleInterviews = sortInterviews(interviews).filter((interview) => {
         const query = search.trim().toLowerCase();
         const status = getInterviewStatus(interview);
-
-        if (preview) {
-            const time = getInterviewTime(interview);
-            const matchesPreviewSearch =
-                (interview.internshipTitle ?? "").toLowerCase().includes(query)
-                || (interview.employerName ?? "").toLowerCase().includes(query);
-            return interview.studentDecision === "PENDING"
-                && interview.interviewStatus !== "CANCELLED"
-                && (time === null || time >= Date.now())
-                && matchesPreviewSearch;
-        }
-
         const matchesSearch =
             (interview.internshipTitle ?? "").toLowerCase().includes(query) ||
             (interview.employerName ?? "").toLowerCase().includes(query);
+
+        if (preview) return status === INTERVIEW_STATUS.AWAITING_RESPONSE && matchesSearch;
 
         const matchesStatus = statusFilter === "ALL" || status === statusFilter;
         const matchesType = typeFilter === "ALL" || interview.meetingType === typeFilter;
@@ -193,16 +139,11 @@ function Interviews({ preview = false }) {
             hash={hash}
             preview={preview}
             busy={busyId === interview.id}
-            activeMode={confirmId === interview.id ? activeMode : null}
             rejectComment={rejectComment}
-            nouvelDate={nouvelDate}
             onRejectCommentChange={setRejectComment}
-            onNouvelDateChange={setNouvelDate}
             onAccept={handleAccept}
             onStartReject={startReject}
-            onStartReschedule={startReschedule}
             onDeny={handleDeny}
-            onReschedule={handleReschedule}
             onCloseForm={closeForm}
         />
     );
@@ -252,8 +193,9 @@ function Interviews({ preview = false }) {
                                 className={inputClass}
                             >
                                 <option value="ALL">{t("studentInterviews.filters.all")}</option>
-                                <option value="upcoming">{t("studentInterviews.statuses.upcoming")}</option>
-                                <option value="past">{t("studentInterviews.statuses.past")}</option>
+                                {Object.values(INTERVIEW_STATUS).map((status) => (
+                                    <option key={status} value={status}>{t(`studentInterviews.statuses.${status}`)}</option>
+                                ))}
                             </select>
                         </div>
 
