@@ -1,7 +1,6 @@
 package com.lacouf.rsbjwt.service.dto.response.internship_tracking;
 
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
-import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
 
