@@ -74,9 +74,13 @@ son avis ou une réponse claire (accord, désaccord ou question), et non un simp
 
 ## Points d'actions SMART
 
-### 1.
+### 1. Check de mi-sprint
+À partir du Sprint 5, à la moitié du sprint, on regarde sur JIRA si au moins 50 % des stories du sprint sont « Terminé » ou « En revue ».
+Si on n’y est pas, on décide tout de suite de ce qu’on reporte ou redistribue, plutôt que d’attendre la fin du sprint pour paniquer.
 
-### 2.
+### 2. Revues de code en 24 h
+À partir du Sprint 5, chaque pull request est relue dans les 24 h après sa publication, avec un vrai retour (pas juste un « OK »).
+Les PR qui bloquent d’autres tâches passent en premier, pour éviter que les revues s’empilent à la fin du sprint.
 
 # Sprint 5
 

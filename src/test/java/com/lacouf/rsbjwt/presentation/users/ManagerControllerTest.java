@@ -539,6 +539,6 @@ public class ManagerControllerTest {
     }
 
     private static InternshipTrackingResponseDto trackingWith(TeacherSummaryDto teacher) {
-        return new InternshipTrackingResponseDto(1, STUDENT, internshipWith(ReviewStatus.APPROVED, null), teacher);
+        return new InternshipTrackingResponseDto(1, STUDENT, teacher);
     }
 }
