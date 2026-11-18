@@ -168,7 +168,13 @@ describe("StudentInterviews sorts interviews", () => {
     it("shouldShowUpcomingPastAndCancelledLabels", async () => {
         // Arrange
         getStudentInterviews.mockResolvedValue([
-            {...interview1, id: 21, internshipTitle: "Future interview", interviewDate: dateInDays(2)},
+            {
+                ...interview1,
+                id: 21,
+                internshipTitle: "Future interview",
+                interviewDate: dateInDays(2),
+                studentDecision: "ACCEPTED"
+            },
             {...interview1, id: 22, internshipTitle: "Past interview", interviewDate: dateInDays(-2)},
             {
                 ...interview1,
