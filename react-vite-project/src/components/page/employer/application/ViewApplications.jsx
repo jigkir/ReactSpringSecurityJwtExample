@@ -326,7 +326,7 @@ function ViewApplications({user}) {
             {/* Confirmation */}
             {hireSuccessCount > 0 && (<p
                 role="status"
-                className="text-green-600 dark:text-green-400"
+                className={`font-bold ${dark ? "text-green-400" : "text-green-700"}`}
             >
                 {t("viewApplication.hireSuccess", {
                     count: hireSuccessCount
