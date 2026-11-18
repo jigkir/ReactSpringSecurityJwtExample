@@ -342,7 +342,8 @@
       },
       "confirmDelete": "Yes, delete",
       "confirmMove": "Yes, move file"
-    }
+    },
+    "previewEmpty": "No documents pending review or rejected."
   },
   "home": {
     "welcome": "Welcome",
@@ -431,7 +432,8 @@
     "approveBtnAria": "Approve: {{title}}",
     "rejectBtnAria": "Reject: {{title}}",
     "editBtnAria": "Edit offer: {{title}}",
-    "editReasonBtnAria": "Edit reason: {{title}}"
+    "editReasonBtnAria": "Edit reason: {{title}}",
+    "pendingEmpty": "No internship offers waiting for review."
   },
   "managerContracts": {
     "title": "Internship contracts",
@@ -556,7 +558,8 @@
       "downloadCurrent": "Download the PDF ({{language}})",
       "downloadBoth": "Download both PDFs",
       "downloading": "Downloading…"
-    }
+    },
+    "previewEmpty": "No contracts waiting for your signature."
   },
   "studentInternship": {
     "title": "Available internships",
@@ -590,7 +593,8 @@
     "noLetter": "No cover letter",
     "uploadLetter": "Upload a cover letter",
     "letterInvalid": "The cover letter must be a PDF within the size limit.",
-    "letterUploadFailed": "Unable to upload the cover letter. Please try again."
+    "letterUploadFailed": "Unable to upload the cover letter. Please try again.",
+    "previewEmpty": "No new internships to apply to right now."
   },
   "employerInternship": {
     "openInterviewPicker": "Invite to an interview",
@@ -858,7 +862,8 @@
       "PENDING": "Awaiting your answer",
       "ACCEPTED": "Accepted",
       "REJECTED": "Declined"
-    }
+    },
+    "pendingEmpty": "No offers waiting for your answer."
   },
   "users": {
     "statuses": {

@@ -266,6 +266,7 @@ function CvReviewList({dark, preview = false}) {
             emptyText={t("cvDocuments.emptyManager")}
             actionError={actionError}
             toolbar={toolbar}
+            previewEmptyKey="cvDocuments.emptyManager"
         >
             {rows}
         </DocumentListShell>

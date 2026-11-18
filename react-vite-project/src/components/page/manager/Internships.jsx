@@ -241,7 +241,8 @@ const ManagerInternships = ({preview = false}) => {
         return (
             <div>
                 {errorLine}
-                <PreviewState dark={dark} error={loadFailed} loading={internships === null} empty={shown.length === 0}>
+                <PreviewState dark={dark} error={loadFailed} loading={internships === null} empty={shown.length === 0}
+                              emptyText="managerInternships.pendingEmpty">
                     {shown.map(renderCard)}
                 </PreviewState>
             </div>

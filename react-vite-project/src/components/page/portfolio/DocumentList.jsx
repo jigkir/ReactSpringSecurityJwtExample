@@ -274,6 +274,7 @@ function DocumentList({
             emptyText={t(filterHidesAll ? "portfolio.noMatch" : "portfolio.empty")}
             actionError={actionError}
             toolbar={toolbar}
+            previewEmptyKey="portfolio.previewEmpty"
         >
             {rows}
         </DocumentListShell>

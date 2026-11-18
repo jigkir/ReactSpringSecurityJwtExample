@@ -185,7 +185,8 @@ function StudentInternships({preview = false}) {
         return (
             <div className="space-y-4">
                 <PreviewState dark={dark} error={error} loading={loading || !appliedLoaded}
-                              empty={shown.length === 0}>
+                              empty={shown.length === 0}
+                              emptyText="studentInternship.previewEmpty">
                     {cards}
                 </PreviewState>
             </div>

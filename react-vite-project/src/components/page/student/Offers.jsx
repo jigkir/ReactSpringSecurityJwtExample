@@ -8,6 +8,7 @@ import {usePolling} from "../../../utils/usePolling.js";
 import {translateWarning} from "../../../utils/CommonFields.jsx";
 import Button from "../../../styles/Button.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
+import PreviewState from "../../home/PreviewState.jsx";
 
 const CONSENT_ICON = {PENDING: "schedule", ACCEPTED: "check_circle", REJECTED: "close"};
 
@@ -29,7 +30,11 @@ const CONSENT_CLASSES = {
 // Newest offer (highest application id) first
 const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
 
-function Offers() {
+const consentOf = (offer) => CONSENT_ICON[offer.studentInternshipConsent] ? offer.studentInternshipConsent : "PENDING";
+
+// <Offers />          full page (route /offers)
+// <Offers preview />  Home page block: only the offers still waiting for the student's answer, no header
+function Offers({preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
@@ -59,11 +64,11 @@ function Offers() {
 
     usePolling(load);
 
-    // Coming from a notification: scroll to the offer
+    // Coming from a notification: scroll to the offer (full page only)
     useEffect(() => {
-        if (!offers || !hash) return;
+        if (preview || !offers || !hash) return;
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
-    }, [hash, offers]);
+    }, [preview, hash, offers]);
 
     // Accepting creates the contract. A 409 (contract already exists, offer rejected, no offer,
     // student already employed) means the state changed, so the list is always reloaded.
@@ -86,8 +91,8 @@ function Offers() {
     const handleDeny = (offerId) => answer(offerId, denyOffer, "studentOffers.denyFailed");
 
     const renderCard = (offer) => {
-        const consent = CONSENT_ICON[offer.studentInternshipConsent] ? offer.studentInternshipConsent : "PENDING";
-        const highlighted = hash === `#offer-${offer.id}`;
+        const consent = consentOf(offer);
+        const highlighted = !preview && hash === `#offer-${offer.id}`;
         const busy = busyId === offer.id;
 
         return (
@@ -137,6 +142,26 @@ function Offers() {
         );
     };
 
+    const errorLine = actionError && (
+        <p className={`${s.errorText} mb-4`} role="alert">{translateWarning(t, actionError)}</p>
+    );
+
+    // Home preview: same states and spacing as every other Home preview
+    if (preview) {
+        const pending = offers ? sortOffers(offers.filter((offer) => consentOf(offer) === "PENDING")) : [];
+
+        return (
+            <div>
+                {errorLine}
+                <PreviewState dark={dark} error={loadFailed && offers === null}
+                              loading={offers === null} empty={pending.length === 0}
+                              emptyText="studentOffers.pendingEmpty">
+                    {pending.map(renderCard)}
+                </PreviewState>
+            </div>
+        );
+    }
+
     let body;
     if (loadFailed && offers === null) {
         body = <p className={s.errorText} role="alert">{t("studentOffers.loadError")}</p>;
@@ -157,9 +182,7 @@ function Offers() {
                 </div>
             </div>
             <div className={s.listSection}>
-                {actionError && (
-                    <p className={`${s.errorText} mb-4`} role="alert">{translateWarning(t, actionError)}</p>
-                )}
+                {errorLine}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>

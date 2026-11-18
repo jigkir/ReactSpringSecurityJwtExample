@@ -13,6 +13,7 @@
  *   failed       loading failed
  *   onRetry      function  retry button
  *   emptyText    string
+ *   previewEmptyKey  translation key of the empty message of the Home preview (default: generic message)
  *   actionError  translation KEY of the last failed action (translated here, so it follows the language)
  *   toolbar      node  filters (full page only)
  *   children     the rows (a <ul>)
@@ -25,7 +26,7 @@ import {getCvDocumentsClasses} from '../../styles/AppStyles.jsx';
 
 export default function DocumentListShell({
                                               dark, preview = false, title, headerAction, label, items, failed, onRetry,
-                                              emptyText, actionError, toolbar, children,
+                                              emptyText, previewEmptyKey, actionError, toolbar, children,
                                           }) {
     const {t} = useTranslation();
     const th = getCvDocumentsClasses(dark);
@@ -38,7 +39,8 @@ export default function DocumentListShell({
         return (
             <div className="space-y-4">
                 {errorBox}
-                <PreviewState dark={dark} error={failed} loading={items === null} empty={items?.length === 0}>
+                <PreviewState dark={dark} error={failed} loading={items === null} empty={items?.length === 0}
+                              emptyText={previewEmptyKey}>
                     {children}
                 </PreviewState>
             </div>
