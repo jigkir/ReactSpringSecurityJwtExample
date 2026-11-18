@@ -80,7 +80,7 @@ Si on n’y est pas, on décide tout de suite de ce qu’on reporte ou redistrib
 
 ### 2. Revues de code en 24 h
 À partir du Sprint 5, chaque pull request est relue dans les 24 h après sa publication, avec un vrai retour (pas juste un « OK »).
-Les PR qui bloquent d’autres tâches passent en premier, pour éviter que les revues s’empilent à la fin du sprint.
+Les stories qui bloquent d’autres tâches passent en premier, pour éviter que les revues s’empilent à la fin du sprint.
 
 # Sprint 5
 
