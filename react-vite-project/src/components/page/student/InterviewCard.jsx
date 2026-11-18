@@ -240,7 +240,7 @@ export default function InterviewCard({
                             </>
                         ) : (
                             <>
-                                {!accepted && (
+                                {!accepted || rescheduled && (
                                     <Button dark={dark} tone="success" icon="check" disabled={busy}
                                             onClick={() => onAccept(interview.id)}>
                                         {t("studentInterviews.accept")}
