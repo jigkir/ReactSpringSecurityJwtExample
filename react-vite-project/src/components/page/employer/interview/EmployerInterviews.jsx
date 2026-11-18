@@ -84,7 +84,7 @@ function EmployerInterviews({user, preview = false}) {
                 await load();
             }
             return {success: true};
-        }catch (err) {
+        } catch (err) {
             return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
         }
     }
@@ -199,7 +199,8 @@ function EmployerInterviews({user, preview = false}) {
     if (preview) {
         return (
             <PreviewState dark={dark} error={loadFailed && interviews === null}
-                          loading={interviews === null} empty={sorted.length === 0}>
+                          loading={interviews === null} empty={sorted.length === 0}
+                          emptyText="employerInterviews.empty">
                 {sorted.map(renderCard)}
             </PreviewState>
         );

@@ -126,7 +126,7 @@ const ContractReviewList = ({dark, user, preview = false}) => {
     if (preview) {
         return (
             <PreviewState dark={dark} error={failed && contracts === null} loading={shown === null}
-                          empty={shown?.length === 0}>
+                          empty={shown?.length === 0} emptyText="managerContracts.previewEmpty">
                 {cards}
             </PreviewState>
         );

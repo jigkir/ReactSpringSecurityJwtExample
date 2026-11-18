@@ -10,6 +10,7 @@
 import PortfolioPreview from '../page/portfolio/PortfolioPreview.jsx';
 import StudentInternships from '../page/student/Internships.jsx';
 import Interviews from '../page/student/Interviews.jsx';
+import Offers from '../page/student/Offers.jsx';
 import ManagerCv from '../page/manager/Cv.jsx';
 import ManagerInternships from '../page/manager/Internships.jsx';
 import ManagerContracts from '../page/manager/Contracts.jsx';
@@ -35,6 +36,11 @@ export const PREVIEWS_BY_ROLE = {
             to: "/interviews",
             titleKey: "home.studentInterviewsLink",
             render: () => <Interviews preview/>
+        },
+        {
+            to: "/offers",
+            titleKey: "navbar.offers",
+            render: () => <Offers preview/>
         },
         {
             to: "/student/contracts",
