@@ -38,6 +38,7 @@
     "learnMore": "Want to learn more?"
   },
   "navbar": {
+    "tracking": "Tracking",
     "accueil": "Home",
     "about": "About",
     "student": "Student",
@@ -869,10 +870,21 @@
     "statuses": {
       "approved": "Activated",
       "rejected": "Deactivated",
-      "pending": "Pending"
+      "pending": "Pending",
+      "assigned": "Assigned"
     },
     "reactivate": "Reactivate",
     "deactivate": "Deactivate",
     "studentId": "ID: {{studentId}}"
+  },
+  "tracking": {
+    "selectDefault": "Select a teacher",
+    "selectLoading": "Loading...",
+    "selectNull": "No teacher available",
+    "assigneLoading": "Assigning...",
+    "assigneDefault": "Assign Teacher",
+    "loading": "Loading...",
+    "error": "Failed to load internship trackings.",
+    "empty": "No internship trackings found."
   }
 }

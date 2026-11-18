@@ -26,6 +26,7 @@ const NAV_BY_ROLE = {
         link("/manager/internships", "navbar.internships"),
         link("/manager/contracts", "navbar.contracts"),
         link("/users", "navbar.users"),
+        link("/tracking","navbar.tracking")
     ],
     EMPLOYER: [
         link("/internships", "navbar.postInternship"),

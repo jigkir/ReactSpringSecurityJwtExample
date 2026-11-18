@@ -3,14 +3,21 @@ import Button from "../../styles/Button.jsx";
 
 const STATUS_BADGE = {
     approved: "bg-green-100 text-green-800",
+    assigned: "bg-green-100 text-green-800",
     rejected: "bg-red-100 text-red-800",
     pending: "bg-yellow-100 text-yellow-800",
 };
 
-function UserCard({studentid, firstname, lastname, status, dark, onReactivate, onDeny}) {
+function UserCard({studentid, firstname, lastname, status, dark, onReactivate, onDeny, footer}) {
     const {t} = useTranslation();
     const val = (status || "").toLowerCase();
-    const badgeKey = val === "approved" || val === "rejected" ? val : "pending";
+
+    let badgeKey = "pending";
+    if (val === "rejected") {
+        badgeKey = "rejected";
+    } else if (val === "approved") {
+        badgeKey = footer ? "assigned" : "approved";
+    }
 
     return (
         <div
@@ -28,33 +35,40 @@ function UserCard({studentid, firstname, lastname, status, dark, onReactivate, o
                 <p className="text-sm text-gray-500 mt-0.5">
                     {t("users.studentId", {studentId: studentid})}
                 </p>
+                {footer && (
+                    <div className="mt-2">
+                        {footer}
+                    </div>
+                )}
             </div>
 
-            {/* Right: Conditional Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-                {val === "pending" && (
-                    <>
+            {/* Right: Conditional Action Buttons (hidden when footer is present) */}
+            {!footer && (
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {val === "pending" && (
+                        <>
+                            <Button dark={dark} icon="check" onClick={onReactivate}>
+                                {t("users.reactivate")}
+                            </Button>
+                            <Button dark={dark} icon="close" onClick={onDeny}>
+                                {t("users.deactivate")}
+                            </Button>
+                        </>
+                    )}
+
+                    {val === "rejected" && (
                         <Button dark={dark} icon="check" onClick={onReactivate}>
                             {t("users.reactivate")}
                         </Button>
+                    )}
+
+                    {val === "approved" && (
                         <Button dark={dark} icon="close" onClick={onDeny}>
                             {t("users.deactivate")}
                         </Button>
-                    </>
-                )}
-
-                {val === "rejected" && (
-                    <Button dark={dark} icon="check" onClick={onReactivate}>
-                        {t("users.reactivate")}
-                    </Button>
-                )}
-
-                {val === "approved" && (
-                    <Button dark={dark} icon="close" onClick={onDeny}>
-                        {t("users.deactivate")}
-                    </Button>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
