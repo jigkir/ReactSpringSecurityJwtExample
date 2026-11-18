@@ -4,7 +4,7 @@ import ViewApplications from '../ViewApplications.jsx';
 import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from '../../../../api/Api.jsx';
 
 
-vi.mock('../../../api/Api.jsx', () => ({
+vi.mock('../../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../../../api/Api.jsx', () => ({
     getApplicationTranscript: vi.fn(),
 }));
 
-vi.mock('../../../../utils/usePolling.js', () => ({
+vi.mock('../../../../../utils/usePolling.js', () => ({
     usePolling: vi.fn()
 }));
 

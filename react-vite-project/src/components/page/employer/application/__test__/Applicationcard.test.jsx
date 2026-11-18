@@ -2,7 +2,7 @@ import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {getEmployerInterviewsByApplicationId} from '../../../../api/Api.jsx';
 
-vi.mock('../../../api/Api.jsx', () => ({
+vi.mock('../../../../api/Api.jsx', () => ({
     getEmployerInterviewsByApplicationId: vi.fn(),
     createInterview: vi.fn(),
     updateInterview: vi.fn(),
@@ -10,7 +10,7 @@ vi.mock('../../../api/Api.jsx', () => ({
     getApplicationTranscript: vi.fn(),
 }));
 
-vi.mock('../../../documents/PdfPreview.jsx', () => ({
+vi.mock('../../../../documents/PdfPreview.jsx', () => ({
     default: ({doc}) => <div data-testid="pdf-preview">{doc.fileName}</div>
 }));
 
@@ -29,7 +29,7 @@ vi.mock('react-i18next', () => ({
     })
 }));
 
-vi.mock('../../../../styles/Button.jsx', () => ({
+vi.mock('../../../../../styles/Button.jsx', () => ({
     default: ({children, onClick, 'aria-expanded': expanded}) => (
         <button onClick={onClick} aria-expanded={expanded}>{children}</button>)
 }));
