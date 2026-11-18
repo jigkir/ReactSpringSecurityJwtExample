@@ -21,7 +21,7 @@ import Icon from "../../../styles/Icon.jsx";
 const ACCEPTED_OFFER = "ACCEPTED";
 
 // <StudentInternships />          full page (route /internship)
-// <StudentInternships preview />  Home page block: the newest offers only, no header, no filters
+// <StudentInternships preview />  Home page block: the newest offers the student has NOT applied to yet,
 function StudentInternships({preview = false}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
@@ -32,6 +32,7 @@ function StudentInternships({preview = false}) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [appliedInternships, setAppliedInternships] = useState([]);
+    const [appliedLoaded, setAppliedLoaded] = useState(false);
     const [cvs, setCvs] = useState(null);
     const [letters, setLetters] = useState([]);
     const [transcripts, setTranscripts] = useState([]);
@@ -51,14 +52,16 @@ function StudentInternships({preview = false}) {
         if (appliedIds.has(internship.id)) return 2; // APPLIED
         return internship.viewed ? 1 : 0;            // OLD : NEW
     };
-    const shown = [...visible].sort((a, b) => {
-        const groupDifference = groupOf(a) - groupOf(b);
-        if (groupDifference !== 0) return groupDifference;
-        if (preview) {
-            return new Date(b.uploadedAt) - new Date(a.uploadedAt);
-        }
-        return 0;
-    });
+    const shown = [...visible]
+        .filter((internship) => !preview || !appliedIds.has(internship.id))
+        .sort((a, b) => {
+            const groupDifference = groupOf(a) - groupOf(b);
+            if (groupDifference !== 0) return groupDifference;
+            if (preview) {
+                return new Date(b.uploadedAt) - new Date(a.uploadedAt);
+            }
+            return 0;
+        });
 
     const unviewedIdsRef = useRef([]);
     useEffect(() => {
@@ -91,6 +94,7 @@ function StudentInternships({preview = false}) {
         try {
             const data = await getStudentAppliedInternships(selectedSession.id);
             setAppliedInternships(data);
+            setAppliedLoaded(true);
         } catch {
             setError(true);
         }
@@ -180,7 +184,8 @@ function StudentInternships({preview = false}) {
     if (preview) {
         return (
             <div className="space-y-4">
-                <PreviewState dark={dark} error={error} loading={loading} empty={shown.length === 0}>
+                <PreviewState dark={dark} error={error} loading={loading || !appliedLoaded}
+                              empty={shown.length === 0}>
                     {cards}
                 </PreviewState>
             </div>
@@ -223,6 +228,7 @@ function StudentInternships({preview = false}) {
 
         <div className={s.listSection}>
             {hired && (<p className={s.infoBanner} role="note">
+                <Icon name="check_circle" size={20}/>
                 {t("studentInternship.hiredNote")}
             </p>)}
             {!loading && !error && internships.length > 0 && (<InternshipFilters
