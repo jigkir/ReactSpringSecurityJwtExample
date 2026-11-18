@@ -24,7 +24,7 @@ T=$(login emma.lavoie@claurendeau.qc.ca 'Emma2026!');        upload_cv "$T" CV_E
 T=$(login olivier.cote@claurendeau.qc.ca 'Olivier2026!');    upload_cv "$T" CV_Olivier_Cote.pdf
 T=$(login chloe.bergeron@claurendeau.qc.ca 'Chloe2026!');    upload_cv "$T" CV_Chloe_Bergeron.pdf
 T=$(login gabriel.morin@claurendeau.qc.ca 'Gabriel2026!');   upload_cv "$T" CV_Gabriel_Morin.pdf
-T=$(login lebron.james@claurendeau.qc.ca 'Lebron2026!');     upload_cv "$T" CV_Gabriel_Morin.pdf
+T=$(login lebron.james@claurendeau.qc.ca 'Lebron2026!');     upload_cv "$T" CV_Lebron_James.pdf
 
 log "Approbation des CV par le gestionnaire"
 MANAGER_TOKEN=$(login "$MANAGER_EMAIL" "$MANAGER_PASSWORD")

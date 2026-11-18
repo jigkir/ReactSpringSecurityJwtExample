@@ -111,9 +111,58 @@ internship() { # internship <token> <json>
   post_json "$API/employer/internship" "$2" "$1"
 }
 
+apply() { # apply <email> <mot de passe> <titre de l'offre> <CV> [lettre de motivation] [relevé de notes]
+  local token internship_id cv_id url query=""
+  token=$(login "$1" "$2")
+  [[ -n "$token" ]] || { echo "  pas de jeton (connexion échouée) : candidature de $1 ignorée"; return; }
+
+  internship_id=$(get_json "$API/student/internship" "$token" | id_where title "$3")
+  cv_id=$(get_json "$API/student/cvs/approved" "$token" | id_where fileName "$4")
+  [[ -n "$internship_id" && -n "$cv_id" ]] || { echo "  offre « $3 » ou CV $4 introuvable"; return; }
+
+  [[ -n "${5:-}" ]] && query+="&coverLetterId=$(get_json "$API/student/cover-letters" "$token" | id_where fileName "$5")"
+  [[ -n "${6:-}" ]] && query+="&transcriptId=$(get_json "$API/student/academic-transcripts" "$token" | id_where fileName "$6")"
+
+  url="$API/student/internship/$internship_id/apply/$cv_id"
+  [[ -n "$query" ]] && url+="?${query#&}"
+  request POST "$url" "$token"
+}
+
 sql() { # sql <requête>  -> exécute la requête dans la base du conteneur Docker
   docker compose -f "$ROOT_DIR/docker-compose.yml" exec -T "$DB_SERVICE" \
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -q -t -A -c "$1" || fail "requête SQL refusée"
+}
+
+application_id_of() { # application_id_of <courriel de l'étudiant> <titre de l'offre>
+  sql "SELECT application.id
+       FROM internship_application application
+       JOIN internship ON internship.id = application.internship_id
+       JOIN user_app student ON student.id = application.student_id
+       WHERE internship.title = '$2'
+         AND student.email = '$1';"
+}
+
+offer() { # offer <courriel de l'employeur> <mot de passe> <courriel de l'étudiant> <titre de l'offre>
+  local token application_id
+  token=$(login "$1" "$2")
+  [[ -n "$token" ]] || fail "connexion de $1 impossible"
+
+  application_id=$(application_id_of "$3" "$4")
+  [[ -n "$application_id" ]] || fail "candidature de $3 pour « $4 » introuvable"
+
+  # Le point d'accès reçoit la liste des ids de candidatures à embaucher
+  put_json "$API/employer/applications/offer" "[$application_id]" "$token"
+}
+
+accept_offer() { # accept_offer <courriel de l'étudiant> <mot de passe> <titre de l'offre>
+  local token application_id
+  token=$(login "$1" "$2")
+  [[ -n "$token" ]] || fail "connexion de $1 impossible"
+
+  application_id=$(application_id_of "$1" "$3")
+  [[ -n "$application_id" ]] || fail "candidature de $1 pour « $3 » introuvable"
+
+  request PUT "$API/student/applications/offers/$application_id/accept" "$token"
 }
 
 past_winter_year() { # année de la dernière session d'hiver terminée

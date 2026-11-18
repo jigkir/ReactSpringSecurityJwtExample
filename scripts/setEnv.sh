@@ -8,8 +8,9 @@
 # Étapes : 1 vérif docker | 2 attente backend | 3 users | 4 cvs |
 #           5 internships | 6 npm i | 7 approbation des internships |
 #           8 lettres et relevés | 9 candidatures | 10 session passée | 11 Léa expirée |
-#           12 convocations d'Emma et de Chloé | 13 offres en attente | 14 Noah inscrit après décembre |
-#           15 offre de stage faite à Emma| 16 contrats d'Olivier et de Samuel |
+#           12 convocation de Gabriel | 13 offres en attente | 14 Noah inscrit après décembre |
+#           15 offres d'embauche à Emma et à Samuel | 16 contrat d'Olivier | 17 corrections et sessions (Antoine) |
+#           18 suivis de stage | 19 notifications lues (toujours en dernier)
 
 set -uo pipefail
 
@@ -34,6 +35,8 @@ STEPS=(
   15-offers
   16-contracts
   17-corrections-sessions
+  18-internship-trackings
+  19-demo-notifications
 )
 
 run_step() {
