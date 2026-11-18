@@ -26,7 +26,7 @@ const NAV_BY_ROLE = {
         link("/manager/internships", "navbar.internships"),
         link("/manager/contracts", "navbar.contracts"),
         link("/users", "navbar.users"),
-        link("/tracking","navbar.tracking")
+        link("/tracking", "navbar.tracking")
     ],
     EMPLOYER: [
         link("/internships", "navbar.postInternship"),
@@ -266,7 +266,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
                                 {isLoggedIn && (
                                     <Link to="/logout"
-                                          className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1 ${dark ? "text-red-400!" : "text-red-300!"}`}
+                                          className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1 ${dark ? "text-red-400!" : "border border-red-200! bg-red-50! hover:bg-red-100! text-red-700!"}`}
                                           aria-label={t("navbar.disconnect")}
                                           title={t("navbar.disconnect")}>
                                         <Icon name="logout" size={16}/>
