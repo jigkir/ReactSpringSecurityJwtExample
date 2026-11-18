@@ -6,6 +6,7 @@ import InternshipCard from './InternshipCard.jsx';
 import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
 import Button from '../../../../styles/Button.jsx';
 import {translateWarning} from '../../../../utils/CommonFields.jsx';
+import {EMPLOYER_INTERNSHIP_STATUS_RANK} from '../../../../utils/Sort.jsx';
 import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
 import {
     createInternship,
@@ -45,7 +46,7 @@ function PostInternship({user, preview = false}) {
     const canDelete = (internship) => !internshipIdsWithContract.has(internship.id);
 
     const s = getPostInternshipClasses(dark);
-    const filters = useInternshipFilters(internships);
+    const filters = useInternshipFilters(internships, null, EMPLOYER_INTERNSHIP_STATUS_RANK);
     const visible = filters.visible ?? [];
     const shown = preview
         ? internships

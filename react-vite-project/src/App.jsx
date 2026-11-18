@@ -29,6 +29,7 @@ import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
 import Users from "./components/page/Users.jsx";
 import EmployerInterviews from "./components/page/employer/interview/EmployerInterviews.jsx";
+import Tracking from "./components/page/Tracking.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -131,6 +132,7 @@ function App() {
                             <Route path="/manager/contracts" element={<ManagerContracts/>}/>
                             <Route path="/manager/contracts/:id" element={<ContractFile/>}/>
                             <Route path="/users" element={<Users user={user}/>}/>
+                            <Route path="/tracking" element={<Tracking/>}/>
                         </Route>
 
                         {/* Employer */}

@@ -540,3 +540,17 @@ export async function denyUser(studentId) {
 }
 
 //endregion
+
+//region Internship Tracking
+export async function getInternshipTrackings(){
+    return handleResponse(await fetcher(`manager/internship-trackings`, {method:"GET"}));
+}
+
+export async function getAssignableTeachers(trackingId){
+    return handleResponse(await fetcher(`manager/internship-trackings/${trackingId}/teachers`, {method: "GET"}));
+}
+
+export async function assignTeacher(trackingId,teacherId){
+    return handleEmpty(await fetcher(`manager/internship-trackings/${trackingId}/teacher/${teacherId}`, {method: "PUT"}));
+}
+//endregion

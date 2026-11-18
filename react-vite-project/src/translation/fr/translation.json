@@ -38,6 +38,7 @@
     "learnMore": "Vous voulez en savoir plus ?"
   },
   "navbar": {
+    "tracking": "Suivi",
     "accueil": "Accueil",
     "about": "À propos",
     "student": "Étudiant",
@@ -867,12 +868,23 @@
   },
   "users": {
     "statuses": {
-      "approved": "Activer",
-      "rejected": "Désactiver",
-      "pending": "En attente"
+      "approved": "Activé",
+      "rejected": "Désactivé",
+      "pending": "En attente",
+      "assigned": "Assigné"
     },
     "reactivate": "Réactiver",
     "deactivate": "Désactiver",
     "studentId": "Matricule : {{studentId}}"
+  },
+  "tracking": {
+    "selectDefault": "Sélectionner un enseignant",
+    "selectLoading": "Chargement...",
+    "selectNull": "Aucun enseignant disponible",
+    "assigneLoading": "Attribution en cours...",
+    "assigneDefault": "Assigner l'enseignant",
+    "loading": "Chargement...",
+    "error": "Échec du chargement des suivis de stage.",
+    "empty": "Aucun suivi de stage trouvé."
   }
 }
