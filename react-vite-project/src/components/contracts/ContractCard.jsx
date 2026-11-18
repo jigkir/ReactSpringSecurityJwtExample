@@ -30,6 +30,8 @@ import SignContractForm from './SignContractForm.jsx';
 const COMMITMENT_PARTIES = ["college", "employer", "student"];
 const CURRENCY = "CAD";
 
+const getBodyText = (dark) => `text-sm ${dark ? "text-white" : "text-gray-900"}`;
+
 const parseSkills = (raw) =>
     (raw ?? "").split(",").map((skill) => skill.trim()).filter(Boolean);
 
@@ -67,7 +69,7 @@ function CommitmentList({dark, party}) {
             <h5 className={`text-sm font-semibold ${dark ? "text-sky-300" : "text-[#1f3a5f]"}`}>
                 {t(`managerContracts.commitments.${party}.title`)}
             </h5>
-            <ul className={`mt-1 list-disc space-y-1 pl-6 text-sm ${dark ? "text-slate-300" : "text-gray-700"}`}>
+            <ul className={`mt-1 list-disc space-y-1 pl-6 ${getBodyText(dark)}`}>
                 {Array.isArray(items) && items.map((item) => <li key={item}>{item}</li>)}
             </ul>
         </div>
@@ -78,6 +80,7 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
     const {t, i18n} = useTranslation();
     const s = getInternshipCardClasses(dark);
     const th = getCvDocumentsClasses(dark);
+    const bodyText = getBodyText(dark);
 
     const [signOpen, setSignOpen] = useState(false);
 
@@ -178,7 +181,7 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
                 </div>
             </div>
 
-            <p className={`text-sm ${dark ? "text-slate-300" : "text-gray-700"}`}>{t("managerContracts.document.introduction")}</p>
+            <p className={bodyText}>{t("managerContracts.document.introduction")}</p>
 
             {/* Parties */}
             <section className="space-y-3" aria-label={t("managerContracts.sections.parties")}>
@@ -218,10 +221,10 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
                 </dl>
             </section>
 
-            {/* Offer description */}
+            {/* Offer description: same colour and size as the commitments */}
             <section className="space-y-3" aria-label={t("managerContracts.sections.description")}>
                 <SectionHeading dark={dark}>{t("managerContracts.sections.description")}</SectionHeading>
-                <p className={`${s.description} w-full wrap-break-word`} style={{whiteSpace: "pre-wrap"}}>
+                <p className={`mt-1 w-full wrap-break-word ${bodyText}`} style={{whiteSpace: "pre-wrap"}}>
                     {internship.description}
                 </p>
                 {skills.length > 0 && (
@@ -247,7 +250,7 @@ function ContractCard({contract, dark, devMode = false, onSign, contractRole = C
             {/* Electronic signatures */}
             <section className="space-y-3" aria-label={t("managerContracts.signatures.title")}>
                 <SectionHeading dark={dark}>{t("managerContracts.signatures.title")}</SectionHeading>
-                <p className={`text-sm ${dark ? "text-slate-300" : "text-gray-700"}`}>{t("managerContracts.signatures.explanation")}</p>
+                <p className={bodyText}>{t("managerContracts.signatures.explanation")}</p>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead>

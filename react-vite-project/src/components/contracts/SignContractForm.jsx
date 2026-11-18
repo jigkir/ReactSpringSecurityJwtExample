@@ -22,25 +22,21 @@
 import {useId, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
-import {getInternshipFormClasses} from '../../styles/AppStyles.jsx';
-import {Field, translateWarning} from '../../utils/CommonFields.jsx';
-
-// Errors that belong under the password field
-const PASSWORD_ERROR_KEYS = new Set([
-    "managerContracts.sign.errorPassword",
-    "managerContracts.sign.errorWrongPassword",
-]);
+import {getAuthClasses, getInternshipFormClasses} from '../../styles/AppStyles.jsx';
+import {PasswordField, translateWarning} from '../../utils/CommonFields.jsx';
 
 function SignContractForm({dark, devMode = false, onSubmit, onClose}) {
     const {t} = useTranslation();
     const s = getInternshipFormClasses(dark);
+    const auth = getAuthClasses(dark);
     const termsId = useId();
-    const passwordId = useId();
 
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const passwordEmpty = !devMode && password.trim() === "";
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -48,7 +44,7 @@ function SignContractForm({dark, devMode = false, onSubmit, onClose}) {
         setError(null);
 
         if (!termsAccepted) return setError({key: "managerContracts.sign.errorTerms"});
-        if (!devMode && password.trim() === "") return setError({key: "managerContracts.sign.errorPassword"});
+        if (passwordEmpty) return setError({key: "managerContracts.sign.errorPassword"});
 
         setSubmitting(true);
         const result = await onSubmit({termsAccepted, password});
@@ -65,10 +61,6 @@ function SignContractForm({dark, devMode = false, onSubmit, onClose}) {
     };
 
     const muted = dark ? "text-slate-300" : "text-gray-700";
-    const fieldErrorClass = `mt-1 text-xs ${dark ? "text-red-400" : "text-red-600"}`;
-
-    const passwordError = !devMode && error && PASSWORD_ERROR_KEYS.has(error.key) ? error : null;
-    const bannerError = error && !passwordError ? error : null;
 
     return (
         <form
@@ -81,9 +73,10 @@ function SignContractForm({dark, devMode = false, onSubmit, onClose}) {
                 {t("managerContracts.sign.title")}
             </h4>
 
-            {bannerError && (
+            {/* One single red box for every error */}
+            {error && (
                 <div className={s.errorBanner} role="alert">
-                    <span>{translateWarning(t, bannerError)}</span>
+                    <span>{translateWarning(t, error)}</span>
                 </div>
             )}
 
@@ -105,38 +98,29 @@ function SignContractForm({dark, devMode = false, onSubmit, onClose}) {
             {devMode ? (
                 <p className={s.hint}>{t("managerContracts.sign.devHint")}</p>
             ) : (
-                <div>
-                    <Field
-                        id={passwordId}
-                        label={t("managerContracts.sign.passwordLabel")}
-                        labelClass={s.label}
-                        errorClass={fieldErrorClass}
-                        warning={passwordError ? translateWarning(t, passwordError) : ""}
-                    >
-                        <input
-                            id={passwordId}
-                            type="password"
-                            name="signaturePassword"
-                            autoComplete="current-password"
-                            value={password}
-                            disabled={submitting}
-                            aria-invalid={Boolean(passwordError)}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                setError(null);
-                            }}
-                            className={s.input}
-                        />
-                    </Field>
-                    <p className={s.hint}>{t("managerContracts.sign.passwordHint")}</p>
-                </div>
+                <PasswordField
+                    value={password}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError(null);
+                    }}
+                    labelClass={auth.labelClass}
+                    errorClass={auth.errorClass}
+                    fieldClass={auth.fieldClass}
+                    eyeClass={auth.eyeClass}
+                    show={showPassword}
+                    onToggleShow={() => setShowPassword((shown) => !shown)}
+                    hint={t("managerContracts.sign.passwordHint")}
+                    passwordHintClass={auth.passwordHintClass}
+                />
             )}
 
             <div className="flex flex-wrap justify-end gap-2">
                 <Button type="button" tone="neutral" dark={dark} icon="close" disabled={submitting} onClick={onClose}>
                     {t("managerContracts.sign.cancel")}
                 </Button>
-                <Button type="submit" tone="success" dark={dark} icon="check" disabled={submitting}>
+                <Button type="submit" tone="success" dark={dark} icon="check"
+                        disabled={submitting || passwordEmpty}>
                     {submitting ? t("managerContracts.sign.submitting") : t("managerContracts.sign.submit")}
                 </Button>
             </div>
