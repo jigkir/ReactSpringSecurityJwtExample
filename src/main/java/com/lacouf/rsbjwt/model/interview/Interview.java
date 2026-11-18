@@ -75,6 +75,7 @@ public class Interview {
         this.meetingType = meetingType;
         this.meetingDetails = meetingDetails;
         this.studentDecision = StudentDecision.PENDING;
+        this.rejectionMessage = "";
     }
 
     public void cancel(InterviewCancellationReason reason) {

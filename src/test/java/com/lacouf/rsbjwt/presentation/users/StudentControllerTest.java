@@ -21,7 +21,6 @@ import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
-import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -825,41 +824,6 @@ public class StudentControllerTest {
     }
 
     @Test
-    void shouldReturnNoContentWhenInterviewOfferIsRescheduled() throws Exception {
-        // Arrange
-        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"comment\": \"Can we do later?\", \"interviewDate\": \"" + newDate + "\"}"))
-                .andExpect(status().isNoContent());
-
-        verify(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
-    }
-
-    @Test
-    void shouldPassCommentAndDateToServiceWhenRescheduling() throws Exception {
-        // Arrange
-        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
-
-        // Act
-        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"comment\": \"Can we do later?\", \"interviewDate\": \"" + newDate + "\"}"));
-
-        // Assert: capture the DTO the controller built and inspect it
-        ArgumentCaptor<InterviewReschedulingDto> captor = ArgumentCaptor.forClass(InterviewReschedulingDto.class);
-        verify(studentService).rescheduleInterviewOffer(
-                eq(STUDENT_EMAIL),
-                eq(30L),
-                captor.capture());
-
-        assert "Can we do later?".equals(captor.getValue().comment());
-        assert newDate.equals(captor.getValue().interviewDate());
-    }
-
-    @Test
     void shouldReturnBadRequestWhenRescheduleDateIsMissing() throws Exception {
         // Act + Assert
         mockMvc.perform(put("/api/student/interviews/30/reschedule")
@@ -882,46 +846,6 @@ public class StudentControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(studentService);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenReschedulingUnknownInterview() throws Exception {
-        // Arrange
-        doThrow(new InterviewNotFoundException(30L))
-                .when(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void shouldReturnConflictWhenInterviewIsAlreadyRescheduled() throws Exception {
-        // Arrange
-        doThrow(new InterviewAlreadyRescheduledException(30L))
-                .when(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenServiceRejectsRescheduleDate() throws Exception {
-        // Arrange
-        doThrow(new InterviewInvalidDateException("Bad date"))
-                .when(studentService).rescheduleInterviewOffer(eq(STUDENT_EMAIL), eq(30L), any(InterviewReschedulingDto.class));
-
-        // Act + Assert
-        mockMvc.perform(put("/api/student/interviews/30/reschedule").principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"interviewDate\": \"" + LocalDateTime.now().plusDays(5) + "\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Bad date"));
     }
 
     // Internship Offer Tests

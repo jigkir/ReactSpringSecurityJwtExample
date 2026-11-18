@@ -47,7 +47,6 @@ import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
-import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -419,9 +418,9 @@ public class StudentService {
     }
 
     @Transactional
-    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException, InterviewAlreadyRescheduledException {
+    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
-        verifyInterviewIsPending(interview);
+        verifyInterviewIsAwaitingAnswer(interview);
         if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
             throw new InterviewAlreadyAcceptedException(interviewId);
         }
@@ -433,41 +432,19 @@ public class StudentService {
     }
 
     @Transactional
-    public void rejectInterviewOffer(String email, long interviewId, String rejectionMessage) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
+    public void rejectInterviewOffer(String email, long interviewId, String rejectionMessage) throws  InterviewAlreadyAcceptedException, InterviewAlreadyRejectedException,  InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
         verifyInterviewIsNotCanceled(interview);
         if (rejectionMessage == null || rejectionMessage.isBlank()) {
             throw new InterviewInvalidMessageException("Interview with ID " + interviewId + " requires a message to be rejected");
         }
-        if (interview.getStudentDecision() == StudentDecision.REJECTED && rejectionMessage.equals(interview.getRejectionMessage())) {
-            throw new InterviewAlreadyRejectedException(interviewId);
-        }
+
         interview.setStudentDecision(StudentDecision.REJECTED);
         interview.setRejectionMessage(rejectionMessage);
 
         interviewRepository.save(interview);
-    }
 
-    @Transactional
-    public void rescheduleInterviewOffer(String email, long interviewId, InterviewReschedulingDto rescheduling) throws InterviewNotFoundException, InterviewAlreadyRescheduledException, InterviewInvalidDateException, InterviewCancelledException {
-        Interview interview = findStudentInterview(email, interviewId);
-        String rejectionMessage = rescheduling.comment() == null || rescheduling.comment().isBlank() ? null : rescheduling.comment();
-        LocalDateTime reschedulingTime = rescheduling.interviewDate();
-        verifyInterviewIsNotCanceled(interview);
-
-        if (reschedulingTime == null || reschedulingTime.isBefore(LocalDateTime.now())) {
-            throw new InterviewInvalidDateException("Interview with ID " + interviewId + " requires a time in the future to be rescheduled");
-        }
-        if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED
-                && Objects.equals(rejectionMessage, interview.getRejectionMessage())
-                && reschedulingTime.equals(interview.getInterviewDate())) {
-            throw new InterviewAlreadyRescheduledException(interviewId);
-        }
-        interview.setRejectionMessage(rejectionMessage);
-        interview.setStudentDecision(StudentDecision.RESCHEDULE_REQUESTED);
-        interview.setInterviewDate(reschedulingTime);
-
-        interviewRepository.save(interview);
+        notificationService.notifyIfAbsent(NotificationType.INTERVIEW_REFUSED, interview.getId(), interview.getEmployer());
     }
 
     private void hire(InternshipApplication acceptedApplication) {
@@ -512,13 +489,13 @@ public class StudentService {
         notificationService.notifyIfAbsent(NotificationType.INTERNSHIP_OFFER_REFUSED, application.getId(), internship.getPostedBy());
     }
 
-    private void verifyInterviewIsPending(Interview interview) throws InterviewCancelledException, InterviewAlreadyAcceptedException, InterviewAlreadyRescheduledException {
+    private void verifyInterviewIsAwaitingAnswer(Interview interview) throws InterviewCancelledException, InterviewAlreadyAcceptedException, InterviewAlreadyRejectedException {
         verifyInterviewIsNotCanceled(interview);
-        if (interview.getStudentDecision() == StudentDecision.RESCHEDULE_REQUESTED) {
-            throw new InterviewAlreadyRescheduledException(interview.getId());
-        }
         if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {
             throw new InterviewAlreadyAcceptedException(interview.getId());
+        }
+        if (interview.getStudentDecision() == StudentDecision.REJECTED) {
+            throw new InterviewAlreadyRejectedException(interview.getId());
         }
     }
 

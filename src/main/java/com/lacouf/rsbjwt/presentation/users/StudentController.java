@@ -17,7 +17,6 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
 import com.lacouf.rsbjwt.service.dto.request.internship.ViewedInternshipsDto;
 import com.lacouf.rsbjwt.service.dto.request.interview.InterviewRejectionDto;
-import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyAcceptedException;
 import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRejectedException;
-import com.lacouf.rsbjwt.exception.interview.InterviewAlreadyRescheduledException;
 import com.lacouf.rsbjwt.exception.interview.InterviewInvalidDateException;
 import com.lacouf.rsbjwt.exception.interview.InterviewInvalidMessageException;
 import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
@@ -229,20 +227,14 @@ public class StudentController {
     }
 
     @PutMapping("/interviews/{interviewId}/accept")
-    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException, InterviewAlreadyRescheduledException {
+    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException{
         studentService.acceptInterviewOffer(authentication.getName(), interviewId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/interviews/{interviewId}/refuse")
-    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
+    public ResponseEntity<Void> rejectInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewRejectionDto rejection) throws InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException, InterviewAlreadyAcceptedException {
         studentService.rejectInterviewOffer(authentication.getName(), interviewId, rejection.comment());
-        return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/interviews/{interviewId}/reschedule")
-    public ResponseEntity<Void> rescheduleInterviewOffer(Authentication authentication, @PathVariable long interviewId, @Valid @RequestBody InterviewReschedulingDto rescheduling) throws InterviewAlreadyRescheduledException, InterviewNotFoundException, InterviewInvalidDateException, InterviewCancelledException {
-        studentService.rescheduleInterviewOffer(authentication.getName(), interviewId, rescheduling);
         return ResponseEntity.noContent().build();
     }
 

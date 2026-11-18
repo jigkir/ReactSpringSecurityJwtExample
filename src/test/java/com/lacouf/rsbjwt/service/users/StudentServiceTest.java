@@ -41,7 +41,6 @@ import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.document.DocumentService;
 import com.lacouf.rsbjwt.service.dto.request.document.DocumentUploadDto;
-import com.lacouf.rsbjwt.service.dto.request.interview.InterviewReschedulingDto;
 import com.lacouf.rsbjwt.service.dto.request.signup.StudentSignUpDto;
 import com.lacouf.rsbjwt.service.dto.response.application.InternshipApplicationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
@@ -1869,6 +1868,7 @@ public class StudentServiceTest {
         assert "I am not available".equals(interview.getRejectionMessage());
 
         verify(interviewRepository).save(interview);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERVIEW_REFUSED, interview.getId(), employer);
     }
 
     @Test
@@ -1932,128 +1932,6 @@ public class StudentServiceTest {
         assert Objects.equals(interview.getRejectionMessage(), "");
 
         verify(interviewRepository, never()).save(any(Interview.class));
-    }
-
-    // ---------- Reschedule ----------
-
-    @Test
-    void shouldRequestRescheduleOfInterviewOffer() throws Exception {
-        // Arrange
-        Interview interview = scheduledInterview();
-        LocalDateTime newDate = LocalDateTime.now().plusDays(10);
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        // Act
-        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Can we do it later?", newDate));
-
-        // Assert
-        assert StudentDecision.RESCHEDULE_REQUESTED.equals(interview.getStudentDecision());
-        assert "Can we do it later?".equals(interview.getRejectionMessage());
-        assert newDate.equals(interview.getInterviewDate());
-
-        verify(interviewRepository).save(interview);
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    void shouldStoreNoCommentWhenRescheduleCommentIsMissing(String missingComment) throws Exception {
-        // Arrange
-        Interview interview = scheduledInterview();
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        // Act
-        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto(missingComment, LocalDateTime.now().plusDays(10)));
-
-        // Assert
-        assert StudentDecision.RESCHEDULE_REQUESTED.equals(interview.getStudentDecision());
-        assert interview.getRejectionMessage() == null;
-    }
-
-    @Test
-    void shouldThrowInterviewNotFoundWhenReschedulingUnknownInterview() {
-
-        // Act + Assert
-        assertThrows(InterviewNotFoundException.class,
-                () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later", LocalDateTime.now().plusDays(10))));
-
-        verify(interviewRepository, never()).save(any(Interview.class));
-    }
-
-    @Test
-    void shouldThrowInvalidDateAndKeepInterviewUntouchedWhenRescheduleDateIsInThePast() {
-        // Arrange
-        Interview interview = scheduledInterview();
-        LocalDateTime originalDate = interview.getInterviewDate();
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        // Act + Assert
-        assertThrows(InterviewInvalidDateException.class,
-                () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later", LocalDateTime.now().minusDays(1))));
-
-        assert StudentDecision.PENDING.equals(interview.getStudentDecision());
-        assert originalDate.equals(interview.getInterviewDate());
-
-        verify(interviewRepository, never()).save(any(Interview.class));
-    }
-
-    @Test
-    void shouldThrowInvalidDateAndKeepInterviewUntouchedWhenRescheduleDateIsMissing() {
-        // Arrange
-        Interview interview = scheduledInterview();
-        LocalDateTime originalDate = interview.getInterviewDate();
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        // Act + Assert
-        assertThrows(InterviewInvalidDateException.class,
-                () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later", null)));
-
-        assert StudentDecision.PENDING.equals(interview.getStudentDecision());
-        assert originalDate.equals(interview.getInterviewDate());
-
-        verify(interviewRepository, never()).save(any(Interview.class));
-    }
-
-    @Test
-    void shouldThrowAlreadyRescheduledWhenSameRequestIsSentAgain() throws Exception {
-        // Arrange
-        Interview interview = scheduledInterview();
-        InterviewReschedulingDto request = new InterviewReschedulingDto("Later please", LocalDateTime.now().plusDays(10));
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, request);
-
-        // Act + Assert
-        assertThrows(InterviewAlreadyRescheduledException.class, () -> studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, request));
-
-        verify(interviewRepository, times(1)).save(interview);
-    }
-
-    @Test
-    void shouldAllowReschedulingAgainWithDifferentDate() throws Exception {
-        // Arrange
-        Interview interview = scheduledInterview();
-        LocalDateTime secondDate = LocalDateTime.now().plusDays(20);
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later please", LocalDateTime.now().plusDays(10)));
-
-        // Act
-        studentService.rescheduleInterviewOffer(STUDENT_EMAIL, 30L, new InterviewReschedulingDto("Later please", secondDate));
-
-        // Assert
-        assert secondDate.equals(interview.getInterviewDate());
     }
 
     // ---------- Helpers ----------

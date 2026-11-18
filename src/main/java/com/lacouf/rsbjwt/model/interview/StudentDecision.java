@@ -4,5 +4,4 @@ public enum StudentDecision {
     ACCEPTED,
     REJECTED,
     PENDING,
-    RESCHEDULE_REQUESTED
 }
