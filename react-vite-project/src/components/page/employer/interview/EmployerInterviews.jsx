@@ -9,7 +9,13 @@ import InterviewPicker from "./InterviewPicker.jsx";
 import Button from "../../../../styles/Button.jsx";
 import PreviewState from "../../../home/PreviewState.jsx";
 import InterviewStatusPill from "../../../interview/InterviewStatusPill.jsx";
-import {getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, INTERVIEW_STATUS_ACCENT, isCancelled} from "../../../../utils/interviewStatus.js";
+import {
+    getInterviewStatus,
+    getInterviewTime,
+    INTERVIEW_STATUS,
+    INTERVIEW_STATUS_ACCENT,
+    isCancelled
+} from "../../../../utils/interviewStatus.js";
 
 // Upcoming (soonest first) → past (most recent first) → cancelled
 const sortInterviews = (list) => {
@@ -18,7 +24,7 @@ const sortInterviews = (list) => {
     return [...list].sort((a, b) => {
         const ga = group(a), gb = group(b);
         if (ga !== gb) return ga - gb;
-        const ta = getInterviewTime(a) ?? 0, tb = getTime(b) ?? 0;
+        const ta = getInterviewTime(a) ?? 0, tb = getInterviewTime(b) ?? 0;
         return ga === 0 ? ta - tb : tb - ta;
     });
 };
@@ -82,8 +88,6 @@ function EmployerInterviews({user, preview = false}) {
 
     const renderCard = (interview) => {
         const status = getInterviewStatus(interview);
-        const accent = status === INTERVIEW_STATUS.CANCELLED ? "border-l-red-500"
-            : status === "past" ? "border-l-slate-400" : "border-l-emerald-500";
         const isOpen = editingId === interview.id;
         const canEdit = !preview && status !== INTERVIEW_STATUS.CANCELLED && status !== INTERVIEW_STATUS.PAST;
 
@@ -96,7 +100,8 @@ function EmployerInterviews({user, preview = false}) {
                             <p className={`mt-1 text-sm ${muted}`}>{studentName(interview)}</p>
                         )}
                     </div>
-                    <InterviewStatusPill dark={dark} status={status} label={t(`employerInterviews.statuses.${status}`)}/>
+                    <InterviewStatusPill dark={dark} status={status}
+                                         label={t(`employerInterviews.statuses.${status}`)}/>
                 </div>
 
                 <div className={`${cardS.detailsRow} mt-4`}>
@@ -116,6 +121,12 @@ function EmployerInterviews({user, preview = false}) {
                 <div className="mt-3 space-y-1 break-words">
                     <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.details")}</p>
                     <p>{interview.meetingDetails || t("employerInterviews.notProvided")}</p>
+                    {status === INTERVIEW_STATUS.CANCELLED && interview.cancellationReason && (
+                        <p className={`mt-3 text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`}
+                           role="note">
+                            {t(`employerInterviews.cancellationReasons.${interview.cancellationReason}`)}
+                        </p>
+                    )}
                     {status === INTERVIEW_STATUS.REJECTED && interview.rejectionMessage && (
                         <div
                             className={`mt-3 rounded-lg border-l-4 border-red-500 px-3 py-2 ${dark ? "bg-red-900/30" : "bg-red-50"}`}
@@ -125,14 +136,6 @@ function EmployerInterviews({user, preview = false}) {
                         </div>
                     )}
                 </div>
-
-                {interview.studentDecision === "REJECTED" && interview.studentRejectionComment && (
-                    <div
-                        className={`mt-3 rounded-lg border-l-4 border-red-500 px-3 py-2 ${dark ? "bg-red-900/30" : "bg-red-50"}`}>
-                        <p className="text-xs font-bold uppercase">{t("employerInterviews.rejectionReason")}</p>
-                        <p className="text-sm whitespace-pre-wrap">{interview.studentRejectionComment}</p>
-                    </div>
-                )}
 
                 {canEdit && (
                     <div className="mt-4 flex justify-end gap-2">

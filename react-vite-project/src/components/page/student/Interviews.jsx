@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
-import { useLocation, useOutletContext } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { getPostInternshipClasses } from "../../../styles/AppStyles.jsx";
-import { acceptInterviews, denyInterviews, getStudentInterviews } from "../../api/Api.jsx";
-import { usePolling } from "../../../utils/usePolling.js";
+import {useCallback, useEffect, useState} from "react";
+import {useLocation, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
+import {acceptInterviews, denyInterviews, getStudentInterviews} from "../../api/Api.jsx";
+import {usePolling} from "../../../utils/usePolling.js";
 import PreviewState from "../../home/PreviewState.jsx";
 import InterviewCard from "./InterviewCard.jsx";
-import { getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, isCancelled } from "../../../utils/interviewStatus.js";
+import {getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, isCancelled} from "../../../utils/interviewStatus.js";
 
-function Interviews({ preview = false }) {
-    const { dark } = useOutletContext();
-    const { t, i18n } = useTranslation();
+function Interviews({preview = false}) {
+    const {dark} = useOutletContext();
+    const {t, i18n} = useTranslation();
     const s = getPostInternshipClasses(dark);
 
     const [interviews, setInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-    const { hash } = useLocation();
+    const {hash} = useLocation();
 
     // Filter states
     const [search, setSearch] = useState("");
@@ -25,9 +25,7 @@ function Interviews({ preview = false }) {
 
     // Form / Action states
     const [rejectingId, setRejectingId] = useState(null);
-    const [activeMode, setActiveMode] = useState(null); // "REJECT" | "RESCHEDULE" | null
     const [rejectComment, setRejectComment] = useState("");
-    const [nouvelDate, setNouvelDate] = useState("");
     const [busyId, setBusyId] = useState(null);
 
     const loadInterviews = useCallback(async () => {
@@ -73,7 +71,7 @@ function Interviews({ preview = false }) {
         setRejectComment("");
     };
 
-    const startReject = (interview) => {
+    const startReject = (interviewId) => {
         setRejectingId(interviewId);
         setRejectComment("");
     };
@@ -118,11 +116,9 @@ function Interviews({ preview = false }) {
         return matchesSearch && matchesStatus && matchesType;
     });
 
-    const shown = visibleInterviews;
-
     useEffect(() => {
         if (preview || loading || !hash) return;
-        document.getElementById(hash.slice(1))?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
     }, [hash, loading, preview]);
 
     const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
@@ -139,6 +135,7 @@ function Interviews({ preview = false }) {
             hash={hash}
             preview={preview}
             busy={busyId === interview.id}
+            rejecting={rejectingId === interview.id}
             rejectComment={rejectComment}
             onRejectCommentChange={setRejectComment}
             onAccept={handleAccept}
@@ -151,8 +148,8 @@ function Interviews({ preview = false }) {
     if (preview) {
         return (
             <PreviewState dark={dark} error={error} loading={loading}
-                          empty={shown.length === 0} emptyText="studentInterviews.awaitingResponseEmpty">
-                {shown.map(renderCard)}
+                          empty={visibleInterviews.length === 0} emptyText="studentInterviews.awaitingResponseEmpty">
+                {visibleInterviews.map(renderCard)}
             </PreviewState>
         );
     }
@@ -194,7 +191,8 @@ function Interviews({ preview = false }) {
                             >
                                 <option value="ALL">{t("studentInterviews.filters.all")}</option>
                                 {Object.values(INTERVIEW_STATUS).map((status) => (
-                                    <option key={status} value={status}>{t(`studentInterviews.statuses.${status}`)}</option>
+                                    <option key={status}
+                                            value={status}>{t(`studentInterviews.statuses.${status}`)}</option>
                                 ))}
                             </select>
                         </div>
@@ -229,7 +227,7 @@ function Interviews({ preview = false }) {
                         </p>
                     )}
 
-                    {!loading && !error && shown.map(renderCard)}
+                    {!loading && !error && visibleInterviews.map(renderCard)}
                 </div>
             </div>
         </div>

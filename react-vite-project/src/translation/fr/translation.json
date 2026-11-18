@@ -785,12 +785,6 @@
       "IN_PERSON": "En personne",
       "PHONE": "Par téléphone"
     },
-    "decisions": {
-      "PENDING": "En attente",
-      "ACCEPTED": "Accepté",
-      "REJECTED": "Refusé",
-      "RESCHEDULE_REQUESTED": "Report demandé"
-    },
     "cancellationReasons": {
       "CANCELLED_BY_EMPLOYER": "Vous avez annulé cette entrevue.",
       "STUDENT_HIRED": "Entrevue annulée automatiquement : l'étudiant a été embauché ailleurs."

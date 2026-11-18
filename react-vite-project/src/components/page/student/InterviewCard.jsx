@@ -4,7 +4,12 @@ import Icon from "../../../styles/Icon.jsx";
 import Button from "../../../styles/Button.jsx";
 import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
 import InterviewStatusPill from "../../interview/InterviewStatusPill.jsx";
-import {getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, INTERVIEW_STATUS_ACCENT} from "../../../utils/interviewStatus.js";
+import {
+    getInterviewStatus,
+    getInterviewTime,
+    INTERVIEW_STATUS,
+    INTERVIEW_STATUS_ACCENT
+} from "../../../utils/interviewStatus.js";
 
 const getMeetingUrl = (details) => {
     try {
@@ -47,6 +52,9 @@ export default function InterviewCard({
     const highlighted = !preview && hash === `#interview-${interview.id}`;
     const muted = dark ? "text-white" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
+    const textareaClass = `w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
+    }`;
 
     return (
         <article
@@ -116,7 +124,8 @@ export default function InterviewCard({
                 {/* --- Rejection reason (required) --- */}
                 {rejecting && (
                     <div className="space-y-1 pt-2">
-                        <label htmlFor={`rejectComment-${interview.id}`} className={`block text-sm font-semibold ${muted}`}>
+                        <label htmlFor={`rejectComment-${interview.id}`}
+                               className={`block text-sm font-semibold ${muted}`}>
                             {t("studentInterviews.rejectionReasonLabel")}
                         </label>
                         <AutoResizeTextarea

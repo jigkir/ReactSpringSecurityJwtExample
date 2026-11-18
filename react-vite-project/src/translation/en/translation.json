@@ -820,12 +820,6 @@
       "IN_PERSON": "In person",
       "PHONE": "Phone"
     },
-    "decisions": {
-      "PENDING": "Awaiting response",
-      "ACCEPTED": "Accepted",
-      "REJECTED": "Declined",
-      "RESCHEDULE_REQUESTED": "Reschedule requested"
-    },
     "cancellationReasons": {
       "CANCELLED_BY_EMPLOYER": "You cancelled this interview.",
       "STUDENT_HIRED": "Interview cancelled automatically: the student was hired elsewhere."
