@@ -1471,43 +1471,6 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldCloseInternshipOfferedNotificationWhenStudentOpensOffers() throws Exception {
-        // Arrange
-        internship.setStatus(ReviewStatus.APPROVED);
-
-        InternshipApplication application = offeredApplication();
-
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(application));
-
-        // Act
-        studentService.getOffers(STUDENT_EMAIL);
-
-        // Assert
-        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
-    }
-
-    @Test
-    void shouldCloseInternshipOfferedNotificationOfEveryOfferWhenStudentOpensOffers() throws Exception {
-        // Arrange
-        internship.setStatus(ReviewStatus.APPROVED);
-
-        InternshipApplication first = offeredApplication();
-        InternshipApplication second = offeredApplication();
-        second.setId(21L);
-
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(first, second));
-
-        // Act
-        studentService.getOffers(STUDENT_EMAIL);
-
-        // Assert
-        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
-        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 21L, dummyStudent);
-    }
-
-    @Test
     void shouldReturnCompanyNameOfOfferedInternship() throws Exception {
         // Arrange
         internship.setStatus(ReviewStatus.APPROVED);
@@ -1554,36 +1517,6 @@ public class StudentServiceTest {
         assert offers.isEmpty();
 
         verifyNoInteractions(notificationService);
-    }
-
-    @Test
-    void shouldOnlyCloseNotificationsOfVisibleOffersWhenStudentOpensOffers() throws Exception {
-        // Arrange
-        internship.setStatus(ReviewStatus.APPROVED);
-
-        Internship deletedInternship = new Internship("Deleted offer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID,
-                LocalDate.now().plusMonths(4), LocalDate.now().plusMonths(2), new BigDecimal("25.00"), false, employer, internship.getSession());
-        deletedInternship.setId(11L);
-        deletedInternship.setStatus(ReviewStatus.APPROVED);
-        deletedInternship.markAsDeleted();
-
-        InternshipApplication visibleOffer = offeredApplication();
-        InternshipApplication deletedOffer = new InternshipApplication(deletedInternship, approvedVisibleCv(6L), dummyStudent);
-        deletedOffer.setId(21L);
-        deletedOffer.updateEmployerDecision(EmployerDecision.INTERNSHIP_OFFERED);
-
-        when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
-        when(applicationRepository.findByStudentAndEmployerDecision(dummyStudent, EmployerDecision.INTERNSHIP_OFFERED)).thenReturn(List.of(visibleOffer, deletedOffer));
-
-        // Act
-        List<InternshipApplicationResponseDto> offers = studentService.getOffers(STUDENT_EMAIL);
-
-        // Assert
-        assert offers.size() == 1;
-        assert offers.getFirst().id() == 20L;
-
-        verify(notificationService).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 20L, dummyStudent);
-        verify(notificationService, never()).closeNotificationOfRecipient(NotificationType.INTERNSHIP_OFFERED, 21L, dummyStudent);
     }
 
     @Test

@@ -369,18 +369,12 @@ public class StudentService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<InternshipApplicationResponseDto> getOffers(String email) throws UserNotFoundException {
         Student student = findByEmail(email);
-        List<InternshipApplication> offers =
-                applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED).stream()
-                        .filter(offer -> isVisibleToStudents(offer.getInternship()))
-                        .toList();
 
-        offers.forEach(offer -> notificationService.closeNotificationOfRecipient(
-                NotificationType.INTERNSHIP_OFFERED, offer.getId(), student));
-
-        return offers.stream()
+        return applicationRepository.findByStudentAndEmployerDecision(student, EmployerDecision.INTERNSHIP_OFFERED).stream()
+                .filter(offer -> isVisibleToStudents(offer.getInternship()))
                 .map(InternshipApplicationResponseDto::of)
                 .toList();
     }
@@ -432,7 +426,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void rejectInterviewOffer(String email, long interviewId, String rejectionMessage) throws  InterviewAlreadyAcceptedException, InterviewAlreadyRejectedException,  InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
+    public void rejectInterviewOffer(String email, long interviewId, String rejectionMessage) throws InterviewAlreadyAcceptedException, InterviewAlreadyRejectedException, InterviewNotFoundException, InterviewInvalidMessageException, InterviewCancelledException {
         Interview interview = findStudentInterview(email, interviewId);
         verifyInterviewIsNotCanceled(interview);
         if (rejectionMessage == null || rejectionMessage.isBlank()) {
