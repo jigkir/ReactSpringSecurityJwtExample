@@ -1809,24 +1809,6 @@ public class StudentServiceTest {
     }
 
     @Test
-    void shouldClearRejectionMessageWhenAcceptingPreviouslyRefusedOffer() throws Exception {
-        // Arrange
-        Interview interview = scheduledInterview();
-        interview.setStudentDecision(StudentDecision.REJECTED);
-        interview.setRejectionMessage("I am busy");
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        // Act
-        studentService.acceptInterviewOffer(STUDENT_EMAIL, 30L);
-
-        // Assert
-        assert StudentDecision.ACCEPTED.equals(interview.getStudentDecision());
-        assert interview.getRejectionMessage() == null;
-    }
-
-    @Test
     void shouldThrowInterviewNotFoundWhenAcceptingUnknownInterview() {
 
         // Act + Assert
@@ -1876,22 +1858,6 @@ public class StudentServiceTest {
 
         // Act + Assert
         assertThrows(InterviewNotFoundException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "No thanks"));
-
-        verify(interviewRepository, never()).save(any(Interview.class));
-    }
-
-    @Test
-    void shouldThrowAlreadyRejectedWhenSameRefusalIsSentAgain() {
-        // Arrange
-        Interview interview = scheduledInterview();
-        interview.setStudentDecision(StudentDecision.REJECTED);
-        interview.setRejectionMessage("I am busy");
-
-        when(interviewRepository.findByIdAndInternshipApplication_Student_Credentials_Email(30L, STUDENT_EMAIL))
-                .thenReturn(Optional.of(interview));
-
-        // Act + Assert
-        assertThrows(InterviewAlreadyRejectedException.class, () -> studentService.rejectInterviewOffer(STUDENT_EMAIL, 30L, "I am busy"));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }

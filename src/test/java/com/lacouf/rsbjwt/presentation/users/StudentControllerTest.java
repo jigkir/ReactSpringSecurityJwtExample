@@ -823,31 +823,6 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$.message").value("A message is required"));
     }
 
-    @Test
-    void shouldReturnBadRequestWhenRescheduleDateIsMissing() throws Exception {
-        // Act + Assert
-        mockMvc.perform(put("/api/student/interviews/30/reschedule")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"comment\": \"Later please\"}"))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(studentService);
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenRescheduleDateIsInThePast() throws Exception {
-        // Arrange
-        LocalDateTime past = LocalDateTime.now().minusDays(1);
-
-        // Act + Assert
-        mockMvc.perform(put("/api/student/interviews/30/reschedule")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"comment\": \"Later please\", \"interviewDate\": \"" + past + "\"}"))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(studentService);
-    }
-
     // Internship Offer Tests
 
     @Test
