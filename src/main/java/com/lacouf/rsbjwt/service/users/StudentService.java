@@ -418,7 +418,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException {
+    public void acceptInterviewOffer(String email, long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException, InterviewAlreadyRejectedException {
         Interview interview = findStudentInterview(email, interviewId);
         verifyInterviewIsAwaitingAnswer(interview);
         if (interview.getStudentDecision() == StudentDecision.ACCEPTED) {

@@ -227,7 +227,7 @@ public class StudentController {
     }
 
     @PutMapping("/interviews/{interviewId}/accept")
-    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException{
+    public ResponseEntity<Void> acceptInterviewOffer(Authentication authentication, @PathVariable long interviewId) throws InterviewNotFoundException, InterviewAlreadyAcceptedException, InterviewCancelledException, InterviewAlreadyRejectedException {
         studentService.acceptInterviewOffer(authentication.getName(), interviewId);
         return ResponseEntity.noContent().build();
     }
