@@ -13,8 +13,9 @@
  * Sort options are [value, translationKey] pairs so components just map over them.
  *
  * Display order
- *   CVs:         REJECTED → PENDING → APPROVED
- *   Internships: PENDING → APPROVED → REJECTED   (pending offers first, rejected ones never first)
+ *   CVs:                  REJECTED → PENDING → APPROVED
+ *   Internships (manager / student): PENDING → APPROVED → REJECTED
+ *   Internships (employer):          REJECTED → PENDING → APPROVED
  * The status always comes first; the chosen sort only orders items inside the same status.
  *
  * The student internships page then regroups its list as NEW → OLD → APPLIED
@@ -51,8 +52,11 @@ export const reverse = (cmp) => (a, b) => cmp(b, a);
 // Display order of statuses for CVs: rejected first, then pending, then approved
 const STATUS_RANK = {REJECTED: 0, PENDING: 1, APPROVED: 2};
 
-// Display order of statuses for internship offers: pending first, then approved, rejected last
+// Display order of statuses for internship offers (manager / student): pending first, then approved, rejected last
 const INTERNSHIP_STATUS_RANK = {PENDING: 0, APPROVED: 1, REJECTED: 2};
+
+// Employer view: rejected offers first (they need fixing), then pending, then approved
+export const EMPLOYER_INTERNSHIP_STATUS_RANK = {REJECTED: 0, PENDING: 1, APPROVED: 2};
 
 // A missing or unknown status counts as PENDING
 export const statusRank = (item, ranks = STATUS_RANK) =>
@@ -118,25 +122,30 @@ export function filterInternships(list, {
     });
 }
 
-/** Status order first (PENDING → APPROVED → REJECTED), then the chosen sort. */
-export function sortInternships(list, sort = "NEWEST") {
+/**
+ * Status order first, then the chosen sort.
+ * `statusRanks` defaults to PENDING → APPROVED → REJECTED; the employer page passes
+ * EMPLOYER_INTERNSHIP_STATUS_RANK (REJECTED → PENDING → APPROVED).
+ */
+export function sortInternships(list, sort = "NEWEST", statusRanks = INTERNSHIP_STATUS_RANK) {
     return [...list].sort(
-        byStatusThen(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST, INTERNSHIP_STATUS_RANK));
+        byStatusThen(INTERNSHIP_SORTERS[sort] ?? INTERNSHIP_SORTERS.NEWEST, statusRanks));
 }
 
 export function applyInternshipFilters(list, {
-    search, status, discipline, sort, applied, appliedIds
+    search, status, discipline, sort, applied, appliedIds, statusRanks
 } = {}) {
     if (!list) return null;
     return sortInternships(
-        filterInternships(list, {search, status, discipline, applied, appliedIds}), sort);
+        filterInternships(list, {search, status, discipline, applied, appliedIds}), sort, statusRanks);
 }
 
 /**
  * Owns the filter state and returns the visible list (null while `list` is null).
  * `appliedIds` (optional, a stable Set) enables the applied / not applied filter.
+ * `statusRanks` (optional, a stable object) changes the status display order.
  */
-export function useInternshipFilters(list, appliedIds = null) {
+export function useInternshipFilters(list, appliedIds = null, statusRanks = INTERNSHIP_STATUS_RANK) {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("ALL");
     const [discipline, setDiscipline] = useState("ALL");
@@ -145,8 +154,8 @@ export function useInternshipFilters(list, appliedIds = null) {
 
     const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
     const visible = useMemo(
-        () => applyInternshipFilters(list, {search, status, discipline, sort, applied, appliedIds}),
-        [list, search, status, discipline, sort, applied, appliedIds],
+        () => applyInternshipFilters(list, {search, status, discipline, sort, applied, appliedIds, statusRanks}),
+        [list, search, status, discipline, sort, applied, appliedIds, statusRanks],
     );
 
     return {
