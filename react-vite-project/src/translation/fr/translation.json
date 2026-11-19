@@ -165,6 +165,7 @@
     "genericServerError": "Erreur de serveur {{errorCode}}. Veuillez réessayer dans un instant.",
     "unableToReachServerError": "Impossible d'accéder au serveur. Vérifiez votre connexion et réessayez.",
     "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces.",
+    "phoneNumberInvalidStart": "The phone number cannot start with 0",
     "accountCreationButton": "Créer mon compte",
     "accountCreationButtonLoading": "Création de votre compte…",
     "companyName": "Nom de l'entreprise",
@@ -729,6 +730,7 @@
     "message": "Message de l'employeur",
     "openLink": "Rejoindre la rencontre",
     "notProvided": "Non précisé",
+    "phoneNumber": "Numéro de téléphone",
     "statuses": {
       "awaitingResponse": "En attente de réponse",
       "upcoming": "À venir",
