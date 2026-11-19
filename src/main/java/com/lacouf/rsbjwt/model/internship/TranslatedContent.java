@@ -8,9 +8,12 @@ import lombok.Getter;
 @Getter
 public class TranslatedContent {
 
+    @Column
     private String title;
-    @Column(columnDefinition = "TEXT") private String description;
-    @Column(columnDefinition = "TEXT") private String rejectionComment;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    @Column(columnDefinition = "TEXT")
+    private String rejectionComment;
 
     protected TranslatedContent() {}
     public TranslatedContent(String title, String description, String rejectionComment) {

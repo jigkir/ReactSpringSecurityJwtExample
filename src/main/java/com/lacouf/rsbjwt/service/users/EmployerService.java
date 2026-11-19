@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 public class EmployerService {
 
     private final ApplicationEventPublisher eventPublisher;
+
     private final EmployerRepository employerRepository;
     private final InternshipRepository internshipRepository;
     private final ManagerRepository managerRepository;

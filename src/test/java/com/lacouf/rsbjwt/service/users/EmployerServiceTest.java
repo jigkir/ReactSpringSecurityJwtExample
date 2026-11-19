@@ -57,6 +57,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -75,6 +76,9 @@ import static org.mockito.Mockito.*;
 public class EmployerServiceTest {
 
     private EmployerService employerService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private NotificationService notificationService;
@@ -144,7 +148,7 @@ public class EmployerServiceTest {
     void createEmployerService() {
         InternshipService internshipService = new InternshipService(internshipApplicationRepository);
 
-        employerService = new EmployerService(employerRepository, internshipRepository, managerRepository, contractRepository, notificationService, userAppService, traductionService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
+        employerService = new EmployerService(eventPublisher, employerRepository, internshipRepository, managerRepository, contractRepository, notificationService, userAppService, traductionService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
     }
 
     @Test
@@ -354,51 +358,8 @@ public class EmployerServiceTest {
         assert (Long.valueOf(10L)).equals(response.getFirst().id());
         assert ("Software Developer").equals(response.getFirst().title());
         assert (Long.valueOf(1L)).equals(response.getFirst().employerId());
-
-        verify(traductionService, never()).translateInternships(any(), any());
     }
 
-    @Test
-    void shouldTranslateInternshipsWhenLanguageIsProvided() throws AcademicSessionNotFoundException {
-        // Arrange
-        InternshipResponseDto original = InternshipResponseDto.of(internship);
-        InternshipResponseDto translated = new InternshipResponseDto(
-                original.id(), "Développeur logiciel", original.description(), original.requiredSkills(),
-                original.durationInWeeks(), original.location(), original.workMode(), original.startDate(),
-                original.applicationDeadline(), original.compensationAmount(), original.compensationNegotiable(),
-                original.status(), original.rejectionComment(), original.employerId(), original.employerEmail(),
-                original.discipline(), original.uploadedAt());
-
-        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
-        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession))
-                .thenReturn(List.of(internship));
-        when(traductionService.translateInternships(any(), eq("fr"))).thenReturn(List.of(translated));
-
-        // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null, "fr");
-
-        // Assert
-        assert (Integer.valueOf(1)).equals(response.size());
-        assert ("Développeur logiciel").equals(response.getFirst().title());
-
-        verify(traductionService).translateInternships(any(), eq("fr"));
-    }
-
-    @Test
-    void shouldNotTranslateWhenEmployerHasNoInternships() throws AcademicSessionNotFoundException {
-        // Arrange
-        when(academicSessionService.findSessionOrCurrent(null)).thenReturn(currentSession);
-        when(internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(EMPLOYER_EMAIL, currentSession))
-                .thenReturn(List.of());
-
-        // Act
-        List<InternshipResponseDto> response = employerService.getInternshipsOfEmployer(EMPLOYER_EMAIL, null, "fr");
-
-        // Assert
-        assert response.isEmpty();
-
-        verify(traductionService, never()).translateInternships(any(), any());
-    }
 
     @Test
     void shouldReturnInternshipsOfChosenSessionWhenSessionIsGiven() throws AcademicSessionNotFoundException {

@@ -15,7 +15,6 @@ public class TraductionService {
 
     public TraductionService(LibreTranslateClient client) { this.client = client; }
 
-    /** Optional.empty() = failure (service down, error). */
     public Optional<String> translate(String text, String target) {
         if (text == null || text.isBlank() || text.chars().noneMatch(Character::isLetter)) {
             return Optional.of(text == null ? "" : text);   // nothing to translate
