@@ -873,5 +873,134 @@
     "loading": "Chargement...",
     "error": "Échec du chargement des suivis de stage.",
     "empty": "Aucun suivi de stage trouvé."
+  },
+  "workplaceEvaluation": {
+    "selectPlaceholder": "-- Sélectionner --",
+    "submit": "Soumettre l'évaluation",
+    "submitting": "Envoi en cours...",
+    "cancel": "Annuler",
+    "ratings": {
+      "TOTALLY_AGREE": "Totalement en accord",
+      "SOMEWHAT_AGREE": "Plutôt en accord",
+      "SOMEWHAT_DISAGREE": "Plutôt en désaccord*",
+      "TOTALLY_DISAGREE": "Totalement en désaccord*",
+      "CANNOT_SAY": "Impossible de se prononcer"
+    },
+    "criteria": {
+      "tasksMatchAgreement": "Les tâches confiées au stagiaire sont conformes aux tâches annoncées dans l'entente de stage.",
+      "onboardingMeasures": "Des mesures d'accueil facilitent l'intégration du nouveau stagiaire.",
+      "supervisionSufficient": "Le temps réel consacré à l'encadrement du stagiaire est suffisant.",
+      "healthAndSafetyCompliant": "L'environnement de travail respecte les normes d'hygiène et de sécurité au travail.",
+      "workClimatePleasant": "Le climat de travail est agréable.",
+      "publicTransitAccessible": "Le milieu de stage est accessible par transport en commun.",
+      "salaryInteresting": "Le salaire offert est intéressant pour le stagiaire.",
+      "supervisorCommunicationSmooth": "La communication avec le superviseur de stage facilite le déroulement du stage.",
+      "equipmentAdequate": "L'équipement fourni est adéquat pour réaliser les tâches confiées.",
+      "workloadAcceptable": "Le volume de travail est acceptable."
+    },
+    "supervisionHours": {
+      "title": "Préciser le nombre d'heures/semaine :",
+      "month1": "Premier mois",
+      "month2": "Deuxième mois",
+      "month3": "Troisième mois"
+    },
+    "hourlySalary": {
+      "label": "Préciser ($ / l'heure) :"
+    },
+    "comments": {
+      "label": "Commentaires",
+      "placeholder": "Ajoutez vos commentaires ici...",
+      "requiredHint": "* Expliquer dans la section commentaires lorsqu'un critère est en désaccord."
+    },
+    "observations": {
+      "title": "Observations générales",
+      "preferredStage": {
+        "label": "Ce milieu est à privilégier pour le :",
+        "FIRST": "Premier stage",
+        "SECOND": "Deuxième stage"
+      },
+      "internCapacity": {
+        "label": "Ce milieu est ouvert à accueillir :",
+        "ONE": "1 stagiaire",
+        "TWO": "2 stagiaires",
+        "THREE": "3 stagiaires",
+        "MORE_THAN_THREE": "4+ stagiaires"
+      },
+      "welcomeAgain": {
+        "label": "Ce milieu désire accueillir le même stagiaire pour un prochain stage",
+        "yes": "Oui",
+        "no": "Non"
+      },
+      "variableShifts": {
+        "label": "Ce milieu offre des quarts de travail variables",
+        "yes": "Oui",
+        "no": "Non",
+        "from": "De",
+        "to": "à",
+        "addRange": "Ajouter une plage",
+        "removeRange": "Retirer"
+      }
+    },
+    "errors": {
+      "ratingRequired": "Veuillez sélectionner une réponse.",
+      "supervisionHoursRequired": "Veuillez indiquer le nombre d'heures/semaine pour les trois mois.",
+      "hourlySalaryRequired": "Veuillez préciser le salaire horaire.",
+      "commentRequiredOnDisagreement": "Veuillez expliquer votre désaccord dans la section commentaires.",
+      "preferredStageRequired": "Veuillez indiquer pour quel stage ce milieu est à privilégier.",
+      "internCapacityRequired": "Veuillez indiquer combien de stagiaires le milieu peut accueillir.",
+      "welcomeAgainRequired": "Veuillez indiquer si le milieu désire accueillir le même stagiaire.",
+      "variableShiftsRequired": "Veuillez indiquer si le milieu offre des quarts de travail variables.",
+      "shiftRangeRequired": "Veuillez saisir au moins une plage horaire complète (de / à).",
+      "submitFailed": "Impossible d'envoyer l'évaluation pour le moment."
+    },
+    "clearSelection": "Effacer",
+    "title": "Évaluations en milieu de stage",
+    "subtitle": "Consultez, remplissez et signez les évaluations en milieu de stage pour la session sélectionnée.",
+    "loading": "Chargement des évaluations en milieu de stage...",
+    "empty": "Aucune évaluation en milieu de stage trouvée pour cette session.",
+    "previewEmpty": "Aucune évaluation en milieu de stage à remplir ou à signer.",
+    "loadError": "Impossible de charger les évaluations en milieu de stage.",
+    "retryBtn": "Réessayer",
+    "page": {
+      "title": "Évaluations en milieu de stage",
+      "subtitle": "Remplissez les critères d'évaluation et signez une fois toutes les sections complétées."
+    },
+    "status": {
+      "inProgress": "En cours",
+      "completed": "Complétée",
+      "signed": "Signée"
+    },
+    "card": {
+      "defaultTitle": "Évaluation en milieu de stage",
+      "unassignedIntern": "Étudiant non précisé",
+      "unassignedSupervisor": "Superviseur non précisé",
+      "weekLabel": "Semaine {{week}}",
+      "pendingPeriod": "Période non précisée",
+      "supervisorLabel": "Superviseur : {{supervisor}}",
+      "noCommentsYet": "Aucun commentaire enregistré pour le moment.",
+      "criteriaProgress": "{{answered}} / {{total}} critères remplis",
+      "hourlySalary": "{{rate}} $/h",
+      "hourlySalaryMissing": "Taux horaire non précisé",
+      "variableShiftsCount_one": "{{count}} plage d'horaire variable",
+      "variableShiftsCount_other": "{{count}} plages d'horaires variables",
+      "variableShiftsMissing": "Horaire de quarts non précisé",
+      "signedOn": "Signée le {{date}}",
+      "notSignedYet": "Non signée",
+      "fillEvaluation": "Remplir l'évaluation",
+      "reviewOrEdit": "Consulter / Modifier",
+      "sign": "Signer l'évaluation"
+    },
+    "sign": {
+      "title": "Signer l'évaluation en milieu de stage",
+      "accept": "Je confirme que cette évaluation en milieu de stage est exacte et complète.",
+      "devHint": "Mode dév actif : la confirmation par mot de passe est ignorée.",
+      "passwordHint": "Entrez le mot de passe de votre compte pour signer cette évaluation.",
+      "cancel": "Annuler",
+      "submit": "Signer",
+      "submitting": "Signature...",
+      "errorTerms": "Veuillez confirmer l'évaluation avant de signer.",
+      "errorPassword": "Veuillez entrer votre mot de passe pour signer.",
+      "errorFailed": "Impossible de signer l'évaluation en milieu de stage pour le moment."
+    }
   }
 }

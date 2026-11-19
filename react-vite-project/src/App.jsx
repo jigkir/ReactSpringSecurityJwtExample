@@ -30,6 +30,7 @@ import {SessionProvider} from "./utils/SessionContext.jsx";
 import Users from "./components/page/Users.jsx";
 import EmployerInterviews from "./components/page/employer/interview/EmployerInterviews.jsx";
 import Tracking from "./components/page/Tracking.jsx";
+import WorkplaceEvaluations from "./components/page/WorkplaceEvaluations.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -147,6 +148,7 @@ function App() {
 
                         <Route path="*" element={<Navigate to="/" replace/>}/>
                         <Route path="/expired" element={<ExpiredUser user={user}/>}/>
+                        <Route path="/evaluations" element={<WorkplaceEvaluations/>}/>
                     </Route>
                 </Routes>
             </div>

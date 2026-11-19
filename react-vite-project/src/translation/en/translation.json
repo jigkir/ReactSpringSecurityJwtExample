@@ -873,5 +873,134 @@
     "loading": "Loading...",
     "error": "Failed to load internship trackings.",
     "empty": "No internship trackings found."
+  },
+  "workplaceEvaluation": {
+    "selectPlaceholder": "-- Select --",
+    "submit": "Submit evaluation",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "ratings": {
+      "TOTALLY_AGREE": "Totally agree",
+      "SOMEWHAT_AGREE": "Somewhat agree",
+      "SOMEWHAT_DISAGREE": "Somewhat disagree*",
+      "TOTALLY_DISAGREE": "Totally disagree*",
+      "CANNOT_SAY": "Cannot say"
+    },
+    "criteria": {
+      "tasksMatchAgreement": "Tasks assigned to the intern match the tasks announced in the internship agreement.",
+      "onboardingMeasures": "Onboarding measures help integrate the new intern.",
+      "supervisionSufficient": "Actual time spent supervising the intern is sufficient.",
+      "healthAndSafetyCompliant": "The work environment complies with occupational health and safety standards.",
+      "workClimatePleasant": "The work climate is pleasant.",
+      "publicTransitAccessible": "The workplace is accessible by public transit.",
+      "salaryInteresting": "The offered salary is attractive for the intern.",
+      "supervisorCommunicationSmooth": "Communication with the internship supervisor helps the internship run smoothly.",
+      "equipmentAdequate": "Provided equipment is adequate to carry out the assigned tasks.",
+      "workloadAcceptable": "The workload is acceptable."
+    },
+    "supervisionHours": {
+      "title": "Specify hours/week:",
+      "month1": "First month",
+      "month2": "Second month",
+      "month3": "Third month"
+    },
+    "hourlySalary": {
+      "label": "Specify ($ / hour):"
+    },
+    "comments": {
+      "label": "Comments",
+      "placeholder": "Add your comments here...",
+      "requiredHint": "* Explain in the comments section whenever a criterion is marked as disagree."
+    },
+    "observations": {
+      "title": "General observations",
+      "preferredStage": {
+        "label": "This workplace should be prioritized for:",
+        "FIRST": "First internship",
+        "SECOND": "Second internship"
+      },
+      "internCapacity": {
+        "label": "This workplace is open to hosting:",
+        "ONE": "1 intern",
+        "TWO": "2 interns",
+        "THREE": "3 interns",
+        "MORE_THAN_THREE": "4+ interns"
+      },
+      "welcomeAgain": {
+        "label": "This workplace wishes to host the same intern for a future internship",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "variableShifts": {
+        "label": "This workplace offers variable shifts",
+        "yes": "Yes",
+        "no": "No",
+        "from": "From",
+        "to": "to",
+        "addRange": "Add time slot",
+        "removeRange": "Remove"
+      }
+    },
+    "errors": {
+      "ratingRequired": "Please select an option.",
+      "supervisionHoursRequired": "Please enter the hours/week for all three months.",
+      "hourlySalaryRequired": "Please specify the hourly rate.",
+      "commentRequiredOnDisagreement": "Please explain your disagreement in the comments section.",
+      "preferredStageRequired": "Please select which internship term this workplace is preferred for.",
+      "internCapacityRequired": "Please select how many interns the workplace can host.",
+      "welcomeAgainRequired": "Please indicate if the workplace would host the same intern again.",
+      "variableShiftsRequired": "Please indicate if the workplace offers variable shifts.",
+      "shiftRangeRequired": "Please provide at least one complete time slot (from / to).",
+      "submitFailed": "Unable to submit the evaluation right now."
+    },
+    "clearSelection": "Clear",
+    "title": "Workplace Evaluations",
+    "subtitle": "Review, complete, and sign workplace evaluations for your active session.",
+    "loading": "Loading workplace evaluations...",
+    "empty": "No workplace evaluations found for this session.",
+    "previewEmpty": "No workplace evaluations waiting for your completion or signature.",
+    "loadError": "Unable to load workplace evaluations.",
+    "retryBtn": "Retry",
+    "page": {
+      "title": "Workplace Evaluations",
+      "subtitle": "Fill in evaluation details and sign once all required sections are complete."
+    },
+    "status": {
+      "inProgress": "In progress",
+      "completed": "Completed",
+      "signed": "Signed"
+    },
+    "card": {
+      "defaultTitle": "Workplace Evaluation",
+      "unassignedIntern": "Student not specified",
+      "unassignedSupervisor": "Supervisor not specified",
+      "weekLabel": "Week {{week}}",
+      "pendingPeriod": "Period not specified",
+      "supervisorLabel": "Supervisor: {{supervisor}}",
+      "noCommentsYet": "No comments recorded yet.",
+      "criteriaProgress": "{{answered}} / {{total}} criteria filled",
+      "hourlySalary": "${{rate}}/hr",
+      "hourlySalaryMissing": "Hourly rate not specified",
+      "variableShiftsCount_one": "{{count}} variable shift slot",
+      "variableShiftsCount_other": "{{count}} variable shift slots",
+      "variableShiftsMissing": "Shift schedule not specified",
+      "signedOn": "Signed on {{date}}",
+      "notSignedYet": "Not signed yet",
+      "fillEvaluation": "Fill evaluation",
+      "reviewOrEdit": "Review / Edit",
+      "sign": "Sign evaluation"
+    },
+    "sign": {
+      "title": "Sign workplace evaluation",
+      "accept": "I confirm that this workplace evaluation is accurate and complete.",
+      "devHint": "Dev mode is active: password confirmation is bypassed.",
+      "passwordHint": "Enter your account password to sign this evaluation.",
+      "cancel": "Cancel",
+      "submit": "Sign",
+      "submitting": "Signing...",
+      "errorTerms": "Please confirm that you accept the evaluation before signing.",
+      "errorPassword": "Please enter your password to sign.",
+      "errorFailed": "Unable to sign the workplace evaluation right now."
+    }
   }
 }
