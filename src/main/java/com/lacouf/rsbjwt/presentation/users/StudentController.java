@@ -69,10 +69,10 @@ public class StudentController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(Authentication authentication)
+    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(Authentication authentication, Locale locale)
             throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
 
-        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(authentication.getName());
+        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(authentication.getName(), locale.getLanguage());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

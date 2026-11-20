@@ -28,24 +28,32 @@ public class CVTranslationService {
         this.tx = tx;
     }
 
-    public void translateAndSave(CVChangedEvent event) {
-        Map<String, TranslatedContent> newOnes = new HashMap<>();
+    public boolean translateAndSave(CVChangedEvent event) {
+        String comment = event.rejectionMessage();
 
-        String sample = event.rejectionMessage();
-        Optional<String> detected = translator.detectLanguage(sample);
-        if (detected.isEmpty()) return;
-        String sourceLanguage = detected.get();
-
-        for (String lang : LANGS) {
-            var rejectionMessage = translator.translate(event.rejectionMessage(), sourceLanguage, lang);
-            if (rejectionMessage.isEmpty()) return;
-
-            newOnes.put(lang, new TranslatedContent(rejectionMessage.get()));
+        if (comment == null || comment.isBlank() || comment.chars().noneMatch(Character::isLetter)) {
+            tx.executeWithoutResult(status ->
+                    cvRepository.findById(event.cvId())
+                            .ifPresent(cv -> cv.replaceTranslations(new HashMap<>())));
+            return true;
         }
 
-        tx.executeWithoutResult((status ->
+        Optional<String> detected = translator.detectLanguage(comment);
+        if (detected.isEmpty()) return false;
+        String sourceLanguage = detected.get();
+
+        Map<String, TranslatedContent> newOnes = new HashMap<>();
+        for (String lang : LANGS) {
+            var translated = translator.translate(comment, sourceLanguage, lang);
+            if (translated.isEmpty()) return false;
+
+            newOnes.put(lang, new TranslatedContent(translated.get()));
+        }
+
+        tx.executeWithoutResult(status ->
                 cvRepository.findById(event.cvId())
-                        .ifPresent(cv -> cv.replaceTranslations(newOnes))));
+                        .ifPresent(cv -> cv.replaceTranslations(newOnes)));
+        return true;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -54,6 +62,9 @@ public class CVTranslationService {
                 cvRepository.findByTranslationStatusAndVisibility(TranslationStatus.PENDING, DocumentVisibility.VISIBLE)
                         .stream().map(CVChangedEvent::of).toList());
 
-        if (pending != null) pending.forEach(this::translateAndSave);
+        if (pending == null) return;
+        for (CVChangedEvent event : pending) {
+            if (!translateAndSave(event)) return;
+        }
     }
 }

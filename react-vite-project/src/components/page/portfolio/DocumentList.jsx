@@ -94,7 +94,7 @@ function DocumentList({
             return !picking || d.docType !== "CV" || d.status === "APPROVED";
         });
         return type === ALL ? merged.sort(byStatusThenNewest) : sortCvsNewest(merged);
-    }, [type, picking, preview]);
+    }, [type, picking, preview, lang]);
     const {items: docs, failed, reload} = useLoadedList(fetchDocs);
 
     // Silent refetch when the parent asks for it (after an upload / a type change)

@@ -38,8 +38,8 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<ManagerCvResponseDto>> getVisibleCvs(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(managerService.getVisibleCvs(sessionId));
+    public ResponseEntity<List<ManagerCvResponseDto>> getVisibleCvs(@RequestParam(required = false) Long sessionId, Locale locale) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getVisibleCvs(sessionId, locale.getLanguage()));
     }
 
     @GetMapping("/cvs/pending")

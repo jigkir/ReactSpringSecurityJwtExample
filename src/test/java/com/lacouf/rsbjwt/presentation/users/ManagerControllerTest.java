@@ -72,7 +72,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnVisibleCvsOfChosenSession() throws Exception {
         // Arrange
-        when(managerService.getVisibleCvs(1L)).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
+        when(managerService.getVisibleCvs(1L, null)).thenReturn(List.of(cvWith(ReviewStatus.PENDING, null), cvWith(ReviewStatus.REJECTED, "CV too detailed")));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/cvs").param("sessionId", "1"))
@@ -80,7 +80,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].status").value("REJECTED"));
 
-        verify(managerService).getVisibleCvs(1L);
+        verify(managerService).getVisibleCvs(1L, null);
     }
 
     @Test
@@ -203,7 +203,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnAllInternships() throws Exception {
         // Arrange
-        when(managerService.getAllInternships(null)).thenReturn(List.of(
+        when(managerService.getAllInternships(null, null)).thenReturn(List.of(
                 new ManagerInternshipResponseDto(internshipWith(ReviewStatus.PENDING, null), false),
                 new ManagerInternshipResponseDto(internshipWith(ReviewStatus.APPROVED, null), true)));
 
@@ -214,7 +214,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$[1].status").value("APPROVED"))
                 .andExpect(jsonPath("$[1].hasApplications").value(true));
 
-        verify(managerService).getAllInternships(null);
+        verify(managerService).getAllInternships(null, null);
     }
 
     @Test
@@ -234,7 +234,7 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnPendingInternships() throws Exception {
         // Arrange
-        when(managerService.getPendingInternships()).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
+        when(managerService.getPendingInternships(null)).thenReturn(List.of(internshipWith(ReviewStatus.PENDING, null)));
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships/pending"))
@@ -242,7 +242,7 @@ public class ManagerControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
 
-        verify(managerService).getPendingInternships();
+        verify(managerService).getPendingInternships(null);
     }
 
     @Test
@@ -364,14 +364,14 @@ public class ManagerControllerTest {
     @Test
     void shouldReturnInternshipsOfChosenSession() throws Exception {
         // Arrange
-        when(managerService.getAllInternships(2L)).thenReturn(List.of());
+        when(managerService.getAllInternships(2L, null)).thenReturn(List.of());
 
         // Act + Assert
         mockMvc.perform(get("/api/manager/internships").param("sessionId", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
 
-        verify(managerService).getAllInternships(2L);
+        verify(managerService).getAllInternships(2L, null);
     }
 
     @Test

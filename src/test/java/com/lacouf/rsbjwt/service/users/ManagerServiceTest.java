@@ -181,7 +181,7 @@ public class ManagerServiceTest {
         when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of(cv));
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(1L);
+        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(1L, null);
 
         // Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -196,7 +196,7 @@ public class ManagerServiceTest {
         when(applicationRepository.existsByCv(cv)).thenReturn(true);
 
         // Act
-        List<ManagerCvResponseDto> visibleCvs = managerService.getVisibleCvs(1L);
+        List<ManagerCvResponseDto> visibleCvs = managerService.getVisibleCvs(1L, null);
 
         // Assert
         assert visibleCvs.getFirst().usedInApplication();
@@ -209,7 +209,7 @@ public class ManagerServiceTest {
         when(cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, currentSession)).thenReturn(List.of());
 
         // Act
-        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(null);
+        List<ManagerCvResponseDto> result = managerService.getVisibleCvs(null, null);
 
         // Assert
         assert result.isEmpty();
@@ -407,7 +407,7 @@ public class ManagerServiceTest {
         when(internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING)).thenReturn(List.of(internship));
 
         //Act
-        List<InternshipResponseDto> result = managerService.getPendingInternships();
+        List<InternshipResponseDto> result = managerService.getPendingInternships(null);
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -421,7 +421,7 @@ public class ManagerServiceTest {
         when(internshipRepository.findBySessionAndDeletedFalse(currentSession)).thenReturn(List.of(internship));
 
         //Act
-        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(null);
+        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(null, null);
 
         //Assert
         assert (Integer.valueOf(1)).equals(result.size());
@@ -438,7 +438,7 @@ public class ManagerServiceTest {
         when(internshipRepository.findBySessionAndDeletedFalse(pastSession)).thenReturn(List.of());
 
         //Act
-        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(2L);
+        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(2L, null);
 
         //Assert
         assert result.isEmpty();
@@ -452,7 +452,7 @@ public class ManagerServiceTest {
         when(applicationRepository.findInternshipIdsByInternshipSession(currentSession)).thenReturn(Set.of(internship.getId()));
 
         //Act
-        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(null);
+        List<ManagerInternshipResponseDto> result = managerService.getAllInternships(null, null);
 
         //Assert
         assert result.getFirst().hasApplications();

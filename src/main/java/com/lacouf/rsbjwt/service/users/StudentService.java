@@ -147,9 +147,12 @@ public class StudentService {
         return cvRepository.countByUserAndVisibility(findByEmail(email), DocumentVisibility.VISIBLE);
     }
 
-    public List<StudentCvResponseDto> getCVs(String email) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
+    @Transactional(readOnly = true)
+    public List<StudentCvResponseDto> getCVs(String email, String lang) throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
         List<CV> cvs = cvRepository.findByUser(findByEmail(email));
         List<StudentCvResponseDto> studentCvResponseDtos = new ArrayList<>();
+
+        String targetLang =  TraductionService.normalizeLang(lang);
 
         for (CV cv : cvs) {
             if (!documentService.isReadable(cv)) {
@@ -160,7 +163,7 @@ public class StudentService {
                 continue;
             }
 
-            studentCvResponseDtos.add(StudentCvResponseDto.of(cv));
+            studentCvResponseDtos.add(StudentCvResponseDto.of(cv, targetLang == null ? null : cv.getTranslation(targetLang).orElse(null)));
         }
         return studentCvResponseDtos;
     }

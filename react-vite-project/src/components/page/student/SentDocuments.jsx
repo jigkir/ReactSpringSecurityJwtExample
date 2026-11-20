@@ -18,6 +18,7 @@ import {DOC_TYPES} from '../../../utils/DocumentTypes.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
 
 // One stable function per type, so an open preview is never reloaded by a re-render
+
 const urlGetters = {};
 const getUrlFor = (type) =>
     (urlGetters[type] ??= async (id) => blobUrlFromFile(await getDocumentFile(type, id)));
