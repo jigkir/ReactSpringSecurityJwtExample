@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.traduction;
+package com.lacouf.rsbjwt.service.traduction.Internship;
 
 import com.lacouf.rsbjwt.model.internship.Internship;
 

@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.traduction;
+package com.lacouf.rsbjwt.service.traduction.Internship;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;

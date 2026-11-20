@@ -19,7 +19,7 @@ public class TraductionService {
         try {
             var res = client.detect(new LibreTranslateClient.DetectRequest(text));
             if (res == null || res.isEmpty()) return Optional.empty();
-            String lang = normalizeLang(res.get(0).language());
+            String lang = normalizeLang(res.getFirst().language());
             return lang == null ? Optional.empty() : Optional.of(lang);
         } catch (RestClientException e) {
             log.warn("LibreTranslate detect failed: {}", e.toString());

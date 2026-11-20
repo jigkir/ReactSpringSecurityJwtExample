@@ -43,7 +43,7 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
-import com.lacouf.rsbjwt.service.traduction.InternshipChangedEvent;
+import com.lacouf.rsbjwt.service.traduction.Internship.InternshipChangedEvent;
 import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

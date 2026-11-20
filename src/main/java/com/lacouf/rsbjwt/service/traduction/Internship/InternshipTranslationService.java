@@ -1,8 +1,9 @@
-package com.lacouf.rsbjwt.service.traduction;
+package com.lacouf.rsbjwt.service.traduction.Internship;
 
 import com.lacouf.rsbjwt.model.TranslationStatus;
 import com.lacouf.rsbjwt.model.internship.TranslatedContent;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
+import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -28,21 +29,21 @@ public class InternshipTranslationService {
         this.tx = tx;
     }
 
-    public boolean translateAndSave(InternshipChangedEvent src) {
+    public void translateAndSave(InternshipChangedEvent src) {
         Map<String, TranslatedContent> results = new HashMap<>();
 
         String sample = src.title() + ". " + src.description();
         Optional<String> detected = translator.detectLanguage(sample);
-        if (detected.isEmpty()) return false;
+        if (detected.isEmpty()) return;
         String source = detected.get();
 
         for (String lang : LANGS) {
             var title = translator.translate(src.title(), source, lang);
-            if (title.isEmpty()) return false;
+            if (title.isEmpty()) return;
             var desc = translator.translate(src.description(), source, lang);
-            if (desc.isEmpty()) return false;
+            if (desc.isEmpty()) return;
             var rej = translator.translate(src.rejectionComment(), source, lang);
-            if (rej.isEmpty()) return false;
+            if (rej.isEmpty()) return;
 
             results.put(lang, new TranslatedContent(
                     title.get(), desc.get(), rej.filter(s -> !s.isEmpty()).orElse(null)));
@@ -51,7 +52,6 @@ public class InternshipTranslationService {
         tx.executeWithoutResult(status ->
                 internshipRepository.findById(src.internshipId())
                         .ifPresent(i -> i.replaceTranslations(results)));
-        return true;
     }
 
     @Scheduled(fixedDelay = 60_000)
