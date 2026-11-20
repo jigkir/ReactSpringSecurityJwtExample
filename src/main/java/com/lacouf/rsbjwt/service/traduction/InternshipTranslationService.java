@@ -10,6 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class InternshipTranslationService {
@@ -27,17 +28,22 @@ public class InternshipTranslationService {
         this.tx = tx;
     }
 
-    public void translateAndSave(InternshipChangedEvent src) {
+    public boolean translateAndSave(InternshipChangedEvent src) {
         Map<String, TranslatedContent> results = new HashMap<>();
 
-        for (String lang : LANGS) {
-            var title = translator.translate(src.title(), lang);
-            var desc  = translator.translate(src.description(), lang);
-            var rej   = translator.translate(src.rejectionComment(), lang);
+        String sample = src.title() + ". " + src.description();
+        Optional<String> detected = translator.detectLanguage(sample);
+        if (detected.isEmpty()) return false;
+        String source = detected.get();
 
-            if (title.isEmpty() || desc.isEmpty() || rej.isEmpty()) {
-                return;
-            }
+        for (String lang : LANGS) {
+            var title = translator.translate(src.title(), source, lang);
+            if (title.isEmpty()) return false;
+            var desc = translator.translate(src.description(), source, lang);
+            if (desc.isEmpty()) return false;
+            var rej = translator.translate(src.rejectionComment(), source, lang);
+            if (rej.isEmpty()) return false;
+
             results.put(lang, new TranslatedContent(
                     title.get(), desc.get(), rej.filter(s -> !s.isEmpty()).orElse(null)));
         }
@@ -45,6 +51,7 @@ public class InternshipTranslationService {
         tx.executeWithoutResult(status ->
                 internshipRepository.findById(src.internshipId())
                         .ifPresent(i -> i.replaceTranslations(results)));
+        return true;
     }
 
     @Scheduled(fixedDelay = 60_000)

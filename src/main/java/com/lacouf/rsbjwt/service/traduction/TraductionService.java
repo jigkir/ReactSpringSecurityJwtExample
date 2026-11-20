@@ -15,15 +15,30 @@ public class TraductionService {
 
     public TraductionService(LibreTranslateClient client) { this.client = client; }
 
-    public Optional<String> translate(String text, String target) {
+    public Optional<String> detectLanguage(String text) {
+        try {
+            var res = client.detect(new LibreTranslateClient.DetectRequest(text));
+            if (res == null || res.isEmpty()) return Optional.empty();
+            String lang = normalizeLang(res.get(0).language());
+            return lang == null ? Optional.empty() : Optional.of(lang);
+        } catch (RestClientException e) {
+            log.warn("LibreTranslate detect failed: {}", e.toString());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> translate(String text, String source, String target) {
         if (text == null || text.isBlank() || text.chars().noneMatch(Character::isLetter)) {
             return Optional.of(text == null ? "" : text);
         }
+        if (source.equals(target)) {
+            return Optional.of(text);
+        }
         try {
-            var res = client.translate(new LibreTranslateClient.LibreRequest(text, "auto", target, "text"));
+            var res = client.translate(new LibreTranslateClient.LibreRequest(text, source, target, "text"));
             return Optional.ofNullable(res.translatedText());
         } catch (RestClientException e) {
-            log.warn("LibreTranslate failed: {}", e.getMessage());
+            log.warn("LibreTranslate failed: {}", e.toString());
             return Optional.empty();
         }
     }
