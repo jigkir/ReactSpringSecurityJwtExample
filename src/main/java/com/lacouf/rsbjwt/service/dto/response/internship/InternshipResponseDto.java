@@ -53,7 +53,7 @@ public record InternshipResponseDto(
 
     public static InternshipResponseDto of(Internship internship, TranslatedContent translation) {
         InternshipResponseDto base = of(internship);
-        if (translation == null) return base;   // no translation yet → original text
+        if (translation == null) return base;
 
         return new InternshipResponseDto(
                 base.id(),

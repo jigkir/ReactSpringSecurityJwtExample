@@ -17,7 +17,7 @@ public class TraductionService {
 
     public Optional<String> translate(String text, String target) {
         if (text == null || text.isBlank() || text.chars().noneMatch(Character::isLetter)) {
-            return Optional.of(text == null ? "" : text);   // nothing to translate
+            return Optional.of(text == null ? "" : text);
         }
         try {
             var res = client.translate(new LibreTranslateClient.LibreRequest(text, "auto", target, "text"));

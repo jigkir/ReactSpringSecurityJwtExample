@@ -36,7 +36,7 @@ public class InternshipTranslationService {
             var rej   = translator.translate(src.rejectionComment(), lang);
 
             if (title.isEmpty() || desc.isEmpty() || rej.isEmpty()) {
-                return; // stays PENDING, the scheduler retries
+                return;
             }
             results.put(lang, new TranslatedContent(
                     title.get(), desc.get(), rej.filter(s -> !s.isEmpty()).orElse(null)));
