@@ -111,13 +111,18 @@ internship() { # internship <token> <json>
   post_json "$API/employer/internship" "$2" "$1"
 }
 
+get_json() { # get_json <url> <token> [extra_curl_args...]
+  local url="$1" token="$2"
+  shift 2
+  curl -s "$url" -H "Authorization: Bearer $token" "$@"
+}
+
 apply() { # apply <email> <mot de passe> <titre de l'offre> <CV> [lettre de motivation] [relevé de notes]
   local token internship_id cv_id url query=""
   token=$(login "$1" "$2")
   [[ -n "$token" ]] || { echo "  pas de jeton (connexion échouée) : candidature de $1 ignorée"; return; }
 
-  internship_id=$(get_json "$API/student/internship" "$token" | id_where title "$3")
-  cv_id=$(get_json "$API/student/cvs/approved" "$token" | id_where fileName "$4")
+  internship_id=$(get_json "$API/student/internship" "$token" -H "Accept-Language: fr" | id_where title "$3")  cv_id=$(get_json "$API/student/cvs/approved" "$token" | id_where fileName "$4")
   [[ -n "$internship_id" && -n "$cv_id" ]] || { echo "  offre « $3 » ou CV $4 introuvable"; return; }
 
   [[ -n "${5:-}" ]] && query+="&coverLetterId=$(get_json "$API/student/cover-letters" "$token" | id_where fileName "$5")"

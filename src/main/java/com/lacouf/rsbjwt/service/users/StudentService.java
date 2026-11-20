@@ -27,6 +27,7 @@ import com.lacouf.rsbjwt.model.document.student.academictranscript.AcademicTrans
 import com.lacouf.rsbjwt.model.document.student.coverletter.CoverLetter;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.internship.TranslatedContent;
 import com.lacouf.rsbjwt.model.interview.Interview;
 import com.lacouf.rsbjwt.model.interview.InterviewCancellationReason;
 import com.lacouf.rsbjwt.model.interview.InterviewStatus;
@@ -57,6 +58,7 @@ import com.lacouf.rsbjwt.service.dto.response.interview.InterviewStudentResponse
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -289,8 +291,10 @@ public class StudentService {
                 .toList();
     }
 
-    public List<StudentInternshipResponseDto> getInternships(String email, Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
+    @Transactional(readOnly = true)
+    public List<StudentInternshipResponseDto> getInternships(String email, Long sessionId, String lang) throws UserNotFoundException, AcademicSessionNotFoundException {
         Student student = findByEmail(email);
+        String targetLang = TraductionService.normalizeLang(lang);
 
         Set<Long> viewedInternshipIds = studentRepository.findViewedInternshipIds(student);
         Set<Long> hiddenInternshipIds = studentRepository.findHiddenInternshipIds(student);
@@ -314,7 +318,16 @@ public class StudentService {
                 continue;
             }
 
-            internshipResponses.add(StudentInternshipResponseDto.of(internship, viewedInternshipIds.contains(internshipId), hiddenInternshipIds.contains(internshipId), favoriteInternshipIds.contains(internshipId)));
+            TranslatedContent translation = targetLang == null
+                    ? null
+                    : internship.getTranslation(targetLang).orElse(null);
+
+            internshipResponses.add(StudentInternshipResponseDto.of(
+                    internship,
+                    viewedInternshipIds.contains(internshipId),
+                    hiddenInternshipIds.contains(internshipId),
+                    favoriteInternshipIds.contains(internshipId),
+                    translation));
         }
         return internshipResponses;
     }

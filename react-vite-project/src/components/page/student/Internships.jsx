@@ -24,7 +24,7 @@ const ACCEPTED_OFFER = "ACCEPTED";
 // <StudentInternships preview />  Home page block: the newest offers the student has NOT applied to yet,
 function StudentInternships({preview = false}) {
     const {dark} = useOutletContext();
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
     const s = getPostInternshipClasses(dark);
@@ -41,6 +41,7 @@ function StudentInternships({preview = false}) {
         [appliedInternships]);
     const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
+    const lang = i18n.resolvedLanguage ?? i18n.language;
 
     const shownInternshipIds = useMemo(
         () => (preview || loading ? null : internships.map((internship) => internship.id)),
@@ -87,7 +88,7 @@ function StudentInternships({preview = false}) {
         } finally {
             setLoading(false);
         }
-    }, [selectedSession]);
+    }, [selectedSession, lang]);
 
     const loadAppliedInternships = useCallback(async () => {
         if (!selectedSession) return; // sessions still loading
