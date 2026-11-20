@@ -42,6 +42,7 @@ import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import com.lacouf.rsbjwt.service.traduction.Internship.InternshipChangedEvent;
+import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -156,16 +157,20 @@ public class ManagerService {
         return saveAndConvert(cv);
     }
 
-    public List<InternshipResponseDto> getPendingInternships() {
-        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
+    @Transactional(readOnly = true)
+    public List<InternshipResponseDto> getPendingInternships(String lang) {
+        String targetLang = TraductionService.normalizeLang(lang);
+        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(internship -> InternshipResponseDto.of(internship, targetLang == null ? null : internship.getTranslation(targetLang).orElse(null))).toList();
     }
 
-    public List<ManagerInternshipResponseDto> getAllInternships(Long sessionId) throws AcademicSessionNotFoundException {
+    @Transactional(readOnly = true)
+    public List<ManagerInternshipResponseDto> getAllInternships(Long sessionId, String lang) throws AcademicSessionNotFoundException {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
         Set<Long> internshipIdsWithApplications = applicationRepository.findInternshipIdsByInternshipSession(session);
+        String targetLang = TraductionService.normalizeLang(lang);
 
         return internshipRepository.findBySessionAndDeletedFalse(session).stream()
-                .map(internship -> ManagerInternshipResponseDto.of(internship, internshipIdsWithApplications.contains(internship.getId())))
+                .map(internship -> ManagerInternshipResponseDto.of(internship, internshipIdsWithApplications.contains(internship.getId()), targetLang == null ? null : internship.getTranslation(targetLang).orElse(null)))
                 .toList();
     }
 
