@@ -82,6 +82,12 @@ export default function InterviewCard({
                     <span className="font-semibold">{t("studentInterviews.type")}:</span>
                     <span>{t(`studentInterviews.types.${interview.meetingType}`)}</span>
                 </span>
+                {interview.meetingType === "PHONE" &&
+                    <span className={`${cardS.detailBadge} max-w-full flex-wrap gap-1.5`}>
+                        <span className="font-semibold">{t("studentInterviews.phoneNumber")}:</span>
+                        <span>{interview.employerPhoneNumber}</span>
+                    </span>
+                }
             </div>
 
             <div className={`mt-4 space-y-3 border-t pt-4 ${sectionBorder}`}>

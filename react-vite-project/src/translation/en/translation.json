@@ -165,6 +165,7 @@
     "genericServerError": "Server error {{errorCode}}. Please try again in a moment.",
     "unableToReachServerError": "Unable to reach the server. Check your connection and try again.",
     "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces.",
+    "phoneNumberInvalidStart": "The phone number cannot start with 0",
     "accountCreationButton": "Create my account",
     "accountCreationButtonLoading": "Creating your account…",
     "companyName": "Company name",
@@ -764,6 +765,7 @@
     "openLink": "Open the meeting link",
     "notProvided": "Not provided",
     "invalidDate": "Date unavailable",
+    "phoneNumber": "Phone Number",
     "statuses": {
       "awaitingResponse": "Awaiting response",
       "upcoming": "Upcoming",
