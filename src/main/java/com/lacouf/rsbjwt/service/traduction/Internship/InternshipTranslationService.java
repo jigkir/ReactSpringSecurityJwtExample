@@ -29,21 +29,21 @@ public class InternshipTranslationService {
         this.tx = tx;
     }
 
-    public void translateAndSave(InternshipChangedEvent src) {
+    public boolean translateAndSave(InternshipChangedEvent src) {
         Map<String, TranslatedContent> results = new HashMap<>();
 
         String sample = src.title() + ". " + src.description();
         Optional<String> detected = translator.detectLanguage(sample);
-        if (detected.isEmpty()) return;
+        if (detected.isEmpty()) return false;
         String source = detected.get();
 
         for (String lang : LANGS) {
             var title = translator.translate(src.title(), source, lang);
-            if (title.isEmpty()) return;
+            if (title.isEmpty()) return false;
             var desc = translator.translate(src.description(), source, lang);
-            if (desc.isEmpty()) return;
+            if (desc.isEmpty()) return false;
             var rej = translator.translate(src.rejectionComment(), source, lang);
-            if (rej.isEmpty()) return;
+            if (rej.isEmpty()) return false;
 
             results.put(lang, new TranslatedContent(
                     title.get(), desc.get(), rej.filter(s -> !s.isEmpty()).orElse(null)));
@@ -52,6 +52,7 @@ public class InternshipTranslationService {
         tx.executeWithoutResult(status ->
                 internshipRepository.findById(src.internshipId())
                         .ifPresent(i -> i.replaceTranslations(results)));
+        return true;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -60,6 +61,9 @@ public class InternshipTranslationService {
                 internshipRepository.findByTranslationStatusAndDeletedFalse(TranslationStatus.PENDING)
                         .stream().map(InternshipChangedEvent::of).toList());
 
-        if (pending != null) pending.forEach(this::translateAndSave);
+        if (pending == null) return;
+        for (InternshipChangedEvent event : pending) {
+            if (!translateAndSave(event)) return;
+        }
     }
 }

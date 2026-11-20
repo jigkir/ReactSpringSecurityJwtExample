@@ -513,7 +513,7 @@ public class EmployerControllerTest {
     void shouldReturnUpdatedInterviewWhenInterviewIsUpdated() throws Exception {
         // Arrange
         InterviewEmployerResponseDto updated = new InterviewEmployerResponseDto(
-                new InterviewResponseDto(30L, 10L, "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "", null),
+                new InterviewResponseDto(30L, 10L, "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "SCHEDULED", "", "5122222222", null ),
                 "Jane Doe");
 
         when(employerService.updateInterview(eq(30L), eq(EMPLOYER_EMAIL), any(InterviewRequestDto.class))).thenReturn(updated);
@@ -597,7 +597,7 @@ public class EmployerControllerTest {
     void shouldReturnCancelledInterviewWhenInterviewIsCancelled() throws Exception {
         // Arrange
         InterviewEmployerResponseDto cancelled = new InterviewEmployerResponseDto(
-                new InterviewResponseDto(30L, 10L, "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "", InterviewCancellationReason.CANCELLED_BY_EMPLOYER),
+                new InterviewResponseDto(30L, 10L, "Software Developer", "Please come to our office", "PENDING", "2026-11-01T14:30", "IN_PERSON", "123 Main St", "CANCELLED", "", "76767676",InterviewCancellationReason.CANCELLED_BY_EMPLOYER),
                 "Jane Doe");
 
         when(employerService.cancelInterview(30L, EMPLOYER_EMAIL)).thenReturn(cancelled);
@@ -695,6 +695,7 @@ public class EmployerControllerTest {
                         "123 Main St",
                         "SCHEDULED",
                         "",
+                        "222222222",
                         null
                 ),
                 "Jane Doe"
