@@ -69,9 +69,8 @@ public class EmployerService {
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
-    private final TraductionService traductionService;
 
-    public EmployerService(ApplicationEventPublisher eventPublisher, EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, ContractRepository contractRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public EmployerService(ApplicationEventPublisher eventPublisher, EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, ContractRepository contractRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
         this.eventPublisher = eventPublisher;
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
@@ -83,7 +82,6 @@ public class EmployerService {
         this.interviewRepository = interviewRepository;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
-        this.traductionService = traductionService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {

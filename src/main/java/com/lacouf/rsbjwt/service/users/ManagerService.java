@@ -41,6 +41,8 @@ import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.traduction.InternshipChangedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +54,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class ManagerService {
+
+    private final ApplicationEventPublisher eventPublisher;
+
     private final ManagerRepository managerRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
@@ -65,7 +70,8 @@ public class ManagerService {
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ApplicationEventPublisher eventPublisher, ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+        this.eventPublisher = eventPublisher;
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
@@ -191,6 +197,7 @@ public class ManagerService {
         internshipRepository.save(internship);
 
         notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_REJECTED, comment);
+        eventPublisher.publishEvent(InternshipChangedEvent.of(internship));
 
         return InternshipResponseDto.of(internship);
     }

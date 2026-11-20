@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -64,6 +65,9 @@ import static org.mockito.Mockito.*;
 public class ManagerServiceTest {
 
     private ManagerService managerService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private NotificationService notificationService;
@@ -96,7 +100,7 @@ public class ManagerServiceTest {
 
     @BeforeEach
     void setUp() {
-        managerService = new ManagerService(managerRepository, cvRepository, internshipRepository, studentRepository, applicationRepository, internshipTrackingRepository, teacherRepository, notificationService, userAppService, new InternshipService(applicationRepository), academicSessionService);
+        managerService = new ManagerService(eventPublisher, managerRepository, cvRepository, internshipRepository, studentRepository, applicationRepository, internshipTrackingRepository, teacherRepository, notificationService, userAppService, new InternshipService(applicationRepository), academicSessionService);
 
         currentSession = new AcademicSession(Season.WINTER, 2027);
         currentSession.setId(1L);

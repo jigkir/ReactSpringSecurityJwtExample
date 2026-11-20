@@ -48,7 +48,6 @@ import com.lacouf.rsbjwt.service.dto.response.interview.MeetingTypeDTO;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
-import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,8 +85,6 @@ public class EmployerServiceTest {
     private UserAppService userAppService;
     @Mock
     private AcademicSessionService academicSessionService;
-    @Mock
-    private TraductionService traductionService;
 
     @Mock
     private EmployerRepository employerRepository;
@@ -148,7 +145,7 @@ public class EmployerServiceTest {
     void createEmployerService() {
         InternshipService internshipService = new InternshipService(internshipApplicationRepository);
 
-        employerService = new EmployerService(eventPublisher, employerRepository, internshipRepository, managerRepository, contractRepository, notificationService, userAppService, traductionService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
+        employerService = new EmployerService(eventPublisher, employerRepository, internshipRepository, managerRepository, contractRepository, notificationService, userAppService, internshipApplicationRepository, interviewRepository, internshipService, academicSessionService);
     }
 
     @Test
