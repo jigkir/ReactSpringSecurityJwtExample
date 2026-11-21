@@ -6,10 +6,12 @@ import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
+import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.evaluation.WorkplaceEvaluationService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.lacouf.rsbjwt.service.evaluation.EvaluationTestData.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,6 +41,8 @@ public class DevControllerTest {
     private UserAppService userAppService;
     @MockitoBean
     private ContractService contractService;
+    @MockitoBean
+    private WorkplaceEvaluationService workplaceEvaluationService;
 
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
@@ -130,5 +135,21 @@ public class DevControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/dev/contracts/30/signature").param("email", MANAGER_EMAIL))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldSignWorkplaceEvaluationWithoutPassword() throws Exception {
+        // Arrange
+        WorkplaceEvaluation evaluation = completeWorkplaceEvaluation();
+        evaluation.sign(NOW);
+
+        when(workplaceEvaluationService.devSignEvaluation(TEACHER_EMAIL, EVALUATION_ID)).thenReturn(workplaceResponse(evaluation));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/dev/workplace-evaluations/40/signature").param("email", TEACHER_EMAIL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.signedAt").value("2026-11-20T14:30:00"));
+
+        verify(workplaceEvaluationService).devSignEvaluation(TEACHER_EMAIL, EVALUATION_ID);
     }
 }

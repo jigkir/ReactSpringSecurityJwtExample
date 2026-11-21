@@ -492,6 +492,8 @@ public class ContractServiceTest {
         assert student.equals(savedTracking.getStudent());
         assert internship.equals(savedTracking.getInternship());
         assert !savedTracking.hasTeacher();
+        assert savedTracking.getWorkplaceEvaluation().getTracking() == savedTracking;
+        assert !savedTracking.getWorkplaceEvaluation().isSigned();
     }
 
     @Test

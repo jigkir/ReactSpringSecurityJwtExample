@@ -60,6 +60,7 @@ public class SecurityConfiguration {
     private static final String STUDENT_PATH = "/api/student/**";
     private static final String EMPLOYER_PATH = "/api/employer/**";
     private static final String MANAGER_PATH = "/api/manager/**";
+    private static final String TEACHER_PATH = "/api/teacher/**";
 
     // NOTIFICATIONS PATH
     private static final String NOTIFICATIONS_PATH = "/api/notifications/**";
@@ -102,6 +103,7 @@ public class SecurityConfiguration {
                         .requestMatchers(STUDENT_PATH).hasAuthority(Role.STUDENT.name())
                         .requestMatchers(EMPLOYER_PATH).hasAuthority(Role.EMPLOYER.name())
                         .requestMatchers(MANAGER_PATH).hasAuthority(Role.MANAGER.name())
+                        .requestMatchers(TEACHER_PATH).hasAuthority(Role.TEACHER.name())
 
                         .requestMatchers("/error").permitAll()
 

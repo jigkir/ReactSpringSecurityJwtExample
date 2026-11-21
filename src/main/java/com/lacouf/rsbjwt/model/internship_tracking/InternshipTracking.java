@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.model.internship_tracking;
 
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
@@ -33,11 +34,17 @@ public class InternshipTracking {
     @JoinColumn(name = "internship_id", nullable = false)
     private Internship internship;
 
-    protected InternshipTracking() {}
+    @Getter
+    @OneToOne(mappedBy = "tracking", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
+    private WorkplaceEvaluation workplaceEvaluation;
+
+    protected InternshipTracking() {
+    }
 
     public InternshipTracking(Contract contract) {
         this.student = contract.getStudent();
         this.internship = contract.getInternship();
+        this.workplaceEvaluation = new WorkplaceEvaluation(this);
     }
 
     public void assignTeacher(Teacher teacher) {
