@@ -1,13 +1,14 @@
 package com.lacouf.rsbjwt.service.contract;
 
+import com.itextpdf.kernel.pdf.PdfDocument;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
@@ -16,19 +17,14 @@ import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static com.lacouf.rsbjwt.service.pdf.PdfTestSupport.*;
 
 public class ContractPdfGeneratorTest {
 
@@ -200,31 +196,5 @@ public class ContractPdfGeneratorTest {
 
     private static Credentials credentials(String email, Role role) {
         return Credentials.builder().email(email).password("Test123@-encoded").role(role).build();
-    }
-
-    private static MessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("messages");
-        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
-        messageSource.setFallbackToSystemLocale(false);
-        messageSource.setAlwaysUseMessageFormat(true);
-
-        return messageSource;
-    }
-
-    private static String textOf(byte[] pdf) throws IOException {
-        StringBuilder text = new StringBuilder();
-
-        try (PdfDocument document = pdfDocumentOf(pdf)) {
-            for (int page = 1; page <= document.getNumberOfPages(); page++) {
-                text.append(PdfTextExtractor.getTextFromPage(document.getPage(page))).append('\n');
-            }
-        }
-
-        return text.toString();
-    }
-
-    private static PdfDocument pdfDocumentOf(byte[] pdf) throws IOException {
-        return new PdfDocument(new PdfReader(new ByteArrayInputStream(pdf)));
     }
 }
