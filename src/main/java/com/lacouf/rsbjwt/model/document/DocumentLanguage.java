@@ -1,14 +1,14 @@
-package com.lacouf.rsbjwt.model.contract;
+package com.lacouf.rsbjwt.model.document;
 
 import java.util.Locale;
 
-public enum ContractLanguage {
+public enum DocumentLanguage {
     FR(Locale.CANADA_FRENCH),
     EN(Locale.CANADA);
 
     private final Locale locale;
 
-    ContractLanguage(Locale locale) {
+    DocumentLanguage(Locale locale) {
         this.locale = locale;
     }
 

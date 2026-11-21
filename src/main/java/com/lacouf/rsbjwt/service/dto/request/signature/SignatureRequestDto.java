@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.service.dto.request.contract;
+package com.lacouf.rsbjwt.service.dto.request.signature;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;

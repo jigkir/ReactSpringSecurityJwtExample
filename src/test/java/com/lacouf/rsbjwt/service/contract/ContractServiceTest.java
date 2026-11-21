@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service.contract;
 
 import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
@@ -9,7 +10,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
@@ -337,11 +338,11 @@ public class ContractServiceTest {
         Contract contract = contract();
 
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
-        when(contractPdfGenerator.generate(contract, ContractLanguage.EN)).thenReturn("pdf".getBytes());
+        when(contractPdfGenerator.generate(contract, DocumentLanguage.EN)).thenReturn("pdf".getBytes());
         when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
 
         // Act
-        DocumentFileResponseDto file = contractService.getContractFile(MANAGER_EMAIL, 30L, ContractLanguage.EN);
+        DocumentFileResponseDto file = contractService.getContractFile(MANAGER_EMAIL, 30L, DocumentLanguage.EN);
 
         // Assert
         assert "contrat-30.pdf".equals(file.fileName());

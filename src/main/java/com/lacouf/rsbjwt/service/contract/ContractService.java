@@ -2,11 +2,12 @@ package com.lacouf.rsbjwt.service.contract;
 
 import com.lacouf.rsbjwt.exception.contract.*;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
+import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.user.Student;
@@ -101,7 +102,7 @@ public class ContractService {
     }
 
     @Transactional(readOnly = true)
-    public DocumentFileResponseDto getContractFile(String email, long contractId, ContractLanguage language) throws UserNotFoundException, ContractNotFoundException {
+    public DocumentFileResponseDto getContractFile(String email, long contractId, DocumentLanguage language) throws UserNotFoundException, ContractNotFoundException {
         Contract contract = findContractOf(userAppService.findUserByEmail(email), contractId);
 
         return new DocumentFileResponseDto(contractId, FILE_NAME_PREFIX + contractId + PDF_EXTENSION, contractPdfGenerator.generate(contract, language));

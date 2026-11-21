@@ -1,4 +1,4 @@
-package com.lacouf.rsbjwt.exception.contract;
+package com.lacouf.rsbjwt.exception.signature;
 
 import com.lacouf.rsbjwt.exception.APIException;
 import org.springframework.http.HttpStatus;

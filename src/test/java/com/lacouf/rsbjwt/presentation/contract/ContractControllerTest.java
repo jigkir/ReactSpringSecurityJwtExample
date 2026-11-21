@@ -3,10 +3,10 @@ package com.lacouf.rsbjwt.presentation.contract;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
-import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
+import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
-import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.service.contract.ContractService;
@@ -149,7 +149,7 @@ public class ContractControllerTest {
     @Test
     void shouldReturnContractFileInLanguageChosenByUser() throws Exception {
         // Arrange
-        when(contractService.getContractFile(MANAGER_EMAIL, 30L, ContractLanguage.EN)).thenReturn(new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes()));
+        when(contractService.getContractFile(MANAGER_EMAIL, 30L, DocumentLanguage.EN)).thenReturn(new DocumentFileResponseDto(30L, "contrat-30.pdf", "pdf".getBytes()));
 
         // Act + Assert
         mockMvc.perform(get("/api/contracts/30/file").param("language", "EN").principal(managerAuthentication))
@@ -157,7 +157,7 @@ public class ContractControllerTest {
                 .andExpect(jsonPath("$.fileName").value("contrat-30.pdf"))
                 .andExpect(jsonPath("$.content").value("cGRm"));
 
-        verify(contractService).getContractFile(MANAGER_EMAIL, 30L, ContractLanguage.EN);
+        verify(contractService).getContractFile(MANAGER_EMAIL, 30L, DocumentLanguage.EN);
     }
 
     @Test

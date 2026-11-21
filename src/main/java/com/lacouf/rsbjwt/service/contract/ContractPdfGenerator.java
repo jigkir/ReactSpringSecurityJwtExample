@@ -19,7 +19,7 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
 import com.lacouf.rsbjwt.model.contract.Contract;
-import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.user.Employer;
@@ -77,7 +77,7 @@ public class ContractPdfGenerator {
         this.messageSource = messageSource;
     }
 
-    public byte[] generate(Contract contract, ContractLanguage language) {
+    public byte[] generate(Contract contract, DocumentLanguage language) {
         ContractTexts texts = new ContractTexts(messageSource, language.getLocale());
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PdfDocument pdf = new PdfDocument(new PdfWriter(output));

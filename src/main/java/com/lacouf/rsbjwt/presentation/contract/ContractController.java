@@ -2,12 +2,12 @@ package com.lacouf.rsbjwt.presentation.contract;
 
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
-import com.lacouf.rsbjwt.exception.contract.IncorrectSignaturePasswordException;
+import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
-import com.lacouf.rsbjwt.model.contract.ContractLanguage;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.service.contract.ContractService;
-import com.lacouf.rsbjwt.service.dto.request.contract.SignatureRequestDto;
+import com.lacouf.rsbjwt.service.dto.request.signature.SignatureRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import jakarta.validation.Valid;
@@ -42,7 +42,7 @@ public class ContractController {
     }
 
     @GetMapping("/{contractId}/file")
-    public ResponseEntity<DocumentFileResponseDto> getContractFile(Authentication authentication, @PathVariable long contractId, @RequestParam ContractLanguage language) throws ContractNotFoundException, UserNotFoundException {
+    public ResponseEntity<DocumentFileResponseDto> getContractFile(Authentication authentication, @PathVariable long contractId, @RequestParam DocumentLanguage language) throws ContractNotFoundException, UserNotFoundException {
         return ResponseEntity.ok(contractService.getContractFile(authentication.getName(), contractId, language));
     }
 }
