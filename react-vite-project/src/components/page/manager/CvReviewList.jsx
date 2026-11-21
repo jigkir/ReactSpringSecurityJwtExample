@@ -49,9 +49,11 @@ const statusOf = (doc) => doc.status ?? "PENDING";
 const isPending = (doc) => statusOf(doc) === "PENDING";
 
 function CvReviewList({dark, preview = false}) {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const th = getCvDocumentsClasses(dark);
+    const lang = i18n.resolvedLanguage ?? i18n.language;
+
 
     const {selectedSession} = useSession();
 
@@ -59,7 +61,7 @@ function CvReviewList({dark, preview = false}) {
         // Home preview: CVs waiting for review of every session, so the manager never misses one
         if (preview) return getPendingCvs();
         return selectedSession ? getPublicCvs(selectedSession.id) : null;
-    }, [preview, selectedSession]);
+    }, [preview, selectedSession, lang]);
 
     const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(loadCvs);
     const filters = useCvFilters(docs);

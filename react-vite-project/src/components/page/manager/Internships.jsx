@@ -38,7 +38,7 @@ import {useSession} from "../../../utils/useSession.js";
 
 const ManagerInternships = ({preview = false}) => {
     const {dark} = useOutletContext();
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
     // Offers of past sessions are archives; the home preview lists offers waiting for review in every session
@@ -56,6 +56,8 @@ const ManagerInternships = ({preview = false}) => {
 
     const filters = useInternshipFilters(internships);
     const visible = filters.visible ?? [];
+
+    const lang = i18n.resolvedLanguage ?? i18n.language;
 
     const shownInternshipIds = useMemo(
         () => (preview || !internships ? null : internships.map((internship) => internship.id)),
@@ -84,7 +86,7 @@ const ManagerInternships = ({preview = false}) => {
         } catch {
             setLoadFailed(true);
         }
-    }, [preview, selectedSession]);
+    }, [preview, selectedSession, lang]);
 
     useEffect(() => {
         load();

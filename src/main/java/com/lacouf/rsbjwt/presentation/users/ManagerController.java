@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -37,8 +38,8 @@ public class ManagerController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<ManagerCvResponseDto>> getVisibleCvs(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(managerService.getVisibleCvs(sessionId));
+    public ResponseEntity<List<ManagerCvResponseDto>> getVisibleCvs(@RequestParam(required = false) Long sessionId, Locale locale) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getVisibleCvs(sessionId, locale.getLanguage()));
     }
 
     @GetMapping("/cvs/pending")
@@ -67,13 +68,13 @@ public class ManagerController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<List<ManagerInternshipResponseDto>> getAllInternships(@RequestParam(required = false) Long sessionId) throws AcademicSessionNotFoundException {
-        return ResponseEntity.ok(managerService.getAllInternships(sessionId));
+    public ResponseEntity<List<ManagerInternshipResponseDto>> getAllInternships(@RequestParam(required = false) Long sessionId, Locale locale) throws AcademicSessionNotFoundException {
+        return ResponseEntity.ok(managerService.getAllInternships(sessionId, locale.getLanguage()));
     }
 
     @GetMapping("/internships/pending")
-    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships() {
-        return ResponseEntity.ok(managerService.getPendingInternships());
+    public ResponseEntity<List<InternshipResponseDto>> getPendingInternships(Locale locale) {
+        return ResponseEntity.ok(managerService.getPendingInternships(locale.getLanguage()));
     }
 
     @GetMapping("/internships/{internshipId}")

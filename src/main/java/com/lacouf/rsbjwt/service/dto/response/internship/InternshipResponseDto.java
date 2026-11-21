@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.service.dto.response.internship;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.internship.TranslatedContent;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 
 import java.math.BigDecimal;
@@ -47,6 +48,31 @@ public record InternshipResponseDto(
                 internship.getPostedBy().getEmail(),
                 internship.getPostedBy().getDiscipline(),
                 internship.getUploadDate()
+        );
+    }
+
+    public static InternshipResponseDto of(Internship internship, TranslatedContent translation) {
+        InternshipResponseDto base = of(internship);
+        if (translation == null) return base;
+
+        return new InternshipResponseDto(
+                base.id(),
+                translation.getTitle(),
+                translation.getDescription(),
+                base.requiredSkills(),
+                base.durationInWeeks(),
+                base.location(),
+                base.workMode(),
+                base.startDate(),
+                base.applicationDeadline(),
+                base.compensationAmount(),
+                base.compensationNegotiable(),
+                base.status(),
+                base.rejectionComment() != null ? translation.getRejectionComment() : null,
+                base.employerId(),
+                base.employerEmail(),
+                base.discipline(),
+                base.uploadedAt()
         );
     }
 }

@@ -2,16 +2,21 @@ package com.lacouf.rsbjwt.model.internship;
 
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.TranslationStatus;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Employer;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Entity
 @NoArgsConstructor
@@ -72,6 +77,16 @@ public class Internship {
     @JoinColumn(name = "session_id", nullable = false)
     private AcademicSession session;
 
+    @Enumerated(EnumType.STRING)
+    private TranslationStatus translationStatus = TranslationStatus.PENDING;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "internship_translations", joinColumns = @JoinColumn(name = "internship_id"))
+    @MapKeyColumn(name = "lang")
+    @BatchSize(size = 50)
+    @ToString.Exclude
+    private Map<String, TranslatedContent> translations = new HashMap<>();
+
     public Internship(String title, String description, String requiredSkills, int durationInWeeks, String location, WorkMode workMode, LocalDate startDate, LocalDate applicationDeadline, BigDecimal compensationAmount, boolean compensationNegotiable, Employer employer, AcademicSession session) {
         this.title = title;
         this.description = description;
@@ -104,6 +119,7 @@ public class Internship {
         this.compensationAmount = compensationAmount;
         this.compensationNegotiable = compensationNegotiable;
         this.session = session;
+        this.translationStatus = TranslationStatus.PENDING;
     }
 
     public void resubmitForReview() {
@@ -123,10 +139,21 @@ public class Internship {
     public void reject(String comment) {
         this.status = ReviewStatus.REJECTED;
         this.rejectionComment = comment;
+        this.translationStatus = TranslationStatus.PENDING;
     }
 
     public LocalDate getEndDate() {
         return startDate.plusWeeks(durationInWeeks).minusDays(1);
+    }
+
+    public void replaceTranslations(Map<String, TranslatedContent> newOnes) {
+        translations.clear();
+        translations.putAll(newOnes);
+        this.translationStatus = TranslationStatus.DONE;
+    }
+
+    public Optional<TranslatedContent> getTranslation(String lang) {
+        return Optional.ofNullable(translations.get(lang));
     }
 
     public void setId(long id) {

@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.repository.document.student.cv;
 
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.TranslationStatus;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -26,4 +27,6 @@ public interface CVRepository extends DocumentRepository<CV> {
     Optional<CV> findByIdAndVisibility(long id, DocumentVisibility visibility);
 
     List<CV> findByUser_Credentials_EmailAndStatusAndVisibility(String email, ReviewStatus status, DocumentVisibility visibility);
+
+    List<CV> findByTranslationStatusAndVisibility(TranslationStatus status, DocumentVisibility visibility);
 }

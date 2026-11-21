@@ -6,11 +6,12 @@ cd "$ROOT_DIR" || fail "racine du projet introuvable"
 
 clear
 
-log "Docker : réinitialisation de la base de données (docker compose down -v)"
-docker compose -f docker-compose.yml down -v || fail "échec de docker compose down -v"
+log "Docker : réinitialisation de la base de données"
+docker compose -f docker-compose.yml down || fail "échec de docker compose down"
+docker volume rm reactspringsecurityjwtexample_pgdata 2>/dev/null || true
 
-log "Docker : démarrage de PostgreSQL (docker compose up -d postgres)"
-docker compose -f docker-compose.yml up -d postgres || fail "échec de docker compose up -d postgres"
+log "Docker : démarrage de PostgreSQL"
+docker compose -f docker-compose.yml up -d postgres || fail "échec de docker compose up -d"
 
 log "Docker : conteneurs en cours d'exécution"
 docker compose -f docker-compose.yml ps || fail "docker compose ne répond pas : ouvre Docker Desktop"

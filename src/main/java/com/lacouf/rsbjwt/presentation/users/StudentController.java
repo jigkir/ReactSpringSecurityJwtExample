@@ -42,6 +42,7 @@ import com.lacouf.rsbjwt.exception.interview.InterviewNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/student")
@@ -68,10 +69,10 @@ public class StudentController {
     }
 
     @GetMapping("/cvs")
-    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(Authentication authentication)
+    public ResponseEntity<List<StudentCvResponseDto>> getStudentCVs(Authentication authentication, Locale locale)
             throws CorruptedFileException, UserNotFoundException, NoSuchAlgorithmException {
 
-        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(authentication.getName());
+        List<StudentCvResponseDto> studentCvResponseDtos = studentService.getCVs(authentication.getName(), locale.getLanguage());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -154,8 +155,8 @@ public class StudentController {
     }
 
     @GetMapping("/internship")
-    public ResponseEntity<List<StudentInternshipResponseDto>> getInternships(Authentication authentication, @RequestParam(required = false) Long sessionId) throws UserNotFoundException, AcademicSessionNotFoundException {
-        List<StudentInternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName(), sessionId);
+    public ResponseEntity<List<StudentInternshipResponseDto>> getInternships(Authentication authentication, @RequestParam(required = false) Long sessionId, Locale locale) throws UserNotFoundException, AcademicSessionNotFoundException {
+        List<StudentInternshipResponseDto> internshipResponseDtos = studentService.getInternships(authentication.getName(), sessionId, locale.getLanguage());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

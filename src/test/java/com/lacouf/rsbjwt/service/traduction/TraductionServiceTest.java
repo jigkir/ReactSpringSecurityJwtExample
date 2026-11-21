@@ -1,36 +1,21 @@
 package com.lacouf.rsbjwt.service.traduction;
 
-import com.lacouf.rsbjwt.model.Discipline;
-import com.lacouf.rsbjwt.model.auth.Credentials;
-import com.lacouf.rsbjwt.model.auth.Role;
-import com.lacouf.rsbjwt.model.internship.Internship;
-import com.lacouf.rsbjwt.model.internship.WorkMode;
-import com.lacouf.rsbjwt.model.session.AcademicSession;
-import com.lacouf.rsbjwt.model.session.Season;
-import com.lacouf.rsbjwt.model.user.Employer;
-import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.ResourceAccessException;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.ConnectException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TraductionServiceTest {
@@ -38,227 +23,148 @@ public class TraductionServiceTest {
     private TraductionService traductionService;
 
     @Mock
-    private HttpClient httpClient;
-    @Mock
-    private HttpResponse<String> httpResponse;
-
-    private static Internship internship;
+    private LibreTranslateClient client;
 
     @BeforeEach
-    void setUp() {
-        traductionService = new TraductionService();
-        ReflectionTestUtils.setField(traductionService, "httpClient", httpClient);
-
-        Credentials credentials = Credentials.builder()
-                .email("email@example.com")
-                .password("Test123@-encoded")
-                .role(Role.EMPLOYER)
-                .build();
-        Employer employer = new Employer("First Name", "Last Name", credentials, "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
-        employer.setId(1L);
-
-        AcademicSession session = new AcademicSession(Season.WINTER, 2027);
-        session.setId(1L);
-
-        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID,
-                LocalDate.now().plusMonths(4), LocalDate.now().plusMonths(2), new BigDecimal("25.00"), false, employer, session);
-        internship.setId(10L);
-    }
-
-    // ---------- needsTranslation ----------
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"   ", "12345"})
-    void shouldNotNeedTranslationWhenTextHasNoLetters(String text) {
-        assertFalse(traductionService.needsTranslation(text));
+    void createTraductionService() {
+        traductionService = new TraductionService(client);
     }
 
     @Test
-    void shouldNeedTranslationWhenTextHasLetters() {
-        assertTrue(traductionService.needsTranslation("Offre 2026"));
-    }
-
-    // ---------- traductStringToLanguage ----------
-
-    @Test
-    void shouldReturnTranslatedTextWhenLibreTranslateAnswers() throws Exception {
+    void shouldTranslateTextWithGivenSourceAndTarget() {
         // Arrange
-        mockLibreResponse(200, "{\"translatedText\":\"Candidature refusée\"}");
+        when(client.translate(new LibreTranslateClient.LibreRequest("Bonjour", "fr", "en", "text")))
+                .thenReturn(new LibreTranslateClient.LibreResponse("Hello"));
 
         // Act
-        String result = traductionService.traductStringToLanguage("Application rejected", "fr");
+        Optional<String> result = traductionService.translate("Bonjour", "fr", "en");
 
         // Assert
-        assertEquals("Candidature refusée", result);
-        verify(httpClient).send(any(HttpRequest.class), any());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"FR", "fr-CA", "fr,en;q=0.9"})
-    void shouldNormalizeLanguageBeforeTranslating(String lang) throws Exception {
-        // Arrange
-        mockLibreResponse(200, "{\"translatedText\":\"Bonjour\"}");
-
-        // Act
-        String result = traductionService.traductStringToLanguage("Hello", lang);
-
-        // Assert
-        assertEquals("Bonjour", result);
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"de"})
-    void shouldReturnOriginalTextWithoutCallingLibreWhenLanguageIsNotSupported(String lang) {
-        // Act
-        String result = traductionService.traductStringToLanguage("Hello", lang);
-
-        // Assert
-        assertEquals("Hello", result);
-        verifyNoInteractions(httpClient);
+        assert (Optional.of("Hello")).equals(result);
     }
 
     @Test
-    void shouldReturnOriginalTextWithoutCallingLibreWhenTextDoesNotNeedTranslation() {
+    void shouldNotCallLibreTranslateWhenSourceAndTargetAreTheSame() {
         // Act
-        String result = traductionService.traductStringToLanguage("12345", "fr");
+        Optional<String> result = traductionService.translate("Bonjour", "fr", "fr");
 
         // Assert
-        assertEquals("12345", result);
-        verifyNoInteractions(httpClient);
+        assert (Optional.of("Bonjour")).equals(result);
+
+        verifyNoInteractions(client);
     }
 
     @Test
-    void shouldReturnOriginalTextWhenLibreTranslateReturnsAnError() throws Exception {
-        // Arrange
-        mockLibreResponse(500, "Internal Server Error");
-
+    void shouldNotCallLibreTranslateWhenTextIsNull() {
         // Act
-        String result = traductionService.traductStringToLanguage("Hello", "fr");
+        Optional<String> result = traductionService.translate(null, "fr", "en");
 
         // Assert
-        assertEquals("Hello", result);
+        assert (Optional.of("")).equals(result);
+
+        verifyNoInteractions(client);
     }
 
     @Test
-    void shouldReturnOriginalTextWhenCallFailsUnexpectedly() throws Exception {
-        // Arrange
-        doThrow(new IOException("boom")).when(httpClient).send(any(HttpRequest.class), any());
-
+    void shouldNotCallLibreTranslateWhenTextIsBlank() {
         // Act
-        String result = traductionService.traductStringToLanguage("Hello", "fr");
+        Optional<String> result = traductionService.translate("   ", "fr", "en");
 
         // Assert
-        assertEquals("Hello", result);
-    }
+        assert (Optional.of("   ")).equals(result);
 
-    // ---------- circuit breaker (unavailable for 30s) ----------
-
-    @Test
-    void shouldStopCallingLibreAfterConnectionFailure() throws Exception {
-        // Arrange
-        doThrow(new ConnectException("refused")).when(httpClient).send(any(HttpRequest.class), any());
-
-        // Act
-        String first = traductionService.traductStringToLanguage("Hello", "fr");
-        String second = traductionService.traductStringToLanguage("World", "fr");
-
-        // Assert
-        assertEquals("Hello", first);
-        assertEquals("World", second);
-        verify(httpClient, times(1)).send(any(HttpRequest.class), any());
+        verifyNoInteractions(client);
     }
 
     @Test
-    void shouldCallLibreAgainOnceRetryDelayHasPassed() throws Exception {
-        // Arrange
-        doThrow(new ConnectException("refused")).when(httpClient).send(any(HttpRequest.class), any());
-
-        traductionService.traductStringToLanguage("Hello", "fr");
-        ReflectionTestUtils.setField(traductionService, "unavailableUntil", System.currentTimeMillis() - 1);
-
+    void shouldNotCallLibreTranslateWhenTextHasNoLetters() {
         // Act
-        traductionService.traductStringToLanguage("World", "fr");
+        Optional<String> result = traductionService.translate("12345", "fr", "en");
 
         // Assert
-        verify(httpClient, times(2)).send(any(HttpRequest.class), any());
-    }
+        assert (Optional.of("12345")).equals(result);
 
-    // ---------- translateInternships ----------
-
-    @Test
-    void shouldTranslateRejectionCommentOfInternships() throws Exception {
-        // Arrange
-        InternshipResponseDto original = dtoWithRejectionComment("Missing details");
-        mockLibreResponse(200, "{\"translatedText\":\"Détails manquants\"}");
-
-        // Act
-        List<InternshipResponseDto> result = traductionService.translateInternships(List.of(original), "fr");
-
-        // Assert
-        InternshipResponseDto translated = result.getFirst();
-        assertEquals("Détails manquants", translated.rejectionComment());
-        assertEquals(original.id(), translated.id());
-        assertEquals(original.title(), translated.title());
+        verifyNoInteractions(client);
     }
 
     @Test
-    void shouldNotTranslateInternshipWithoutRejectionComment() {
+    void shouldReturnEmptyWhenLibreTranslateIsUnreachable() {
         // Arrange
-        InternshipResponseDto withoutComment = dtoWithRejectionComment(null);
+        when(client.translate(any())).thenThrow(new ResourceAccessException("connection refused"));
 
         // Act
-        List<InternshipResponseDto> result = traductionService.translateInternships(List.of(withoutComment), "fr");
+        Optional<String> result = traductionService.translate("Bonjour", "fr", "en");
 
         // Assert
-        assertSame(withoutComment, result.getFirst());
-        verifyNoInteractions(httpClient);
+        assert result.isEmpty();
     }
 
     @Test
-    void shouldKeepOriginalCommentWhenTranslationFails() throws Exception {
+    void shouldDetectLanguage() {
         // Arrange
-        mockLibreResponse(500, "Internal Server Error");
+        when(client.detect(new LibreTranslateClient.DetectRequest("Bonjour tout le monde")))
+                .thenReturn(List.of(new LibreTranslateClient.DetectResult(90, "fr")));
 
         // Act
-        List<InternshipResponseDto> result = traductionService.translateInternships(List.of(dtoWithRejectionComment("Missing details")), "fr");
+        Optional<String> result = traductionService.detectLanguage("Bonjour tout le monde");
 
         // Assert
-        assertEquals("Missing details", result.getFirst().rejectionComment());
+        assert (Optional.of("fr")).equals(result);
+    }
+
+    @Test
+    void shouldNotCallLibreTranslateWhenDetectingLanguageOfBlankText() {
+        // Act
+        Optional<String> nullResult = traductionService.detectLanguage(null);
+        Optional<String> blankResult = traductionService.detectLanguage("  ");
+
+        // Assert
+        assert nullResult.isEmpty();
+        assert blankResult.isEmpty();
+
+        verifyNoInteractions(client);
+    }
+
+    @Test
+    void shouldReturnEmptyWhenDetectedLanguageIsNotSupported() {
+        // Arrange
+        when(client.detect(any())).thenReturn(List.of(new LibreTranslateClient.DetectResult(90, "es")));
+
+        // Act
+        Optional<String> result = traductionService.detectLanguage("Hola");
+
+        // Assert
+        assert result.isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyWhenDetectionFails() {
+        // Arrange
+        when(client.detect(any())).thenThrow(new ResourceAccessException("connection refused"));
+
+        // Act
+        Optional<String> result = traductionService.detectLanguage("Bonjour");
+
+        // Assert
+        assert result.isEmpty();
     }
 
     @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"de"})
-    void shouldReturnSameListWhenTargetLanguageIsNotSupported(String lang) {
-        // Arrange
-        List<InternshipResponseDto> internships = List.of(dtoWithRejectionComment("Missing details"));
-
+    @CsvSource(value = {"fr-CA,fr", "en_US,en", "EN,en", "'fr,en;q=0.8',fr", "es,", "' ',"})
+    void shouldNormalizeLanguage(String input, String expected) {
         // Act
-        List<InternshipResponseDto> result = traductionService.translateInternships(internships, lang);
+        String result = TraductionService.normalizeLang(input);
 
         // Assert
-        assertSame(internships, result);
-        verifyNoInteractions(httpClient);
+        assert Objects.equals(expected, result);
     }
 
-    // ---------- Helpers ----------
+    @Test
+    void shouldReturnNullWhenNormalizingNullLanguage() {
+        // Act
+        String result = TraductionService.normalizeLang(null);
 
-    private void mockLibreResponse(int statusCode, String body) throws Exception {
-        when(httpResponse.statusCode()).thenReturn(statusCode);
-        lenient().when(httpResponse.body()).thenReturn(body);
-        doReturn(httpResponse).when(httpClient).send(any(HttpRequest.class), any());
-    }
-
-    private static InternshipResponseDto dtoWithRejectionComment(String comment) {
-        InternshipResponseDto original = InternshipResponseDto.of(internship);
-
-        return new InternshipResponseDto(
-                original.id(), original.title(), original.description(), original.requiredSkills(),
-                original.durationInWeeks(), original.location(), original.workMode(), original.startDate(),
-                original.applicationDeadline(), original.compensationAmount(), original.compensationNegotiable(),
-                original.status(), comment, original.employerId(), original.employerEmail(),
-                original.discipline(), original.uploadedAt());
+        // Assert
+        assert (result == null);
     }
 }

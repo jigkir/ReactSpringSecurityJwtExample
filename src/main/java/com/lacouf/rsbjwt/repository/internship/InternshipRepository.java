@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.repository.internship;
 
 import com.lacouf.rsbjwt.model.Discipline;
+import com.lacouf.rsbjwt.model.TranslationStatus;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.ReviewStatus;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
@@ -34,4 +35,6 @@ public interface InternshipRepository extends JpaRepository<Internship, Long> {
     List<Internship> findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(String email, AcademicSession session);
 
     List<Internship> findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(Discipline postedByDiscipline, AcademicSession session);
+
+    List<Internship> findByTranslationStatusAndDeletedFalse(TranslationStatus status);
 }

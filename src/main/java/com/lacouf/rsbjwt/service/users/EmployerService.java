@@ -43,7 +43,9 @@ import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.traduction.Internship.InternshipChangedEvent;
 import com.lacouf.rsbjwt.service.traduction.TraductionService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class EmployerService {
+
+    private final ApplicationEventPublisher eventPublisher;
+
     private final EmployerRepository employerRepository;
     private final InternshipRepository internshipRepository;
     private final ManagerRepository managerRepository;
@@ -64,9 +69,9 @@ public class EmployerService {
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
-    private final TraductionService traductionService;
 
-    public EmployerService(EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, ContractRepository contractRepository, NotificationService notificationService, UserAppService userAppService, TraductionService traductionService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public EmployerService(ApplicationEventPublisher eventPublisher, EmployerRepository employerRepository, InternshipRepository internshipRepository, ManagerRepository managerRepository, ContractRepository contractRepository, NotificationService notificationService, UserAppService userAppService, InternshipApplicationRepository internshipApplicationRepository, InterviewRepository interviewRepository, InternshipService internshipService, AcademicSessionService academicSessionService) {
+        this.eventPublisher = eventPublisher;
         this.employerRepository = employerRepository;
         this.internshipRepository = internshipRepository;
         this.managerRepository = managerRepository;
@@ -77,7 +82,6 @@ public class EmployerService {
         this.interviewRepository = interviewRepository;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
-        this.traductionService = traductionService;
     }
 
     public UserResponseDto save(EmployerSignUpDto employerDTO) throws UserAlreadyExistsException {
@@ -121,6 +125,7 @@ public class EmployerService {
         internshipRepository.save(internship);
 
         notifyManagersOfSubmittedInternship(internship);
+        eventPublisher.publishEvent(InternshipChangedEvent.of(internship));
 
         return InternshipResponseDto.of(internship);
     }
@@ -139,6 +144,7 @@ public class EmployerService {
         internshipRepository.save(internship);
 
         notifyManagersOfSubmittedInternship(internship);
+        eventPublisher.publishEvent(InternshipChangedEvent.of(internship));
 
         return InternshipResponseDto.of(internship);
     }
@@ -162,19 +168,17 @@ public class EmployerService {
         internshipRepository.save(internship);
     }
 
+    @Transactional(readOnly = true)
     public List<InternshipResponseDto> getInternshipsOfEmployer(String email, Long sessionId, String lang) throws AcademicSessionNotFoundException {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
-        List<Internship> internships = internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(email, session);
+        String targetLang = TraductionService.normalizeLang(lang);
 
-        List<InternshipResponseDto> dtos = internships.stream()
-                .map(InternshipResponseDto::of)
+        return internshipRepository.findByPostedBy_Credentials_EmailAndSessionAndDeletedIsFalse(email, session)
+                .stream()
+                .map(i -> InternshipResponseDto.of(
+                        i,
+                        targetLang == null ? null : i.getTranslation(targetLang).orElse(null)))
                 .toList();
-
-        if (dtos.isEmpty() || lang == null) {
-            return dtos;
-        }
-
-        return traductionService.translateInternships(dtos, lang);
     }
 
     @Transactional(readOnly = true)

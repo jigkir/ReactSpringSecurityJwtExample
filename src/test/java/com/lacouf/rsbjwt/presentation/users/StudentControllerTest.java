@@ -193,7 +193,7 @@ public class StudentControllerTest {
     void shouldGetStudentCVsSuccessfully() throws Exception {
         // Arrange
         StudentCvResponseDto studentCvResponseDto = new StudentCvResponseDto(10L, "my_cv.pdf", 11L, LocalDateTime.now(), DocumentVisibility.VISIBLE, ReviewStatus.PENDING, null);
-        when(studentService.getCVs(STUDENT_EMAIL)).thenReturn(List.of(studentCvResponseDto));
+        when(studentService.getCVs(STUDENT_EMAIL, "en")).thenReturn(List.of(studentCvResponseDto));
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs").principal(authentication))
@@ -209,7 +209,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnNotFoundWhenGettingCVsForNonExistentStudent() throws Exception {
         // Arrange
-        when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new UserNotFoundException());
+        when(studentService.getCVs(STUDENT_EMAIL, "en")).thenThrow(new UserNotFoundException());
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs").principal(authentication))
@@ -219,7 +219,7 @@ public class StudentControllerTest {
     @Test
     void shouldReturnUnprocessableWhenGettingCVsWithCorruptedFile() throws Exception {
         // Arrange
-        when(studentService.getCVs(STUDENT_EMAIL)).thenThrow(new CorruptedFileException());
+        when(studentService.getCVs(STUDENT_EMAIL, "en")).thenThrow(new CorruptedFileException());
 
         // Act + Assert
         mockMvc.perform(get("/api/student/cvs").principal(authentication))
@@ -561,7 +561,7 @@ public class StudentControllerTest {
         //Arrange
         InternshipResponseDto internship = new InternshipResponseDto(10L, "Test", "This is a Test internship to test that it works", "Java", 12, "Montreal", WorkMode.HYBRID, LocalDate.now().plusMonths(2), LocalDate.now().plusWeeks(2), new BigDecimal(12), false, ReviewStatus.APPROVED, "", 10L, "employer@test.com", Discipline.COMPUTER_SCIENCE, LocalDateTime.now());
 
-        when(studentService.getInternships(STUDENT_EMAIL, null)).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
+        when(studentService.getInternships(STUDENT_EMAIL, null, "en")).thenReturn(List.of(new StudentInternshipResponseDto(internship, false, true, false)));
 
         //Act + Assert
         mockMvc.perform(get("/api/student/internship")
@@ -576,7 +576,7 @@ public class StudentControllerTest {
     @Test
     void shouldGetInternshipsOfChosenSession() throws Exception {
         // Arrange
-        when(studentService.getInternships(STUDENT_EMAIL, 2L)).thenReturn(List.of());
+        when(studentService.getInternships(STUDENT_EMAIL, 2L, "en")).thenReturn(List.of());
 
         // Act + Assert
         mockMvc.perform(get("/api/student/internship")
@@ -585,13 +585,13 @@ public class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(0));
 
-        verify(studentService).getInternships(STUDENT_EMAIL, 2L);
+        verify(studentService).getInternships(STUDENT_EMAIL, 2L, "en");
     }
 
     @Test
     void shouldReturnNotFoundWhenGettingInternshipsForNonExistentStudent() throws Exception {
         //Arrange
-        when(studentService.getInternships(STUDENT_EMAIL, null))
+        when(studentService.getInternships(STUDENT_EMAIL, null, "en"))
                 .thenThrow(new UserNotFoundException());
 
         //Act + Assert

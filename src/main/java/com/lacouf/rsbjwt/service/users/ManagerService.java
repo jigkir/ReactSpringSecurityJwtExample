@@ -14,6 +14,7 @@ import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
+import com.lacouf.rsbjwt.model.document.student.cv.TranslatedContent;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -41,6 +42,10 @@ import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
 import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
+import com.lacouf.rsbjwt.service.traduction.Internship.InternshipChangedEvent;
+import com.lacouf.rsbjwt.service.traduction.TraductionService;
+import com.lacouf.rsbjwt.service.traduction.cv.CVChangedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +57,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class ManagerService {
+
+    private final ApplicationEventPublisher eventPublisher;
+
     private final ManagerRepository managerRepository;
     private final CVRepository cvRepository;
     private final InternshipRepository internshipRepository;
@@ -65,7 +73,8 @@ public class ManagerService {
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
 
-    public ManagerService(ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ApplicationEventPublisher eventPublisher, ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+        this.eventPublisher = eventPublisher;
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
         this.internshipRepository = internshipRepository;
@@ -89,13 +98,16 @@ public class ManagerService {
         return UserResponseDto.of(manager);
     }
 
-    public List<ManagerCvResponseDto> getVisibleCvs(Long sessionId) throws AcademicSessionNotFoundException {
+    @Transactional(readOnly = true)
+    public List<ManagerCvResponseDto> getVisibleCvs(Long sessionId, String lang) throws AcademicSessionNotFoundException {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
         List<CV> cvs = cvRepository.findByVisibilityAndSession(DocumentVisibility.VISIBLE, session);
+        String targetLang = TraductionService.normalizeLang(lang);
 
-        return cvs.stream().map(this::toManagerCvResponseDto).toList();
+        return cvs.stream().map(cv -> toManagerCvResponseDto(cv, targetLang)).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ManagerCvResponseDto> getPendingCvs() {
         return cvRepository.findByVisibilityAndStatus(DocumentVisibility.VISIBLE, ReviewStatus.PENDING).stream().map(this::toManagerCvResponseDto).toList();
     }
@@ -146,20 +158,25 @@ public class ManagerService {
         cv.setRejectionComment(comment);
 
         notifyStudentOfCvReviewDecision(cv, NotificationType.CV_REJECTED, comment);
+        eventPublisher.publishEvent(CVChangedEvent.of(cv));
 
         return saveAndConvert(cv);
     }
 
-    public List<InternshipResponseDto> getPendingInternships() {
-        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(InternshipResponseDto::of).toList();
+    @Transactional(readOnly = true)
+    public List<InternshipResponseDto> getPendingInternships(String lang) {
+        String targetLang = TraductionService.normalizeLang(lang);
+        return internshipRepository.findByStatusAndDeletedFalse(ReviewStatus.PENDING).stream().map(internship -> InternshipResponseDto.of(internship, targetLang == null ? null : internship.getTranslation(targetLang).orElse(null))).toList();
     }
 
-    public List<ManagerInternshipResponseDto> getAllInternships(Long sessionId) throws AcademicSessionNotFoundException {
+    @Transactional(readOnly = true)
+    public List<ManagerInternshipResponseDto> getAllInternships(Long sessionId, String lang) throws AcademicSessionNotFoundException {
         AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
         Set<Long> internshipIdsWithApplications = applicationRepository.findInternshipIdsByInternshipSession(session);
+        String targetLang = TraductionService.normalizeLang(lang);
 
         return internshipRepository.findBySessionAndDeletedFalse(session).stream()
-                .map(internship -> ManagerInternshipResponseDto.of(internship, internshipIdsWithApplications.contains(internship.getId())))
+                .map(internship -> ManagerInternshipResponseDto.of(internship, internshipIdsWithApplications.contains(internship.getId()), targetLang == null ? null : internship.getTranslation(targetLang).orElse(null)))
                 .toList();
     }
 
@@ -191,6 +208,7 @@ public class ManagerService {
         internshipRepository.save(internship);
 
         notifyEmployerOfInternshipReviewDecision(internship, NotificationType.INTERNSHIP_OFFER_REJECTED, comment);
+        eventPublisher.publishEvent(InternshipChangedEvent.of(internship));
 
         return InternshipResponseDto.of(internship);
     }
@@ -277,6 +295,14 @@ public class ManagerService {
         cvRepository.save(cv);
 
         return toManagerCvResponseDto(cv);
+    }
+
+    private ManagerCvResponseDto toManagerCvResponseDto(CV cv, String targetLang) {
+        TranslatedContent translation = targetLang == null
+                ? null
+                : cv.getTranslation(targetLang).orElse(null);
+
+        return ManagerCvResponseDto.of(cv, applicationRepository.existsByCv(cv), translation);
     }
 
     private ManagerCvResponseDto toManagerCvResponseDto(CV cv) {

@@ -482,7 +482,7 @@ public class StudentServiceTest {
         when(cvRepository.findByUser(dummyStudent)).thenReturn(List.of(visibleCv));
 
         // Act
-        List<StudentCvResponseDto> cvs = studentService.getCVs(STUDENT_EMAIL);
+        List<StudentCvResponseDto> cvs = studentService.getCVs(STUDENT_EMAIL, null);
 
         // Assert
         assert cvs.size() == 1;
@@ -504,7 +504,7 @@ public class StudentServiceTest {
         when(cvRepository.findByUser(dummyStudent)).thenReturn(List.of(hiddenCv));
 
         // Act
-        List<StudentCvResponseDto> cvs = studentService.getCVs(STUDENT_EMAIL);
+        List<StudentCvResponseDto> cvs = studentService.getCVs(STUDENT_EMAIL, null);
 
         // Assert
         assert cvs.isEmpty();
@@ -523,7 +523,7 @@ public class StudentServiceTest {
         when(cvRepository.findByUser(dummyStudent)).thenReturn(List.of(corruptedCv));
 
         // Act + Assert
-        assertThrows(CorruptedFileException.class, () -> studentService.getCVs(STUDENT_EMAIL));
+        assertThrows(CorruptedFileException.class, () -> studentService.getCVs(STUDENT_EMAIL, null));
     }
 
     @Test
@@ -532,7 +532,7 @@ public class StudentServiceTest {
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThrows(UserNotFoundException.class, () -> studentService.getCVs(STUDENT_EMAIL));
+        assertThrows(UserNotFoundException.class, () -> studentService.getCVs(STUDENT_EMAIL, null));
     }
 
     @Test
@@ -819,7 +819,7 @@ public class StudentServiceTest {
         //Act + Assert
         internship.setStatus(ReviewStatus.APPROVED);
 
-        assert !studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
+        assert !studentService.getInternships(dummyStudent.getEmail(), null, null).isEmpty();
     }
 
     @Test
@@ -830,7 +830,7 @@ public class StudentServiceTest {
         when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
 
         //Act + Assert
-        assert studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
+        assert studentService.getInternships(dummyStudent.getEmail(), null, null).isEmpty();
     }
 
     @Test
@@ -843,7 +843,7 @@ public class StudentServiceTest {
         internship.setApplicationDeadline(LocalDate.now().minusDays(1L));
 
         //Act + Assert
-        assert studentService.getInternships(dummyStudent.getEmail(), null).isEmpty();
+        assert studentService.getInternships(dummyStudent.getEmail(), null, null).isEmpty();
     }
 
     @Test
@@ -858,7 +858,7 @@ public class StudentServiceTest {
         when(applicationRepository.findInternshipIdsByStudent(dummyStudent)).thenReturn(Set.of(10L));
 
         // Act
-        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL, null);
+        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL, null, null);
 
         // Assert
         assert internships.size() == 1;
@@ -875,7 +875,7 @@ public class StudentServiceTest {
         when(studentRepository.findHiddenInternshipIds(dummyStudent)).thenReturn(Set.of(10L));
 
         // Act
-        StudentInternshipResponseDto studentInternshipResponseDto = studentService.getInternships(STUDENT_EMAIL, null).getFirst();
+        StudentInternshipResponseDto studentInternshipResponseDto = studentService.getInternships(STUDENT_EMAIL, null, null).getFirst();
 
         // Assert
         assert ("Software Developer").equals(studentInternshipResponseDto.internship().title());
@@ -895,7 +895,7 @@ public class StudentServiceTest {
         when(internshipRepository.findByPostedBy_DisciplineAndSessionAndDeletedIsFalse(dummyStudent.getDiscipline(), currentSession)).thenReturn(List.of(internship));
 
         // Act
-        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL, 1L);
+        List<StudentInternshipResponseDto> internships = studentService.getInternships(STUDENT_EMAIL, 1L, null);
 
         // Assert
         assert internships.size() == 1;
