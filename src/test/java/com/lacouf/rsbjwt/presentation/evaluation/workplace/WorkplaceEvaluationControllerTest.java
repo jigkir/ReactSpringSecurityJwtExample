@@ -9,7 +9,7 @@ import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceCriterion;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceEvaluationFormDto;
-import com.lacouf.rsbjwt.service.evaluation.WorkplaceEvaluationService;
+import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;

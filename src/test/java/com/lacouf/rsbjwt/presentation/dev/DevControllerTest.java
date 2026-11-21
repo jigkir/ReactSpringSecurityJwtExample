@@ -11,7 +11,7 @@ import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import com.lacouf.rsbjwt.service.evaluation.WorkplaceEvaluationService;
+import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -9,7 +9,7 @@ import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceEvaluationFormDto;
 import com.lacouf.rsbjwt.service.dto.request.signature.SignatureRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
-import com.lacouf.rsbjwt.service.evaluation.WorkplaceEvaluationService;
+import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

@@ -12,7 +12,7 @@ import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
-import com.lacouf.rsbjwt.service.evaluation.WorkplaceEvaluationService;
+import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
