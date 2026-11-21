@@ -240,10 +240,15 @@ it("shouldNotTurnAnInPersonAddressIntoALink", async () => {
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
 });
 
-it("shouldShowPhoneMeetingType", async () => {
+it("shouldShowPhoneMeetingTypeAndEmployerPhoneNumber", async () => {
     // Arrange
     getStudentInterviews.mockResolvedValue([
-        {...interview1, meetingType: "PHONE", meetingDetails: "514-555-1234"},
+        {
+            ...interview1,
+            meetingType: "PHONE",
+            meetingDetails: "Appelez-nous à l'heure prévue",
+            employerPhoneNumber: "5145551234",
+        },
     ]);
 
     // Act
@@ -251,8 +256,25 @@ it("shouldShowPhoneMeetingType", async () => {
     await screen.findByText("Développeur Java");
 
     // Assert
-    expect(within(cardOf("Développeur Java")).getByText(i18n.t("studentInterviews.types.PHONE"))).toBeInTheDocument();
-    expect(screen.getByText("514-555-1234")).toBeInTheDocument();
+    const card = within(cardOf("Développeur Java"));
+    expect(card.getByText(i18n.t("studentInterviews.types.PHONE"))).toBeInTheDocument();
+    expect(card.getByText(`${i18n.t("studentInterviews.phoneNumber")}:`)).toBeInTheDocument();
+    expect(card.getByText("5145551234")).toBeInTheDocument();
+});
+
+it("shouldNotShowEmployerPhoneNumberForNonPhoneMeetings", async () => {
+    // Arrange
+    getStudentInterviews.mockResolvedValue([
+        {...interview1, meetingType: "ONLINE", employerPhoneNumber: "5145551234"},
+    ]);
+
+    // Act
+    renderStudentInterviews();
+    await screen.findByText("Développeur Java");
+
+    // Assert
+    expect(screen.queryByText("5145551234")).not.toBeInTheDocument();
+    expect(screen.queryByText(`${i18n.t("studentInterviews.phoneNumber")}:`)).not.toBeInTheDocument();
 });
 
 it("shouldShowFallbackWhenMeetingDetailsAndMessageAreMissing", async () => {

@@ -16,6 +16,7 @@ public record InterviewResponseDto(
         String meetingDetails,
         String interviewStatus,
         String rejectionMessage,
+        String employerPhoneNumber,
         InterviewCancellationReason cancellationReason
 ) {
     public static InterviewResponseDto of(Interview interview) {
@@ -33,6 +34,7 @@ public record InterviewResponseDto(
                 interview.getMeetingDetails(),
                 interview.getInterviewStatus().name(),
                 interview.getRejectionMessage(),
+                interview.getEmployer().getPhoneNumber(),
                 interview.getCancellationReason()
         );
     }

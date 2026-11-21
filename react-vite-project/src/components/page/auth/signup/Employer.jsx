@@ -42,6 +42,7 @@ const validateCompanyName = (value) => {
 const validatePhoneNumber = (value) => {
     if (!value) return {key: "employer.requiredPhoneNumber"};
     if (value.length !== 10) return {key: "employer.phoneNumberXDigits", options: {amount: 10}};
+    if (!/^[1-9]/.test(value)) return {key: "employer.phoneNumberInvalidStart"};
     return "";
 };
 
@@ -104,7 +105,10 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
     };
 
     const handlePhoneChange = (e) => {
-        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+        const digits = e.target.value
+            .replace(/\D/g, "")
+            .replace(/^0+/, "")   // a phone number can't start with 0
+            .slice(0, 10);
         handleChange({target: {name: "phoneNumber", value: digits}});
     };
 
