@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.model.internship_tracking;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship.Internship;
+import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
 import jakarta.persistence.*;
@@ -53,5 +54,9 @@ public class InternshipTracking {
 
     public boolean hasTeacher() {
         return teacher != null;
+    }
+
+    public AcademicSession getSession() {
+        return internship.getSession();
     }
 }

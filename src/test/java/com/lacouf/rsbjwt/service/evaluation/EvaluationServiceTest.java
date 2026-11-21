@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceCriterion;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.user.Teacher;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -193,6 +193,20 @@ public class EvaluationServiceTest {
 
         // Act + Assert
         assertThrows(EvaluationIncompleteException.class, () -> evaluationService.signWithoutPassword(evaluation));
+    }
+
+    @Test
+    void shouldNameFileWithPrefixAndIdWhenCreatingFile() {
+        // Arrange
+        byte[] content = {1, 2, 3};
+
+        // Act
+        DocumentFileResponseDto file = evaluationService.toFile(workplaceEvaluation(), "evaluation-milieu-de-stage-", content);
+
+        // Assert
+        assert file.id() == EVALUATION_ID;
+        assert file.fileName().equals("evaluation-milieu-de-stage-40.pdf");
+        assert file.content() == content;
     }
 
     // ---------- Helpers ----------

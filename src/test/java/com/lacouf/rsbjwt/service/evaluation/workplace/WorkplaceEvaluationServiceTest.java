@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service.evaluation.workplace;
 
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationAlreadySignedException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.workplace.ShiftRange;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceCriterion;
@@ -13,6 +14,7 @@ import com.lacouf.rsbjwt.repository.evaluation.workplace.WorkplaceEvaluationRepo
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.SupervisionHoursDto;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceEvaluationFormDto;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceObservationsDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.EvaluationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -43,6 +45,8 @@ public class WorkplaceEvaluationServiceTest {
     private EvaluationService evaluationService;
     @Mock
     private AcademicSessionService academicSessionService;
+    @Mock
+    private WorkplaceEvaluationPdfGenerator workplaceEvaluationPdfGenerator;
 
     @Mock
     private WorkplaceEvaluationRepository workplaceEvaluationRepository;
@@ -199,6 +203,35 @@ public class WorkplaceEvaluationServiceTest {
 
         // Assert
         assert evaluation.getShiftRanges().isEmpty();
+    }
+
+    @Test
+    void shouldGeneratePdfOfEvaluationInChosenLanguage() throws Exception {
+        // Arrange
+        WorkplaceEvaluation evaluation = workplaceEvaluation();
+        byte[] content = {1, 2, 3};
+        DocumentFileResponseDto file = new DocumentFileResponseDto(EVALUATION_ID, "evaluation-milieu-de-stage-40.pdf", content);
+
+        when(workplaceEvaluationRepository.findByIdAndTracking_Teacher_Credentials_Email(EVALUATION_ID, TEACHER_EMAIL)).thenReturn(Optional.of(evaluation));
+        when(workplaceEvaluationPdfGenerator.generate(evaluation, DocumentLanguage.EN)).thenReturn(content);
+        when(evaluationService.toFile(evaluation, "evaluation-milieu-de-stage-", content)).thenReturn(file);
+
+        // Act
+        DocumentFileResponseDto result = workplaceEvaluationService.getEvaluationFile(TEACHER_EMAIL, EVALUATION_ID, DocumentLanguage.EN);
+
+        // Assert
+        assert result == file;
+    }
+
+    @Test
+    void shouldNotGeneratePdfWhenEvaluationIsNotOfTeacher() {
+        // Arrange
+        when(workplaceEvaluationRepository.findByIdAndTracking_Teacher_Credentials_Email(EVALUATION_ID, TEACHER_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(EvaluationNotFoundException.class, () -> workplaceEvaluationService.getEvaluationFile(TEACHER_EMAIL, EVALUATION_ID, DocumentLanguage.FR));
+
+        verifyNoInteractions(workplaceEvaluationPdfGenerator);
     }
 
     // ---------- Helpers ----------

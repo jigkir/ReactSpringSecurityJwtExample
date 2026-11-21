@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.exception.evaluation.EvaluationIncompleteException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.evaluation.Evaluation;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ import java.time.LocalDateTime;
 
 @Service
 public class EvaluationService {
+    private static final String PDF_EXTENSION = ".pdf";
+
     private final UserAppService userAppService;
     private final Clock clock;
 
@@ -38,6 +41,10 @@ public class EvaluationService {
         verifyIfIncomplete(evaluation);
 
         evaluation.sign(LocalDateTime.now(clock));
+    }
+
+    public DocumentFileResponseDto toFile(Evaluation evaluation, String fileNamePrefix, byte[] content) {
+        return new DocumentFileResponseDto(evaluation.getId(), fileNamePrefix + evaluation.getId() + PDF_EXTENSION, content);
     }
 
     private void verifyIfAlreadySigned(Evaluation evaluation) throws EvaluationAlreadySignedException {

@@ -5,10 +5,12 @@ import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationAlreadySignedException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationIncompleteException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceCriterion;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceEvaluationFormDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -193,6 +195,31 @@ public class WorkplaceEvaluationControllerTest {
         mockMvc.perform(put(SIGNATURE_PATH).principal(teacherAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(SIGNATURE_BODY))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnPdfOfEvaluationInChosenLanguage() throws Exception {
+        // Arrange
+        DocumentFileResponseDto file = new DocumentFileResponseDto(EVALUATION_ID, "evaluation-milieu-de-stage-40.pdf", new byte[]{1, 2, 3});
+
+        when(workplaceEvaluationService.getEvaluationFile(TEACHER_EMAIL, EVALUATION_ID, DocumentLanguage.EN)).thenReturn(file);
+
+        // Act + Assert
+        mockMvc.perform(get(EVALUATION_PATH + "/file").param("language", "EN").principal(teacherAuthentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("evaluation-milieu-de-stage-40.pdf"));
+
+        verify(workplaceEvaluationService).getEvaluationFile(TEACHER_EMAIL, EVALUATION_ID, DocumentLanguage.EN);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenPdfOfOtherTeacherIsRequested() throws Exception {
+        // Arrange
+        when(workplaceEvaluationService.getEvaluationFile(TEACHER_EMAIL, EVALUATION_ID, DocumentLanguage.FR)).thenThrow(new EvaluationNotFoundException(EVALUATION_ID));
+
+        // Act + Assert
+        mockMvc.perform(get(EVALUATION_PATH + "/file").param("language", "FR").principal(teacherAuthentication))
                 .andExpect(status().isNotFound());
     }
 }

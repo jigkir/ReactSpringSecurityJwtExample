@@ -6,12 +6,14 @@ import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.repository.evaluation.workplace.WorkplaceEvaluationRepository;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.SupervisionHoursDto;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceEvaluationFormDto;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceObservationsDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.EvaluationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -22,14 +24,19 @@ import java.util.List;
 
 @Service
 public class WorkplaceEvaluationService {
+    private static final String FILE_NAME_PREFIX = "evaluation-milieu-de-stage-";
+
     private final WorkplaceEvaluationRepository workplaceEvaluationRepository;
+
     private final EvaluationService evaluationService;
     private final AcademicSessionService academicSessionService;
+    private final WorkplaceEvaluationPdfGenerator workplaceEvaluationPdfGenerator;
 
-    public WorkplaceEvaluationService(WorkplaceEvaluationRepository workplaceEvaluationRepository, EvaluationService evaluationService, AcademicSessionService academicSessionService) {
+    public WorkplaceEvaluationService(WorkplaceEvaluationRepository workplaceEvaluationRepository, EvaluationService evaluationService, AcademicSessionService academicSessionService, WorkplaceEvaluationPdfGenerator workplaceEvaluationPdfGenerator) {
         this.workplaceEvaluationRepository = workplaceEvaluationRepository;
         this.evaluationService = evaluationService;
         this.academicSessionService = academicSessionService;
+        this.workplaceEvaluationPdfGenerator = workplaceEvaluationPdfGenerator;
     }
 
     @Transactional(readOnly = true)
@@ -74,6 +81,13 @@ public class WorkplaceEvaluationService {
         evaluationService.signWithoutPassword(evaluation);
 
         return saveAsResponse(evaluation);
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentFileResponseDto getEvaluationFile(String email, long evaluationId, DocumentLanguage language) throws EvaluationNotFoundException {
+        WorkplaceEvaluation evaluation = findEvaluationOf(email, evaluationId);
+
+        return evaluationService.toFile(evaluation, FILE_NAME_PREFIX, workplaceEvaluationPdfGenerator.generate(evaluation, language));
     }
 
     private WorkplaceEvaluation findEvaluationOf(String email, long evaluationId) throws EvaluationNotFoundException {
