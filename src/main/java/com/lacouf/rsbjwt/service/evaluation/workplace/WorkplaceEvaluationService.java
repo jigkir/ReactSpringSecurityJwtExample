@@ -87,12 +87,31 @@ public class WorkplaceEvaluationService {
     public DocumentFileResponseDto getEvaluationFile(String email, long evaluationId, DocumentLanguage language) throws EvaluationNotFoundException {
         WorkplaceEvaluation evaluation = findEvaluationOf(email, evaluationId);
 
-        return evaluationService.toFile(evaluation, FILE_NAME_PREFIX, workplaceEvaluationPdfGenerator.generate(evaluation, language));
+        return toFile(evaluation, language);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EvaluationResponseDto<WorkplaceEvaluationFormDto>> getSignedEvaluations(Long sessionId) throws AcademicSessionNotFoundException {
+        AcademicSession session = academicSessionService.findSessionOrCurrent(sessionId);
+
+        return toResponses(workplaceEvaluationRepository.findByTracking_Internship_SessionAndSignedAtIsNotNull(session));
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentFileResponseDto getSignedEvaluationFile(long evaluationId, DocumentLanguage language) throws EvaluationNotFoundException {
+        WorkplaceEvaluation evaluation = workplaceEvaluationRepository.findByIdAndSignedAtIsNotNull(evaluationId)
+                .orElseThrow(() -> new EvaluationNotFoundException(evaluationId));
+
+        return toFile(evaluation, language);
     }
 
     private WorkplaceEvaluation findEvaluationOf(String email, long evaluationId) throws EvaluationNotFoundException {
         return workplaceEvaluationRepository.findByIdAndTracking_Teacher_Credentials_Email(evaluationId, email)
                 .orElseThrow(() -> new EvaluationNotFoundException(evaluationId));
+    }
+
+    private DocumentFileResponseDto toFile(WorkplaceEvaluation evaluation, DocumentLanguage language) {
+        return evaluationService.toFile(evaluation, FILE_NAME_PREFIX, workplaceEvaluationPdfGenerator.generate(evaluation, language));
     }
 
     private EvaluationResponseDto<WorkplaceEvaluationFormDto> saveAsResponse(WorkplaceEvaluation evaluation) {

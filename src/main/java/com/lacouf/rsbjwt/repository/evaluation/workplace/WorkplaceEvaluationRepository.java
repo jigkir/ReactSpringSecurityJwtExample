@@ -16,4 +16,8 @@ public interface WorkplaceEvaluationRepository extends JpaRepository<WorkplaceEv
     List<WorkplaceEvaluation> findByTracking_Teacher_Credentials_EmailAndSignedAtIsNull(String email);
 
     Optional<WorkplaceEvaluation> findByIdAndTracking_Teacher_Credentials_Email(long id, String email);
+
+    List<WorkplaceEvaluation> findByTracking_Internship_SessionAndSignedAtIsNotNull(AcademicSession session);
+
+    Optional<WorkplaceEvaluation> findByIdAndSignedAtIsNotNull(long id);
 }

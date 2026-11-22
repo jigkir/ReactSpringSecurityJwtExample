@@ -234,6 +234,42 @@ public class WorkplaceEvaluationServiceTest {
         verifyNoInteractions(workplaceEvaluationPdfGenerator);
     }
 
+    @Test
+    void shouldReturnSignedEvaluationsOfChosenSessionForManager() throws Exception {
+        // Arrange
+        WorkplaceEvaluation evaluation = completeWorkplaceEvaluation();
+        InternshipTracking internshipTracking = evaluation.getTracking();
+        AcademicSession session = internshipTracking.getSession();
+
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(session);
+        when(workplaceEvaluationRepository.findByTracking_Internship_SessionAndSignedAtIsNotNull(session)).thenReturn(List.of(evaluation));
+
+        // Act
+        List<EvaluationResponseDto<WorkplaceEvaluationFormDto>> evaluations = workplaceEvaluationService.getSignedEvaluations(1L);
+
+        // Assert
+        assert evaluations.size() == 1;
+        assert evaluations.getFirst().studentName().equals("Léa Tremblay");
+    }
+
+    @Test
+    void shouldGeneratePdfOfSignedEvaluationForManager() throws Exception {
+        // Arrange
+        WorkplaceEvaluation evaluation = completeWorkplaceEvaluation();
+        byte[] content = {1, 2, 3};
+        DocumentFileResponseDto file = new DocumentFileResponseDto(EVALUATION_ID, "evaluation-milieu-de-stage-40.pdf", content);
+
+        when(workplaceEvaluationRepository.findByIdAndSignedAtIsNotNull(EVALUATION_ID)).thenReturn(Optional.of(evaluation));
+        when(workplaceEvaluationPdfGenerator.generate(evaluation, DocumentLanguage.FR)).thenReturn(content);
+        when(evaluationService.toFile(evaluation, "evaluation-milieu-de-stage-", content)).thenReturn(file);
+
+        // Act
+        DocumentFileResponseDto result = workplaceEvaluationService.getSignedEvaluationFile(EVALUATION_ID, DocumentLanguage.FR);
+
+        // Assert
+        assert result == file;
+    }
+
     // ---------- Helpers ----------
 
     private static WorkplaceEvaluationFormDto emptyForm() {
