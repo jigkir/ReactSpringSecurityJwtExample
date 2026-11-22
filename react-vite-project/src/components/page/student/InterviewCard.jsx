@@ -25,7 +25,6 @@ export default function InterviewCard({
                                           dark,
                                           locale,
                                           hash,
-                                          preview,
                                           busy,
                                           rejecting,
                                           rejectComment,
@@ -49,7 +48,7 @@ export default function InterviewCard({
         : t("studentInterviews.invalidDate");
 
     const meetingUrl = interview.meetingType === "ONLINE" ? getMeetingUrl(interview.meetingDetails) : null;
-    const highlighted = !preview && hash === `#interview-${interview.id}`;
+    const highlighted = hash === `#interview-${interview.id}`;
     const muted = dark ? "text-white" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
     const textareaClass = `w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
@@ -63,7 +62,7 @@ export default function InterviewCard({
         >
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                    <h2 className={`${cardS.title} break-words`}>{interview.internshipTitle}</h2>
+                    <h2 className={`${cardS.title} wrap-break-word`}>{interview.internshipTitle}</h2>
                     <p className={`mt-1 text-sm ${muted}`}>{interview.employerName}</p>
                 </div>
 
@@ -99,13 +98,13 @@ export default function InterviewCard({
                             {t("studentInterviews.openLink")}
                         </a>
                     ) : (
-                        <p className="break-words">{interview.meetingDetails || t("studentInterviews.notProvided")}</p>
+                        <p className="wrap-break-word">{interview.meetingDetails || t("studentInterviews.notProvided")}</p>
                     )}
                 </div>
 
                 <div className={`rounded-lg p-3 ${dark ? "bg-slate-900/30" : "bg-slate-50"}`}>
                     <p className={`mb-1 text-sm font-semibold ${muted}`}>{t("studentInterviews.message")}</p>
-                    <p className="whitespace-pre-wrap break-words">{interview.message || t("studentInterviews.notProvided")}</p>
+                    <p className="whitespace-pre-wrap wrap-break-word">{interview.message || t("studentInterviews.notProvided")}</p>
                 </div>
 
                 {/* --- Rejection Banner --- */}
@@ -121,7 +120,7 @@ export default function InterviewCard({
                         <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
                             {t("studentInterviews.rejectionReason")}
                         </p>
-                        <p className={`mt-0.5 text-sm font-semibold break-words whitespace-pre-wrap ${dark ? "text-red-100" : "text-red-900"}`}>
+                        <p className={`mt-0.5 text-sm font-semibold wrap-break-word whitespace-pre-wrap ${dark ? "text-red-100" : "text-red-900"}`}>
                             {interview.rejectionMessage}
                         </p>
                     </div>

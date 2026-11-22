@@ -1,12 +1,12 @@
 /**
  * ContractReviewList.jsx — Internship contracts of the connected user (manager, employer or student):
- * list, sign, PDF.
+ * list, filter, sign, PDF.
  *
- * Used by Contracts.jsx.
- * <ContractReviewList />          full page (/manager/contracts, /employer/contracts or /student/contracts):
- *                        the contracts of the session chosen in the navbar, unsigned first, then newest first.
- * <ContractReviewList preview />  Home page block: the contracts the user has not signed yet,
- *                        every session, no header. A contract leaves this list as soon as it is signed.
+ * Used by Contracts.jsx (/manager/contracts, /employer/contracts or /student/contracts):
+ * the contracts of the session chosen in the navbar, unsigned first, then newest first.
+ *
+ * Status filter (StatusColorSelect, initial value from `?status=`): contracts only have
+ * ALL | YELLOW | GREEN — GREEN = signed by the connected user, YELLOW = not signed yet. No red.
  *
  * The role (manager / employer / student) only changes which signature field is read
  * (managerSignedAt / employerSignedAt / studentSignedAt) and the base route of the contract page:
@@ -18,27 +18,31 @@
  * The backend returns the updated contract: it is patched into the list, so the card shows
  * "Signed on …" without a reload. Failures never mark the contract as signed.
  *
- * Notifications: the full page closes the CONTRACT_TO_SIGN notifications of the contracts it shows
- * (session-scoped, see NotificationsProvider). The Home preview does not.
+ * Notifications: the page closes the CONTRACT_TO_SIGN notifications of the contracts it loads
+ * (session-scoped, see NotificationsProvider).
  *
- * Props: dark, user (needs user.email for Dev signing, user.role for the role), preview
+ * Props: dark, user (needs user.email for Dev signing, user.role for the role)
  */
 
-import {useCallback, useMemo} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
 import {getPostInternshipClasses} from '../../styles/AppStyles.jsx';
-import {getContracts, getPendingContracts, signContract} from '../api/Api.jsx';
+import {getContracts, signContract} from '../api/Api.jsx';
 import {devSignContract} from '../api/DevApi.jsx';
 import {useDevMode} from '../dev/DevMode.jsx';
-import PreviewState from '../home/PreviewState.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../notification/NotificationsProvider.jsx';
 import {useLoadedList} from '../../utils/useLoadedList.js';
 import {useSession} from '../../utils/useSession.js';
 import {getContractRole} from '../../utils/ContractRole.js';
+import {StatusColorSelect, useColorParam} from '../../utils/Sort.jsx';
+import {ALL, COLOR, matchesColor} from '../../utils/StatusColor.js';
 import ContractCard from './ContractCard.jsx';
 
 const HTTP = {BAD_REQUEST: 400, NOT_FOUND: 404, CONFLICT: 409};
+
+// Contracts have no red: signed (GREEN) or not (YELLOW)
+const CONTRACT_COLORS = [ALL, COLOR.YELLOW, COLOR.GREEN];
 
 const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
@@ -62,7 +66,7 @@ function toSignError(err) {
     return err.i18n ?? {key: "managerContracts.actionFailed"};
 }
 
-const ContractReviewList = ({dark, user, preview = false}) => {
+const ContractReviewList = ({dark, user}) => {
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
@@ -72,25 +76,27 @@ const ContractReviewList = ({dark, user, preview = false}) => {
     const contractRole = getContractRole(user);
     const {signedAtField} = contractRole;
 
+    const initialStatus = useColorParam("status", CONTRACT_COLORS);
+    const [status, setStatus] = useState(initialStatus);
+
     const fetchContracts = useCallback(async () => {
-        // Home preview: unsigned contracts of every session, so the user never misses one
-        if (preview) return getPendingContracts();
         return selectedSession ? getContracts(selectedSession.id) : null; // sessions still loading
-    }, [preview, selectedSession]);
+    }, [selectedSession]);
 
     const {items: contracts, setItems, failed, reload} = useLoadedList(fetchContracts);
 
     const shownContractIds = useMemo(
-        () => (preview || !contracts ? null : contracts.map((contract) => contract.id)),
-        [preview, contracts],
+        () => (contracts ? contracts.map((contract) => contract.id) : null),
+        [contracts],
     );
     useCloseShownNotifications(TARGET_TYPE.CONTRACT, shownContractIds);
 
     const shown = useMemo(() => {
         if (!contracts) return null;
-        const list = preview ? contracts.filter((contract) => !contract[signedAtField]) : contracts;
+        const list = contracts.filter((contract) =>
+            matchesColor(contract[signedAtField] ? COLOR.GREEN : COLOR.YELLOW, status));
         return sortContracts(list, signedAtField);
-    }, [contracts, preview, signedAtField]);
+    }, [contracts, status, signedAtField]);
 
     // Returns {success: true} or {success: false, message: {key}} (the form displays it)
     const handleSign = async (contract, {termsAccepted, password}) => {
@@ -122,16 +128,6 @@ const ContractReviewList = ({dark, user, preview = false}) => {
         />
     ));
 
-    // Home preview: same states and spacing as every other Home preview
-    if (preview) {
-        return (
-            <PreviewState dark={dark} error={failed && contracts === null} loading={shown === null}
-                          empty={shown?.length === 0} emptyText="managerContracts.previewEmpty">
-                {cards}
-            </PreviewState>
-        );
-    }
-
     let body;
     if (failed && contracts === null) {
         body = (
@@ -144,8 +140,10 @@ const ContractReviewList = ({dark, user, preview = false}) => {
         );
     } else if (shown === null) {
         body = <p className={s.loadingText} aria-busy="true">{t("managerContracts.loading")}</p>;
-    } else if (shown.length === 0) {
+    } else if (contracts.length === 0) {
         body = <p className={s.emptyText}>{t("managerContracts.empty")}</p>;
+    } else if (shown.length === 0) {
+        body = <p className={s.emptyText}>{t("managerContracts.noMatch")}</p>;
     } else {
         body = cards;
     }
@@ -160,6 +158,13 @@ const ContractReviewList = ({dark, user, preview = false}) => {
             </div>
 
             <div className={s.listSection}>
+                {contracts && contracts.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <StatusColorSelect dark={dark} value={status} onChange={setStatus}
+                                           colors={CONTRACT_COLORS} page="contracts"
+                                           ariaLabel={t("managerContracts.statusAria")}/>
+                    </div>
+                )}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>

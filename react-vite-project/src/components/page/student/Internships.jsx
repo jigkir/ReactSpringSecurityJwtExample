@@ -13,16 +13,14 @@ import {
     markInternshipsAsViewed
 } from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
-import PreviewState from '../../home/PreviewState.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../utils/useSession.js";
 import Icon from "../../../styles/Icon.jsx";
 
 const ACCEPTED_OFFER = "ACCEPTED";
 
-// <StudentInternships />          full page (route /internship)
-// <StudentInternships preview />  Home page block: the newest offers the student has NOT applied to yet,
-function StudentInternships({preview = false}) {
+// <StudentInternships />  full page (route /internship)
+function StudentInternships() {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
@@ -32,7 +30,6 @@ function StudentInternships({preview = false}) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [appliedInternships, setAppliedInternships] = useState([]);
-    const [appliedLoaded, setAppliedLoaded] = useState(false);
     const [cvs, setCvs] = useState(null);
     const [letters, setLetters] = useState([]);
     const [transcripts, setTranscripts] = useState([]);
@@ -44,25 +41,16 @@ function StudentInternships({preview = false}) {
     const lang = i18n.resolvedLanguage ?? i18n.language;
 
     const shownInternshipIds = useMemo(
-        () => (preview || loading ? null : internships.map((internship) => internship.id)),
-        [preview, loading, internships]);
+        () => (loading ? null : internships.map((internship) => internship.id)),
+        [loading, internships]);
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
+    // NEW → OLD → APPLIED
     const groupOf = (internship) => {
-        if (preview) return internship.viewed ? 1 : 0;
         if (appliedIds.has(internship.id)) return 2; // APPLIED
         return internship.viewed ? 1 : 0;            // OLD : NEW
     };
-    const shown = [...visible]
-        .filter((internship) => !preview || !appliedIds.has(internship.id))
-        .sort((a, b) => {
-            const groupDifference = groupOf(a) - groupOf(b);
-            if (groupDifference !== 0) return groupDifference;
-            if (preview) {
-                return new Date(b.uploadedAt) - new Date(a.uploadedAt);
-            }
-            return 0;
-        });
+    const shown = [...visible].sort((a, b) => groupOf(a) - groupOf(b));
 
     const unviewedIdsRef = useRef([]);
     useEffect(() => {
@@ -93,9 +81,7 @@ function StudentInternships({preview = false}) {
     const loadAppliedInternships = useCallback(async () => {
         if (!selectedSession) return; // sessions still loading
         try {
-            const data = await getStudentAppliedInternships(selectedSession.id);
-            setAppliedInternships(data);
-            setAppliedLoaded(true);
+            setAppliedInternships(await getStudentAppliedInternships(selectedSession.id));
         } catch {
             setError(true);
         }
@@ -140,7 +126,7 @@ function StudentInternships({preview = false}) {
         ]);
     }, [loadInternships, loadAppliedInternships, loadCvs, loadLetters, loadTranscripts]);
 
-    // Applying closes the offer's notification, even from the Home preview
+    // Applying closes the offer's notification
     const handleApplicationChanged = useCallback(async () => {
         await loadAppliedInternships();
         void refreshNotifications();
@@ -180,19 +166,6 @@ function StudentInternships({preview = false}) {
             />)}
         />);
     });
-
-    // Home preview: same states and spacing as every other Home preview
-    if (preview) {
-        return (
-            <div className="space-y-4">
-                <PreviewState dark={dark} error={error} loading={loading || !appliedLoaded}
-                              empty={shown.length === 0}
-                              emptyText="studentInternship.previewEmpty">
-                    {cards}
-                </PreviewState>
-            </div>
-        );
-    }
 
     const list = (
         <div className={s.scrollArea}>

@@ -98,18 +98,6 @@
     "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
     "contractToSignNotification": "{{amount}} contrat(s) à signer"
   },
-  "managerPage": {
-    "pageInfo": "Page d'accueil du gestionnaire",
-    "buttonInfo": "Accéder à l'endpoint du gestionnaire"
-  },
-  "borrowerPage": {
-    "pageInfo": "Page d'accueil de l'emprunteur",
-    "buttonInfo": "Accéder à l'endpoint du gestionnaire"
-  },
-  "attendantPage": {
-    "pageInfo": "Page d'accueil du préposé",
-    "buttonInfo": "Accéder à l'endpoint du gestionnaire"
-  },
   "teacher": {
     "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces.",
     "existingId": "Ce numéro d'employé est déjà enregistré. Connectez-vous plutôt, ou vérifiez le numéro.",
@@ -297,7 +285,6 @@
     "upload": "Téléverser des documents",
     "close": "Fermer le téléversement",
     "empty": "Aucun document pour l'instant. Cliquez sur « Téléverser des fichiers » pour ajouter votre CV, vos lettres de motivation ou vos relevés de notes.",
-    "previewEmpty": "Aucun document en attente de validation ni refusé.",
     "dropHint": "Glissez-déposez vos PDF ici ou",
     "browse": "parcourez votre ordinateur",
     "dropzoneAria": "Zone de dépôt. Cliquez ou glissez des PDF.",
@@ -350,10 +337,6 @@
   },
   "home": {
     "welcome": "Bienvenue",
-    "apiError": "Un problème est survenu (erreur {{status}}). Veuillez réessayer.",
-    "cvTitle": "CV",
-    "internshipsTitle": "Stages",
-    "applicationsTitle": "Candidatures",
     "studentCvLink": "Accéder à mon portfolio",
     "studentInternshipsLink": "Trouver un stage et postuler",
     "studentInterviewsLink": "Consulter mes entrevues",
@@ -364,12 +347,7 @@
     "managerCvLink": "Valider les CV en attente",
     "managerInternshipsLink": "Réviser les offres de stage",
     "managerContractsLink": "Signer les contrats en attente",
-    "noPreviews": "Rien à afficher pour votre rôle pour le moment.",
-    "preview": {
-      "empty": "Rien pour l'instant.",
-      "loading": "Chargement…",
-      "loadError": "Impossible de charger cette section. Une nouvelle tentative aura lieu automatiquement."
-    }
+    "noPreviews": "Rien à afficher pour votre rôle pour le moment."
   },
   "applicationsPage": {
     "title": "Candidatures reçues",
@@ -384,7 +362,6 @@
     "internshipAria": "Filtrer par offre de stage",
     "allInternships": "Toutes les offres de stage",
     "unknownInternship": "Offre de stage inconnue",
-    "pendingReviewEmpty": "Aucune candidature en attente de révision.",
     "fromInternship": "Candidatures pour l'offre",
     "applicationCount_one": "{{count}} candidature",
     "applicationCount_other": "{{count}} candidatures",
@@ -404,7 +381,6 @@
     "listTitle": "Vos offres",
     "loading": "Chargement de vos offres…",
     "empty": "Vous n'avez publié aucune offre de stage pour l'instant. Cliquez sur « Publier une offre de stage » pour créer votre première offre.",
-    "pendingReviewEmpty": "Aucune offre de stage en attente de révision ou refusée.",
     "loadError": "Impossible de charger vos offres de stage. Elles s'actualiseront automatiquement.",
     "createError": "Impossible de créer l'offre de stage. Vérifiez le formulaire et réessayez.",
     "createGenericError": "Impossible d'enregistrer l'offre de stage. Veuillez réessayer.",
@@ -418,7 +394,6 @@
     "subtitle": "Approuvez une offre pour la publier aux étudiants admissibles, ou refusez-la avec un motif que l'employeur verra. Vous pouvez modifier une décision à tout moment.",
     "loading": "Chargement des offres…",
     "empty": "Aucune offre de stage à valider pour l'instant.",
-    "pendingEmpty": "Aucune offre de stage en attente de validation.",
     "loadError": "Impossible de charger les offres de stage. Vérifiez votre connexion et réessayez.",
     "retryBtn": "Recharger les offres",
     "notFound": "Cette offre n'existe plus. La liste a été actualisée.",
@@ -443,7 +418,6 @@
     "subtitle": "Consultez les contrats de la session sélectionnée et signez ceux qui attendent votre signature. Vous pouvez télécharger le PDF en français ou en anglais en tout temps.",
     "loading": "Chargement des contrats…",
     "empty": "Aucun contrat pour cette session pour le moment.",
-    "previewEmpty": "Aucun contrat en attente de votre signature.",
     "loadError": "Impossible de charger les contrats. Vérifiez votre connexion et réessayez.",
     "retryBtn": "Recharger les contrats",
     "actionFailed": "L'action a échoué. Veuillez réessayer.",
@@ -570,8 +544,6 @@
     "loading": "Chargement des stages…",
     "loadError": "Impossible de charger les stages. Ils s'actualiseront automatiquement.",
     "empty": "Aucun stage n'est disponible pour le moment. Les nouvelles offres apparaîtront ici dès qu'elles seront approuvées.",
-    "previewEmpty": "Aucun nouveau stage auquel postuler pour le moment.",
-    "comingSoon": "Cette page sera bientôt disponible !",
     "preview": "Consulter",
     "hide": "Cacher",
     "new": "Nouveau",
@@ -717,20 +689,54 @@
       "IN_PERSON": "En personne"
     }
   },
+  "viewApplication": {
+    "loadError": "Impossible de charger les candidatures. Veuillez réessayer.",
+    "new": "Nouveau",
+    "loading": "Chargement…",
+    "empty": "Aucune candidature pour ce stage pour l'instant. Les étudiants apparaîtront ici dès qu'ils postuleront.",
+    "backBtn": "Retour à mes offres",
+    "selectedCount_one": "{{count}} étudiant sélectionné",
+    "selectedCount_other": "{{count}} étudiants sélectionnés",
+    "hire": "Embaucher des candidats",
+    "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
+    "consent": {
+      "PENDING": "Offre envoyée, en attente de réponse",
+      "ACCEPTED": "Offre acceptée",
+      "REJECTED": "Offre refusée"
+    },
+    "selectStudent": "Sélectionner {{name}}",
+    "selectAll": "Tout sélectionner",
+    "hiring": "Embauche en cours...",
+    "hireSuccess_one": "{{count}} étudiant a bien été embauché.",
+    "hireSuccess_other": "{{count}} étudiants ont bien été embauchés.",
+    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée.",
+    "cancelHire": "Annuler",
+    "confirmHire": "Confirmer l'embauche"
+  },
+  "dev": {
+    "label": "Dev",
+    "toggleOn": "Activer le mode Dev",
+    "toggleOff": "Désactiver le mode Dev",
+    "panelTitle": "Mode Dev : remplir la connexion",
+    "selectLabel": "Utilisateur fictif",
+    "selectPlaceholder": "-- Sélectionnez un utilisateur --",
+    "loadError": "Impossible de charger les utilisateurs fictifs.",
+    "retryBtn": "Recharger les utilisateurs fictifs",
+    "empty": "Aucun utilisateur fictif disponible."
+  },
   "studentInterviews": {
     "title": "Mes entrevues",
-    "awaitingResponseEmpty": "Aucune entrevue en attente de réponse.",
     "loading": "Chargement des entrevues...",
     "loadError": "Impossible de charger les entrevues.",
     "empty": "Vous n'avez aucune convocation d'entrevue pour le moment.",
     "date": "Date et heure",
-    "invalidDate": "Date non disponible",
     "type": "Type de rencontre",
     "details": "Détails de la rencontre",
     "message": "Message de l'employeur",
     "openLink": "Rejoindre la rencontre",
     "notProvided": "Non précisé",
     "phoneNumber": "Numéro de téléphone",
+    "invalidDate": "Date non disponible",
     "statuses": {
       "awaitingResponse": "En attente de réponse",
       "upcoming": "À venir",
@@ -740,8 +746,8 @@
     },
     "types": {
       "ONLINE": "En ligne",
-      "IN_PERSON": "En personne",
-      "PHONE": "Par téléphone"
+      "PHONE": "Par téléphone",
+      "IN_PERSON": "En personne"
     },
     "filters": {
       "search": "Rechercher",
@@ -792,41 +798,6 @@
       "STUDENT_HIRED": "Entrevue annulée automatiquement : l'étudiant a été embauché ailleurs."
     }
   },
-  "viewApplication": {
-    "loadError": "Impossible de charger les candidatures. Veuillez réessayer.",
-    "new": "Nouveau",
-    "loading": "Chargement…",
-    "empty": "Aucune candidature pour ce stage pour l'instant. Les étudiants apparaîtront ici dès qu'ils postuleront.",
-    "backBtn": "Retour à mes offres",
-    "selectedCount_one": "{{count}} étudiant sélectionné",
-    "selectedCount_other": "{{count}} étudiants sélectionnés",
-    "hire": "Embaucher des candidats",
-    "hireSuccess": "Le ou les étudiants sélectionnés ont bien été embauchés.",
-    "consent": {
-      "PENDING": "Offre envoyée, en attente de réponse",
-      "ACCEPTED": "Offre acceptée",
-      "REJECTED": "Offre refusée"
-    },
-    "selectStudent": "Sélectionner {{name}}",
-    "selectAll": "Tout sélectionner",
-    "hiring": "Embauche en cours...",
-    "hireSuccess_one": "{{count}} étudiant a bien été embauché.",
-    "hireSuccess_other": "{{count}} étudiants ont bien été embauchés.",
-    "refreshError": "L'embauche a réussi, mais la liste des candidatures n'a pas pu être actualisée.",
-    "cancelHire": "Annuler",
-    "confirmHire": "Confirmer l'embauche"
-  },
-  "dev": {
-    "label": "Dev",
-    "toggleOn": "Activer le mode Dev",
-    "toggleOff": "Désactiver le mode Dev",
-    "panelTitle": "Mode Dev : remplir la connexion",
-    "selectLabel": "Utilisateur fictif",
-    "selectPlaceholder": "-- Sélectionnez un utilisateur --",
-    "loadError": "Impossible de charger les utilisateurs fictifs.",
-    "retryBtn": "Recharger les utilisateurs fictifs",
-    "empty": "Aucun utilisateur fictif disponible."
-  },
   "expiredUser": {
     "pendingBadge": "En attente de l'approbation du superviseur",
     "rejectedBadge": "Demande refusée par le superviseur",
@@ -845,7 +816,6 @@
     "loading": "Chargement des offres…",
     "loadError": "Impossible de charger les offres. Elles s'actualiseront automatiquement.",
     "empty": "Vous n'avez reçu aucune offre de stage pour le moment.",
-    "pendingEmpty": "Aucune offre en attente de votre réponse.",
     "acceptFailed": "Impossible d'accepter cette offre. Elle a peut-être changé : la liste a été actualisée.",
     "denyFailed": "Impossible de refuser cette offre. Veuillez réessayer.",
     "applicationDate": "Candidature envoyée le",

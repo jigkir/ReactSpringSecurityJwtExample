@@ -6,9 +6,10 @@ import Icon from "../../../styles/Icon.jsx";
 import {acceptOffer, denyOffer, getStudentOffers} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 import {translateWarning} from "../../../utils/CommonFields.jsx";
+import {StatusColorSelect, useColorParam} from "../../../utils/Sort.jsx";
+import {colorOf, matchesColor} from "../../../utils/StatusColor.js";
 import Button from "../../../styles/Button.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
-import PreviewState from "../../home/PreviewState.jsx";
 
 const CONSENT_ICON = {PENDING: "schedule", ACCEPTED: "check_circle", REJECTED: "close"};
 
@@ -32,9 +33,11 @@ const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
 
 const consentOf = (offer) => CONSENT_ICON[offer.studentInternshipConsent] ? offer.studentInternshipConsent : "PENDING";
 
-// <Offers />          full page (route /offers)
-// <Offers preview />  Home page block: only the offers still waiting for the student's answer, no header
-function Offers({preview = false}) {
+// Status filter: PENDING = YELLOW, ACCEPTED = GREEN, REJECTED = RED
+const offerColor = (offer) => colorOf(consentOf(offer));
+
+// <Offers />  full page (route /offers), filterable by status color (initial value from ?status=)
+function Offers() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
@@ -42,6 +45,8 @@ function Offers({preview = false}) {
     const s = getPostInternshipClasses(dark);
     const cardS = getInternshipCardClasses(dark);
 
+    const initialStatus = useColorParam("status");
+    const [status, setStatus] = useState(initialStatus);
     const [offers, setOffers] = useState(null); // null = loading
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
@@ -50,7 +55,10 @@ function Offers({preview = false}) {
     const load = useCallback(async () => {
         try {
             const data = await getStudentOffers();
-            if (!Array.isArray(data)) throw new Error("Invalid offers response");
+            if (!Array.isArray(data)) {
+                setLoadFailed(true);
+                return;
+            }
             setOffers(data);
             setLoadFailed(false);
         } catch {
@@ -64,11 +72,11 @@ function Offers({preview = false}) {
 
     usePolling(load);
 
-    // Coming from a notification: scroll to the offer (full page only)
+    // Coming from a notification: scroll to the offer
     useEffect(() => {
-        if (preview || !offers || !hash) return;
+        if (!offers || !hash) return;
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
-    }, [preview, hash, offers]);
+    }, [hash, offers]);
 
     // Accepting creates the contract. A 409 (contract already exists, offer rejected, no offer,
     // student already employed) means the state changed, so the list is always reloaded.
@@ -92,7 +100,7 @@ function Offers({preview = false}) {
 
     const renderCard = (offer) => {
         const consent = consentOf(offer);
-        const highlighted = !preview && hash === `#offer-${offer.id}`;
+        const highlighted = hash === `#offer-${offer.id}`;
         const busy = busyId === offer.id;
 
         return (
@@ -146,21 +154,7 @@ function Offers({preview = false}) {
         <p className={`${s.errorText} mb-4`} role="alert">{translateWarning(t, actionError)}</p>
     );
 
-    // Home preview: same states and spacing as every other Home preview
-    if (preview) {
-        const pending = offers ? sortOffers(offers.filter((offer) => consentOf(offer) === "PENDING")) : [];
-
-        return (
-            <div>
-                {errorLine}
-                <PreviewState dark={dark} error={loadFailed && offers === null}
-                              loading={offers === null} empty={pending.length === 0}
-                              emptyText="studentOffers.pendingEmpty">
-                    {pending.map(renderCard)}
-                </PreviewState>
-            </div>
-        );
-    }
+    const visible = offers ? sortOffers(offers.filter((offer) => matchesColor(offerColor(offer), status))) : [];
 
     let body;
     if (loadFailed && offers === null) {
@@ -169,8 +163,10 @@ function Offers({preview = false}) {
         body = <p className={s.loadingText} aria-busy="true">{t("studentOffers.loading")}</p>;
     } else if (offers.length === 0) {
         body = <p className={s.emptyText}>{t("studentOffers.empty")}</p>;
+    } else if (visible.length === 0) {
+        body = <p className={s.emptyText}>{t("studentOffers.noMatch")}</p>;
     } else {
-        body = sortOffers(offers).map(renderCard);
+        body = visible.map(renderCard);
     }
 
     return (
@@ -183,6 +179,12 @@ function Offers({preview = false}) {
             </div>
             <div className={s.listSection}>
                 {errorLine}
+                {offers && offers.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <StatusColorSelect dark={dark} value={status} onChange={setStatus} page="studentOffers"
+                                           ariaLabel={t("studentOffers.statusAria")}/>
+                    </div>
+                )}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>

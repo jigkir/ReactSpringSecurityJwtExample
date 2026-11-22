@@ -20,7 +20,6 @@
  *   isOpen     boolean  inline preview open
  *   onToggle   function toggles the preview
  *   getUrl     (id) => Promise<string>   stable reference
- *   preview    boolean  Home preview: every row is its own card
  *   bordered   boolean  coloured border from the status (manager, status filter active)
  */
 
@@ -52,15 +51,14 @@ const STATUS_ICON = {
 };
 
 // Class of the <ul> that holds the rows
-export const getRowListClass = (dark, {preview = false, bordered = false} = {}) => {
-    if (preview) return "flex flex-col gap-4";
+export const getRowListClass = (dark, {bordered = false} = {}) => {
     if (bordered) return "flex flex-col gap-3 p-4";
     return getCvDocumentsClasses(dark).list;
 };
 
 function DocumentRow({
                          doc, dark, status, leading, details, actions, busy = false,
-                         isOpen, onToggle, getUrl, preview = false, bordered = false,
+                         isOpen, onToggle, getUrl, bordered = false,
                          audience = "student",
                      }) {
     const {t} = useTranslation();
@@ -77,8 +75,7 @@ function DocumentRow({
     }`;
 
     let itemClass = "@container min-w-0 max-w-full";
-    if (preview) itemClass += ` ${th.card} overflow-hidden`;
-    else if (bordered) itemClass += ` rounded-xl border-2 ${getStatusBorder(status, dark) ?? ""}`;
+    if (bordered) itemClass += ` rounded-xl border-2 ${getStatusBorder(status, dark) ?? ""}`;
 
     return (
         <li aria-busy={busy} className={itemClass}>
@@ -103,7 +100,7 @@ function DocumentRow({
                     <div className="flex min-w-0 flex-wrap items-center gap-2 @2xl:flex-col @2xl:items-start">
                         <span className={`${th.pillBase} ${th.statusPill(status)} gap-1 text-left`}>
                             <Icon name={STATUS_ICON[status] ?? STATUS_ICON.PENDING} size={14} className="shrink-0"/>
-                            <span className="min-w-0 break-words">
+                            <span className="min-w-0 wrap-break-word">
                                 {t(statusKeys[status] ?? statusKeys.PENDING)}
                             </span>
                         </span>
@@ -126,7 +123,7 @@ function DocumentRow({
             </div>
 
             {isOpen && (
-                <div className={preview ? "px-4 pb-4" : "py-4"}>
+                <div className="py-4">
                     <PdfPreview doc={doc} dark={dark} getUrl={getUrl}/>
                 </div>
             )}

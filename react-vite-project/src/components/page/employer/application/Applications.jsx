@@ -4,6 +4,8 @@
  *
  * - One section per internship (title + number of applications, unread count).
  * - A dropdown lets the employer pick which internship to look at ("All internships" by default).
+ * - A status color filter (ALL | RED | YELLOW | GREEN) on the employer decision
+ *   (PENDING = YELLOW, ACCEPTED / INTERNSHIP_OFFERED = GREEN, REJECTED = RED); initial value from `?status=`.
  * - Search by student / email / CV name.
  * - "New" badge: frozen while the employer is on the page (previewing a CV does not remove it).
  *   It is removed when the interview invitation is sent, and when the page is left
@@ -21,7 +23,8 @@ import Badge from '../../../../styles/Badge.jsx';
 import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
 import {getApplicationCv, getApplications, getEmployerInternships} from '../../../api/Api.jsx';
 import {base64ToBlobUrl} from '../../../../utils/Documents.js';
-import {matchesSearch, toNum} from '../../../../utils/Sort.jsx';
+import {matchesSearch, StatusColorSelect, toNum, useColorParam} from '../../../../utils/Sort.jsx';
+import {ALL, colorOf, matchesColor} from '../../../../utils/StatusColor.js';
 import {
     TARGET_TYPE,
     useCloseShownNotifications,
@@ -31,13 +34,11 @@ import {usePolling} from '../../../../utils/usePolling.js';
 import {useSession} from "../../../../utils/useSession.js";
 import {useNewApplications} from "../../../../utils/useNewApplications.js";
 
-const ALL = "ALL";
-
 // New first (state frozen at first appearance), then newest (highest id) first
 const compareApplications = (isNew) => (a, b) =>
     Number(isNew(b)) - Number(isNew(a)) || (toNum(b.id) ?? 0) - (toNum(a.id) ?? 0);
 
-function Applications({user, preview = false}) {
+function Applications({user}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {refresh} = useNotifications();
@@ -47,16 +48,18 @@ function Applications({user, preview = false}) {
     const {selectedSession} = useSession();
     const {register, isNew: isNewApp, clear: clearNew, version: newVersion} = useNewApplications();
 
+    const initialStatus = useColorParam("status");
     const [applications, setApplications] = useState(null); // null = loading
     const [internships, setInternships] = useState([]);
     const [loadFailed, setLoadFailed] = useState(false);
     const [search, setSearch] = useState("");
+    const [status, setStatus] = useState(initialStatus);
     const [internshipFilter, setInternshipFilter] = useState(ALL);
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
     const shownApplicationIds = useMemo(
-        () => (preview || !applications ? null : applications.map((application) => application.id)),
-        [preview, applications]);
+        () => (applications ? applications.map((application) => application.id) : null),
+        [applications]);
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_APPLICATION, shownApplicationIds);
 
     const controlClass = `rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
@@ -96,12 +99,9 @@ function Applications({user, preview = false}) {
         if (!applications) return [];
 
         // Freeze the "new" state the first time an application is seen
-        const relevantApplications = preview
-            ? applications.filter((application) => application.employerDecision === "PENDING")
-            : applications;
-        register(relevantApplications);
-        return relevantApplications;
-    }, [applications, register, preview]);
+        register(applications);
+        return applications;
+    }, [applications, register]);
 
     // One group per internship that has at least one application: [{id, title, apps, unread}]
     const groups = useMemo(() => {
@@ -122,12 +122,13 @@ function Applications({user, preview = false}) {
             .sort((a, b) => Number(b.unread > 0) - Number(a.unread > 0) || a.title.localeCompare(b.title));
     }, [sessionApps, titleOf, isNewApp, newVersion]);
 
-    // Apply the internship filter + search, then drop empty groups
+    // Apply the internship filter + status color + search, then drop empty groups
     const visibleGroups = useMemo(() => groups
             .filter((g) => internshipFilter === ALL || String(g.id) === internshipFilter)
             .map((g) => ({
                 ...g,
                 apps: g.apps
+                    .filter((a) => matchesColor(colorOf(a.employerDecision), status))
                     .filter((a) => matchesSearch(
                         [a.student?.firstName, a.student?.lastName, a.student?.email, a.cvFileName],
                         search,
@@ -135,7 +136,7 @@ function Applications({user, preview = false}) {
                     .sort(compareApplications(isNewApp)),
             }))
             .filter((g) => g.apps.length > 0),
-        [groups, internshipFilter, search, isNewApp, newVersion]);
+        [groups, internshipFilter, status, search, isNewApp, newVersion]);
 
     const togglePreview = (id) =>
         setOpenPreviewIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
@@ -165,8 +166,6 @@ function Applications({user, preview = false}) {
         body = <p className={s.errorText} role="alert">{t("applicationsPage.loadError")}</p>;
     } else if (applications === null) {
         body = <p className={s.loadingText} aria-busy="true">{t("applicationsPage.loading")}</p>;
-    } else if (preview && sessionApps.length === 0) {
-        body = <p className={s.emptyText}>{t("applicationsPage.pendingReviewEmpty")}</p>;
     } else if (applications.length === 0) {
         body = <p className={s.emptyText}>{t("applicationsPage.empty")}</p>;
     } else if (visibleGroups.length === 0) {
@@ -216,14 +215,6 @@ function Applications({user, preview = false}) {
         ));
     }
 
-    if (preview && applications !== null && sessionApps.length === 0) {
-        return (
-            <div className={s.scrollArea}>
-                {body}
-            </div>
-        );
-    }
-
     return (
         <div className={s.page}>
             <div className={s.headerSection}>
@@ -234,9 +225,7 @@ function Applications({user, preview = false}) {
             </div>
 
             <div className={s.listSection}>
-                {applications && (!preview
-                    ? applications.length > 0
-                    : sessionApps.length > 0) && (
+                {applications && applications.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 mb-4">
                         {/* Pick the internship */}
                         <select
@@ -252,6 +241,9 @@ function Applications({user, preview = false}) {
                                 </option>
                             ))}
                         </select>
+
+                        <StatusColorSelect dark={dark} value={status} onChange={setStatus} page="employerApplications"
+                                           ariaLabel={t("applicationsPage.statusAria")}/>
 
                         <div className="relative w-full md:w-64">
                             <input

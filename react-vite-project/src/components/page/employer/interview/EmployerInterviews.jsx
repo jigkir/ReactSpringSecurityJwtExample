@@ -7,9 +7,11 @@ import {cancelInterview, getEmployerInterviews, updateInterview} from "../../../
 import {usePolling} from "../../../../utils/usePolling.js";
 import InterviewPicker from "./InterviewPicker.jsx";
 import Button from "../../../../styles/Button.jsx";
-import PreviewState from "../../../home/PreviewState.jsx";
 import InterviewStatusPill from "../../../interview/InterviewStatusPill.jsx";
+import {StatusColorSelect, useColorParam} from "../../../../utils/Sort.jsx";
+import {matchesColor} from "../../../../utils/StatusColor.js";
 import {
+    getInterviewColor,
     getInterviewStatus,
     getInterviewTime,
     INTERVIEW_STATUS,
@@ -33,13 +35,15 @@ const studentName = (i) =>
     i.studentName ?? (i.student ? `${i.student.firstName} ${i.student.lastName}` : "");
 
 
-function EmployerInterviews({user, preview = false}) {
+function EmployerInterviews({user}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const s = getPostInternshipClasses(dark);
     const cardS = getInternshipCardClasses(dark);
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
+    const initialStatus = useColorParam("status");
+    const [status, setStatus] = useState(initialStatus);
     const [interviews, setInterviews] = useState(null); // null = loading
     const [loadFailed, setLoadFailed] = useState(false);
     const [editingId, setEditingId] = useState(null);   // interview whose picker is open
@@ -47,7 +51,10 @@ function EmployerInterviews({user, preview = false}) {
     const load = useCallback(async () => {
         try {
             const data = await getEmployerInterviews();
-            if (!Array.isArray(data)) throw new Error("Invalid interviews response");
+            if (!Array.isArray(data)) {
+                setLoadFailed(true);
+                return;
+            }
             setInterviews(data);
             setLoadFailed(false);
         } catch {
@@ -87,21 +94,22 @@ function EmployerInterviews({user, preview = false}) {
     const muted = dark ? "text-slate-400" : "text-slate-500";
 
     const renderCard = (interview) => {
-        const status = getInterviewStatus(interview);
+        const interviewStatus = getInterviewStatus(interview);
         const isOpen = editingId === interview.id;
-        const canEdit = !preview && status !== INTERVIEW_STATUS.CANCELLED && status !== INTERVIEW_STATUS.PAST;
+        const canEdit = interviewStatus !== INTERVIEW_STATUS.CANCELLED && interviewStatus !== INTERVIEW_STATUS.PAST;
 
         return (
-            <article key={interview.id} className={`${cardS.card} border-l-4 ${INTERVIEW_STATUS_ACCENT[status]}`}>
+            <article key={interview.id}
+                     className={`${cardS.card} border-l-4 ${INTERVIEW_STATUS_ACCENT[interviewStatus]}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                        <h2 className={`${cardS.title} break-words`}>{interview.internshipTitle}</h2>
+                        <h2 className={`${cardS.title} wrap-break-word`}>{interview.internshipTitle}</h2>
                         {studentName(interview) && (
                             <p className={`mt-1 text-sm ${muted}`}>{studentName(interview)}</p>
                         )}
                     </div>
-                    <InterviewStatusPill dark={dark} status={status}
-                                         label={t(`employerInterviews.statuses.${status}`)}/>
+                    <InterviewStatusPill dark={dark} status={interviewStatus}
+                                         label={t(`employerInterviews.statuses.${interviewStatus}`)}/>
                 </div>
 
                 <div className={`${cardS.detailsRow} mt-4`}>
@@ -113,26 +121,26 @@ function EmployerInterviews({user, preview = false}) {
                     </span>
                 </div>
 
-                <div className="mt-3 space-y-1 break-words">
+                <div className="mt-3 space-y-1 wrap-break-word">
                     <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.message")}</p>
                     <p>{interview.message || t("employerInterviews.notProvided")}</p>
                 </div>
 
-                <div className="mt-3 space-y-1 break-words">
+                <div className="mt-3 space-y-1 wrap-break-word">
                     <p className={`text-sm font-semibold ${muted}`}>{t("employerInterviews.details")}</p>
                     <p>{interview.meetingDetails || t("employerInterviews.notProvided")}</p>
-                    {status === INTERVIEW_STATUS.CANCELLED && interview.cancellationReason && (
+                    {interviewStatus === INTERVIEW_STATUS.CANCELLED && interview.cancellationReason && (
                         <p className={`mt-3 text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`}
                            role="note">
                             {t(`employerInterviews.cancellationReasons.${interview.cancellationReason}`)}
                         </p>
                     )}
-                    {status === INTERVIEW_STATUS.REJECTED && interview.rejectionMessage && (
+                    {interviewStatus === INTERVIEW_STATUS.REJECTED && interview.rejectionMessage && (
                         <div
                             className={`mt-3 rounded-lg border-l-4 border-red-500 px-3 py-2 ${dark ? "bg-red-900/30" : "bg-red-50"}`}
                             role="note">
                             <p className="text-xs font-bold uppercase">{t("employerInterviews.rejectionReason")}</p>
-                            <p className="text-sm whitespace-pre-wrap break-words">{interview.rejectionMessage}</p>
+                            <p className="text-sm whitespace-pre-wrap wrap-break-word">{interview.rejectionMessage}</p>
                         </div>
                     )}
                 </div>
@@ -177,18 +185,10 @@ function EmployerInterviews({user, preview = false}) {
         );
     };
 
-    const sorted = interviews ? sortInterviews(interviews) : [];
-
-    // Home preview (HomePreviews.jsx already passes `preview`)
-    if (preview) {
-        return (
-            <PreviewState dark={dark} error={loadFailed && interviews === null}
-                          loading={interviews === null} empty={sorted.length === 0}
-                          emptyText="employerInterviews.empty">
-                {sorted.map(renderCard)}
-            </PreviewState>
-        );
-    }
+    // A past interview has no color: it only shows with ALL
+    const visible = interviews
+        ? sortInterviews(interviews.filter((interview) => matchesColor(getInterviewColor(interview), status)))
+        : [];
 
     let body;
     if (loadFailed && interviews === null) {
@@ -197,8 +197,10 @@ function EmployerInterviews({user, preview = false}) {
         body = <p className={s.loadingText} aria-busy="true">{t("employerInterviews.loading")}</p>;
     } else if (interviews.length === 0) {
         body = <p className={s.emptyText}>{t("employerInterviews.empty")}</p>;
+    } else if (visible.length === 0) {
+        body = <p className={s.emptyText}>{t("employerInterviews.noMatch")}</p>;
     } else {
-        body = sorted.map(renderCard);
+        body = visible.map(renderCard);
     }
 
     return (
@@ -210,6 +212,12 @@ function EmployerInterviews({user, preview = false}) {
                 </div>
             </div>
             <div className={s.listSection}>
+                {interviews && interviews.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <StatusColorSelect dark={dark} value={status} onChange={setStatus} page="employerInterviews"
+                                           ariaLabel={t("employerInterviews.statusAria")}/>
+                    </div>
+                )}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>

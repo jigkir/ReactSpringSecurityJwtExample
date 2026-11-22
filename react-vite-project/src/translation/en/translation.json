@@ -98,18 +98,6 @@
     "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
     "contractToSignNotification": "{{amount}} contract(s) to sign"
   },
-  "managerPage": {
-    "pageInfo": "Manager home page",
-    "buttonInfo": "Go to the manager endpoint"
-  },
-  "borrowerPage": {
-    "pageInfo": "Borrower home page",
-    "buttonInfo": "Go to the manager endpoint"
-  },
-  "attendantPage": {
-    "pageInfo": "Attendant home page",
-    "buttonInfo": "Go to the manager endpoint"
-  },
   "teacher": {
     "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces.",
     "existingId": "This employee number is already registered. Log in instead, or check the number.",
@@ -345,15 +333,10 @@
       },
       "confirmDelete": "Yes, delete",
       "confirmMove": "Yes, move file"
-    },
-    "previewEmpty": "No documents pending review or rejected."
+    }
   },
   "home": {
     "welcome": "Welcome",
-    "apiError": "Something went wrong (error {{status}}). Please try again.",
-    "cvTitle": "CV",
-    "internshipsTitle": "Internships",
-    "applicationsTitle": "Applications",
     "studentCvLink": "Go to my portfolio",
     "studentInternshipsLink": "Find and apply to internships",
     "studentInterviewsLink": "View my interviews",
@@ -364,12 +347,7 @@
     "managerCvLink": "Review CVs waiting for approval",
     "managerInternshipsLink": "Review internship offers",
     "managerContractsLink": "Sign pending contracts",
-    "noPreviews": "Nothing to show here for your role yet.",
-    "preview": {
-      "empty": "Nothing here yet.",
-      "loading": "Loading…",
-      "loadError": "Unable to load this section. It will retry automatically."
-    }
+    "noPreviews": "Nothing to show here for your role yet."
   },
   "applicationsPage": {
     "title": "Applications received",
@@ -384,7 +362,6 @@
     "internshipAria": "Filter by internship offer",
     "allInternships": "All internship offers",
     "unknownInternship": "Unknown internship",
-    "pendingReviewEmpty": "No applications pending review.",
     "fromInternship": "Applications for the offer",
     "applicationCount_one": "{{count}} application",
     "applicationCount_other": "{{count}} applications",
@@ -404,7 +381,6 @@
     "listTitle": "Your offers",
     "loading": "Loading your offers…",
     "empty": "You haven't posted any internship offers yet. Click “Post an internship offer” to create your first one.",
-    "pendingReviewEmpty": "No internships pending review or rejected.",
     "loadError": "Unable to load your internship offers. They will refresh automatically.",
     "createError": "Unable to create the internship offer. Please check the form and try again.",
     "createGenericError": "Unable to save the internship offer. Please try again.",
@@ -435,8 +411,7 @@
     "approveBtnAria": "Approve: {{title}}",
     "rejectBtnAria": "Reject: {{title}}",
     "editBtnAria": "Edit offer: {{title}}",
-    "editReasonBtnAria": "Edit reason: {{title}}",
-    "pendingEmpty": "No internship offers waiting for review."
+    "editReasonBtnAria": "Edit reason: {{title}}"
   },
   "managerContracts": {
     "title": "Internship contracts",
@@ -561,8 +536,7 @@
       "downloadCurrent": "Download the PDF ({{language}})",
       "downloadBoth": "Download both PDFs",
       "downloading": "Downloading…"
-    },
-    "previewEmpty": "No contracts waiting for your signature."
+    }
   },
   "studentInternship": {
     "title": "Available internships",
@@ -570,7 +544,6 @@
     "loading": "Loading internships…",
     "loadError": "Unable to load internships. They will refresh automatically.",
     "empty": "No internships are available right now. New offers will appear here as soon as they are approved.",
-    "comingSoon": "This page will be available soon!",
     "preview": "Preview",
     "hide": "Hide",
     "new": "New",
@@ -596,8 +569,7 @@
     "noLetter": "No cover letter",
     "uploadLetter": "Upload a cover letter",
     "letterInvalid": "The cover letter must be a PDF within the size limit.",
-    "letterUploadFailed": "Unable to upload the cover letter. Please try again.",
-    "previewEmpty": "No new internships to apply to right now."
+    "letterUploadFailed": "Unable to upload the cover letter. Please try again."
   },
   "employerInternship": {
     "openInterviewPicker": "Invite to an interview",
@@ -754,7 +726,6 @@
   },
   "studentInterviews": {
     "title": "My interviews",
-    "awaitingResponseEmpty": "No interviews awaiting response.",
     "loading": "Loading interviews…",
     "loadError": "Unable to load interviews. They will refresh automatically.",
     "empty": "No interview invitations yet. When an employer invites you, it will appear here.",
@@ -852,8 +823,7 @@
       "PENDING": "Awaiting your answer",
       "ACCEPTED": "Accepted",
       "REJECTED": "Declined"
-    },
-    "pendingEmpty": "No offers waiting for your answer."
+    }
   },
   "users": {
     "statuses": {

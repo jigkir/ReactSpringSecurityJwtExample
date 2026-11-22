@@ -15,11 +15,9 @@
  *   ALL tab:   rejected CVs → pending CVs → everything else; newest first inside each group.
  *   Other tab: rejected → pending → approved, newest first inside each status.
  *
- * CV tab: when a status is picked in the filter, every row gets a coloured border
- * (red = rejected, yellow = pending, green = approved), like the manager page.
- *
- * `preview` (Home page): no card shell, only rejected and pending documents,
- * each one its own card.
+ * CV tab: a status color filter (ALL | RED | YELLOW | GREEN) sits above the list; its initial
+ * value comes from `?status=` (Home buttons). When a color is picked, every row gets a coloured
+ * border (red = rejected, yellow = pending, green = approved), like the manager page.
  *
  * `selection` ("pick" mode, used when applying to an internship): only APPROVED CVs are listed,
  * no status pill or status filter, no Edit / Delete; CVs, cover letters and transcripts
@@ -31,7 +29,6 @@
  * Props
  *   type           "ALL" | "CV" | "COVER_LETTER" | "TRANSCRIPT"
  *   dark           boolean
- *   preview        boolean   optional, compact Home version
  *   selection      object    optional {cvId, letterId, transcriptId, onPickCv(id), onPickLetter(id),
  *                            onPickTranscript(id), disabled}
  *   reloadToken    number    optional, change it to refetch the list silently
@@ -44,19 +41,17 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Button from '../../../styles/Button.jsx';
-import {getSelectClass} from '../../../styles/FormControls.jsx';
 import ChangeDocType from './ChangeDocType.jsx';
 import DocumentListShell from '../../documents/DocumentListShell.jsx';
 import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
 import {getDocumentFile, getDocuments, hideDocument} from '../../api/Api.jsx';
-import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
+import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 import {blobUrlFromFile, formatBytes, formatDate} from '../../../utils/Documents.js';
 import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
-import {sortCvsNewest} from '../../../utils/Sort.jsx';
+import {sortCvsNewest, StatusColorSelect, useColorParam} from '../../../utils/Sort.jsx';
+import {ALL, colorOf, matchesColor} from '../../../utils/StatusColor.js';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
-
-const ALL = "ALL";
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
 const keyOf = (doc) => `${doc.docType}-${doc.id}`;
@@ -71,7 +66,7 @@ const urlGetters = {};
 const getUrlFor = (type) => (urlGetters[type] ??= async (id) => blobUrlFromFile(await getDocumentFile(type, id)));
 
 function DocumentList({
-                          type, dark, preview = false, selection = null, reloadToken = 0, onTypeChanged,
+                          type, dark, selection = null, reloadToken = 0, onTypeChanged,
                           uploadOpen = false, onAddClick, onCloseClick,
                       }) {
     const {t, i18n} = useTranslation();
@@ -79,9 +74,8 @@ function DocumentList({
     const lang = i18n.resolvedLanguage ?? i18n.language;
     const isAll = type === ALL;
     const picking = Boolean(selection);
-    const hasStatusFilter = type === "CV" && !preview && !picking;
+    const hasStatusFilter = type === "CV" && !picking;
 
-    // Home preview: show only rejected and pending documents, with rejected first.
     // ALL: every type merged → rejected, then pending, then the rest; newest first inside each group.
     // Otherwise: rejected → pending → approved, newest first.
     // Pick mode: only approved CVs.
@@ -89,12 +83,10 @@ function DocumentList({
         const types = type === ALL ? DOC_TYPE_KEYS : [type];
         const lists = await Promise.all(types.map(async (k) =>
             (await getDocuments(k)).filter(isVisible).map((d) => ({...d, docType: k}))));
-        const merged = lists.flat().filter((d) => {
-            if (preview) return d.status === "REJECTED" || d.status === "PENDING";
-            return !picking || d.docType !== "CV" || d.status === "APPROVED";
-        });
+        const merged = lists.flat().filter((d) =>
+            !picking || d.docType !== "CV" || d.status === "APPROVED");
         return type === ALL ? merged.sort(byStatusThenNewest) : sortCvsNewest(merged);
-    }, [type, picking, preview, lang]);
+    }, [type, picking, lang]);
     const {items: docs, failed, reload} = useLoadedList(fetchDocs);
 
     // Silent refetch when the parent asks for it (after an upload / a type change)
@@ -106,7 +98,8 @@ function DocumentList({
     }, [reloadToken, reload]);
 
     const previews = useToggleSet();
-    const [status, setStatus] = useState("ALL");
+    const initialStatus = useColorParam("status");
+    const [status, setStatus] = useState(initialStatus);
     const [busyKey, setBusyKey] = useState(null);
     const [confirmKey, setConfirmKey] = useState(null);
     const [typeEditKey, setTypeEditKey] = useState(null);
@@ -114,12 +107,11 @@ function DocumentList({
 
     const closeTypeEdit = useCallback(() => setTypeEditKey(null), []);
 
-    const filtered = docs && hasStatusFilter && status !== "ALL"
-        ? docs.filter((d) => (d.status ?? "PENDING") === status)
+    const shown = docs && hasStatusFilter && status !== ALL
+        ? docs.filter((d) => matchesColor(colorOf(d.status), status))
         : docs;
-    const shown = filtered;
     const filterHidesAll = Boolean(docs?.length) && shown?.length === 0;
-    const bordered = hasStatusFilter && status !== "ALL";
+    const bordered = hasStatusFilter && status !== ALL;
 
     const remove = async (doc) => {
         const key = keyOf(doc);
@@ -200,7 +192,7 @@ function DocumentList({
     };
 
     const rows = shown?.length > 0 && (
-        <ul className={getRowListClass(dark, {preview, bordered})}>
+        <ul className={getRowListClass(dark, {bordered})}>
             {shown.map((doc) => {
                 const key = keyOf(doc);
                 const busy = busyKey === key;
@@ -209,7 +201,6 @@ function DocumentList({
                         key={key}
                         doc={doc}
                         dark={dark}
-                        preview={preview}
                         bordered={bordered}
                         status={picking ? undefined : (doc.status ?? (hasStatusFilter ? "PENDING" : undefined))}
                         leading={renderCheckbox(doc)}
@@ -231,18 +222,12 @@ function DocumentList({
         </ul>
     );
 
-    // Status filter (CV tab only). The border takes the colour of the chosen status.
+    // Status color filter (CV tab only). The border takes the colour of the chosen status.
     const toolbar = hasStatusFilter && docs !== null && !failed && (
         <div
             className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
-            <select value={status} onChange={(e) => setStatus(e.target.value)}
-                    className={getSelectClass(dark, getStatusBorder(status, dark))}
-                    aria-label={t("cvDocuments.statusAria")}>
-                <option value="ALL">{t("cvDocuments.allStatuses")}</option>
-                <option value="REJECTED">{t("cvDocuments.statusRefused")}</option>
-                <option value="PENDING">{t("cvDocuments.filterPending")}</option>
-                <option value="APPROVED">{t("cvDocuments.statusApproved")}</option>
-            </select>
+            <StatusColorSelect dark={dark} value={status} onChange={setStatus} page="studentCv"
+                               ariaLabel={t("cvDocuments.statusAria")}/>
         </div>
     );
 
@@ -264,9 +249,8 @@ function DocumentList({
     return (
         <DocumentListShell
             dark={dark}
-            preview={preview}
-            title={preview ? undefined : label}
-            headerAction={preview ? undefined : headerAction}
+            title={label}
+            headerAction={headerAction}
             label={label}
             items={shown}
             failed={failed}
@@ -274,7 +258,6 @@ function DocumentList({
             emptyText={t(filterHidesAll ? "portfolio.noMatch" : "portfolio.empty")}
             actionError={actionError}
             toolbar={toolbar}
-            previewEmptyKey="portfolio.previewEmpty"
         >
             {rows}
         </DocumentListShell>

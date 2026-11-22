@@ -4,11 +4,12 @@ import {useTranslation} from "react-i18next";
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import {acceptInterviews, denyInterviews, getStudentInterviews} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
-import PreviewState from "../../home/PreviewState.jsx";
+import {StatusColorSelect, useColorParam} from "../../../utils/Sort.jsx";
+import {ALL, matchesColor} from "../../../utils/StatusColor.js";
 import InterviewCard from "./InterviewCard.jsx";
-import {getInterviewStatus, getInterviewTime, INTERVIEW_STATUS, isCancelled} from "../../../utils/interviewStatus.js";
+import {getInterviewColor, getInterviewTime, isCancelled} from "../../../utils/interviewStatus.js";
 
-function Interviews({preview = false}) {
+function Interviews() {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
     const s = getPostInternshipClasses(dark);
@@ -18,10 +19,11 @@ function Interviews({preview = false}) {
     const [error, setError] = useState(false);
     const {hash} = useLocation();
 
-    // Filter states
+    // Filter states (the status filter is a color: ALL | RED | YELLOW | GREEN, initial value from ?status=)
+    const initialStatus = useColorParam("status");
     const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL");
-    const [typeFilter, setTypeFilter] = useState("ALL");
+    const [statusFilter, setStatusFilter] = useState(initialStatus);
+    const [typeFilter, setTypeFilter] = useState(ALL);
 
     // Form / Action states
     const [rejectingId, setRejectingId] = useState(null);
@@ -31,7 +33,10 @@ function Interviews({preview = false}) {
     const loadInterviews = useCallback(async () => {
         try {
             const data = await getStudentInterviews();
-            if (!Array.isArray(data)) throw new Error("Invalid interviews response");
+            if (!Array.isArray(data)) {
+                setError(true);
+                return;
+            }
             setInterviews(data);
             setError(false);
         } catch {
@@ -103,23 +108,21 @@ function Interviews({preview = false}) {
 
     const visibleInterviews = sortInterviews(interviews).filter((interview) => {
         const query = search.trim().toLowerCase();
-        const status = getInterviewStatus(interview);
         const matchesSearch =
             (interview.internshipTitle ?? "").toLowerCase().includes(query) ||
             (interview.employerName ?? "").toLowerCase().includes(query);
 
-        if (preview) return status === INTERVIEW_STATUS.AWAITING_RESPONSE && matchesSearch;
-
-        const matchesStatus = statusFilter === "ALL" || status === statusFilter;
-        const matchesType = typeFilter === "ALL" || interview.meetingType === typeFilter;
+        // A past interview has no color: it only shows with ALL
+        const matchesStatus = matchesColor(getInterviewColor(interview), statusFilter);
+        const matchesType = typeFilter === ALL || interview.meetingType === typeFilter;
 
         return matchesSearch && matchesStatus && matchesType;
     });
 
     useEffect(() => {
-        if (preview || loading || !hash) return;
+        if (loading || !hash) return;
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
-    }, [hash, loading, preview]);
+    }, [hash, loading]);
 
     const locale = i18n.resolvedLanguage?.startsWith("fr") ? "fr-CA" : "en-CA";
     const inputClass = `w-full rounded-lg border px-3 py-2 text-sm ${
@@ -133,7 +136,6 @@ function Interviews({preview = false}) {
             dark={dark}
             locale={locale}
             hash={hash}
-            preview={preview}
             busy={busyId === interview.id}
             rejecting={rejectingId === interview.id}
             rejectComment={rejectComment}
@@ -144,15 +146,6 @@ function Interviews({preview = false}) {
             onCloseForm={closeForm}
         />
     );
-
-    if (preview) {
-        return (
-            <PreviewState dark={dark} error={error} loading={loading}
-                          empty={visibleInterviews.length === 0} emptyText="studentInterviews.awaitingResponseEmpty">
-                {visibleInterviews.map(renderCard)}
-            </PreviewState>
-        );
-    }
 
     return (
         <div className={s.page}>
@@ -183,18 +176,15 @@ function Interviews({preview = false}) {
                             <label htmlFor="interview-status" className="mb-1 block text-sm font-medium">
                                 {t("studentInterviews.filters.status")}
                             </label>
-                            <select
+                            <StatusColorSelect
                                 id="interview-status"
+                                dark={dark}
                                 value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className={inputClass}
-                            >
-                                <option value="ALL">{t("studentInterviews.filters.all")}</option>
-                                {Object.values(INTERVIEW_STATUS).map((status) => (
-                                    <option key={status}
-                                            value={status}>{t(`studentInterviews.statuses.${status}`)}</option>
-                                ))}
-                            </select>
+                                onChange={setStatusFilter}
+                                page="studentInterviews"
+                                ariaLabel={t("studentInterviews.filters.status")}
+                                className="w-full"
+                            />
                         </div>
 
                         <div>

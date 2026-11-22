@@ -1,10 +1,9 @@
 /**
  * Employer page: internship contracts to sign.
  *
- * <Contracts />          full page (route /employer/contracts)
- * <Contracts preview />  Home page block: the contracts not signed yet, every session, no header
+ * Route /employer/contracts
  *
- * Location: components/page/employer/Contracts.jsx
+ * Location: components/page/employer/contracts/Contracts.jsx
  * The role (signature field, base route of the contract page) is read from the user
  * by ContractReviewList: see utils/ContractRole.js.
  *
@@ -16,11 +15,9 @@ import {useOutletContext} from 'react-router-dom';
 import ContractReviewList from '../../../contracts/ContractReviewList.jsx';
 import {getAuthClasses} from '../../../../styles/AppStyles.jsx';
 
-const Contracts = ({preview = false}) => {
+const Contracts = () => {
     const {dark, user} = useOutletContext();
     const {pageClass} = getAuthClasses(dark);
-
-    if (preview) return <ContractReviewList dark={dark} user={user} preview/>;
 
     return (
         <div className={`${pageClass} items-start`}>

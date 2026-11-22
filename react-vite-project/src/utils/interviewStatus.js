@@ -1,3 +1,5 @@
+import {COLOR} from "./StatusColor.js";
+
 export const INTERVIEW_STATUS = {
     AWAITING_RESPONSE: "awaitingResponse",
     UPCOMING: "upcoming",
@@ -15,6 +17,15 @@ export const INTERVIEW_STATUS_ACCENT = {
     [INTERVIEW_STATUS.REJECTED]: "border-l-red-500",
     [INTERVIEW_STATUS.PAST]: "border-l-slate-400",
     [INTERVIEW_STATUS.CANCELLED]: "border-l-red-500",
+};
+
+// A past interview has no color: it only shows when the filter is ALL
+const INTERVIEW_COLOR = {
+    [INTERVIEW_STATUS.AWAITING_RESPONSE]: COLOR.YELLOW,
+    [INTERVIEW_STATUS.UPCOMING]: COLOR.GREEN,
+    [INTERVIEW_STATUS.REJECTED]: COLOR.RED,
+    [INTERVIEW_STATUS.CANCELLED]: COLOR.RED,
+    [INTERVIEW_STATUS.PAST]: null,
 };
 
 export const getInterviewTime = (interview) => {
@@ -35,3 +46,6 @@ export const getInterviewStatus = (interview) => {
 
     return INTERVIEW_STATUS.AWAITING_RESPONSE;
 };
+
+/** awaiting = YELLOW, upcoming = GREEN, rejected / cancelled = RED, past = null (no color). */
+export const getInterviewColor = (interview) => INTERVIEW_COLOR[getInterviewStatus(interview)] ?? null;

@@ -17,15 +17,13 @@ import {
     getInternshipIdsWithContract
 } from '../../../api/Api.jsx';
 import {usePolling} from "../../../../utils/usePolling.js";
-import PreviewState from '../../../home/PreviewState.jsx';
 import {useSession} from "../../../../utils/useSession.js";
 import {TARGET_TYPE, useCloseShownNotifications} from "../../../notification/NotificationsProvider.jsx";
 
 const HTTP_CONFLICT = 409;
 
-// <PostInternship user />          full page (route /internships)
-// <PostInternship user preview />  Home page block: the newest offers only, read-only, no form, no filters
-function PostInternship({user, preview = false}) {
+// <PostInternship user />  full page (route /internships)
+function PostInternship({user}) {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
     const [formOpen, setFormOpen] = useState(false);
@@ -48,21 +46,12 @@ function PostInternship({user, preview = false}) {
     const s = getPostInternshipClasses(dark);
     const filters = useInternshipFilters(internships, null, EMPLOYER_INTERNSHIP_STATUS_RANK);
     const visible = filters.visible ?? [];
-    const shown = preview
-        ? internships
-            .filter((internship) => internship.status === "PENDING" || internship.status === "REJECTED")
-            .sort((a, b) => {
-                const statusDifference =
-                    Number(b.status === "REJECTED") - Number(a.status === "REJECTED");
-                return statusDifference || new Date(b.uploadedAt) - new Date(a.uploadedAt);
-            })
-        : visible;
 
     const lang = i18n.resolvedLanguage ?? i18n.language;
 
     const shownInternshipIds = useMemo(
-        () => (preview || loading ? null : internships.map((internship) => internship.id)),
-        [preview, loading, internships]);
+        () => (loading ? null : internships.map((internship) => internship.id)),
+        [loading, internships]);
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
     const isLoggedIn = Boolean(user?.isLoggedIn);
@@ -89,12 +78,11 @@ function PostInternship({user, preview = false}) {
         }
     }, []);
 
-    // The application counters and contract locks are only needed on the full page
     useEffect(() => {
-        if (isLoggedIn && !preview) void fetchInternshipLocks();
-    }, [isLoggedIn, preview, fetchInternshipLocks]);
+        if (isLoggedIn) void fetchInternshipLocks();
+    }, [isLoggedIn, fetchInternshipLocks]);
 
-    usePolling(fetchInternshipLocks, isLoggedIn && !preview)
+    usePolling(fetchInternshipLocks, isLoggedIn)
 
     useEffect(() => {
         if (isLoggedIn) void load();
@@ -155,25 +143,15 @@ function PostInternship({user, preview = false}) {
 
     const hasItems = !loading && !error && internships.length > 0;
 
-    const cards = shown.map((internship) => (
+    const cards = visible.map((internship) => (
         <InternshipCard key={internship.id}
                         internship={internship}
-                        OnEdit={preview || !canEdit(internship) ? undefined : openEdit}
-                        OnDelete={preview || !canDelete(internship) ? undefined : handleDelete}
+                        OnEdit={canEdit(internship) ? openEdit : undefined}
+                        OnDelete={canDelete(internship) ? handleDelete : undefined}
                         dark={dark}
                         showStatusBorder={filters.status !== "ALL"}
                         applicationCount={applicationCount[internship.id]}/>
     ));
-
-    // Home preview: same states and spacing as every other Home preview
-    if (preview) {
-        return (
-            <PreviewState dark={dark} error={Boolean(error)} loading={loading}
-                          empty={shown.length === 0} emptyText="postInternship.pendingReviewEmpty">
-                {cards}
-            </PreviewState>
-        );
-    }
 
     const list = (
         <div className={s.scrollArea}>
@@ -223,7 +201,7 @@ function PostInternship({user, preview = false}) {
             <div className={s.listSection}>
                 <h2 className={s.listHeading}>{t("postInternship.listTitle")}</h2>
 
-                {hasItems && <InternshipFilters dark={dark} filters={filters}/>}
+                {hasItems && <InternshipFilters dark={dark} filters={filters} statusPage="employerInternships"/>}
 
                 {list}
             </div>

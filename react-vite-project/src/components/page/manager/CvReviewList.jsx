@@ -1,16 +1,14 @@
 /**
  * CvReviewList.jsx — Manager view of every visible student CV.
  *
- * Filter / sort (status, discipline, search, date, student), preview, approve and refuse
+ * Filter / sort (status color, discipline, search, date, student), preview, approve and refuse
  * (with a mandatory reason). A decision can be changed at any time.
  * A CV is visible to the manager as soon as the student uploads it.
  *
  * The backend returns the CVs of the students of the selected session.
  *
- * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters).
- *
- * `preview` (Home page): no card shell, no toolbar, all CVs still waiting for review
- * still waiting for review.
+ * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters). The status filter is a color
+ * (ALL | RED | YELLOW | GREEN, see StatusColor.js); its initial value comes from `?status=`.
  *
  * The backend returns the updated DTO after a decision: it is patched into the list so the row
  * stays visible with its new status (and is re-filtered by the status filter automatically).
@@ -23,7 +21,6 @@
  *
  * Props
  *   dark     boolean
- *   preview  boolean   optional, compact Home version
  */
 
 import {useCallback, useMemo, useState} from 'react';
@@ -33,11 +30,12 @@ import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
 import {getSelectClass, SearchInput} from '../../../styles/FormControls.jsx';
 import DocumentListShell from '../../documents/DocumentListShell.jsx';
 import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
-import {approveCv, getManagerCvFile, getPendingCvs, getPublicCvs, rejectCv} from '../../api/Api.jsx';
-import {getCvDocumentsClasses, getStatusBorder} from '../../../styles/AppStyles.jsx';
+import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from '../../api/Api.jsx';
+import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {blobUrlFromFile, formatDate} from '../../../utils/Documents.js';
-import {CV_SORT_OPTIONS, useCvFilters} from '../../../utils/Sort.jsx';
+import {CV_SORT_OPTIONS, StatusColorSelect, useCvFilters} from '../../../utils/Sort.jsx';
+import {ALL} from '../../../utils/StatusColor.js';
 import {useLoadedList} from '../../../utils/useLoadedList.js';
 import {useToggleSet} from '../../../utils/useToggleSet.js';
 import {useSession} from "../../../utils/useSession.js";
@@ -46,27 +44,22 @@ import {useSession} from "../../../utils/useSession.js";
 const getUrl = async (id) => blobUrlFromFile(await getManagerCvFile(id));
 
 const statusOf = (doc) => doc.status ?? "PENDING";
-const isPending = (doc) => statusOf(doc) === "PENDING";
 
-function CvReviewList({dark, preview = false}) {
-    const {t, i18n} = useTranslation();
+function CvReviewList({dark}) {
+    const {t} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const th = getCvDocumentsClasses(dark);
-    const lang = i18n.resolvedLanguage ?? i18n.language;
-
 
     const {selectedSession} = useSession();
 
     const loadCvs = useCallback(async () => {
-        // Home preview: CVs waiting for review of every session, so the manager never misses one
-        if (preview) return getPendingCvs();
         return selectedSession ? getPublicCvs(selectedSession.id) : null;
-    }, [preview, selectedSession, lang]);
+    }, [selectedSession]);
 
     const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(loadCvs);
     const filters = useCvFilters(docs);
 
-    const shownCvIds = useMemo(() => (preview || !docs ? null : docs.map((doc) => doc.id)), [preview, docs]);
+    const shownCvIds = useMemo(() => (docs ? docs.map((doc) => doc.id) : null), [docs]);
     useCloseShownNotifications(TARGET_TYPE.CV, shownCvIds);
 
     const previews = useToggleSet();
@@ -77,12 +70,10 @@ function CvReviewList({dark, preview = false}) {
 
     const selectClass = getSelectClass(dark);
     const textareaClass = `${selectClass} w-full md:w-64`;
-    // Select border takes the colour of the chosen status; rows get one only while a status is selected
-    const statusSelectClass = getSelectClass(dark, getStatusBorder(filters.status, dark));
-    const bordered = !preview && filters.status !== "ALL";
+    // Rows get a coloured border only while a status color is selected
+    const bordered = filters.status !== ALL;
 
-    const filtered = docs === null ? null : filters.visible;
-    const shown = preview && filtered ? filtered.filter(isPending) : filtered;
+    const shown = docs === null ? null : filters.visible;
 
     // ── Decision ──────────────────────────────────────────────────────────────
 
@@ -178,9 +169,9 @@ function CvReviewList({dark, preview = false}) {
         );
     };
 
-    // ── Toolbar (full page only, once the list is loaded) ─────────────────────
+    // ── Toolbar (once the list is loaded) ─────────────────────────────────────
 
-    const toolbar = !preview && docs !== null && !failed && (
+    const toolbar = docs !== null && !failed && (
         <div
             className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
             <SearchInput
@@ -191,13 +182,8 @@ function CvReviewList({dark, preview = false}) {
                 ariaLabel={t("cvDocuments.searchAria")}
                 clearAriaLabel={t("cvDocuments.clearSearchAria")}
             />
-            <select value={filters.status} onChange={(e) => filters.setStatus(e.target.value)}
-                    className={statusSelectClass} aria-label={t("cvDocuments.statusAria")}>
-                <option value="ALL">{t("cvDocuments.allStatuses")}</option>
-                <option value="REJECTED">{t("managerStatus.rejected")}</option>
-                <option value="PENDING">{t("managerStatus.pending")}</option>
-                <option value="APPROVED">{t("managerStatus.approved")}</option>
-            </select>
+            <StatusColorSelect dark={dark} value={filters.status} onChange={filters.setStatus} page="managerCv"
+                               ariaLabel={t("cvDocuments.statusAria")}/>
             <select value={filters.discipline} onChange={(e) => filters.setDiscipline(e.target.value)}
                     className={selectClass} aria-label={t("cvDocuments.disciplineAria")}>
                 <option value="ALL">{t("cvDocuments.allDisciplines")}</option>
@@ -217,7 +203,7 @@ function CvReviewList({dark, preview = false}) {
     // ── Rows ──────────────────────────────────────────────────────────────────
 
     const rows = shown?.length > 0 && (
-        <ul className={getRowListClass(dark, {preview, bordered})}>
+        <ul className={getRowListClass(dark, {bordered})}>
             {shown.map((doc) => {
                 const status = statusOf(doc);
                 const busy = busyId === doc.id;
@@ -227,7 +213,6 @@ function CvReviewList({dark, preview = false}) {
                         key={doc.id}
                         doc={{...doc, docType: "CV"}}
                         dark={dark}
-                        preview={preview}
                         bordered={bordered}
                         audience="manager"
                         status={status}
@@ -260,7 +245,6 @@ function CvReviewList({dark, preview = false}) {
     return (
         <DocumentListShell
             dark={dark}
-            preview={preview}
             title={t("cvDocuments.titleManager")}
             items={shown}
             failed={failed}
@@ -268,7 +252,6 @@ function CvReviewList({dark, preview = false}) {
             emptyText={t("cvDocuments.emptyManager")}
             actionError={actionError}
             toolbar={toolbar}
-            previewEmptyKey="cvDocuments.emptyManager"
         >
             {rows}
         </DocumentListShell>

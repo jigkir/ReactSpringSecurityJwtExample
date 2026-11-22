@@ -196,7 +196,7 @@ export function getNavbarClasses(dark) {
 export function getNotificationMenuClasses(dark) {
     return {
         panel: `fixed left-4 right-4 top-14 md:absolute md:left-0 md:right-auto md:top-auto md:w-71 mt-2 z-50 rounded-xl border shadow-lg overflow-hidden ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
-        link: `min-w-0 flex-1 break-words`,
+        link: `min-w-0 flex-1 wrap-break-word`,
         list: `divide-y ${dark ? "divide-slate-700" : "divide-gray-100"}`,
         item: `flex items-center gap-3 px-4 py-3 text-sm ${TRANSITION_150} ${dark ? "text-slate-200 hover:bg-slate-700/60" : "text-gray-700 hover:bg-gray-50"}`,
         empty: `px-4 py-6 text-center text-sm ${dark ? "text-slate-400" : "text-gray-500"}`,
@@ -305,8 +305,8 @@ export function getInternshipCardClasses(dark, status = null) {
     return {
         card: `rounded-xl shadow-sm p-6 text-left space-y-3 overflow-hidden min-w-0 ${cardBorder} ${dark ? "bg-slate-800" : "bg-white"}`,
         topRow: "flex justify-between items-start gap-4 min-w-0",
-        title: `text-xl font-bold break-words min-w-0 w-full ${dark ? "text-white" : "text-gray-900"}`,
-        description: `text-base mt-1 break-words whitespace-normal min-w-0 ${dark ? "text-slate-400" : "text-gray-600"}`,
+        title: `text-xl font-bold wrap-break-word min-w-0 w-full ${dark ? "text-white" : "text-gray-900"}`,
+        description: `text-base mt-1 wrap-break-word whitespace-normal min-w-0 ${dark ? "text-slate-400" : "text-gray-600"}`,
         skillsRow: `text-base ${dark ? "text-slate-300" : "text-gray-700"}`,
         skillBadge: `px-2 py-0.5 rounded font-medium ${dark ? "bg-blue-900/40 text-blue-300" : "bg-blue-50 text-blue-700"}`,
         detailsRow: `flex flex-wrap gap-2 text-base pt-1 border-t ${dark ? "text-slate-400 border-slate-700" : "text-gray-500 border-gray-100"}`,
@@ -397,7 +397,7 @@ export function getCvDocumentsClasses(dark) {
         skel: dark ? "bg-slate-700" : "bg-gray-200",
         rejectionBox: `mt-2 rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`,
         rejectionLabel: `text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`,
-        rejectionText: `mt-0.5 text-sm font-semibold break-words ${dark ? "text-red-100" : "text-red-900"}`,
+        rejectionText: `mt-0.5 text-sm font-semibold wrap-break-word ${dark ? "text-red-100" : "text-red-900"}`,
 
         error: `px-4 py-3 rounded-lg text-sm border ${dark ? "bg-red-900/30 border-red-700 text-red-300" : "bg-red-50 border-red-300 text-red-700"}`,
         pillBase: "inline-flex max-w-full items-center rounded-full px-3 py-1 text-xs font-medium",

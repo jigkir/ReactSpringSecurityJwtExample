@@ -1,32 +1,30 @@
 /**
  * DocumentListShell.jsx — Loading / error / empty states and card around any document list.
  *
- * Full page: card (+ optional title header, action error, toolbar) with a skeleton, a retry
+ * Card (+ optional title header, action error, toolbar) with a skeleton, a retry
  * block, an empty message, or the rows.
- * `preview` (Home page): no card, states come from <PreviewState />, like every Home preview.
  *
  * Props
- *   dark, preview
+ *   dark
  *   title        optional visible header of the card
+ *   headerAction optional node shown on the right of the header
  *   label        aria-label of the card (defaults to title)
  *   items        the list that will be shown: null while loading
  *   failed       loading failed
  *   onRetry      function  retry button
  *   emptyText    string
- *   previewEmptyKey  translation key of the empty message of the Home preview (default: generic message)
  *   actionError  translation KEY of the last failed action (translated here, so it follows the language)
- *   toolbar      node  filters (full page only)
+ *   toolbar      node  filters
  *   children     the rows (a <ul>)
  */
 
 import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
-import PreviewState from '../home/PreviewState.jsx';
 import {getCvDocumentsClasses} from '../../styles/AppStyles.jsx';
 
 export default function DocumentListShell({
-                                              dark, preview = false, title, headerAction, label, items, failed, onRetry,
-                                              emptyText, previewEmptyKey, actionError, toolbar, children,
+                                              dark, title, headerAction, label, items, failed, onRetry,
+                                              emptyText, actionError, toolbar, children,
                                           }) {
     const {t} = useTranslation();
     const th = getCvDocumentsClasses(dark);
@@ -34,18 +32,6 @@ export default function DocumentListShell({
     const errorBox = actionError && (
         <div className={th.error} role="alert" aria-live="assertive">{t(actionError)}</div>
     );
-
-    if (preview) {
-        return (
-            <div className="space-y-4">
-                {errorBox}
-                <PreviewState dark={dark} error={failed} loading={items === null} empty={items?.length === 0}
-                              emptyText={previewEmptyKey}>
-                    {children}
-                </PreviewState>
-            </div>
-        );
-    }
 
     let body;
     if (failed) {

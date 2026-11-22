@@ -5,9 +5,7 @@
  *  - A decision can be changed at any time (approve a rejected offer, reject an approved one,
  *    or edit the rejection reason).
  *
- * <ManagerInternships />          full page (route /manager/internships)
- * <ManagerInternships preview />  Home page block: the latest offers still waiting for review,
- *                                 of every session, no header, no filters
+ * <ManagerInternships />  full page (route /manager/internships)
  *
  * `actionError` stores a translation KEY (not text) and is translated at render,
  * so it follows the language switch live.
@@ -27,22 +25,20 @@ import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
 import {
     approveInternship,
     getManagerInternships,
-    getPendingInternships,
     rejectInternship,
     updateManagerInternship
 } from '../../api/Api.jsx';
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
 import {usePolling} from '../../../utils/usePolling.js';
-import PreviewState from '../../home/PreviewState.jsx';
 import {useSession} from "../../../utils/useSession.js";
 
-const ManagerInternships = ({preview = false}) => {
+const ManagerInternships = () => {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
-    // Offers of past sessions are archives; the home preview lists offers waiting for review in every session
-    const canChangeOffers = preview || Boolean(selectedSession?.target);
+    // Offers of past sessions are archives
+    const canChangeOffers = Boolean(selectedSession?.target);
     const s = getPostInternshipClasses(dark);
 
     const [internships, setInternships] = useState(null); // null = loading
@@ -60,33 +56,24 @@ const ManagerInternships = ({preview = false}) => {
     const lang = i18n.resolvedLanguage ?? i18n.language;
 
     const shownInternshipIds = useMemo(
-        () => (preview || !internships ? null : internships.map((internship) => internship.id)),
-        [preview, internships],
+        () => (internships ? internships.map((internship) => internship.id) : null),
+        [internships],
     );
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
-
-    // Home preview: all offers still waiting for review
-    const shown = preview
-        ? visible.filter((i) => i.status === "PENDING")
-        : visible;
 
     const textareaClass = `w-full md:max-w-sm rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
 
     const load = useCallback(async () => {
-        if (!preview && !selectedSession) return; // sessions still loading
+        if (!selectedSession) return; // sessions still loading
         setLoadFailed(false);
         try {
-            // Home preview: offers waiting for review of every session, so the manager never misses one
-            const loadedInternships = preview
-                ? await getPendingInternships()
-                : await getManagerInternships(selectedSession.id);
-            setInternships(loadedInternships);
+            setInternships(await getManagerInternships(selectedSession.id));
         } catch {
             setLoadFailed(true);
         }
-    }, [preview, selectedSession, lang]);
+    }, [selectedSession, lang]);
 
     useEffect(() => {
         load();
@@ -238,19 +225,6 @@ const ManagerInternships = ({preview = false}) => {
 
     const errorLine = actionError && <p className={`${s.errorText} mb-4`} role="alert">{t(actionError)}</p>;
 
-    // Home preview: same states and spacing as every other Home preview
-    if (preview) {
-        return (
-            <div>
-                {errorLine}
-                <PreviewState dark={dark} error={loadFailed} loading={internships === null} empty={shown.length === 0}
-                              emptyText="managerInternships.pendingEmpty">
-                    {shown.map(renderCard)}
-                </PreviewState>
-            </div>
-        );
-    }
-
     let body;
     if (loadFailed) {
         body = (
@@ -268,7 +242,7 @@ const ManagerInternships = ({preview = false}) => {
     } else if (visible.length === 0) {
         body = <p className={s.emptyText}>{t("internshipFilters.noMatch")}</p>;
     } else {
-        body = shown.map(renderCard);
+        body = visible.map(renderCard);
     }
 
     return (
@@ -296,7 +270,7 @@ const ManagerInternships = ({preview = false}) => {
             <div className={s.listSection}>
                 {errorLine}
                 {internships && internships.length > 0 &&
-                    <InternshipFilters dark={dark} filters={filters} showDiscipline/>}
+                    <InternshipFilters dark={dark} filters={filters} showDiscipline statusPage="managerInternships"/>}
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>

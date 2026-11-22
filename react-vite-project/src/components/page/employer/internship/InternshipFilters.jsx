@@ -1,9 +1,13 @@
 import {useTranslation} from 'react-i18next';
 import Icon from '../../../../styles/Icon.jsx';
-import {INTERNSHIP_SORT_OPTIONS, useInternshipFilters} from '../../../../utils/Sort.jsx';
-import {getStatusBorder} from '../../../../styles/AppStyles.jsx';
+import {
+    INTERNSHIP_SORT_OPTIONS, StatusColorSelect, useInternshipFilters
+} from '../../../../utils/Sort.jsx';
+import {ALL, COLOR} from '../../../../utils/StatusColor.js';
 
 export {useInternshipFilters};
+
+const APPLIED_COLORS = [ALL, COLOR.GREEN, COLOR.RED];
 
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
@@ -12,7 +16,8 @@ function InternshipFilters({
                                filters,
                                showStatus = true,
                                showDiscipline = false,
-                               showApplied = false
+                               showApplied = false,
+                               statusPage
                            }) {
     const {t} = useTranslation();
     const {
@@ -23,12 +28,6 @@ function InternshipFilters({
     const selectBase = "rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
     const selectClass = `${selectBase} border ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
-    }`;
-
-    // The status select border takes the colour of the selected status
-    const statusBorder = getStatusBorder(status, dark);
-    const statusSelectClass = `${selectBase} ${dark ? "bg-slate-700 text-white" : "bg-white text-gray-900"} ${
-        statusBorder ? `border-2 ${statusBorder}` : `border ${dark ? "border-slate-600" : "border-gray-300"}`
     }`;
 
     return (
@@ -54,14 +53,10 @@ function InternshipFilters({
                 )}
             </div>
 
+            {/* statusPage: wording of the status colors on this page (STATUS_LABEL_KEYS in utils/StatusColor.js) */}
             {showStatus && (
-                <select value={status} onChange={(e) => setStatus(e.target.value)}
-                        className={statusSelectClass} aria-label={t("internshipFilters.statusAria")}>
-                    <option value="ALL">{t("internshipFilters.allStatuses")}</option>
-                    <option value="REJECTED">{t("internshipFilters.rejected")}</option>
-                    <option value="PENDING">{t("internshipFilters.pending")}</option>
-                    <option value="APPROVED">{t("internshipFilters.approved")}</option>
-                </select>
+                <StatusColorSelect dark={dark} value={status} onChange={setStatus} page={statusPage}
+                                   ariaLabel={t("internshipFilters.statusAria")}/>
             )}
 
             {showDiscipline && (
@@ -76,13 +71,11 @@ function InternshipFilters({
                 </select>
             )}
 
+            {/* GREEN = applied, RED = not applied */}
             {showApplied && (
-                <select value={applied} onChange={(e) => setApplied(e.target.value)}
-                        className={selectClass} aria-label={t("internshipFilters.appliedAria")}>
-                    <option value="ALL">{t("internshipFilters.allApplications")}</option>
-                    <option value="NOT_APPLIED">{t("internshipFilters.notApplied")}</option>
-                    <option value="APPLIED">{t("internshipFilters.applied")}</option>
-                </select>
+                <StatusColorSelect dark={dark} value={applied} onChange={setApplied} colors={APPLIED_COLORS}
+                                   page="studentApplied"
+                                   ariaLabel={t("internshipFilters.appliedAria")}/>
             )}
 
             <select value={sort} onChange={(e) => setSort(e.target.value)}

@@ -1,7 +1,8 @@
 /**
  * Portfolio.jsx — Student portfolio page (route /portfolio).
  * Tabs: All | CV | Cover letters | Transcripts, all rendered by the same <DocumentList />.
- * The page opens on the "All" tab.
+ * The page opens on the "All" tab, or on the CV tab when the URL carries a status color
+ * (`?status=GREEN`, coming from the Home buttons): the status filter only exists on that tab.
  * One upload panel accepts several PDFs at once (drag & drop or picker), each with its own type.
  * The type of each uploaded file is preselected from the tab being viewed.
  * The "Upload files" button lives in the header of each list card (like before).
@@ -21,6 +22,8 @@ import RequiredFilesNotice from './RequiredFilesNotice.jsx';
 import {getCvCount, getMaxCvSize} from '../../api/Api.jsx';
 import {FALLBACK_MAX_BYTES} from '../../../utils/Documents.js';
 import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
+import {useColorParam} from '../../../utils/Sort.jsx';
+import {ALL} from '../../../utils/StatusColor.js';
 import {usePolling} from '../../../utils/usePolling.js';
 
 const TABS = ["ALL", ...DOC_TYPE_KEYS];
@@ -29,7 +32,8 @@ function Portfolio() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const {pageClass} = getAuthClasses(dark);
-    const [tab, setTab] = useState("ALL");
+    const statusParam = useColorParam("status");
+    const [tab, setTab] = useState(statusParam === ALL ? "ALL" : "CV");
     const [uploadOpen, setUploadOpen] = useState(false);
     const [reloadToken, setReloadToken] = useState(0);
     const [maxBytes, setMaxBytes] = useState(FALLBACK_MAX_BYTES);

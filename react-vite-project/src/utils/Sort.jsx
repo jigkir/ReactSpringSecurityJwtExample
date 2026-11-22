@@ -3,12 +3,18 @@
  * Location: src/utils/Sort.jsx
  *
  * Layout
- *   1. Generic helpers          (toNum, compareText, compareDate, matchesSearch, countByStatus)
- *   2. Internships              (sorters, options, filter, hooks)
- *   3. CVs                      (sorters, filter, disciplines, hook)
+ *   1. Generic helpers          (toNum, compareText, compareDate, matchesSearch)
+ *   2. Status colors            (StatusColorSelect, useColorParam)
+ *   3. Internships              (sorters, options, filter, hooks)
+ *   4. CVs                      (sorters, filter, disciplines, hook)
  *
  * Pure functions come first (easy to test); the React hooks at the bottom of each
  * section only own the UI state (search / status / sort) and call those functions.
+ *
+ * Status filters work on COLORS (see StatusColor.js): ALL | RED | YELLOW | GREEN.
+ * The initial color can come from the URL (`?status=`, `?applied=`), which is how the Home
+ * buttons open a page already filtered. The visible wording of each color is per page
+ * (STATUS_LABEL_KEYS in StatusColor.js, chosen with the `page` prop of StatusColorSelect).
  *
  * Sort options are [value, translationKey] pairs so components just map over them.
  *
@@ -23,6 +29,11 @@
  */
 
 import {useMemo, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {getSelectClass} from '../styles/FormControls.jsx';
+import {getStatusBorder} from '../styles/AppStyles.jsx';
+import {ALL, COLOR, COLOR_VALUES, colorOf, matchesColor, statusLabelKey} from './StatusColor.js';
 
 // ─── 1. Generic helpers ───────────────────────────────────────────────────────
 
@@ -73,7 +84,47 @@ export const matchesSearch = (values, search) => {
     return values.filter(Boolean).join(" ").toLowerCase().includes(q);
 };
 
-// ─── 2. Internships ───────────────────────────────────────────────────────────
+// ─── 2. Status colors ─────────────────────────────────────────────────────────
+
+// Border of the select for each chosen color (ALL keeps the default border)
+const COLOR_SELECT_STATUS = {[COLOR.RED]: "REJECTED", [COLOR.YELLOW]: "PENDING", [COLOR.GREEN]: "APPROVED"};
+
+/**
+ * Initial color of a filter, read from the URL query (`?status=GREEN`).
+ * Returns ALL when the param is missing or not one of `allowed`.
+ */
+export function useColorParam(name = "status", allowed = COLOR_VALUES) {
+    const [params] = useSearchParams();
+    const raw = (params.get(name) ?? "").toUpperCase();
+    return allowed.includes(raw) ? raw : ALL;
+}
+
+/**
+ * Status filter select. Values AND labels are the colors themselves: ALL | RED | YELLOW | GREEN.
+ * `colors` restricts the options (e.g. [ALL, GREEN, RED] for applied / not applied).
+ * `onChange` receives the color (not the event). The border takes the chosen color.
+ */
+export function StatusColorSelect({
+                                      dark, value, onChange, ariaLabel, colors = COLOR_VALUES,
+                                      className = "", id, page,
+                                  }) {
+    const {t} = useTranslation();
+    const border = getStatusBorder(COLOR_SELECT_STATUS[value], dark);
+
+    return (
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)}
+                aria-label={ariaLabel} className={`${getSelectClass(dark, border)} ${className}`.trim()}>
+            {colors.map((color) => {
+                const key = statusLabelKey(page, color);
+                return <option key={color} value={color}>{key ? t(key) : color}</option>;
+            })}
+        </select>
+    );
+}
+
+// ─── 3. Internships ───────────────────────────────────────────────────────────
+
+const APPLIED_COLORS = [ALL, COLOR.GREEN, COLOR.RED];
 
 const internshipPay = (i) =>
     i.compensationNegotiable || i.compensationAmount == null ? -1 : Number(i.compensationAmount);
@@ -108,16 +159,17 @@ export const getInternshipDisciplines = (list) =>
     [...new Set((list ?? []).map((i) => i.discipline).filter(Boolean))].sort();
 
 /**
- * `applied` ("ALL" | "APPLIED" | "NOT_APPLIED") and `appliedIds` (Set of internship ids the student
- * applied to) are student-side only: without `appliedIds` the applied filter does nothing.
+ * `status` and `applied` are colors (ALL | RED | YELLOW | GREEN).
+ * `applied`: GREEN = applied, RED = not applied. It and `appliedIds` (Set of internship ids the
+ * student applied to) are student-side only: without `appliedIds` the applied filter does nothing.
  */
 export function filterInternships(list, {
-    search = "", status = "ALL", discipline = "ALL", applied = "ALL", appliedIds = null
+    search = "", status = ALL, discipline = "ALL", applied = ALL, appliedIds = null
 } = {}) {
     return list.filter((i) => {
-        if (status !== "ALL" && i.status !== status) return false;
+        if (!matchesColor(colorOf(i.status), status)) return false;
         if (discipline !== "ALL" && i.discipline !== discipline) return false;
-        if (appliedIds && applied !== "ALL" && appliedIds.has(i.id) !== (applied === "APPLIED")) return false;
+        if (appliedIds && applied !== ALL && appliedIds.has(i.id) !== (applied === COLOR.GREEN)) return false;
         return matchesSearch([i.title, i.description, i.requiredSkills, i.location, i.employerEmail], search);
     });
 }
@@ -144,12 +196,16 @@ export function applyInternshipFilters(list, {
  * Owns the filter state and returns the visible list (null while `list` is null).
  * `appliedIds` (optional, a stable Set) enables the applied / not applied filter.
  * `statusRanks` (optional, a stable object) changes the status display order.
+ * The initial `status` and `applied` colors come from `?status=` and `?applied=`.
  */
 export function useInternshipFilters(list, appliedIds = null, statusRanks = INTERNSHIP_STATUS_RANK) {
+    const initialStatus = useColorParam("status");
+    const initialApplied = useColorParam("applied", APPLIED_COLORS);
+
     const [search, setSearch] = useState("");
-    const [status, setStatus] = useState("ALL");
+    const [status, setStatus] = useState(initialStatus);
     const [discipline, setDiscipline] = useState("ALL");
-    const [applied, setApplied] = useState("ALL");
+    const [applied, setApplied] = useState(initialApplied);
     const [sort, setSort] = useState("NEWEST");
 
     const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
@@ -162,11 +218,11 @@ export function useInternshipFilters(list, appliedIds = null, statusRanks = INTE
         search, setSearch, status, setStatus, discipline, setDiscipline, sort, setSort,
         applied, setApplied,
         disciplines, visible,
-        filtersActive: search.trim() !== "" || status !== "ALL" || discipline !== "ALL" || applied !== "ALL",
+        filtersActive: search.trim() !== "" || status !== ALL || discipline !== "ALL" || applied !== ALL,
     };
 }
 
-// ─── 3. CVs ───────────────────────────────────────────────────────────────────
+// ─── 4. CVs ───────────────────────────────────────────────────────────────────
 
 const compareStudentName = (a, b) =>
     (a.student?.lastName ?? "").localeCompare(b.student?.lastName ?? "") ||
@@ -194,9 +250,9 @@ export const sortCvsNewest = (list) => [...list].sort(byStatusThen(CV_SORTERS.DA
 export const getCvDisciplines = (docs) =>
     [...new Set((docs ?? []).map((d) => d.student?.discipline).filter(Boolean))].sort();
 
-export function filterCvs(docs, {status = "ALL", discipline = "ALL", search = ""} = {}) {
+export function filterCvs(docs, {status = ALL, discipline = "ALL", search = ""} = {}) {
     return docs.filter((d) => {
-        if (status !== "ALL" && d.status !== status) return false;
+        if (!matchesColor(colorOf(d.status), status)) return false;
         if (discipline !== "ALL" && d.student?.discipline !== discipline) return false;
         const s = d.student ?? {};
         return matchesSearch([s.firstName, s.lastName, s.email, s.studentId, d.fileName], search);
@@ -214,7 +270,9 @@ export function applyCvFilters(docs, {status, discipline, search, sort} = {}) {
 
 /** Manager CV list: owns the filter state and returns the visible list + disciplines. */
 export function useCvFilters(docs) {
-    const [status, setStatus] = useState("ALL");
+    const initialStatus = useColorParam("status");
+
+    const [status, setStatus] = useState(initialStatus);
     const [discipline, setDiscipline] = useState("ALL");
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("DATE_DESC");
