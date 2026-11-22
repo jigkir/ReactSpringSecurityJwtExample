@@ -5,7 +5,6 @@ const TRANSITION = "transition-colors duration-200";
 const TRANSITION_150 = "transition-colors duration-150";
 const ROUNDED = "rounded-lg";
 const BORDER = "border";
-const FADE_IN_DOWN = "animate-fade-in-down motion-reduce:animate-none";
 const BRAND_BTN = "bg-indigo-600 hover:bg-indigo-700 text-white";
 // endregion
 
@@ -22,6 +21,40 @@ export function getStatusBorder(status, dark = false) {
 // region Brand surface (hero + footer)
 export function getBrandSurface(dark) {
     return dark ? "bg-blue-950" : "bg-violet-200";
+}
+
+export function getBrandFill(dark) {
+    return dark ? "fill-blue-950" : "fill-violet-200";
+}
+
+// endregion
+
+// region Reveal on scroll: a transition from a hidden state to the shown state
+export const REVEAL_FROM = {
+    UP: "up",
+    LEFT: "left",
+    RIGHT: "right",
+    POP: "pop",
+};
+
+const REVEAL_TRANSITION = "transition duration-1000 ease-out motion-reduce:transition-none";
+
+const REVEAL_HIDDEN = {
+    [REVEAL_FROM.UP]: "opacity-0 translate-y-8 motion-reduce:opacity-100 motion-reduce:translate-y-0",
+    [REVEAL_FROM.LEFT]: "opacity-0 -translate-x-24 motion-reduce:opacity-100 motion-reduce:translate-x-0",
+    [REVEAL_FROM.RIGHT]: "opacity-0 translate-x-24 motion-reduce:opacity-100 motion-reduce:translate-x-0",
+    [REVEAL_FROM.POP]: "opacity-0 scale-0 motion-reduce:opacity-100 motion-reduce:scale-100",
+};
+
+const REVEAL_SHOWN = {
+    [REVEAL_FROM.UP]: "opacity-100 translate-y-0",
+    [REVEAL_FROM.LEFT]: "opacity-100 translate-x-0",
+    [REVEAL_FROM.RIGHT]: "opacity-100 translate-x-0",
+    [REVEAL_FROM.POP]: "opacity-100 scale-100",
+};
+
+export function getRevealClasses(from, revealed) {
+    return `${REVEAL_TRANSITION} ${revealed ? REVEAL_SHOWN[from] : REVEAL_HIDDEN[from]}`;
 }
 
 // endregion
@@ -197,17 +230,26 @@ export function getFooterClasses(dark) {
 // region About
 export function getAboutClasses(dark) {
     return {
-        page: `flex flex-1 items-center justify-center px-4 py-12 ${dark ? "text-white" : "text-black"}`,
-        card: "w-full max-w-4xl p-6 md:p-10 flex flex-col gap-6",
-        title: "text-3xl md:text-4xl font-bold tracking-tight text-center",
-        description: "text-base md:text-lg font-semibold leading-relaxed text-center",
-        rolesTitle: "text-xl font-bold text-center",
-        rolesGrid: "grid grid-cols-1 md:grid-cols-2 auto-rows-fr gap-10",
-        roleCell: `flex flex-col justify-center items-center text-center gap-3 p-6 md:p-8 rounded-none ${dark ? "bg-blue-950 shadow-[10px_10px_25px_rgba(0,0,0,0.6)]" : "bg-violet-300 shadow-[5px_10px_25px_rgba(167,139,255,0.6)]"}`,
-        roleIcon: `flex items-center justify-center ${dark ? "text-indigo-300" : "text-indigo-800"}`,
-        roleTitle: "text-lg md:text-xl font-bold",
-        roleSummary: "text-sm md:text-base font-semibold leading-relaxed",
-        footer: "flex flex-col sm:flex-row items-center sm:justify-between gap-4 pt-4",
+        page: `flex flex-1 justify-center px-4 py-16 md:py-24 ${dark ? "text-white" : "text-gray-900"}`,
+        container: "w-full max-w-6xl flex flex-col",
+        hero: "flex flex-col items-center gap-8 text-center",
+        title: "text-5xl md:text-7xl font-bold tracking-tight",
+        description: `max-w-3xl text-lg md:text-2xl font-semibold leading-relaxed ${dark ? "text-slate-300" : "text-gray-600"}`,
+        descriptionReveal: "delay-200",
+        question: "mt-20 md:mt-28 text-3xl md:text-5xl font-bold text-center",
+        questionReveal: "delay-300",
+        timeline: "relative mt-14 md:mt-20",
+        line: `absolute inset-y-0 left-6 md:left-1/2 w-1 -translate-x-1/2 rounded-full ${dark ? "bg-indigo-500/50" : "bg-indigo-300"}`,
+        list: "flex flex-col gap-14 md:gap-8",
+        item: "relative pl-16 md:pl-0 md:grid md:grid-cols-2 md:gap-20",
+        node: `absolute left-6 md:left-1/2 top-8 z-10 -translate-x-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg ring-8 ${dark ? "ring-[#111827]" : "ring-[#ebe9fb]"}`,
+        left: "md:col-start-1",
+        right: "md:col-start-2",
+        card: `rounded-3xl p-8 md:p-10 text-center transition duration-300 hover:-translate-y-1 hover:shadow-2xl motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${dark ? "border border-indigo-500/40 bg-indigo-500/10 shadow-md" : "bg-violet-300/60 shadow-[5px_10px_25px_rgba(167,139,255,0.6)]"}`,
+        number: `block text-5xl md:text-6xl font-black ${dark ? "text-indigo-400/40" : "text-violet-400"}`,
+        roleTitle: `mt-2 text-2xl md:text-3xl font-bold ${dark ? "text-indigo-200" : "text-indigo-950"}`,
+        roleSummary: `mt-4 text-lg md:text-xl font-medium leading-relaxed ${dark ? "text-slate-300" : "text-gray-700"}`,
+        footer: "mt-20 md:mt-28 flex flex-col sm:flex-row items-center sm:justify-between gap-4 pt-4",
         version: `text-xs font-medium px-3 py-1 rounded-full ${dark ? "bg-slate-700 text-white" : "bg-gray-100 text-black"}`,
         backBtn: `${LINK_BTN_BASE} border-2 ${dark ? "bg-blue-900 border-blue-900 text-white hover:bg-blue-800" : "bg-indigo-900 border-indigo-900 text-white hover:bg-indigo-800"}`,
     };
@@ -219,12 +261,14 @@ export function getAboutClasses(dark) {
 export function getMainContainerClasses(dark) {
     return {
         page: `flex flex-1 flex-col items-center text-center ${dark ? "text-white" : "text-gray-900"}`,
-        hero: `w-full flex flex-col items-center gap-6 px-4 py-20 md:py-28 ${getBrandSurface(dark)}`,
-        title: `${FADE_IN_DOWN} text-4xl md:text-6xl font-bold tracking-tight`,
-        subtitle: `${FADE_IN_DOWN} [animation-delay:150ms] max-w-2xl font-semibold text-lg md:text-2xl leading-relaxed ${dark ? "text-slate-300" : "text-gray-600"}`,
-        authActions: `${FADE_IN_DOWN} [animation-delay:300ms] flex flex-wrap justify-center gap-4 pt-4`,
-        learnMore: `${FADE_IN_DOWN} [animation-delay:450ms] flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16`,
-        question: `text-2xl md:text-4xl font-bold ${dark ? "text-slate-100" : "text-gray-800"}`,
+        hero: `w-full flex flex-col items-center gap-8 px-4 pt-20 pb-10 md:pt-28 ${getBrandSurface(dark)}`,
+        title: "max-w-5xl text-5xl md:text-7xl font-bold tracking-tight",
+        subtitle: `max-w-3xl text-lg md:text-2xl font-semibold leading-relaxed ${dark ? "text-slate-300" : "text-gray-600"}`,
+        subtitleReveal: "delay-200",
+        authActions: "delay-300 flex flex-wrap justify-center gap-4",
+        wave: `block h-12 w-full md:h-20 ${getBrandFill(dark)}`,
+        learnMore: "flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 md:py-24",
+        question: `text-3xl md:text-5xl font-bold ${dark ? "text-slate-100" : "text-gray-800"}`,
         primaryBtn: PRIMARY_LINK_BTN,
         secondaryBtn: getSecondaryLinkBtn(dark),
     };

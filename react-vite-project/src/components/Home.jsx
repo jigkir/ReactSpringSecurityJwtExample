@@ -1,16 +1,16 @@
 import {Link, Navigate, useOutletContext} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {getHomeClasses, getMainContainerClasses} from '../styles/AppStyles.jsx';
+import {getHomeClasses} from '../styles/AppStyles.jsx';
 import Button from '../styles/Button.jsx';
 import Icon from '../styles/Icon.jsx';
 import {PREVIEWS_BY_ROLE} from './home/HomePreviews.jsx';
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
+import Landing from "./home/Landing.jsx";
 
 const Home = () => {
     const {dark, user, accountStatus} = useOutletContext();
     const {t} = useTranslation();
     const classes = getHomeClasses(dark);
-    const landing = getMainContainerClasses(dark);
 
     // Token present but user still loading: avoid flashing the landing page
     if (user?.isLoggedIn === undefined && localStorage.getItem("token")) {
@@ -18,26 +18,7 @@ const Home = () => {
     }
 
     // region Not logged in: landing page
-    if (!user?.isLoggedIn) {
-        return (
-            <main className={landing.page}>
-                <section className={landing.hero}>
-                    <h1 className={landing.title}>{t("mainContainer.title")}</h1>
-                    <p className={landing.subtitle}>{t("mainContainer.subtitle")}</p>
-
-                    <div className={landing.authActions}>
-                        <Link to="/login" className={landing.primaryBtn}>{t("navbar.login")}</Link>
-                        <Link to="/signup" className={landing.secondaryBtn}>{t("navbar.signup")}</Link>
-                    </div>
-                </section>
-
-                <section className={landing.learnMore}>
-                    <h2 className={landing.question}>{t("mainContainer.learnMore")}</h2>
-                    <Link to="/about" className={landing.secondaryBtn}>{t("navbar.about")}</Link>
-                </section>
-            </main>
-        );
-    }
+    if (!user?.isLoggedIn) return <Landing dark={dark}/>;
 
     // endregion
 
