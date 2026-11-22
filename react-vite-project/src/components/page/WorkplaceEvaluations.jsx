@@ -1,26 +1,21 @@
 /**
  * Workplace evaluations page: teacher workplace evaluations to fill and sign.
  *
- * <WorkplaceEvaluations />          full page (route /workplace-evaluations)
- * <WorkplaceEvaluations preview />  Home page block: pending/in-progress evaluations, no header
+ * <WorkplaceEvaluations />  full page (route /evaluations)
  *
  * Access control is handled by route guards in App.jsx,
  * and enforced again by the backend.
  */
 
-import { useOutletContext } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import {useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 import WorkplaceEvaluationList from "../WorkplaceEvaluation/WorkplaceEvaluationList.jsx";
-import { getAuthClasses } from "../../styles/AppStyles.jsx";
+import {getAuthClasses} from "../../styles/AppStyles.jsx";
 
-const WorkplaceEvaluations = ({ preview = false }) => {
-    const { dark, user } = useOutletContext();
-    const { t } = useTranslation();
-    const { pageClass } = getAuthClasses(dark);
-
-    if (preview) {
-        return <WorkplaceEvaluationList dark={dark} user={user} preview />;
-    }
+const WorkplaceEvaluations = () => {
+    const {dark, user} = useOutletContext();
+    const {t} = useTranslation();
+    const {pageClass} = getAuthClasses(dark);
 
     return (
         <div className={`${pageClass} items-start`}>
@@ -44,7 +39,7 @@ const WorkplaceEvaluations = ({ preview = false }) => {
                     </div>
                 </div>
 
-                <WorkplaceEvaluationList dark={dark} user={user} />
+                <WorkplaceEvaluationList dark={dark} user={user}/>
             </div>
         </div>
     );

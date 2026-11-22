@@ -2,28 +2,24 @@
  * WorkplaceEvaluationList.jsx — Workplace evaluations for the connected user:
  * list, fill/edit progress, sign when complete.
  *
- * Used by WorkplaceEvaluations.jsx.
- * <WorkplaceEvaluationList />          full page: evaluations for selectedSession,
- *                                      unsigned/incomplete first, then newest first.
- * <WorkplaceEvaluationList preview />  Home page block: unsigned evaluations not yet signed,
- *                                      no header. Leaves this list once signed.
+ * Used by WorkplaceEvaluations.jsx (route /evaluations): evaluations of the session chosen
+ * in the navbar, unsigned/incomplete first, then newest first.
  *
- * Props: dark, user, preview
+ * Props: dark, user
  */
 
-import { useCallback, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import {useCallback, useMemo} from "react";
+import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
-import { getPostInternshipClasses } from "../../styles/AppStyles.jsx";
-import PreviewState from "../home/PreviewState.jsx";
-import { useDevMode } from "../dev/DevMode.jsx";
-import { useLoadedList } from "../../utils/useLoadedList.js";
-import { useSession } from "../../utils/useSession.js";
+import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
+import {useDevMode} from "../dev/DevMode.jsx";
+import {useLoadedList} from "../../utils/useLoadedList.js";
+import {useSession} from "../../utils/useSession.js";
 import {
     createInitialEvaluation,
     validateEvaluation,
 } from "../../utils/WorkplaceEvaluation.js";
-import { fetchWorkplaceEvaluations } from "../api/Api.jsx";
+import {fetchWorkplaceEvaluations} from "../api/Api.jsx";
 import WorkplaceEvaluationCard from "./WorkplaceEvaluationCard.jsx";
 
 const byNewest = (a, b) =>
@@ -32,7 +28,7 @@ const byNewest = (a, b) =>
 
 const isEvaluationComplete = (item) =>
     Object.keys(
-        validateEvaluation(createInitialEvaluation(item), { requireComplete: true })
+        validateEvaluation(createInitialEvaluation(item), {requireComplete: true})
     ).length === 0;
 
 // Unsigned first, then newest first
@@ -41,24 +37,19 @@ const sortEvaluations = (list) =>
         (a, b) => Number(Boolean(a.signedAt)) - Number(Boolean(b.signedAt)) || byNewest(a, b)
     );
 
-const WorkplaceEvaluationList = ({ dark, user, preview = false }) => {
-    const { t } = useTranslation();
-    const { selectedSession } = useSession();
-    const { devMode } = useDevMode();
+const WorkplaceEvaluationList = ({dark, user}) => {
+    const {t} = useTranslation();
+    const {selectedSession} = useSession();
+    const {devMode} = useDevMode();
     const s = getPostInternshipClasses(dark);
 
     const loadEvaluations = useCallback(async () => {
-        if (preview) return fetchWorkplaceEvaluations({ pendingOnly: true });
         return selectedSession ? fetchWorkplaceEvaluations(selectedSession.id) : null;
-    }, [preview, selectedSession]);
+    }, [selectedSession]);
 
-    const { items, setItems, failed, reload } = useLoadedList(loadEvaluations);
+    const {items, setItems, failed, reload} = useLoadedList(loadEvaluations);
 
-    const shown = useMemo(() => {
-        if (!items) return null;
-        const list = preview ? items.filter((item) => !item.signedAt) : items;
-        return sortEvaluations(list);
-    }, [items, preview]);
+    const shown = useMemo(() => (items ? sortEvaluations(items) : null), [items]);
 
     const handleSave = async (id, payload) => {
         // Swap with your PUT/PATCH API call when ready, e.g. saveWorkplaceEvaluation(id, payload)
@@ -74,11 +65,11 @@ const WorkplaceEvaluationList = ({ dark, user, preview = false }) => {
                     : item
             )
         );
-        return { success: true };
+        return {success: true};
     };
 
-    const handleSign = async (id, evaluation, credentials) => {
-        if (!isEvaluationComplete(evaluation)) return { success: false };
+    const handleSign = async (id, evaluation) => {
+        if (!isEvaluationComplete(evaluation)) return {success: false};
 
         // Swap with your sign endpoint when ready, e.g. signWorkplaceEvaluation(id, credentials)
         const signedAt = new Date().toISOString();
@@ -96,7 +87,7 @@ const WorkplaceEvaluationList = ({ dark, user, preview = false }) => {
             )
         );
 
-        return { success: true };
+        return {success: true};
     };
 
     const cards = (shown ?? []).map((evaluation) => (
@@ -106,25 +97,9 @@ const WorkplaceEvaluationList = ({ dark, user, preview = false }) => {
             dark={dark}
             devMode={devMode}
             onSave={(payload) => handleSave(evaluation.id, payload)}
-            onSign={(evalId, currentEval, credentials) =>
-                handleSign(evalId, currentEval, credentials)
-            }
+            onSign={handleSign}
         />
     ));
-
-    if (preview) {
-        return (
-            <PreviewState
-                dark={dark}
-                error={failed && items === null}
-                loading={shown === null}
-                empty={shown?.length === 0}
-                emptyText="workplaceEvaluation.previewEmpty"
-            >
-                {cards}
-            </PreviewState>
-        );
-    }
 
     let body;
     if (failed && items === null) {
