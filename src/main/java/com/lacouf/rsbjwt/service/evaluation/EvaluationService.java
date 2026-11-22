@@ -5,7 +5,9 @@ import com.lacouf.rsbjwt.exception.evaluation.EvaluationIncompleteException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.evaluation.Evaluation;
+import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +19,16 @@ public class EvaluationService {
     private static final String PDF_EXTENSION = ".pdf";
 
     private final UserAppService userAppService;
+    private final NotificationService notificationService;
+
+    private final ManagerRepository managerRepository;
+
     private final Clock clock;
 
-    public EvaluationService(UserAppService userAppService, Clock clock) {
+    public EvaluationService(UserAppService userAppService, NotificationService notificationService, ManagerRepository managerRepository, Clock clock) {
         this.userAppService = userAppService;
+        this.notificationService = notificationService;
+        this.managerRepository = managerRepository;
         this.clock = clock;
     }
 
@@ -41,6 +49,9 @@ public class EvaluationService {
         verifyIfIncomplete(evaluation);
 
         evaluation.sign(LocalDateTime.now(clock));
+
+        notificationService.closeNotificationsOfType(evaluation.getToFillNotification(), evaluation.getId());
+        notifyManagersOfSignature(evaluation);
     }
 
     public DocumentFileResponseDto toFile(Evaluation evaluation, String fileNamePrefix, byte[] content) {
@@ -57,5 +68,10 @@ public class EvaluationService {
         if (!evaluation.isComplete()) {
             throw new EvaluationIncompleteException(evaluation.getId());
         }
+    }
+
+    private void notifyManagersOfSignature(Evaluation evaluation) {
+        managerRepository.findAll()
+                .forEach(manager -> notificationService.notifyIfAbsent(evaluation.getSignedNotification(), evaluation.getId(), manager));
     }
 }

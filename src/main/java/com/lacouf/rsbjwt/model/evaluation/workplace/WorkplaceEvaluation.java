@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.model.evaluation.workplace;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.Evaluation;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -85,6 +86,16 @@ public class WorkplaceEvaluation extends Evaluation {
                 && explainsDisagreements()
                 && answersGeneralObservations()
                 && specifiesShiftsWhenVariable();
+    }
+
+    @Override
+    public NotificationType getToFillNotification() {
+        return NotificationType.WORKPLACE_EVALUATION_TO_FILL;
+    }
+
+    @Override
+    public NotificationType getSignedNotification() {
+        return NotificationType.WORKPLACE_EVALUATION_SIGNED;
     }
 
     private boolean specifiesSupervisionHours() {

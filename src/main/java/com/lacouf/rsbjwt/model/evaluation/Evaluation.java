@@ -1,6 +1,7 @@
 package com.lacouf.rsbjwt.model.evaluation;
 
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +36,10 @@ public abstract class Evaluation {
     }
 
     public abstract boolean isComplete();
+
+    public abstract NotificationType getToFillNotification();
+
+    public abstract NotificationType getSignedNotification();
 
     public boolean isSigned() {
         return signedAt != null;

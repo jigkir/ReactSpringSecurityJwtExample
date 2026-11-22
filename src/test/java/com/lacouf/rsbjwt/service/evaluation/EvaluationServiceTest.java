@@ -3,12 +3,18 @@ package com.lacouf.rsbjwt.service.evaluation;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationAlreadySignedException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationIncompleteException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
+import com.lacouf.rsbjwt.model.auth.Credentials;
+import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceCriterion;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
+import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Teacher;
+import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.notification.NotificationService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,15 +34,21 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class EvaluationServiceTest {
 
+    private EvaluationService evaluationService;
+
     @Mock
     private UserAppService userAppService;
+    @Mock
+    private NotificationService notificationService;
 
-    private EvaluationService evaluationService;
+    @Mock
+    private ManagerRepository managerRepository;
+
 
     @BeforeEach
     void setUp() {
         ZoneId zone = ZoneId.systemDefault();
-        evaluationService = new EvaluationService(userAppService, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
+        evaluationService = new EvaluationService(userAppService, notificationService, managerRepository, Clock.fixed(NOW.atZone(zone).toInstant(), zone));
     }
 
     @Test
@@ -209,6 +221,33 @@ public class EvaluationServiceTest {
         assert file.content() == content;
     }
 
+    @Test
+    void shouldCloseNotificationToFillWhenEvaluationIsSigned() throws Exception {
+        // Arrange
+        WorkplaceEvaluation evaluation = completeWorkplaceEvaluation();
+
+        // Act
+        evaluationService.signWithoutPassword(evaluation);
+
+        // Assert
+        verify(notificationService).closeNotificationsOfType(NotificationType.WORKPLACE_EVALUATION_TO_FILL, EVALUATION_ID);
+    }
+
+    @Test
+    void shouldNotifyManagersWhenEvaluationIsSigned() throws Exception {
+        // Arrange
+        WorkplaceEvaluation evaluation = completeWorkplaceEvaluation();
+        Manager manager = manager();
+
+        when(managerRepository.findAll()).thenReturn(List.of(manager));
+
+        // Act
+        evaluationService.signWithoutPassword(evaluation);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.WORKPLACE_EVALUATION_SIGNED, EVALUATION_ID, manager);
+    }
+
     // ---------- Helpers ----------
 
     private static WorkplaceEvaluation signedWorkplaceEvaluation() {
@@ -220,5 +259,11 @@ public class EvaluationServiceTest {
 
     private static Map<WorkplaceCriterion, AgreementLevel> allWorkplaceCriteriaTotallyAgree() {
         return ratingsOf(WorkplaceCriterion.class, AgreementLevel.TOTALLY_AGREE);
+    }
+
+    private static Manager manager() {
+        Credentials credentials = Credentials.builder().email("gestion.stages@claurendeau.qc.ca").role(Role.MANAGER).build();
+
+        return new Manager("John", "Doe", credentials, "450-555-0000");
     }
 }

@@ -15,6 +15,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.document.student.cv.TranslatedContent;
+import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.notification.NotificationType;
@@ -267,12 +268,23 @@ public class ManagerService {
 
         tracking.assignTeacher(teacher);
 
+        notifyTeacherOfEvaluationToFill(tracking.getWorkplaceEvaluation(), teacher);
+
         return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
     }
 
     private InternshipTracking findTracking(long trackingId) throws InternshipTrackingNotFoundException {
         return internshipTrackingRepository.findById(trackingId)
                 .orElseThrow(() -> new InternshipTrackingNotFoundException(trackingId));
+    }
+
+    private void notifyTeacherOfEvaluationToFill(WorkplaceEvaluation evaluation, Teacher teacher) {
+        if (evaluation.isSigned()) {
+            return;
+        }
+
+        notificationService.closeNotificationsOfType(evaluation.getToFillNotification(), evaluation.getId());
+        notificationService.notifyIfAbsent(evaluation.getToFillNotification(), evaluation.getId(), teacher);
     }
 
     private Internship findInternship(long internshipId) throws InternshipNotFoundException {

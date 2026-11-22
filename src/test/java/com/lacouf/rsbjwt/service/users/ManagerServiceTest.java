@@ -16,6 +16,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
+import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
@@ -63,6 +64,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ManagerServiceTest {
+    private static final long WORKPLACE_EVALUATION_ID = 40L;
 
     private ManagerService managerService;
 
@@ -992,6 +994,43 @@ public class ManagerServiceTest {
     }
 
     @Test
+    void shouldNotifyTeacherOfWorkplaceEvaluationToFillWhenTeacherIsAssigned() throws Exception {
+        // Arrange
+        InternshipTracking tracking = tracking();
+        Teacher teacher = teacher(5L, Discipline.COMPUTER_SCIENCE);
+
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking));
+        when(teacherRepository.findById(5L)).thenReturn(Optional.of(teacher));
+        when(internshipTrackingRepository.save(tracking)).thenReturn(tracking);
+
+        // Act
+        managerService.assignTeacher(1L, 5L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.WORKPLACE_EVALUATION_TO_FILL, WORKPLACE_EVALUATION_ID, teacher);
+    }
+
+    @Test
+    void shouldNotNotifyTeacherWhenWorkplaceEvaluationIsAlreadySigned() throws Exception {
+        // Arrange
+        InternshipTracking tracking = tracking();
+        WorkplaceEvaluation workplaceEvaluation = tracking.getWorkplaceEvaluation();
+        Teacher teacher = teacher(5L, Discipline.COMPUTER_SCIENCE);
+
+        workplaceEvaluation.sign(LocalDateTime.of(2027, 5, 3, 10, 0));
+
+        when(internshipTrackingRepository.findById(1L)).thenReturn(Optional.of(tracking));
+        when(teacherRepository.findById(5L)).thenReturn(Optional.of(teacher));
+        when(internshipTrackingRepository.save(tracking)).thenReturn(tracking);
+
+        // Act
+        managerService.assignTeacher(1L, 5L);
+
+        // Assert
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldThrowInternshipTrackingNotFoundWhenAssigningTeacherToUnknownTracking() {
         // Arrange
         when(internshipTrackingRepository.findById(99L)).thenReturn(Optional.empty());
@@ -1044,6 +1083,9 @@ public class ManagerServiceTest {
 
         InternshipTracking tracking = new InternshipTracking(new Contract(application, LocalDateTime.of(2026, 11, 10, 14, 30)));
         tracking.setId(1L);
+
+        WorkplaceEvaluation workplaceEvaluation = tracking.getWorkplaceEvaluation();
+        workplaceEvaluation.setId(WORKPLACE_EVALUATION_ID);
 
         return tracking;
     }
