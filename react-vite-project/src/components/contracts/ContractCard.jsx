@@ -15,6 +15,7 @@
  *   dark          boolean
  *   devMode       boolean   Dev mode: signing needs no password
  *   contractRole  {signedAtField, basePath}  see utils/ContractRole.js (default: manager)
+ *   filterColor   ALL | YELLOW | GREEN  selected status filter: the card gets a border of that color
  *   onSign        function  async (contract, {termsAccepted, password}) => {success, message?}
  */
 
@@ -25,6 +26,7 @@ import Button from '../../styles/Button.jsx';
 import Icon from '../../styles/Icon.jsx';
 import {getCvDocumentsClasses, getInternshipCardClasses} from '../../styles/AppStyles.jsx';
 import {CONTRACT_ROLES} from '../../utils/ContractRole.js';
+import {ALL, borderStatusOf} from '../../utils/StatusColor.js';
 import SignContractForm from './SignContractForm.jsx';
 
 const COMMITMENT_PARTIES = ["college", "employer", "student"];
@@ -76,9 +78,13 @@ function CommitmentList({dark, party}) {
     );
 }
 
-function ContractCard({contract, dark, devMode = false, onSign, contractRole = CONTRACT_ROLES.MANAGER}) {
+function ContractCard({
+                          contract, dark, devMode = false, onSign,
+                          contractRole = CONTRACT_ROLES.MANAGER, filterColor = ALL
+                      }) {
     const {t, i18n} = useTranslation();
-    const s = getInternshipCardClasses(dark);
+    // While a status color is selected, the card gets a full border of that color
+    const s = getInternshipCardClasses(dark, borderStatusOf(filterColor));
     const th = getCvDocumentsClasses(dark);
     const bodyText = getBodyText(dark);
 

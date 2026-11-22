@@ -136,6 +136,7 @@ function Interviews() {
             dark={dark}
             locale={locale}
             hash={hash}
+            filterColor={statusFilter}
             busy={busyId === interview.id}
             rejecting={rejectingId === interview.id}
             rejectComment={rejectComment}

@@ -9,7 +9,7 @@ import InterviewPicker from "./InterviewPicker.jsx";
 import Button from "../../../../styles/Button.jsx";
 import InterviewStatusPill from "../../../interview/InterviewStatusPill.jsx";
 import {StatusColorSelect, useColorParam} from "../../../../utils/Sort.jsx";
-import {matchesColor} from "../../../../utils/StatusColor.js";
+import {ALL, borderStatusOf, matchesColor} from "../../../../utils/StatusColor.js";
 import {
     getInterviewColor,
     getInterviewStatus,
@@ -39,11 +39,14 @@ function EmployerInterviews({user}) {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
     const s = getPostInternshipClasses(dark);
-    const cardS = getInternshipCardClasses(dark);
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const initialStatus = useColorParam("status");
     const [status, setStatus] = useState(initialStatus);
+    // While a color is selected, every card gets a full border of that color
+    const filtered = status !== ALL;
+    const cardS = getInternshipCardClasses(dark, borderStatusOf(status));
+
     const [interviews, setInterviews] = useState(null); // null = loading
     const [loadFailed, setLoadFailed] = useState(false);
     const [editingId, setEditingId] = useState(null);   // interview whose picker is open
@@ -97,10 +100,11 @@ function EmployerInterviews({user}) {
         const interviewStatus = getInterviewStatus(interview);
         const isOpen = editingId === interview.id;
         const canEdit = interviewStatus !== INTERVIEW_STATUS.CANCELLED && interviewStatus !== INTERVIEW_STATUS.PAST;
+        const accent = filtered ? "" : `border-l-4 ${INTERVIEW_STATUS_ACCENT[interviewStatus]}`;
 
         return (
             <article key={interview.id}
-                     className={`${cardS.card} border-l-4 ${INTERVIEW_STATUS_ACCENT[interviewStatus]}`}>
+                     className={`${cardS.card} ${accent}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                         <h2 className={`${cardS.title} wrap-break-word`}>{interview.internshipTitle}</h2>

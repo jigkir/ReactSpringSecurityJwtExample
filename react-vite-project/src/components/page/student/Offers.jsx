@@ -7,7 +7,7 @@ import {acceptOffer, denyOffer, getStudentOffers} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 import {translateWarning} from "../../../utils/CommonFields.jsx";
 import {StatusColorSelect, useColorParam} from "../../../utils/Sort.jsx";
-import {colorOf, matchesColor} from "../../../utils/StatusColor.js";
+import {ALL, borderStatusOf, colorOf, matchesColor} from "../../../utils/StatusColor.js";
 import Button from "../../../styles/Button.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
 
@@ -28,6 +28,13 @@ const CONSENT_CLASSES = {
     },
 };
 
+// Left accent of each offer while no status color is selected
+const CONSENT_ACCENT = {
+    PENDING: "border-l-yellow-500",
+    ACCEPTED: "border-l-green-500",
+    REJECTED: "border-l-red-500",
+};
+
 // Newest offer (highest application id) first
 const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
 
@@ -43,10 +50,13 @@ function Offers() {
     const {refresh: refreshNotifications} = useNotifications();
     const {hash} = useLocation();
     const s = getPostInternshipClasses(dark);
-    const cardS = getInternshipCardClasses(dark);
 
     const initialStatus = useColorParam("status");
     const [status, setStatus] = useState(initialStatus);
+    // While a color is selected, every card gets a full border of that color
+    const filtered = status !== ALL;
+    const cardS = getInternshipCardClasses(dark, borderStatusOf(status));
+
     const [offers, setOffers] = useState(null); // null = loading
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
@@ -102,13 +112,14 @@ function Offers() {
         const consent = consentOf(offer);
         const highlighted = hash === `#offer-${offer.id}`;
         const busy = busyId === offer.id;
+        const accent = filtered ? "" : `border-l-4 ${CONSENT_ACCENT[consent]}`;
 
         return (
             <article
                 key={offer.id}
                 id={`offer-${offer.id}`}
                 aria-busy={busy}
-                className={`${cardS.card} scroll-mt-20 border-l-4 border-l-emerald-500 ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
+                className={`${cardS.card} scroll-mt-20 ${accent} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
             >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">

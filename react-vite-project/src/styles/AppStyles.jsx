@@ -455,11 +455,17 @@ export function getCvUploadClasses(dark, isDragging) {
 // endregion
 
 // region ApplicationCard
-export function getApplicationCardClasses(dark) {
+export function getApplicationCardClasses(dark, status = null) {
+    const statusBorder = getStatusBorder(status, dark);
+    const cardBorder = statusBorder
+        ? `border-2 ${statusBorder}`
+        : `border ${dark ? "border-slate-700" : "border-gray-200"}`;
+
     return {
         card: [
-            "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border transition-shadow gap-4 mb-3 shadow-sm",
-            dark ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200 text-gray-900",
+            "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl transition-shadow gap-4 mb-3 shadow-sm",
+            cardBorder,
+            dark ? "bg-slate-800 text-white" : "bg-white text-gray-900",
         ].join(" "),
         title: `text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`,
         description: `text-sm mt-0.5 ${dark ? "text-slate-400" : "text-gray-500"}`,

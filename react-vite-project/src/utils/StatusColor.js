@@ -37,6 +37,21 @@ export const matchesColor = (itemColor, selected = ALL) => selected === ALL || i
 
 export const isColorValue = (value) => COLOR_VALUES.includes(value);
 
+// ─── Card border from the filter color ────────────────────────────────────────
+
+// Status understood by getInternshipCardClasses / getStatusBorder for each filter color
+const BORDER_STATUS_BY_COLOR = {
+    [COLOR.RED]: "REJECTED",
+    [COLOR.YELLOW]: "PENDING",
+    [COLOR.GREEN]: "APPROVED",
+};
+
+/**
+ * Status to pass to getInternshipCardClasses(dark, status) / getStatusBorder so a card gets the
+ * border of the selected filter color. ALL (or anything else) returns null: no colored border.
+ */
+export const borderStatusOf = (selectedColor) => BORDER_STATUS_BY_COLOR[selectedColor] ?? null;
+
 // ─── Wording of the colors, per page ──────────────────────────────────────────
 
 const ALL_STATUSES = "internshipFilters.allStatuses";
@@ -97,6 +112,19 @@ export const STATUS_LABEL_KEYS = {
     employerInterviews: interviewKeys("employerInterviews", ALL_STATUSES),
     managerCv: managerKeys("managerStatus"),
     managerInternships: managerKeys("internshipFilters"),
+    // Accounts and tracking cards already show the managerStatus pills (approved / pending / rejected)
+    managerUsers: managerKeys("managerStatus"),
+    managerTracking: {
+        [ALL]: ALL_STATUSES,
+        [COLOR.YELLOW]: "managerStatus.pending",
+        [COLOR.GREEN]: "managerStatus.approved",
+    },
+    // Teacher evaluations: signed or not yet (no red)
+    teacherEvaluations: {
+        [ALL]: ALL_STATUSES,
+        [COLOR.YELLOW]: "workplaceEvaluation.card.notSignedYet",
+        [COLOR.GREEN]: "workplaceEvaluation.status.signed",
+    },
 };
 
 /** Translation key of a color on a page, or undefined (the color name is shown instead). */

@@ -4,6 +4,7 @@ import Icon from "../../../styles/Icon.jsx";
 import Button from "../../../styles/Button.jsx";
 import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
 import InterviewStatusPill from "../../interview/InterviewStatusPill.jsx";
+import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
 import {
     getInterviewStatus,
     getInterviewTime,
@@ -25,6 +26,7 @@ export default function InterviewCard({
                                           dark,
                                           locale,
                                           hash,
+                                          filterColor = ALL,
                                           busy,
                                           rejecting,
                                           rejectComment,
@@ -35,7 +37,9 @@ export default function InterviewCard({
                                           onCloseForm
                                       }) {
     const {t} = useTranslation();
-    const cardS = getInternshipCardClasses(dark);
+    // While a status color is selected, the card gets a full border of that color
+    const filtered = filterColor !== ALL;
+    const cardS = getInternshipCardClasses(dark, borderStatusOf(filterColor));
 
     const time = getInterviewTime(interview);
     const status = getInterviewStatus(interview);
@@ -51,6 +55,7 @@ export default function InterviewCard({
     const highlighted = hash === `#interview-${interview.id}`;
     const muted = dark ? "text-white" : "text-slate-500";
     const sectionBorder = dark ? "border-slate-700" : "border-slate-200";
+    const accent = filtered ? "" : `border-l-4 ${INTERVIEW_STATUS_ACCENT[status]}`;
     const textareaClass = `w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         dark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "bg-white border-gray-300 text-gray-900"
     }`;
@@ -58,7 +63,7 @@ export default function InterviewCard({
     return (
         <article
             id={`interview-${interview.id}`}
-            className={`${cardS.card} scroll-mt-20 border-l-4 ${INTERVIEW_STATUS_ACCENT[status]} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
+            className={`${cardS.card} scroll-mt-20 ${accent} ${dark ? "bg-slate-800" : "bg-white"} ${highlighted ? "ring-2 ring-indigo-500" : ""}`}
         >
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">

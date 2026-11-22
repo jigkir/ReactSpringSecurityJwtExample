@@ -7,6 +7,7 @@
  *
  * Status filter (StatusColorSelect, initial value from `?status=`): contracts only have
  * ALL | YELLOW | GREEN — GREEN = signed by the connected user, YELLOW = not signed yet. No red.
+ * While a color is selected, every contract card gets a border of that color.
  *
  * The role (manager / employer / student) only changes which signature field is read
  * (managerSignedAt / employerSignedAt / studentSignedAt) and the base route of the contract page:
@@ -124,6 +125,7 @@ const ContractReviewList = ({dark, user}) => {
             dark={dark}
             devMode={devMode}
             contractRole={contractRole}
+            filterColor={status}
             onSign={handleSign}
         />
     ));

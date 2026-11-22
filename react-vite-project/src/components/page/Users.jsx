@@ -1,9 +1,14 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
-import { getUsers, reactivateUser, denyUser } from "../api/Api.jsx";
+import {useEffect, useState, useMemo, useCallback} from "react";
+import {useTranslation} from "react-i18next";
+import {getUsers, reactivateUser, denyUser} from "../api/Api.jsx";
 import UserCard from "./UserCard.jsx";
-import { useOutletContext } from "react-router-dom";
-import { usePolling } from "../../utils/usePolling.js";
-import { getPostInternshipClasses } from "../../styles/AppStyles.jsx";
+import {useOutletContext} from "react-router-dom";
+import {usePolling} from "../../utils/usePolling.js";
+import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
+import {StatusColorSelect, useColorParam} from "../../utils/Sort.jsx";
+import {colorOf, matchesColor} from "../../utils/StatusColor.js";
+
+const normalizeStatus = (status) => String(status ?? "").toUpperCase();
 
 const getStatusPriority = (status) => {
     const val = (status || "").toLowerCase();
@@ -13,10 +18,13 @@ const getStatusPriority = (status) => {
     return 4;
 };
 
-function Users({ user }) {
+function Users({user}) {
+    const {t} = useTranslation();
     const [users, setUsers] = useState([]);
+    // Initial filter comes from the Home buttons (?status=GREEN|YELLOW|RED)
+    const [status, setStatus] = useState(useColorParam("status"));
     const isLoggedIn = Boolean(user?.isLoggedIn);
-    const { dark } = useOutletContext();
+    const {dark} = useOutletContext();
     const s = getPostInternshipClasses(dark);
 
     const load = useCallback(async () => {
@@ -38,7 +46,7 @@ function Users({ user }) {
     const handleReactivate = async (studentId) => {
         // Optimistic UI update
         setUsers((prev) =>
-            prev.map((u) => (u.studentId === studentId || u.id === studentId ? { ...u, status: "APPROVED" } : u))
+            prev.map((u) => (u.studentId === studentId || u.id === studentId ? {...u, status: "APPROVED"} : u))
         );
         try {
             await reactivateUser(studentId);
@@ -51,7 +59,7 @@ function Users({ user }) {
     const handleDeny = async (studentId) => {
         // Optimistic UI update
         setUsers((prev) =>
-            prev.map((u) => (u.studentId === studentId || u.id === studentId ? { ...u, status: "REJECTED" } : u))
+            prev.map((u) => (u.studentId === studentId || u.id === studentId ? {...u, status: "REJECTED"} : u))
         );
         try {
             await denyUser(studentId);
@@ -62,14 +70,23 @@ function Users({ user }) {
     };
 
     const sortedUsers = useMemo(() => {
-        return [...users].sort((a, b) => {
-            return getStatusPriority(a.status) - getStatusPriority(b.status);
-        });
-    }, [users]);
+        return [...users]
+            .filter((u) => matchesColor(colorOf(normalizeStatus(u.status)), status))
+            .sort((a, b) => getStatusPriority(a.status) - getStatusPriority(b.status));
+    }, [users, status]);
 
     return (
         <div className={s.page}>
             <div className={`${s.listSection} space-y-3`}>
+                <div className="flex justify-start">
+                    <StatusColorSelect
+                        dark={dark}
+                        page="managerUsers"
+                        value={status}
+                        onChange={setStatus}
+                        ariaLabel={t("internshipFilters.allStatuses")}
+                    />
+                </div>
                 {sortedUsers.map((u) => (
                     <UserCard
                         key={u.id}

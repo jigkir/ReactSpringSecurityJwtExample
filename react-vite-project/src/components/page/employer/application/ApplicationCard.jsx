@@ -16,6 +16,7 @@ import {
 } from "../../../api/Api.jsx";
 import {blobUrlFromFile} from "../../../../utils/Documents.js";
 import {useToggleSet} from "../../../../utils/useToggleSet.js";
+import {ALL, borderStatusOf} from "../../../../utils/StatusColor.js";
 
 const COVER_LETTER = "COVER_LETTER";
 const TRANSCRIPT = "TRANSCRIPT";
@@ -42,13 +43,15 @@ function ApplicationCard({
                              onSelect,
                              selectionMode = false,
                              hiring = false,
-                             showCvFileName = true
+                             showCvFileName = true,
+                             filterColor = ALL
                          }) {
-    const s = getApplicationCardClasses(dark);
+    const s = getApplicationCardClasses(dark, borderStatusOf(filterColor));
     const th = getCvDocumentsClasses(dark);
     const bigPill = "text-sm! px-3.5! py-1.5! gap-2!";
     const {t} = useTranslation();
     const {student, cvFileName} = application;
+
     const isHired = application.employerDecision === "INTERNSHIP_OFFERED";
     const isRejected = application.employerDecision === "REJECTED";
     const canHire = !isHired && !isRejected;
@@ -110,10 +113,13 @@ function ApplicationCard({
         try {
             if (interview !== null) {
                 await cancelInterview(interview.id);
-                setInterview(interviews.filter(i => i.interviewStatus !== "CANCELLED").at(-1) ?? null);
+                const interviews = await getEmployerInterviewsByApplicationId(application.id);
+                setInterview(
+                    (Array.isArray(interviews) ? interviews : [])
+                        .filter(i => i.interviewStatus !== "CANCELLED").at(-1) ?? null);
             }
             return {success: true};
-        }catch (err) {
+        } catch (err) {
             return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}};
         }
     }

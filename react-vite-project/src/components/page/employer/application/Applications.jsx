@@ -6,6 +6,7 @@
  * - A dropdown lets the employer pick which internship to look at ("All internships" by default).
  * - A status color filter (ALL | RED | YELLOW | GREEN) on the employer decision
  *   (PENDING = YELLOW, ACCEPTED / INTERNSHIP_OFFERED = GREEN, REJECTED = RED); initial value from `?status=`.
+ *   While a color is selected, every application card gets a border of that color.
  * - Search by student / email / CV name.
  * - "New" badge: frozen while the employer is on the page (previewing a CV does not remove it).
  *   It is removed when the interview invitation is sent, and when the page is left
@@ -204,6 +205,7 @@ function Applications({user}) {
                         application={application}
                         isNew={isNewApp(application)}
                         dark={dark}
+                        filterColor={status}
                         isPreviewOpen={openPreviewIds.includes(application.id)}
                         onTogglePreview={() => togglePreview(application.id)}
                         getUrl={getUrl}

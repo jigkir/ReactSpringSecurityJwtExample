@@ -220,7 +220,7 @@ describe('Applications page filters', () => {
     it('shouldShowOnlyTheChosenInternshipWhenSelectedInTheDropdown', async () => {
         // Arrange
         await renderLoaded();
-        const select = await screen.findByRole('combobox');
+        const select = await screen.findByLabelText('applicationsPage.internshipAria');
 
         // Act
         fireEvent.change(select, {target: {value: '20'}});
@@ -234,7 +234,7 @@ describe('Applications page filters', () => {
     it('shouldShowAllInternshipsAgainWhenAllIsSelected', async () => {
         // Arrange
         await renderLoaded();
-        const select = await screen.findByRole('combobox');
+        const select = await screen.findByLabelText('applicationsPage.internshipAria');
         fireEvent.change(select, {target: {value: '20'}});
 
         // Act

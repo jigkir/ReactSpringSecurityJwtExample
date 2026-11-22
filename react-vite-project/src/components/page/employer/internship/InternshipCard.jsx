@@ -44,10 +44,13 @@ function InternshipCard({
                             application = null,
                             applicationCount,
                             showStatusBorder = false,
+                            borderStatus = null,
                             audience = "employer"
                         }) {
     const {t} = useTranslation();
-    const s = getInternshipCardClasses(dark, !hideStatus && showStatusBorder ? internship.status : null);
+    const s = getInternshipCardClasses(
+        dark,
+        borderStatus ?? (!hideStatus && showStatusBorder ? internship.status : null));
     const keyMap = audience === "manager" ? MANAGER_STATUS_KEY_MAP : STATUS_KEY_MAP;
 
     const statusLabel = keyMap[internship.status]

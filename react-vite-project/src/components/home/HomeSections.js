@@ -27,17 +27,20 @@ import {
 } from "../../utils/interviewStatus.js";
 import {getContractRole} from "../../utils/ContractRole.js";
 import {
+    fetchWorkplaceEvaluations,
     getApplications,
     getContracts,
     getDocuments,
     getEmployerInternships,
     getEmployerInterviews,
+    getInternshipTrackings,
     getManagerInternships,
     getPublicCvs,
     getStudentAppliedInternships,
     getStudentInternships,
     getStudentInterviews,
     getStudentOffers,
+    getUsers,
 } from "../api/Api.jsx";
 
 const STATUS_COLORS = [COLOR.GREEN, COLOR.YELLOW, COLOR.RED];
@@ -166,6 +169,37 @@ export const SECTIONS_BY_ROLE = {
             colors: CONTRACT_COLORS,
             load: loadContracts,
         },
+        {
+            // Accounts: APPROVED / PENDING / REJECTED (the backend may send any case)
+            to: "/users",
+            page: "managerUsers",
+            titleKey: "navbar.users",
+            param: "status",
+            colors: STATUS_COLORS,
+            load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
+        },
+        {
+            // Internship tracking: teacher assigned (GREEN) or still to assign (YELLOW)
+            to: "/tracking",
+            page: "managerTracking",
+            titleKey: "navbar.tracking",
+            param: "status",
+            colors: CONTRACT_COLORS,
+            load: async () => asList(await getInternshipTrackings())
+                .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
+        },
     ],
-    TEACHER: [],
+    TEACHER: [
+        {
+            // Workplace evaluations: signed (GREEN) or still to complete / sign (YELLOW)
+            to: "/evaluations",
+            page: "teacherEvaluations",
+            titleKey: "workplaceEvaluation.title",
+            param: "status",
+            scoped: true,
+            colors: CONTRACT_COLORS,
+            load: async ({sessionId}) => asList(await fetchWorkplaceEvaluations(sessionId))
+                .map((evaluation) => (evaluation.signedAt ? COLOR.GREEN : COLOR.YELLOW)),
+        },
+    ],
 };

@@ -15,6 +15,7 @@ import {
 import {usePolling} from "../../../utils/usePolling.js";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../utils/useSession.js";
+import {borderStatusOf} from "../../../utils/StatusColor.js";
 import Icon from "../../../styles/Icon.jsx";
 
 const ACCEPTED_OFFER = "ACCEPTED";
@@ -39,6 +40,7 @@ function StudentInternships() {
     const filters = useInternshipFilters(internships, appliedIds);
     const visible = filters.visible ?? [];
     const lang = i18n.resolvedLanguage ?? i18n.language;
+    const appliedBorder = borderStatusOf(filters.applied);
 
     const shownInternshipIds = useMemo(
         () => (loading ? null : internships.map((internship) => internship.id)),
@@ -150,6 +152,7 @@ function StudentInternships() {
             showEmployer
             hideStatus
             showPreview
+            borderStatus={appliedBorder}
             viewed={internship.viewed}
             application={application}
             bottomFooter={cvs !== null && (<ApplyControls

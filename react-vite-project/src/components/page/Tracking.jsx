@@ -4,10 +4,16 @@ import {getInternshipTrackings, getAssignableTeachers, assignTeacher} from "../a
 import {usePolling} from "../../utils/usePolling.js";
 import {useOutletContext} from "react-router-dom";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
+import {COLOR, matchesColor} from "../../utils/StatusColor.js";
+import {StatusColorSelect, useColorParam} from "../../utils/Sort.jsx";
 import UserCard from "./UserCard.jsx";
 import Button from "../../styles/Button.jsx";
 
 const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
+
+// Teacher assigned = GREEN, still to assign = YELLOW (no red)
+const TRACKING_COLORS = ["ALL", COLOR.YELLOW, COLOR.GREEN];
+const trackingColor = (internship) => (internship.teacher ? COLOR.GREEN : COLOR.YELLOW);
 
 function Tracking() {
     const {t} = useTranslation();
@@ -16,6 +22,8 @@ function Tracking() {
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(true);
+    // Initial filter comes from the Home buttons (?status=GREEN|YELLOW)
+    const [status, setStatus] = useState(useColorParam("status", TRACKING_COLORS));
 
     // Store teachers per trackingId: { [trackingId]: TeacherAssignmentDto[] }
     const [teachersByTracking, setTeachersByTracking] = useState({});
@@ -150,6 +158,8 @@ function Tracking() {
         );
     };
 
+    const visible = internships.filter((internship) => matchesColor(trackingColor(internship), status));
+
     let body;
     if (loading) {
         body = <p className={s.loadingText}>{t("tracking.loading")}</p>;
@@ -158,12 +168,22 @@ function Tracking() {
     } else if (internships.length === 0) {
         body = <p className={s.errorText}>{t("tracking.empty")}</p>;
     } else {
-        body = sortOffers(internships).map(renderCard);
+        body = sortOffers(visible).map(renderCard);
     }
 
     return (
         <div className={s.page}>
             <div className={s.listSection}>
+                <div className="flex justify-start mb-3">
+                    <StatusColorSelect
+                        dark={dark}
+                        page="managerTracking"
+                        colors={TRACKING_COLORS}
+                        value={status}
+                        onChange={setStatus}
+                        ariaLabel={t("internshipFilters.allStatuses")}
+                    />
+                </div>
                 <div className={s.scrollArea}>{body}</div>
             </div>
         </div>
