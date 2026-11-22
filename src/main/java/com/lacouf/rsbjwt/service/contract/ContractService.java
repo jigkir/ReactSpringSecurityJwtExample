@@ -9,6 +9,7 @@ import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
+import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
@@ -125,6 +126,10 @@ public class ContractService {
                 .forEach(manager -> notificationService.notifyIfAbsent(ContractParty.MANAGER.getContractToSignNotification(), contract.getId(), manager));
     }
 
+    private void notifyEmployerOfEvaluationToFill(InternEvaluation evaluation, InternshipTracking tracking) {
+        notificationService.notifyIfAbsent(evaluation.getToFillNotification(), evaluation.getId(), tracking.getEmployer());
+    }
+
     private void checkIfContractCanBeCreated(InternshipApplication application) throws ContractAlreadyExistsException, StudentAlreadyEmployedException, ApplicationRejectedException, ApplicationNotOfferedException {
         if (contractRepository.existsByStudentAndInternship(application.getStudent(), application.getInternship())) {
             throw new ContractAlreadyExistsException(application.getId());
@@ -154,7 +159,9 @@ public class ContractService {
         notificationService.closeNotificationsOfType(party.getContractToSignNotification(), contractId);
 
         if (contract.isFullySigned()) {
-            internshipTrackingRepository.save(new InternshipTracking(contract));
+            InternshipTracking tracking = internshipTrackingRepository.save(new InternshipTracking(contract));
+
+            notifyEmployerOfEvaluationToFill(tracking.getInternEvaluation(), tracking);
         }
 
         return ContractResponseDto.of(contractRepository.save(contract));

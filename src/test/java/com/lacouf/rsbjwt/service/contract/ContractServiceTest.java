@@ -13,6 +13,7 @@ import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
+import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.internship.WorkMode;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
@@ -50,6 +51,7 @@ import static org.mockito.Mockito.*;
 public class ContractServiceTest {
 
     private static final long APPLICATION_ID = 20L;
+    private static final long INTERN_EVALUATION_ID = 41L;
 
     private static final String STUDENT_EMAIL = "student@example.com";
     private static final String EMPLOYER_EMAIL = "email@example.com";
@@ -480,6 +482,7 @@ public class ContractServiceTest {
         when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
         when(contractRepository.save(contract)).thenReturn(contract);
+        when(internshipTrackingRepository.save(any(InternshipTracking.class))).thenAnswer(invocation -> withInternEvaluationId(invocation.getArgument(0)));
 
         // Act
         contractService.devSignContract(MANAGER_EMAIL, 30L);
@@ -494,6 +497,27 @@ public class ContractServiceTest {
         assert !savedTracking.hasTeacher();
         assert savedTracking.getWorkplaceEvaluation().getTracking() == savedTracking;
         assert !savedTracking.getWorkplaceEvaluation().isSigned();
+        assert savedTracking.getInternEvaluation().getTracking() == savedTracking;
+        assert !savedTracking.getInternEvaluation().isSigned();
+    }
+
+    @Test
+    void shouldNotifyEmployerOfInternEvaluationToFillWhenLastPartySignsContract() throws Exception {
+        // Arrange
+        Contract contract = contract();
+        contract.sign(ContractParty.STUDENT, student, NOW.minusDays(2));
+        contract.sign(ContractParty.EMPLOYER, employer, NOW.minusDays(1));
+
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+        when(contractRepository.save(contract)).thenReturn(contract);
+        when(internshipTrackingRepository.save(any(InternshipTracking.class))).thenAnswer(invocation -> withInternEvaluationId(invocation.getArgument(0)));
+
+        // Act
+        contractService.devSignContract(MANAGER_EMAIL, 30L);
+
+        // Assert
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERN_EVALUATION_TO_FILL, INTERN_EVALUATION_ID, employer);
     }
 
     @Test
@@ -583,5 +607,12 @@ public class ContractServiceTest {
 
     private void givenUserWithEmail(UserApp user) throws UserNotFoundException {
         when(userAppService.findUserByEmail(user.getEmail())).thenReturn(user);
+    }
+
+    private static InternshipTracking withInternEvaluationId(InternshipTracking tracking) {
+        InternEvaluation internEvaluation = tracking.getInternEvaluation();
+        internEvaluation.setId(INTERN_EVALUATION_ID);
+
+        return tracking;
     }
 }

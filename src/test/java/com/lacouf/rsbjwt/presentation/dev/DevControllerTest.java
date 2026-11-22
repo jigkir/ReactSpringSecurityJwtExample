@@ -6,11 +6,13 @@ import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
+import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.service.contract.ContractService;
 import com.lacouf.rsbjwt.service.dto.response.auth.JWTAuthResponse;
 import com.lacouf.rsbjwt.service.dto.response.contract.ContractResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
+import com.lacouf.rsbjwt.service.evaluation.intern.InternEvaluationService;
 import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import com.lacouf.rsbjwt.service.users.UserAppService;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,8 @@ public class DevControllerTest {
     private ContractService contractService;
     @MockitoBean
     private WorkplaceEvaluationService workplaceEvaluationService;
+    @MockitoBean
+    private InternEvaluationService internEvaluationService;
 
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
@@ -151,5 +155,21 @@ public class DevControllerTest {
                 .andExpect(jsonPath("$.signedAt").value("2026-11-20T14:30:00"));
 
         verify(workplaceEvaluationService).devSignEvaluation(TEACHER_EMAIL, EVALUATION_ID);
+    }
+
+    @Test
+    void shouldSignInternEvaluationWithoutPassword() throws Exception {
+        // Arrange
+        InternEvaluation evaluation = completeInternEvaluation();
+        evaluation.sign(NOW);
+
+        when(internEvaluationService.devSignEvaluation(EMPLOYER_EMAIL, EVALUATION_ID)).thenReturn(internResponse(evaluation));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/dev/intern-evaluations/40/signature").param("email", EMPLOYER_EMAIL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.signedAt").value("2026-11-20T14:30:00"));
+
+        verify(internEvaluationService).devSignEvaluation(EMPLOYER_EMAIL, EVALUATION_ID);
     }
 }

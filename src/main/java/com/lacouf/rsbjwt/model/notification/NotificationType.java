@@ -25,7 +25,9 @@ public enum NotificationType {
     CONTRACT_TO_SIGN_BY_STUDENT(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE),
 
     WORKPLACE_EVALUATION_TO_FILL(TargetType.WORKPLACE_EVALUATION, EvaluationTitles.TO_FILL, "A workplace evaluation is waiting for you."),
-    WORKPLACE_EVALUATION_SIGNED(TargetType.WORKPLACE_EVALUATION, EvaluationTitles.COMPLETED, "A teacher has completed a workplace evaluation.");
+    WORKPLACE_EVALUATION_SIGNED(TargetType.WORKPLACE_EVALUATION, EvaluationTitles.COMPLETED, "A teacher has completed a workplace evaluation."),
+    INTERN_EVALUATION_TO_FILL(TargetType.INTERN_EVALUATION, EvaluationTitles.TO_FILL, "An intern evaluation is waiting for you."),
+    INTERN_EVALUATION_SIGNED(TargetType.INTERN_EVALUATION, EvaluationTitles.COMPLETED, "An employer has completed an intern evaluation.");
 
     private final TargetType targetType;
     private final String title;

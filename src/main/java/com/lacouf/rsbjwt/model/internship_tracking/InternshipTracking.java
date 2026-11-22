@@ -1,9 +1,11 @@
 package com.lacouf.rsbjwt.model.internship_tracking;
 
 import com.lacouf.rsbjwt.model.contract.Contract;
+import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
+import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
 import jakarta.persistence.*;
@@ -39,6 +41,10 @@ public class InternshipTracking {
     @OneToOne(mappedBy = "tracking", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
     private WorkplaceEvaluation workplaceEvaluation;
 
+    @Getter
+    @OneToOne(mappedBy = "tracking", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
+    private InternEvaluation internEvaluation;
+
     protected InternshipTracking() {
     }
 
@@ -46,6 +52,7 @@ public class InternshipTracking {
         this.student = contract.getStudent();
         this.internship = contract.getInternship();
         this.workplaceEvaluation = new WorkplaceEvaluation(this);
+        this.internEvaluation = new InternEvaluation(this);
     }
 
     public void assignTeacher(Teacher teacher) {
@@ -58,5 +65,9 @@ public class InternshipTracking {
 
     public AcademicSession getSession() {
         return internship.getSession();
+    }
+
+    public Employer getEmployer() {
+        return internship.getPostedBy();
     }
 }

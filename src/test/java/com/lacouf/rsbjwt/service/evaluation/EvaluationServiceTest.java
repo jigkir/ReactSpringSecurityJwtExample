@@ -6,6 +6,8 @@ import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
+import com.lacouf.rsbjwt.model.evaluation.intern.InternCriterion;
+import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceCriterion;
 import com.lacouf.rsbjwt.model.evaluation.workplace.WorkplaceEvaluation;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
@@ -246,6 +248,67 @@ public class EvaluationServiceTest {
 
         // Assert
         verify(notificationService).notifyIfAbsent(NotificationType.WORKPLACE_EVALUATION_SIGNED, EVALUATION_ID, manager);
+    }
+
+    @Test
+    void shouldSignInternEvaluationWhenEveryQuestionIsAnswered() throws Exception {
+        // Arrange
+        InternEvaluation evaluation = completeInternEvaluation();
+
+        // Act
+        evaluationService.signWithoutPassword(evaluation);
+
+        // Assert
+        assert NOW.equals(evaluation.getSignedAt());
+    }
+
+    @Test
+    void shouldThrowIncompleteWhenInternCriterionIsNotRated() {
+        // Arrange
+        Map<InternCriterion, AgreementLevel> ratings = ratingsOf(InternCriterion.class, AgreementLevel.SOMEWHAT_AGREE);
+        ratings.remove(InternCriterion.BE_PUNCTUAL_AND_ASSIDUOUS);
+
+        InternEvaluation evaluation = internEvaluation();
+        answerInternEvaluation(evaluation, ratings, "Très travaillant.", "Développeur principal");
+
+        // Act + Assert
+        assertThrows(EvaluationIncompleteException.class, () -> evaluationService.signWithoutPassword(evaluation));
+    }
+
+    @Test
+    void shouldThrowIncompleteWhenAppreciationIsNotDetailed() {
+        // Arrange
+        InternEvaluation evaluation = internEvaluation();
+        answerInternEvaluation(evaluation, ratingsOf(InternCriterion.class, AgreementLevel.TOTALLY_AGREE), " ", "Développeur principal");
+
+        // Act + Assert
+        assertThrows(EvaluationIncompleteException.class, () -> evaluationService.signWithoutPassword(evaluation));
+    }
+
+    @Test
+    void shouldThrowIncompleteWhenSupervisorJobTitleIsMissing() {
+        // Arrange
+        InternEvaluation evaluation = internEvaluation();
+        answerInternEvaluation(evaluation, ratingsOf(InternCriterion.class, AgreementLevel.TOTALLY_AGREE), "Très travaillant.", null);
+
+        // Act + Assert
+        assertThrows(EvaluationIncompleteException.class, () -> evaluationService.signWithoutPassword(evaluation));
+    }
+
+    @Test
+    void shouldNotifyManagersWithInternNotificationWhenInternEvaluationIsSigned() throws Exception {
+        // Arrange
+        InternEvaluation evaluation = completeInternEvaluation();
+        Manager manager = manager();
+
+        when(managerRepository.findAll()).thenReturn(List.of(manager));
+
+        // Act
+        evaluationService.signWithoutPassword(evaluation);
+
+        // Assert
+        verify(notificationService).closeNotificationsOfType(NotificationType.INTERN_EVALUATION_TO_FILL, EVALUATION_ID);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERN_EVALUATION_SIGNED, EVALUATION_ID, manager);
     }
 
     // ---------- Helpers ----------

@@ -8,6 +8,7 @@ import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.contract.Contract;
 import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
+import com.lacouf.rsbjwt.model.evaluation.intern.*;
 import com.lacouf.rsbjwt.model.evaluation.workplace.InternCapacity;
 import com.lacouf.rsbjwt.model.evaluation.workplace.PreferredInternship;
 import com.lacouf.rsbjwt.model.evaluation.workplace.ShiftRange;
@@ -21,6 +22,7 @@ import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.Employer;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
+import com.lacouf.rsbjwt.service.dto.request.evaluation.intern.InternEvaluationFormDto;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.workplace.WorkplaceEvaluationFormDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 
@@ -81,6 +83,30 @@ public final class EvaluationTestData {
 
     public static EvaluationResponseDto<WorkplaceEvaluationFormDto> workplaceResponse(WorkplaceEvaluation evaluation) {
         return EvaluationResponseDto.of(evaluation, WorkplaceEvaluationFormDto.of(evaluation));
+    }
+
+    public static InternEvaluation internEvaluation() {
+        InternEvaluation evaluation = tracking().getInternEvaluation();
+        evaluation.setId(EVALUATION_ID);
+
+        return evaluation;
+    }
+
+    public static InternEvaluation completeInternEvaluation() {
+        InternEvaluation evaluation = internEvaluation();
+        answerInternEvaluation(evaluation, ratingsOf(InternCriterion.class, AgreementLevel.TOTALLY_AGREE), "Très travaillant, avec une attitude positive.", "Développeur principal");
+
+        return evaluation;
+    }
+
+    public static void answerInternEvaluation(InternEvaluation evaluation, Map<InternCriterion, AgreementLevel> ratings, String appreciationDetails, String supervisorJobTitle) {
+        evaluation.update(ratings, Map.of(InternEvaluationSection.WORK_QUALITY, "Teste maintenant son code avant de le remettre."),
+                OverallAppreciation.EXCEEDS_EXPECTATIONS, appreciationDetails, true, SUPERVISION_HOURS, NextInternshipInterest.YES,
+                "Oui, sa formation était suffisante.", supervisorJobTitle, NOW);
+    }
+
+    public static EvaluationResponseDto<InternEvaluationFormDto> internResponse(InternEvaluation evaluation) {
+        return EvaluationResponseDto.of(evaluation, InternEvaluationFormDto.of(evaluation));
     }
 
     public static <C extends Enum<C>> Map<C, AgreementLevel> ratingsOf(Class<C> criteria, AgreementLevel level) {
