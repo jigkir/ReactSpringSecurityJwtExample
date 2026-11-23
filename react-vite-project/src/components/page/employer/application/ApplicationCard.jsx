@@ -226,7 +226,7 @@ function ApplicationCard({
                                     lockTone
                                     dark={dark}
                                     className="w-full"
-                                    icon={isCoverLetterOpen ? "close" : "visibility"}
+                                    icon={isCoverLetterOpen ? "visibility_off" : "visibility"}
                                     onClick={() => openDocs.toggle(COVER_LETTER)}
                                     aria-expanded={isCoverLetterOpen}
                                 >
@@ -239,7 +239,7 @@ function ApplicationCard({
                                     lockTone
                                     dark={dark}
                                     className="w-full"
-                                    icon={isTranscriptOpen ? "close" : "visibility"}
+                                    icon={isTranscriptOpen ? "visibility_off" : "visibility"}
                                     onClick={() => openDocs.toggle(TRANSCRIPT)}
                                     aria-expanded={isTranscriptOpen}
                                 >
@@ -251,7 +251,7 @@ function ApplicationCard({
                                 lockTone
                                 dark={dark}
                                 className="w-full"
-                                icon={isPreviewOpen ? "close" : "visibility"}
+                                icon={isPreviewOpen ? "visibility_off" : "visibility"}
                                 onClick={onTogglePreview}
                                 aria-expanded={isPreviewOpen}
                             >

@@ -140,7 +140,7 @@ function App() {
                         <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
                             <Route path="/internships" element={<PostInternship user={user}/>}/>
                             <Route path="/applications" element={<Applications user={user}/>}/>
-                            <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
+                            <Route path="/applications/:id" element={<ViewApplications user={user}/>}/>
                             <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
                             <Route path="/employer/contracts" element={<EmployerContracts/>}/>
                             <Route path="/employer/contracts/:id" element={<ContractFile/>}/>

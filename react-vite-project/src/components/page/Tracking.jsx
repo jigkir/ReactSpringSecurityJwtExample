@@ -111,6 +111,7 @@ function Tracking() {
             <UserCard
                 key={internship.id}
                 dark={dark}
+                filterColor={status}
                 studentid={student.studentId}
                 firstname={student.firstName}
                 lastname={student.lastName}

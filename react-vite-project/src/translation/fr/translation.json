@@ -844,6 +844,9 @@
       "pending": "En attente",
       "assigned": "Assigné"
     },
+    "filters": {
+      "pendingDecision": "En attente de décision"
+    },
     "reactivate": "Réactiver",
     "deactivate": "Désactiver",
     "studentId": "Matricule : {{studentId}}"
@@ -856,7 +859,10 @@
     "assigneDefault": "Assigner l'enseignant",
     "loading": "Chargement...",
     "error": "Échec du chargement des suivis de stage.",
-    "empty": "Aucun suivi de stage trouvé."
+    "empty": "Aucun suivi de stage trouvé.",
+    "filters": {
+      "pendingAttribution": "En attente d'attribution"
+    }
   },
   "workplaceEvaluation": {
     "selectPlaceholder": "-- Sélectionner --",

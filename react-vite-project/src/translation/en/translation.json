@@ -844,6 +844,9 @@
       "pending": "Pending",
       "assigned": "Assigned"
     },
+    "filters": {
+      "pendingDecision": "Pending for decision"
+    },
     "reactivate": "Reactivate",
     "deactivate": "Deactivate",
     "studentId": "ID: {{studentId}}"
@@ -856,7 +859,10 @@
     "assigneDefault": "Assign Teacher",
     "loading": "Loading...",
     "error": "Failed to load internship trackings.",
-    "empty": "No internship trackings found."
+    "empty": "No internship trackings found.",
+    "filters": {
+      "pendingAttribution": "Pending for attribution"
+    }
   },
   "workplaceEvaluation": {
     "selectPlaceholder": "-- Select --",

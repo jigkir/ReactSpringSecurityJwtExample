@@ -227,7 +227,7 @@ function InternshipCard({
                         {internship.status === "APPROVED" && Number(totalApplications) > 0 && (
                             <Button
                                 as={NavLink}
-                                to={`/application/${internship.id}`}
+                                to={`/applications/${internship.id}`}
                                 state={{internshipData: internship}}
                                 tone="primary"
                                 dark={dark}
