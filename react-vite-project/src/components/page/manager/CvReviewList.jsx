@@ -46,15 +46,17 @@ const getUrl = async (id) => blobUrlFromFile(await getManagerCvFile(id));
 const statusOf = (doc) => doc.status ?? "PENDING";
 
 function CvReviewList({dark}) {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const th = getCvDocumentsClasses(dark);
 
     const {selectedSession} = useSession();
 
+    const lang = i18n.resolvedLanguage ?? i18n.language;
+
     const loadCvs = useCallback(async () => {
         return selectedSession ? getPublicCvs(selectedSession.id) : null;
-    }, [selectedSession]);
+    }, [selectedSession, lang]);
 
     const {items: docs, setItems: setDocs, failed, reload} = useLoadedList(loadCvs);
     const filters = useCvFilters(docs);
