@@ -90,8 +90,16 @@ public class Contract {
         return Arrays.stream(ContractParty.values()).allMatch(this::isSignedBy);
     }
 
+    public boolean isSignedByStudentAndEmployer() {
+        return isSignedBy(ContractParty.STUDENT) && isSignedBy(ContractParty.EMPLOYER);
+    }
+
+    public boolean canBeSignedBy(ContractParty party) {
+        return party != ContractParty.MANAGER || isSignedByStudentAndEmployer();
+    }
+
     public boolean isWaitingForSignatureOf(UserApp user) {
-        return findPartyOf(user).filter(party -> !isSignedBy(party)).isPresent();
+        return findPartyOf(user).filter(party -> !isSignedBy(party) && canBeSignedBy(party)).isPresent();
     }
 
     public void sign(ContractParty party, UserApp signer, LocalDateTime signedAt) {

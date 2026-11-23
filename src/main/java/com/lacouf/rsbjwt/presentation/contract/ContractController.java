@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation.contract;
 
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotSignedByStudentAndEmployerException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
@@ -37,7 +38,7 @@ public class ContractController {
     }
 
     @PutMapping("/{contractId}/signature")
-    public ResponseEntity<ContractResponseDto> signContract(Authentication authentication, @PathVariable long contractId, @Valid @RequestBody SignatureRequestDto signature) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
+    public ResponseEntity<ContractResponseDto> signContract(Authentication authentication, @PathVariable long contractId, @Valid @RequestBody SignatureRequestDto signature) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException, ContractNotSignedByStudentAndEmployerException {
         return ResponseEntity.ok(contractService.signContract(authentication.getName(), contractId, signature.password()));
     }
 

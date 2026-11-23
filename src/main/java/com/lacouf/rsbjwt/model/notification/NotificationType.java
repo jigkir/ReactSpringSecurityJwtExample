@@ -20,7 +20,8 @@ public enum NotificationType {
 
     STUDENT_ACCESS_REQUESTED(TargetType.STUDENT_ACCOUNT, "Student Access Requested", null),
 
-    CONTRACT_TO_SIGN_BY_MANAGER(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE),
+    NEW_CONTRACT(TargetType.CONTRACT, "New Contract", "A new internship contract has been added. You can sign it once the student and the employer have signed."),
+    CONTRACT_TO_SIGN_BY_MANAGER(TargetType.CONTRACT, "Contract Ready To Sign", "The student and the employer have signed: the contract is ready for your signature."),
     CONTRACT_TO_SIGN_BY_EMPLOYER(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE),
     CONTRACT_TO_SIGN_BY_STUDENT(TargetType.CONTRACT, ContractToSign.TITLE, ContractToSign.MESSAGE),
 

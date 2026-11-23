@@ -11,6 +11,7 @@ import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.contract.ContractParty;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
+import com.lacouf.rsbjwt.model.notification.NotificationType;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.UserApp;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
@@ -61,7 +62,7 @@ public class ContractService {
 
         Contract contract = contractRepository.save(new Contract(application, LocalDateTime.now(clock)));
 
-        notifyManagersOfContractToSign(contract);
+        notifyManagers(NotificationType.NEW_CONTRACT, contract);
 
         notificationService.notifyIfAbsent(ContractParty.EMPLOYER.getContractToSignNotification(), contract.getId(), contract.getEmployer());
         notificationService.notifyIfAbsent(ContractParty.STUDENT.getContractToSignNotification(), contract.getId(), contract.getStudent());
@@ -88,7 +89,7 @@ public class ContractService {
     }
 
     @Transactional
-    public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException {
+    public ContractResponseDto signContract(String email, long contractId, String password) throws UserNotFoundException, IncorrectSignaturePasswordException, ContractNotFoundException, ContractAlreadySignedException, ContractNotSignedByStudentAndEmployerException {
         UserApp signer = userAppService.findUserByEmail(email);
 
         userAppService.verifyIfSignaturePasswordIsIncorrect(signer, password);
@@ -98,7 +99,7 @@ public class ContractService {
 
     // Dev Mode only (called from DevController): signs without password
     @Transactional
-    public ContractResponseDto devSignContract(String email, long contractId) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException {
+    public ContractResponseDto devSignContract(String email, long contractId) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException, ContractNotSignedByStudentAndEmployerException {
         return sign(contractId, userAppService.findUserByEmail(email));
     }
 
@@ -121,9 +122,15 @@ public class ContractService {
         return LocalDateTime.now(clock);
     }
 
-    private void notifyManagersOfContractToSign(Contract contract) {
+    private void notifyManagers(NotificationType notificationType, Contract contract) {
         managerRepository.findAll()
-                .forEach(manager -> notificationService.notifyIfAbsent(ContractParty.MANAGER.getContractToSignNotification(), contract.getId(), manager));
+                .forEach(manager -> notificationService.notifyIfAbsent(notificationType, contract.getId(), manager));
+    }
+
+    private void notifyManagersThatContractIsReadyToSign(Contract contract) {
+        notificationService.closeNotificationsOfType(NotificationType.NEW_CONTRACT, contract.getId());
+
+        notifyManagers(ContractParty.MANAGER.getContractToSignNotification(), contract);
     }
 
     private void notifyEmployerOfEvaluationToFill(InternEvaluation evaluation, InternshipTracking tracking) {
@@ -150,13 +157,25 @@ public class ContractService {
         }
     }
 
-    private ContractResponseDto sign(long contractId, UserApp signer) throws ContractNotFoundException, ContractAlreadySignedException {
+    private void checkIfPartyCanSign(Contract contract, ContractParty party) throws ContractNotSignedByStudentAndEmployerException {
+        if (!contract.canBeSignedBy(party)) {
+            throw new ContractNotSignedByStudentAndEmployerException(contract.getId());
+        }
+    }
+
+    private ContractResponseDto sign(long contractId, UserApp signer) throws ContractNotFoundException, ContractAlreadySignedException, ContractNotSignedByStudentAndEmployerException {
         Contract contract = findContract(contractId);
         ContractParty party = findPartyOf(contract, signer);
+        LocalDateTime signedAt = getSigningTime(contract, party);
 
-        contract.sign(party, signer, getSigningTime(contract, party));
+        checkIfPartyCanSign(contract, party);
+        contract.sign(party, signer, signedAt);
 
         notificationService.closeNotificationsOfType(party.getContractToSignNotification(), contractId);
+
+        if (party != ContractParty.MANAGER && contract.isSignedByStudentAndEmployer()) {
+            notifyManagersThatContractIsReadyToSign(contract);
+        }
 
         if (contract.isFullySigned()) {
             InternshipTracking tracking = internshipTrackingRepository.save(new InternshipTracking(contract));

@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.presentation.dev;
 
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
 import com.lacouf.rsbjwt.exception.contract.ContractNotFoundException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotSignedByStudentAndEmployerException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationAlreadySignedException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationIncompleteException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
@@ -47,7 +48,7 @@ public class DevController {
     }
 
     @PutMapping("/contracts/{contractId}/signature")
-    public ResponseEntity<ContractResponseDto> signContract(@PathVariable long contractId, @RequestParam String email) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException {
+    public ResponseEntity<ContractResponseDto> signContract(@PathVariable long contractId, @RequestParam String email) throws UserNotFoundException, ContractNotFoundException, ContractAlreadySignedException, ContractNotSignedByStudentAndEmployerException {
         return ResponseEntity.ok(contractService.devSignContract(email, contractId));
     }
 

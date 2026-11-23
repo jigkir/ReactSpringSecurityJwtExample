@@ -180,7 +180,7 @@ public class ContractServiceTest {
     }
 
     @Test
-    void shouldNotifyEveryManagerOfContractToSignWhenCreatingContract() throws Exception {
+    void shouldNotifyEveryManagerOfNewContractWhenCreatingContract() throws Exception {
         // Arrange
         Manager firstManager = manager();
         Manager secondManager = manager();
@@ -193,8 +193,9 @@ public class ContractServiceTest {
         contractService.createContract(offeredApplication());
 
         // Assert
-        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, firstManager);
-        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, secondManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.NEW_CONTRACT, 30L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.NEW_CONTRACT, 30L, secondManager);
+        verify(notificationService, never()).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, firstManager);
     }
 
     // ==========================================
@@ -225,19 +226,21 @@ public class ContractServiceTest {
     }
 
     @Test
-    void shouldReturnOnlyContractsNotSignedByManagerWhenManagerGetsContractsToSign() throws Exception {
+    void shouldReturnOnlyContractsReadyForManagerWhenManagerGetsContractsToSign() throws Exception {
         // Arrange
-        Contract signedContract = contract();
-        signedContract.sign(ContractParty.MANAGER, manager(), NOW.minusDays(1));
+        Contract readyContract = contractSignedByStudentAndEmployer();
+        Contract signedContract = contractSignedByStudentAndEmployer();
+        signedContract.sign(ContractParty.MANAGER, manager(), NOW.minusHours(1));
 
         when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
-        when(contractRepository.findAll()).thenReturn(List.of(contract(), signedContract));
+        when(contractRepository.findAll()).thenReturn(List.of(contract(), readyContract, signedContract));
 
         // Act
         List<ContractResponseDto> contracts = contractService.getContractsToSign(MANAGER_EMAIL);
 
         // Assert
         assert contracts.size() == 1;
+        assert contracts.getFirst().employerSignedAt() != null;
         assert contracts.getFirst().managerSignedAt() == null;
     }
 
@@ -248,12 +251,14 @@ public class ContractServiceTest {
     @Test
     void shouldSignAsManagerAndCloseNotificationsWhenManagerSignsContract() throws Exception {
         // Arrange
-        Contract contract = contract();
+        Contract contract = contractSignedByStudentAndEmployer();
         Manager manager = manager();
 
         when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager);
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
         when(contractRepository.save(contract)).thenReturn(contract);
+
+        saveTrackingWithInternEvaluationId();
 
         // Act
         ContractResponseDto contractResponseDto = contractService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD);
@@ -261,7 +266,7 @@ public class ContractServiceTest {
         // Assert
         assert manager.equals(contract.getManager());
         assert NOW.equals(contractResponseDto.managerSignedAt());
-        assert contractResponseDto.studentSignedAt() == null;
+        assert NOW.minusDays(2).equals(contractResponseDto.studentSignedAt());
 
         verify(userAppService).verifyIfSignaturePasswordIsIncorrect(manager, MANAGER_PASSWORD);
         verify(notificationService).closeNotificationsOfType(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L);
@@ -285,11 +290,13 @@ public class ContractServiceTest {
     @Test
     void shouldSignWithoutPasswordWhenDevSigningContract() throws Exception {
         // Arrange
-        Contract contract = contract();
+        Contract contract = contractSignedByStudentAndEmployer();
 
         when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
         when(contractRepository.save(contract)).thenReturn(contract);
+
+        saveTrackingWithInternEvaluationId();
 
         // Act
         contractService.devSignContract(MANAGER_EMAIL, 30L);
@@ -316,6 +323,62 @@ public class ContractServiceTest {
 
         verify(contractRepository, never()).save(any(Contract.class));
         verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldThrowContractNotSignedByStudentAndEmployerExceptionWhenManagerSignsBeforeEmployer() throws Exception {
+        // Arrange
+        Contract contract = contract();
+        contract.sign(ContractParty.STUDENT, student, NOW.minusDays(1));
+
+        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+
+        // Act + Assert
+        assertThrows(ContractNotSignedByStudentAndEmployerException.class, () -> contractService.devSignContract(MANAGER_EMAIL, 30L));
+
+        assert contract.getManagerSignedAt() == null;
+
+        verify(contractRepository, never()).save(any(Contract.class));
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldNotifyEveryManagerThatContractIsReadyToSignWhenStudentAndEmployerHaveSigned() throws Exception {
+        // Arrange
+        Contract contract = contract();
+        contract.sign(ContractParty.STUDENT, student, NOW.minusDays(1));
+        Manager firstManager = manager();
+        Manager secondManager = manager();
+
+        givenUserWithEmail(employer);
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+        when(contractRepository.save(contract)).thenReturn(contract);
+        when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
+
+        // Act
+        contractService.devSignContract(EMPLOYER_EMAIL, 30L);
+
+        // Assert
+        verify(notificationService).closeNotificationsOfType(NotificationType.NEW_CONTRACT, 30L);
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.CONTRACT_TO_SIGN_BY_MANAGER, 30L, secondManager);
+    }
+
+    @Test
+    void shouldNotNotifyManagersThatContractIsReadyWhenOnlyOnePartyHasSigned() throws Exception {
+        // Arrange
+        Contract contract = contract();
+
+        givenUserWithEmail(student);
+        when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
+        when(contractRepository.save(contract)).thenReturn(contract);
+
+        // Act
+        contractService.devSignContract(STUDENT_EMAIL, 30L);
+
+        // Assert
+        verifyNoInteractions(managerRepository);
     }
 
     @Test
@@ -525,12 +588,13 @@ public class ContractServiceTest {
         // Arrange
         Contract contract = contract();
 
-        when(userAppService.findUserByEmail(MANAGER_EMAIL)).thenReturn(manager());
+        givenUserWithEmail(student);
+
         when(contractRepository.findById(30L)).thenReturn(Optional.of(contract));
         when(contractRepository.save(contract)).thenReturn(contract);
 
         // Act
-        contractService.devSignContract(MANAGER_EMAIL, 30L);
+        contractService.devSignContract(STUDENT_EMAIL, 30L);
 
         // Assert
         verifyNoInteractions(internshipTrackingRepository);
@@ -614,5 +678,17 @@ public class ContractServiceTest {
         internEvaluation.setId(INTERN_EVALUATION_ID);
 
         return tracking;
+    }
+
+    private Contract contractSignedByStudentAndEmployer() {
+        Contract contract = contract();
+        contract.sign(ContractParty.STUDENT, student, NOW.minusDays(2));
+        contract.sign(ContractParty.EMPLOYER, employer, NOW.minusDays(1));
+
+        return contract;
+    }
+
+    private void saveTrackingWithInternEvaluationId() {
+        when(internshipTrackingRepository.save(any(InternshipTracking.class))).thenAnswer(invocation -> withInternEvaluationId(invocation.getArgument(0)));
     }
 }
