@@ -4,12 +4,14 @@ import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationAlreadySignedException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationIncompleteException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternCriterion;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluationSection;
 import com.lacouf.rsbjwt.model.evaluation.intern.NextInternshipInterest;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.intern.InternEvaluationFormDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.intern.InternEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -166,5 +168,20 @@ public class InternEvaluationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(SIGNATURE_BODY))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnPdfOfEvaluationInChosenLanguage() throws Exception {
+        // Arrange
+        DocumentFileResponseDto file = new DocumentFileResponseDto(EVALUATION_ID, "evaluation-stagiaire-40.pdf", new byte[]{1, 2, 3});
+
+        when(internEvaluationService.getEvaluationFile(EMPLOYER_EMAIL, EVALUATION_ID, DocumentLanguage.FR)).thenReturn(file);
+
+        // Act + Assert
+        mockMvc.perform(get(EVALUATION_PATH + "/file").param("language", "FR").principal(employerAuthentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileName").value("evaluation-stagiaire-40.pdf"));
+
+        verify(internEvaluationService).getEvaluationFile(EMPLOYER_EMAIL, EVALUATION_ID, DocumentLanguage.FR);
     }
 }

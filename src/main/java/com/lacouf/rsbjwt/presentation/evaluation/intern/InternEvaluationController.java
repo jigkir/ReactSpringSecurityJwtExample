@@ -6,8 +6,10 @@ import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.intern.InternEvaluationFormDto;
 import com.lacouf.rsbjwt.service.dto.request.signature.SignatureRequestDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.intern.InternEvaluationService;
 import jakarta.validation.Valid;
@@ -44,5 +46,10 @@ public class InternEvaluationController {
     @PutMapping("/{evaluationId}/signature")
     public ResponseEntity<EvaluationResponseDto<InternEvaluationFormDto>> signEvaluation(Authentication authentication, @PathVariable long evaluationId, @Valid @RequestBody SignatureRequestDto signature) throws EvaluationNotFoundException, UserNotFoundException, IncorrectSignaturePasswordException, EvaluationAlreadySignedException, EvaluationIncompleteException {
         return ResponseEntity.ok(internEvaluationService.signEvaluation(authentication.getName(), evaluationId, signature.password()));
+    }
+
+    @GetMapping("/{evaluationId}/file")
+    public ResponseEntity<DocumentFileResponseDto> getEvaluationFile(Authentication authentication, @PathVariable long evaluationId, @RequestParam DocumentLanguage language) throws EvaluationNotFoundException {
+        return ResponseEntity.ok(internEvaluationService.getEvaluationFile(authentication.getName(), evaluationId, language));
     }
 }

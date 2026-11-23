@@ -6,10 +6,12 @@ import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
 import com.lacouf.rsbjwt.exception.session.AcademicSessionNotFoundException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.repository.evaluation.intern.InternEvaluationRepository;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.intern.InternEvaluationFormDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.EvaluationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -20,14 +22,19 @@ import java.util.List;
 
 @Service
 public class InternEvaluationService {
+    private static final String FILE_NAME_PREFIX = "evaluation-stagiaire-";
+
     private final InternEvaluationRepository internEvaluationRepository;
+
     private final EvaluationService evaluationService;
     private final AcademicSessionService academicSessionService;
+    private final InternEvaluationPdfGenerator internEvaluationPdfGenerator;
 
-    public InternEvaluationService(InternEvaluationRepository internEvaluationRepository, EvaluationService evaluationService, AcademicSessionService academicSessionService) {
+    public InternEvaluationService(InternEvaluationRepository internEvaluationRepository, EvaluationService evaluationService, AcademicSessionService academicSessionService, InternEvaluationPdfGenerator internEvaluationPdfGenerator) {
         this.internEvaluationRepository = internEvaluationRepository;
         this.evaluationService = evaluationService;
         this.academicSessionService = academicSessionService;
+        this.internEvaluationPdfGenerator = internEvaluationPdfGenerator;
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +76,13 @@ public class InternEvaluationService {
         evaluationService.signWithoutPassword(evaluation);
 
         return saveAsResponse(evaluation);
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentFileResponseDto getEvaluationFile(String email, long evaluationId, DocumentLanguage language) throws EvaluationNotFoundException {
+        InternEvaluation evaluation = findEvaluationOf(email, evaluationId);
+
+        return evaluationService.toFile(evaluation, FILE_NAME_PREFIX, internEvaluationPdfGenerator.generate(evaluation, language));
     }
 
     private InternEvaluation findEvaluationOf(String email, long evaluationId) throws EvaluationNotFoundException {

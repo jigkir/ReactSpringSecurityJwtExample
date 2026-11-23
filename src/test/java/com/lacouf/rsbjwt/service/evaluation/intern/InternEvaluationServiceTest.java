@@ -2,6 +2,7 @@ package com.lacouf.rsbjwt.service.evaluation.intern;
 
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationAlreadySignedException;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
+import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternCriterion;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
@@ -9,6 +10,7 @@ import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluationSection;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.repository.evaluation.intern.InternEvaluationRepository;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.intern.InternEvaluationFormDto;
+import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.evaluation.EvaluationResponseDto;
 import com.lacouf.rsbjwt.service.evaluation.EvaluationService;
 import com.lacouf.rsbjwt.service.session.AcademicSessionService;
@@ -40,6 +42,8 @@ public class InternEvaluationServiceTest {
     private EvaluationService evaluationService;
     @Mock
     private AcademicSessionService academicSessionService;
+    @Mock
+    private InternEvaluationPdfGenerator internEvaluationPdfGenerator;
 
     @Test
     void shouldReturnEvaluationsOfEmployerForChosenSession() throws Exception {
@@ -154,6 +158,35 @@ public class InternEvaluationServiceTest {
         // Assert
         verify(evaluationService).signWithoutPassword(evaluation);
         verify(internEvaluationRepository).save(evaluation);
+    }
+
+    @Test
+    void shouldGeneratePdfOfEvaluationInChosenLanguage() throws Exception {
+        // Arrange
+        InternEvaluation evaluation = internEvaluation();
+        byte[] content = {1, 2, 3};
+        DocumentFileResponseDto file = new DocumentFileResponseDto(EVALUATION_ID, "evaluation-stagiaire-40.pdf", content);
+
+        when(internEvaluationRepository.findByIdAndTracking_Internship_PostedBy_Credentials_Email(EVALUATION_ID, EMPLOYER_EMAIL)).thenReturn(Optional.of(evaluation));
+        when(internEvaluationPdfGenerator.generate(evaluation, DocumentLanguage.FR)).thenReturn(content);
+        when(evaluationService.toFile(evaluation, "evaluation-stagiaire-", content)).thenReturn(file);
+
+        // Act
+        DocumentFileResponseDto result = internEvaluationService.getEvaluationFile(EMPLOYER_EMAIL, EVALUATION_ID, DocumentLanguage.FR);
+
+        // Assert
+        assert result == file;
+    }
+
+    @Test
+    void shouldNotGeneratePdfWhenEvaluationIsNotOfEmployer() {
+        // Arrange
+        when(internEvaluationRepository.findByIdAndTracking_Internship_PostedBy_Credentials_Email(EVALUATION_ID, EMPLOYER_EMAIL)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThrows(EvaluationNotFoundException.class, () -> internEvaluationService.getEvaluationFile(EMPLOYER_EMAIL, EVALUATION_ID, DocumentLanguage.FR));
+
+        verifyNoInteractions(internEvaluationPdfGenerator);
     }
 
     // ---------- Helpers ----------
