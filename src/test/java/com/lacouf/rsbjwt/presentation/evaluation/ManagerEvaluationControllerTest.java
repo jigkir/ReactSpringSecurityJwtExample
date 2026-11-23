@@ -5,6 +5,7 @@ import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.evaluation.EvaluationNotFoundException;
 import com.lacouf.rsbjwt.model.document.DocumentLanguage;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
+import com.lacouf.rsbjwt.service.evaluation.intern.InternEvaluationService;
 import com.lacouf.rsbjwt.service.evaluation.workplace.WorkplaceEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ManagerEvaluationControllerTest {
 
     private static final String WORKPLACE_EVALUATIONS_PATH = "/api/manager/workplace-evaluations";
+    private static final String INTERN_EVALUATIONS_PATH = "/api/manager/intern-evaluations";
     private static final String WORKPLACE_FILE_PATH = WORKPLACE_EVALUATIONS_PATH + "/" + EVALUATION_ID + "/file";
 
     @Autowired
@@ -33,6 +35,8 @@ public class ManagerEvaluationControllerTest {
 
     @MockitoBean
     private WorkplaceEvaluationService workplaceEvaluationService;
+    @MockitoBean
+    private InternEvaluationService internEvaluationService;
     @MockitoBean
     private ReactSpringSecurityJwtApplication application;
 
@@ -71,6 +75,30 @@ public class ManagerEvaluationControllerTest {
 
         // Act + Assert
         mockMvc.perform(get(WORKPLACE_FILE_PATH).param("language", "FR"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnSignedInternEvaluationsOfChosenSession() throws Exception {
+        // Arrange
+        when(internEvaluationService.getSignedEvaluations(1L)).thenReturn(List.of(internResponse(completeInternEvaluation())));
+
+        // Act + Assert
+        mockMvc.perform(get(INTERN_EVALUATIONS_PATH).param("sessionId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].studentName").value("Léa Tremblay"));
+
+        verify(internEvaluationService).getSignedEvaluations(1L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenInternEvaluationIsNotSigned() throws Exception {
+        // Arrange
+        when(internEvaluationService.getSignedEvaluationFile(EVALUATION_ID, DocumentLanguage.FR)).thenThrow(new EvaluationNotFoundException(EVALUATION_ID));
+
+        // Act + Assert
+        mockMvc.perform(get(INTERN_EVALUATIONS_PATH + "/" + EVALUATION_ID + "/file").param("language", "FR"))
                 .andExpect(status().isNotFound());
     }
 }

@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.evaluation.AgreementLevel;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternCriterion;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluation;
 import com.lacouf.rsbjwt.model.evaluation.intern.InternEvaluationSection;
+import com.lacouf.rsbjwt.model.internship_tracking.InternshipTracking;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.repository.evaluation.intern.InternEvaluationRepository;
 import com.lacouf.rsbjwt.service.dto.request.evaluation.intern.InternEvaluationFormDto;
@@ -187,6 +188,42 @@ public class InternEvaluationServiceTest {
         assertThrows(EvaluationNotFoundException.class, () -> internEvaluationService.getEvaluationFile(EMPLOYER_EMAIL, EVALUATION_ID, DocumentLanguage.FR));
 
         verifyNoInteractions(internEvaluationPdfGenerator);
+    }
+
+    @Test
+    void shouldReturnSignedEvaluationsOfChosenSessionForManager() throws Exception {
+        // Arrange
+        InternEvaluation evaluation = completeInternEvaluation();
+        InternshipTracking internshipTracking = evaluation.getTracking();
+        AcademicSession session = internshipTracking.getSession();
+
+        when(academicSessionService.findSessionOrCurrent(1L)).thenReturn(session);
+        when(internEvaluationRepository.findByTracking_Internship_SessionAndSignedAtIsNotNull(session)).thenReturn(List.of(evaluation));
+
+        // Act
+        List<EvaluationResponseDto<InternEvaluationFormDto>> evaluations = internEvaluationService.getSignedEvaluations(1L);
+
+        // Assert
+        assert evaluations.size() == 1;
+        assert evaluations.getFirst().studentName().equals("Léa Tremblay");
+    }
+
+    @Test
+    void shouldGeneratePdfOfSignedEvaluationForManager() throws Exception {
+        // Arrange
+        InternEvaluation evaluation = completeInternEvaluation();
+        byte[] content = {1, 2, 3};
+        DocumentFileResponseDto file = new DocumentFileResponseDto(EVALUATION_ID, "evaluation-stagiaire-40.pdf", content);
+
+        when(internEvaluationRepository.findByIdAndSignedAtIsNotNull(EVALUATION_ID)).thenReturn(Optional.of(evaluation));
+        when(internEvaluationPdfGenerator.generate(evaluation, DocumentLanguage.FR)).thenReturn(content);
+        when(evaluationService.toFile(evaluation, "evaluation-stagiaire-", content)).thenReturn(file);
+
+        // Act
+        DocumentFileResponseDto result = internEvaluationService.getSignedEvaluationFile(EVALUATION_ID, DocumentLanguage.FR);
+
+        // Assert
+        assert result == file;
     }
 
     // ---------- Helpers ----------

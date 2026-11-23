@@ -10,10 +10,14 @@ import java.util.Optional;
 
 @Repository
 public interface InternEvaluationRepository extends JpaRepository<InternEvaluation, Long> {
-    
+
     List<InternEvaluation> findByTracking_Internship_PostedBy_Credentials_EmailAndTracking_Internship_Session(String email, AcademicSession session);
 
     List<InternEvaluation> findByTracking_Internship_PostedBy_Credentials_EmailAndSignedAtIsNull(String email);
 
     Optional<InternEvaluation> findByIdAndTracking_Internship_PostedBy_Credentials_Email(long id, String email);
+
+    List<InternEvaluation> findByTracking_Internship_SessionAndSignedAtIsNotNull(AcademicSession session);
+
+    Optional<InternEvaluation> findByIdAndSignedAtIsNotNull(long id);
 }
