@@ -44,7 +44,7 @@ const Home = () => {
             ) : (
                 <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
                     {sections.map((section) => (
-                        <HomeSection key={section.to} section={section} user={user}/>
+                        <HomeSection key={section.to} section={section} user={user} dark={dark}/>
                     ))}
                 </div>
             )}

@@ -2,16 +2,19 @@
  * HomeSections.js — The sections the Home page shows for each role.
  * Location: src/components/home/HomeSections.js
  *
- * One section per page. Each section is a blue bar (whole page) over color buttons
- * (GREEN / YELLOW / RED) that show a live count and open the page with that filter selected.
+ * One section per page. Each section is a blue bar (whole page) over status tiles
+ * (RED / YELLOW / GREEN) that show a live count and open the page with that filter selected.
+ *
+ * Tile order is always the same on every page: RED → YELLOW → GREEN
+ * (rejected / waiting / approved, or the closest equivalent when a color does not exist).
  *
  * to          page the section links to
  * titleKey    translation key of the section title
- * page        wording of the color buttons: STATUS_LABEL_KEYS[page] (utils/StatusColor.js),
+ * page        wording of the status tiles: STATUS_LABEL_KEYS[page] (utils/StatusColor.js),
  *             the same words as the filter select of that page
  * param       query param read by the page as the initial filter ("status", or "applied" for student internships)
  * scoped      true when the page lists the session chosen in the navbar (the load waits for it)
- * colors      colors of the buttons in display order, ALL (blue) is always the top bar
+ * colors      colors of the tiles in display order, ALL (blue) is always the top bar
  * load        ({sessionId, user}) => Promise<(color|null)[]>, one color per item of the page
  *             (null = item without color: counted by the blue bar only)
  *
@@ -43,13 +46,15 @@ import {
     getUsers,
 } from "../api/Api.jsx";
 
-const STATUS_COLORS = [COLOR.GREEN, COLOR.YELLOW, COLOR.RED];
+const STATUS_COLORS = [COLOR.RED, COLOR.YELLOW, COLOR.GREEN];
 
-// Student internships: GREEN = applied, RED = not applied
-const APPLIED_COLORS = [COLOR.GREEN, COLOR.RED];
+// Student internships: RED = not applied, GREEN = applied
+const APPLIED_COLORS = [COLOR.RED, COLOR.GREEN];
 
-// Contracts have no red: signed by the connected user (GREEN) or not yet (YELLOW)
-const CONTRACT_COLORS = [COLOR.GREEN, COLOR.YELLOW];
+// Contracts have no red: not signed yet by the connected user (YELLOW), then signed (GREEN)
+const CONTRACT_COLORS = [COLOR.YELLOW, COLOR.GREEN];
+
+const PENDING_ONLY = [COLOR.YELLOW];
 
 const asList = (data) => (Array.isArray(data) ? data : []);
 
@@ -148,7 +153,7 @@ export const SECTIONS_BY_ROLE = {
     MANAGER: [
         {
             to: "/manager/cvs", page: "managerCv", titleKey: "home.managerCvLink", param: "status", scoped: true,
-            colors: STATUS_COLORS,
+            colors: PENDING_ONLY,
             load: async ({sessionId}) => statusColors(await getPublicCvs(sessionId)),
         },
         {
@@ -157,7 +162,7 @@ export const SECTIONS_BY_ROLE = {
             titleKey: "home.managerInternshipsLink",
             param: "status",
             scoped: true,
-            colors: STATUS_COLORS,
+            colors: PENDING_ONLY,
             load: async ({sessionId}) => statusColors(await getManagerInternships(sessionId)),
         },
         {
@@ -166,7 +171,7 @@ export const SECTIONS_BY_ROLE = {
             titleKey: "home.managerContractsLink",
             param: "status",
             scoped: true,
-            colors: CONTRACT_COLORS,
+            colors: PENDING_ONLY,
             load: loadContracts,
         },
         {
@@ -175,23 +180,23 @@ export const SECTIONS_BY_ROLE = {
             page: "managerUsers",
             titleKey: "navbar.users",
             param: "status",
-            colors: STATUS_COLORS,
+            colors: PENDING_ONLY,
             load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
         },
         {
-            // Internship tracking: teacher assigned (GREEN) or still to assign (YELLOW)
+            // Internship tracking: still to assign (YELLOW), then teacher assigned (GREEN)
             to: "/tracking",
             page: "managerTracking",
             titleKey: "navbar.tracking",
             param: "status",
-            colors: CONTRACT_COLORS,
+            colors: PENDING_ONLY,
             load: async () => asList(await getInternshipTrackings())
                 .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
         },
     ],
     TEACHER: [
         {
-            // Workplace evaluations: signed (GREEN) or still to complete / sign (YELLOW)
+            // Workplace evaluations: still to complete / sign (YELLOW), then signed (GREEN)
             to: "/evaluations",
             page: "teacherEvaluations",
             titleKey: "workplaceEvaluation.title",

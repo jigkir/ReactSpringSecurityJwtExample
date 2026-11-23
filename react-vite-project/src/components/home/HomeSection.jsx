@@ -1,42 +1,37 @@
 /**
- * HomeSection.jsx — One Home section: a blue bar (whole page) over color buttons with live counts.
+ * HomeSection.jsx — One Home section: a bar (whole page) over status tiles with live counts.
  * Location: src/components/home/HomeSection.jsx
  *
- * Layout (see the handoff screenshot)
- *   [ BLUE  title ........................ total ]
- *   [ GREEN ]   [ YELLOW ]   [ RED ]
+ * Layout
+ *   [ ALL    title ........................ total  → ]
+ *   [ ● label ........ (n) ]  [ ● label ........ (n) ]  [ ● label ........ (n) ]
  *
- * Every button is a <Link> to the page: the blue bar opens it unfiltered, the others add
+ * All the classes live in AppStyles.jsx (getHomeSectionClasses): this file only holds the logic.
+ *
+ * Every tile opens the page: the top bar unfiltered, the others with
  * `?<section.param>=<COLOR>` (read by the page as the initial filter).
- * The button texts are the wording of the page's filter select (STATUS_LABEL_KEYS in StatusColor.js).
+ * A tile whose count is 0 is disabled: not a link, faded, not focusable.
+ * The tile texts are the wording of the page's filter select (STATUS_LABEL_KEYS in StatusColor.js).
  * The counts come from `section.load`, refreshed by usePolling (every 10 s).
  * Sections that list the navbar session wait for `selectedSession`.
  *
- * Props: section (see HomeSections.js), user
+ * Props: section (see HomeSections.js), user, dark
  */
 
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
 import Icon from "../../styles/Icon.jsx";
+import {getHomeSectionClasses} from "../../styles/AppStyles.jsx";
 import {ALL, statusLabelKey} from "../../utils/StatusColor.js";
 import {usePolling} from "../../utils/usePolling.js";
 import {useSession} from "../../utils/useSession.js";
 
-const COLOR_CLASSES = {
-    ALL: "bg-blue-600 hover:bg-blue-700 text-white",
-    GREEN: "bg-emerald-600 hover:bg-emerald-700 text-white",
-    YELLOW: "bg-amber-400 hover:bg-amber-500 text-slate-900",
-    RED: "bg-red-600 hover:bg-red-700 text-white",
-};
-
-const BASE = "group flex items-center justify-between gap-3 rounded-xl px-5 py-4 font-semibold shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
-
-const GRID_COLS = {1: "sm:grid-cols-1", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3"};
-
-function HomeSection({section, user}) {
+function HomeSection({section, user, dark}) {
     const {t} = useTranslation();
     const {selectedSession} = useSession();
+    const s = getHomeSectionClasses(dark);
     const {to, titleKey, page, param, scoped = false, colors: buttonColors, load} = section;
     const sessionId = selectedSession?.id;
 
@@ -68,33 +63,63 @@ function HomeSection({section, user}) {
         return byColor;
     }, [colors]);
 
-    const countText = (color) => (counts ? String(counts[color] ?? 0) : failed ? "–" : "…");
+    const countOf = (color) => (counts ? (counts[color] ?? 0) : null);
+    const countText = (color) => {
+        const n = countOf(color);
+        return n !== null ? String(n) : failed ? "–" : "…";
+    };
     const hrefOf = (color) => `${to}?${param}=${color}`;
     const labelOf = (color) => {
         const key = statusLabelKey(page, color);
         return key ? t(key) : color;
     };
 
-    return (
-        <section aria-label={t(titleKey)} className="min-w-0 w-full flex flex-col gap-3">
-            <Link to={to} aria-label={`${t(titleKey)} (${countText(ALL)})`}
-                  className={`${BASE} ${COLOR_CLASSES.ALL} w-full text-base sm:text-xl`}>
-                <span className="min-w-0 wrap-break-word">{t(titleKey)}</span>
-                <span className="flex items-center gap-3">
-                    <span className="text-2xl tabular-nums" aria-live="polite">{countText(ALL)}</span>
-                    <Icon name="arrow_forward" size={24} className="transition-transform group-hover:translate-x-1"/>
-                </span>
-            </Link>
+    const renderTile = (color) => {
+        const icon = s.tileIcon(color);
+        if (!icon) return null;
+        const disabled = countOf(color) === 0;
+        const label = `${t(titleKey)} – ${labelOf(color)} (${countText(color)})`;
 
-            <div className={`grid grid-cols-1 gap-3 ${GRID_COLS[buttonColors.length] ?? "sm:grid-cols-3"}`}>
-                {buttonColors.map((color) => (
-                    <Link key={color} to={hrefOf(color)}
-                          aria-label={`${t(titleKey)} – ${labelOf(color)} (${countText(color)})`}
-                          className={`${BASE} ${COLOR_CLASSES[color]} text-sm sm:text-base`}>
-                        <span className="min-w-0 wrap-break-word">{labelOf(color)}</span>
-                        <span className="text-2xl tabular-nums">{countText(color)}</span>
-                    </Link>
-                ))}
+        const content = (
+            <>
+                <span className={s.tileBadge(color)}>
+                    <Icon name={icon} size={22}/>
+                </span>
+                <span className={s.tileLabel}>{labelOf(color)}</span>
+                <span className={s.tileCount(color)}>{countText(color)}</span>
+            </>
+        );
+
+        if (disabled) {
+            return (
+                <div key={color} role="link" aria-disabled="true" aria-label={label}
+                     className={s.tile(color, true)}>
+                    {content}
+                </div>
+            );
+        }
+
+        return (
+            <Link key={color} to={hrefOf(color)} aria-label={label} className={s.tile(color, false)}>
+                {content}
+            </Link>
+        );
+    };
+
+    return (
+        <section aria-label={t(titleKey)} className={s.section}>
+            <Button as={Link} to={to} tone="primary" lockTone size="lg" dark={dark}
+                    aria-label={`${t(titleKey)} (${countText(ALL)})`}
+                    className={s.allBar}>
+                <span className={s.allTitle}>{t(titleKey)}</span>
+                <span className="flex items-center gap-3">
+                    <span className={s.allTotal} aria-live="polite">{countText(ALL)}</span>
+                    <Icon name="arrow_forward" size={20} className={s.allArrow}/>
+                </span>
+            </Button>
+
+            <div className={s.grid(buttonColors.length)}>
+                {buttonColors.map(renderTile)}
             </div>
         </section>
     );

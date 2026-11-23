@@ -217,6 +217,96 @@ export function getHomeClasses(dark) {
 
 // endregion
 
+// region HomeSection (status tiles under the blue bar)
+const HOME_GRID_COLS = {1: "sm:grid-cols-1", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3"};
+
+// Per color: icon + classes of the tile (colors / hover), the round icon badge and the count chip
+const HOME_TILE = {
+    GREEN: {
+        icon: "check_circle",
+        light: {
+            tile: "border-green-300 bg-green-50 text-green-900",
+            hover: "hover:bg-green-100 hover:border-green-400",
+            badge: "bg-green-600 text-white",
+            chip: "bg-green-600 text-white",
+        },
+        dark: {
+            tile: "border-green-500/40 bg-green-500/10 text-green-100",
+            hover: "hover:bg-green-500/20 hover:border-green-400/70",
+            badge: "bg-green-500/25 text-green-300",
+            chip: "bg-green-500 text-green-950",
+        },
+    },
+    YELLOW: {
+        icon: "schedule",
+        light: {
+            tile: "border-amber-300 bg-amber-50 text-amber-900",
+            hover: "hover:bg-amber-100 hover:border-amber-400",
+            badge: "bg-amber-500 text-white",
+            chip: "bg-amber-500 text-white",
+        },
+        dark: {
+            tile: "border-amber-500/40 bg-amber-500/10 text-amber-100",
+            hover: "hover:bg-amber-500/20 hover:border-amber-400/70",
+            badge: "bg-amber-500/25 text-amber-300",
+            chip: "bg-amber-400 text-amber-950",
+        },
+    },
+    RED: {
+        icon: "close",
+        light: {
+            tile: "border-red-300 bg-red-50 text-red-900",
+            hover: "hover:bg-red-100 hover:border-red-400",
+            badge: "bg-red-600 text-white",
+            chip: "bg-red-600 text-white",
+        },
+        dark: {
+            tile: "border-red-500/40 bg-red-500/10 text-red-100",
+            hover: "hover:bg-red-500/20 hover:border-red-400/70",
+            badge: "bg-red-500/25 text-red-300",
+            chip: "bg-red-500 text-red-950",
+        },
+    },
+};
+
+const HOME_TILE_SHAPE = "flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left";
+
+const HOME_TILE_LINK =
+    `group ${HOME_TILE_SHAPE} shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ` +
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " +
+    "active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100";
+
+// A tile with a count of 0: same shape, but inert and faded
+const HOME_TILE_DISABLED = `${HOME_TILE_SHAPE} opacity-45 grayscale-[40%] cursor-not-allowed select-none`;
+
+export function getHomeSectionClasses(dark) {
+    const theme = (color) => HOME_TILE[color]?.[dark ? "dark" : "light"];
+
+    return {
+        section: "min-w-0 w-full flex flex-col gap-3",
+
+        // Blue bar (whole page): label on the left, total on the right (! beats the base justify-center)
+        allBar: "w-full justify-between! text-left text-base!",
+        allTitle: "min-w-0 wrap-break-word",
+        allTotal: "text-xl tabular-nums",
+        allArrow: "transition-transform group-hover:translate-x-1",
+
+        // Status tiles
+        grid: (count) => `grid grid-cols-1 gap-3 ${HOME_GRID_COLS[count] ?? "sm:grid-cols-3"}`,
+        tileIcon: (color) => HOME_TILE[color]?.icon,
+        tile: (color, disabled = false) => disabled
+            ? `${HOME_TILE_DISABLED} ${theme(color)?.tile ?? ""}`
+            : `${HOME_TILE_LINK} ${theme(color)?.tile ?? ""} ${theme(color)?.hover ?? ""}`,
+        tileBadge: (color) =>
+            `flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${theme(color)?.badge ?? ""}`,
+        tileLabel: "min-w-0 flex-1 text-sm font-semibold leading-snug wrap-break-word",
+        tileCount: (color) =>
+            `flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full px-2.5 text-lg font-bold tabular-nums ${theme(color)?.chip ?? ""}`,
+    };
+}
+
+// endregion
+
 // region Footer
 export function getFooterClasses(dark) {
     return {
