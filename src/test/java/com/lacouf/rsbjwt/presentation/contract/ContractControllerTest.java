@@ -3,6 +3,7 @@ package com.lacouf.rsbjwt.presentation.contract;
 import com.lacouf.rsbjwt.ReactSpringSecurityJwtApplication;
 import com.lacouf.rsbjwt.exception.GlobalExceptionHandler;
 import com.lacouf.rsbjwt.exception.contract.ContractAlreadySignedException;
+import com.lacouf.rsbjwt.exception.contract.ContractNotSignedByStudentAndEmployerException;
 import com.lacouf.rsbjwt.exception.signature.IncorrectSignaturePasswordException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
@@ -139,6 +140,17 @@ public class ContractControllerTest {
     void shouldReturnConflictWhenContractIsAlreadySignedByManager() throws Exception {
         // Arrange
         when(contractService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD)).thenThrow(new ContractAlreadySignedException(30L, ContractParty.MANAGER));
+
+        // Act + Assert
+        mockMvc.perform(put("/api/contracts/30/signature").principal(managerAuthentication)
+                        .contentType(MediaType.APPLICATION_JSON).content(SIGNATURE_BODY))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnConflictWhenManagerSignsBeforeStudentAndEmployer() throws Exception {
+        // Arrange
+        when(contractService.signContract(MANAGER_EMAIL, 30L, MANAGER_PASSWORD)).thenThrow(new ContractNotSignedByStudentAndEmployerException(30L));
 
         // Act + Assert
         mockMvc.perform(put("/api/contracts/30/signature").principal(managerAuthentication)
