@@ -31,7 +31,7 @@ hire_and_sign() { # hire_and_sign <courriel de l'employeur> <mot de passe> <cour
                      WHERE student.email = '$3';")
   [[ -n "$contract_id" ]] || fail "contrat de $3 introuvable"
 
-  for signer in "$MANAGER_EMAIL" "$1" "$3"; do
+  for signer in "$1" "$3" "$MANAGER_EMAIL"; do
     request PUT "$API/dev/contracts/$contract_id/signature?email=$signer" "$MANAGER_TOKEN"
   done
 }

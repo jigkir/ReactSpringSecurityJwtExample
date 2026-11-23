@@ -96,7 +96,11 @@
     "offers": "Offres reçues",
     "internshipOfferedNotification": "Offre de stage reçue",
     "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
-    "contractToSignNotification": "{{amount}} contrat(s) à signer"
+    "contractToSignNotification": "{{amount}} contrat(s) à signer",
+    "newContractNotification": "{{amount}} nouveau(x) contrat(s) ajouté(s)",
+    "contractReadyToSignNotification": "{{amount}} contrat(s) prêt(s) à signer",
+    "newContractNotificationDetail": "Vous pourrez le signer une fois que l'étudiant et l'employeur l'auront signé.",
+    "contractReadyToSignNotificationDetail": "L'étudiant et l'employeur ont signé : le contrat attend votre signature."
   },
   "teacher": {
     "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces.",
@@ -518,7 +522,8 @@
       "errorTerms": "Vous devez accepter les termes du contrat avant de signer.",
       "errorPassword": "Entrez le mot de passe de votre compte pour signer.",
       "errorWrongPassword": "Mot de passe incorrect. Le contrat n'a pas été signé.",
-      "errorAlreadySigned": "Ce contrat a déjà été signé."
+      "errorAlreadySigned": "Ce contrat a déjà été signé.",
+      "waitingForOtherParties": "Vous pourrez signer une fois que l'étudiant et l'employeur auront signé."
     },
     "download": {
       "group": "Télécharger le contrat en PDF",

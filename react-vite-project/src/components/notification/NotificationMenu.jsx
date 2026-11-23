@@ -86,7 +86,8 @@ export default function NotificationMenu({dark}) {
         if (!notification) {
             return (
                 <Link to={item.to} className={menuClasses.link} onClick={() => setOpen(false)}>
-                    <span>{t(item.labelKey, {amount: item.count})}</span>
+                    <span className="block font-semibold">{t(item.labelKey, {amount: item.count})}</span>
+                    {item.detailKey && <span className="block text-xs opacity-80">{t(item.detailKey)}</span>}
                 </Link>
             );
         }

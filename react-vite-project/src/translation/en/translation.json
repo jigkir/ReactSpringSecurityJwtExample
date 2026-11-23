@@ -96,7 +96,11 @@
     "offers": "Offers received",
     "internshipOfferedNotification": "Internship offer received",
     "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
-    "contractToSignNotification": "{{amount}} contract(s) to sign"
+    "contractToSignNotification": "{{amount}} contract(s) to sign",
+    "newContractNotification": "{{amount}} new contract(s) added",
+    "contractReadyToSignNotification": "{{amount}} contract(s) ready to sign",
+    "newContractNotificationDetail": "You can sign it once the student and the employer have signed it.",
+    "contractReadyToSignNotificationDetail": "The student and the employer have signed: the contract is waiting for your signature."
   },
   "teacher": {
     "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces.",
@@ -518,7 +522,8 @@
       "errorTerms": "You must accept the terms of the contract before signing.",
       "errorPassword": "Enter your account password to sign.",
       "errorWrongPassword": "Incorrect password. The contract was not signed.",
-      "errorAlreadySigned": "This contract has already been signed."
+      "errorAlreadySigned": "This contract has already been signed.",
+      "waitingForOtherParties": "You can sign once the student and the employer have signed."
     },
     "download": {
       "group": "Download the contract as a PDF",

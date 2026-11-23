@@ -25,7 +25,7 @@ import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
 import Icon from '../../styles/Icon.jsx';
 import {getCvDocumentsClasses, getInternshipCardClasses} from '../../styles/AppStyles.jsx';
-import {CONTRACT_ROLES} from '../../utils/ContractRole.js';
+import {CONTRACT_ROLES, canSign} from '../../utils/ContractRole.js';
 import {ALL, borderStatusOf} from '../../utils/StatusColor.js';
 import SignContractForm from './SignContractForm.jsx';
 
@@ -94,6 +94,7 @@ function ContractCard({
     // Has the CONNECTED party (manager, employer or student) signed?
     const signedByMe = Boolean(contract[contractRole.signedAtField]);
     const fullySigned = Boolean(contract.studentSignedAt && contract.employerSignedAt && contract.managerSignedAt);
+    const waitingForOtherParties = !canSign(contract, contractRole);
     const skills = parseSkills(internship.requiredSkills);
     const isFrench = i18n.resolvedLanguage?.startsWith("fr");
     const locale = isFrench ? "fr-CA" : "en-CA";
@@ -145,6 +146,7 @@ function ContractCard({
 
     const hasActions = fullySigned || (!signedByMe && !signOpen);
     const muted = dark ? "text-slate-400" : "text-gray-500";
+    const warning = dark ? "text-red-400" : "text-red-600";
     const rowBorder = dark ? "border-slate-700" : "border-gray-200";
     const divider = `border-t pt-3 ${rowBorder}`;
 
@@ -302,9 +304,16 @@ function ContractCard({
                         </Button>
                     )}
                     {!signedByMe && !signOpen && (
-                        <Button tone="success" lockTone dark={dark} icon="edit" onClick={() => setSignOpen(true)}>
-                            {t("managerContracts.sign.open")}
-                        </Button>
+                        <>
+                            {waitingForOtherParties && (
+                                <span
+                                    className={`text-sm ${warning}`}>{t("managerContracts.sign.waitingForOtherParties")}</span>
+                            )}
+                            <Button tone="success" lockTone dark={dark} icon="edit" disabled={waitingForOtherParties}
+                                    onClick={() => setSignOpen(true)}>
+                                {t("managerContracts.sign.open")}
+                            </Button>
+                        </>
                     )}
                 </div>
             )}

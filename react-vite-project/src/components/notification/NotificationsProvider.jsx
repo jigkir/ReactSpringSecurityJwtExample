@@ -32,6 +32,7 @@ const NOTIFICATION_TYPE = {
 
     INTERNSHIP_OFFERED: "INTERNSHIP_OFFERED",
 
+    NEW_CONTRACT: "NEW_CONTRACT",
     CONTRACT_TO_SIGN_BY_MANAGER: "CONTRACT_TO_SIGN_BY_MANAGER",
     CONTRACT_TO_SIGN_BY_EMPLOYER: "CONTRACT_TO_SIGN_BY_EMPLOYER",
     CONTRACT_TO_SIGN_BY_STUDENT: "CONTRACT_TO_SIGN_BY_STUDENT",
@@ -93,10 +94,20 @@ const NOTIFICATION_ITEMS = {
             to: PAGE.MANAGER_USERS
         },
         {
+            id: "newContract",
+            notificationType: NOTIFICATION_TYPE.NEW_CONTRACT,
+            targetType: TARGET_TYPE.CONTRACT,
+            labelKey: "navbar.newContractNotification",
+            detailKey: "navbar.newContractNotificationDetail",
+            to: PAGE.MANAGER_CONTRACTS,
+            sessionScoped: true,
+        },
+        {
             id: "contractToSign",
             notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN_BY_MANAGER,
             targetType: TARGET_TYPE.CONTRACT,
-            labelKey: "navbar.contractToSignNotification",
+            labelKey: "navbar.contractReadyToSignNotification",
+            detailKey: "navbar.contractReadyToSignNotificationDetail",
             to: PAGE.MANAGER_CONTRACTS,
             sessionScoped: true,
         },
