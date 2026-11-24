@@ -23,11 +23,18 @@ const loadColors = async (section, sessionId, user) => {
     }
 };
 
-// {[section.to]: colors[] | LOAD_FAILED}; a page is missing while it loads
+// Last colors loaded for each user and session. App reloads the user (a new object) on every
+// page change: without them, coming back to the Home shows "…" for a moment before the counts
+const lastColors = new Map();
+
+const lastColorsKey = (user, sessionId) => `${user?.id}:${sessionId}`;
+
+// {[section.to]: colors[] | LOAD_FAILED}; a page is missing while it loads for the first time
 function useSectionColors(sections, user) {
     const {selectedSession} = useSession();
     const sessionId = selectedSession?.id;
-    const [colorsByPage, setColorsByPage] = useState({});
+    const key = lastColorsKey(user, sessionId);
+    const [colorsByPage, setColorsByPage] = useState(() => lastColors.get(key) ?? {});
     const mounted = useRef(false);
 
     useEffect(() => {
@@ -43,13 +50,16 @@ function useSectionColors(sections, user) {
         const entries = await Promise.all(
             loadable.map(async (section) => [section.to, await loadColors(section, sessionId, user)]));
 
-        if (mounted.current) setColorsByPage(Object.fromEntries(entries));
+        const loaded = Object.fromEntries(entries);
+
+        lastColors.set(lastColorsKey(user, sessionId), loaded);
+        if (mounted.current) setColorsByPage(loaded);
     }, [sections, sessionId, user]);
 
     useEffect(() => {
-        setColorsByPage({});
+        setColorsByPage(lastColors.get(key) ?? {});
         void refresh();
-    }, [refresh]);
+    }, [refresh, key]);
 
     usePolling(refresh);
 
