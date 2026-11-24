@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
 import {devLoginAs} from '../../api/DevApi.jsx';
 import {
@@ -187,16 +188,18 @@ const Login = ({user, setError}) => {
                         loading={submitting}
                         loadingLabel={t("login.submit")}
                         label={t("login.submit")}
+                        icon="login"
                         submitClass={submitClass}
                     />
                 </form>
 
-                <p className={subtextClass}>
-                    {t("login.noAccount")}{" "}
-                    <button onClick={() => navigate("/signup")} className="text-blue-500 hover:underline font-medium">
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                    <p className={`${subtextClass} mt-0!`}>{t("login.noAccount")}</p>
+                    <Button type="button" tone="primary" lockTone dark={dark} size="sm" icon="person_add"
+                            onClick={() => navigate("/signup")}>
                         {t("login.signupLink")}
-                    </button>
-                </p>
+                    </Button>
+                </div>
             </div>
         </div>
     );

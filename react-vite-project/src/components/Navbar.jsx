@@ -3,39 +3,13 @@ import {useTranslation} from 'react-i18next';
 import {useEffect, useRef, useState} from 'react';
 import {getNavbarClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
-import MobileSidebar from "./page/MobileSideBar.jsx";
+import NavbarMobile from "./NavbarMobile.jsx";
 import NotificationMenu from './notification/NotificationMenu.jsx';
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 import SessionSelect from "./session/SessionSelect.jsx";
 import {useSession} from "../utils/useSession.js";
 import {useAdaptiveNavbar} from "../utils/useAdaptiveNavbar.js";
-
-// Links by role. Every label is a translation key (`labelKey`).
-const link = (to, labelKey) => ({to, labelKey});
-
-const NAV_BY_ROLE = {
-    STUDENT: [
-        link("/portfolio", "navbar.portfolio"),
-        link("/internship", "navbar.internships"),
-        link("/interviews", "navbar.interviews"),
-        link("/offers", "navbar.offers"),
-        link("/student/contracts", "navbar.contracts"),
-    ],
-    MANAGER: [
-        link("/manager/cvs", "navbar.cv"),
-        link("/manager/internships", "navbar.internships"),
-        link("/manager/contracts", "navbar.contracts"),
-        link("/users", "navbar.users"),
-        link("/tracking", "navbar.tracking")
-    ],
-    EMPLOYER: [
-        link("/internships", "navbar.postInternship"),
-        link("/applications", "navbar.applications"),
-        link("/employer/interviews", "navbar.interviews"),
-        link("/employer/contracts", "navbar.contracts"),
-    ],
-    TEACHER: [],
-};
+import {getNavLinks} from "../routes/AppRoutes.jsx";
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
@@ -119,11 +93,11 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
-    // Order: Home, role links, then About always last (right before the notification bell)
+    // Order: Home, role links (from routes/AppRoutes.jsx), then About always last (right before the notification bell)
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), end: true},
-        ...(isLoggedIn && isAccessGranted ? (NAV_BY_ROLE[role] ?? []) : []).map((item) => ({
-            ...item, label: item.labelKey ? t(item.labelKey) : item.label,
+        ...(isLoggedIn && isAccessGranted ? getNavLinks(role) : []).map(({to, labelKey}) => ({
+            to, label: t(labelKey),
         })),
         {to: "/about", label: t("navbar.about")},
     ];
@@ -134,7 +108,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const dropdownPanel = `absolute mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`;
     const mobileLinkClass = ({isActive}) => `block px-4 py-2 text-lg pl-8 ${isActive ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700") : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")}`;
 
-    const authBtnDesktop = "text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
+    const authBtnDesktop = "inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
     const tldBadge = `ml-1 px-1.5 py-0.5 rounded-md font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`;
 
@@ -256,11 +230,15 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                 )}
 
                                 {!isLoggedIn && (<>
-                                    <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}>
-                                        {t("navbar.login")}
+                                    <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}
+                                          aria-label={t("navbar.login")} title={t("navbar.login")}>
+                                        <Icon name="login" size={16}/>
+                                        {!compact && <span>{t("navbar.login")}</span>}
                                     </Link>
-                                    <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}>
-                                        {t("navbar.signup")}
+                                    <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}
+                                          aria-label={t("navbar.signup")} title={t("navbar.signup")}>
+                                        <Icon name="person_add" size={16}/>
+                                        {!compact && <span>{t("navbar.signup")}</span>}
                                     </Link>
                                 </>)}
 
@@ -330,7 +308,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
         {/* Side Menu Drawer & Backdrop (burger mode only) */}
         {burger && (
-            <MobileSidebar
+            <NavbarMobile
                 ref={sidebarRef}
                 isOpen={menuOpen}
                 onClose={() => setMenuOpen(false)}
