@@ -210,16 +210,20 @@ export function getNotificationMenuClasses(dark) {
 // region Home
 export function getHomeClasses(dark) {
     return {
-        page: `flex-1 p-6 ${dark ? "text-white" : "text-gray-900"}`,
-        heading: "text-2xl font-bold mb-6",
+        page: `flex-1 p-4 md:p-10 ${dark ? "text-white" : "text-gray-900"}`,
+        container: "mx-auto flex w-full max-w-7xl flex-col gap-6",
+        header: "text-left",
+        heading: "text-2xl font-bold",
+        subtitle: `mt-1 text-sm ${dark ? "text-slate-400" : "text-gray-600"}`,
+        // 6 columns: a card spans 2 (three per row), 4 or 6 (see spanOf in Home.jsx)
+        grid: "grid grid-cols-1 gap-6 lg:grid-cols-6",
     };
 }
 
+
 // endregion
 
-// region HomeSection (status tiles under the blue bar)
-const HOME_GRID_COLS = {1: "sm:grid-cols-1", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3"};
-
+// region HomeSection (dashboard card holding the status tiles)
 // Per color: icon + classes of the tile (colors / hover), the round icon badge and the count chip
 const HOME_TILE = {
     GREEN: {
@@ -279,20 +283,42 @@ const HOME_TILE_LINK =
 // A tile with a count of 0: same shape, but inert and faded
 const HOME_TILE_DISABLED = `${HOME_TILE_SHAPE} opacity-45 grayscale-[40%] cursor-not-allowed select-none`;
 
+// Tailwind only sees complete class names: no `lg:col-span-${n}`
+const HOME_CARD_SPAN = {
+    1: "lg:col-span-1",
+    2: "lg:col-span-2",
+    3: "lg:col-span-3",
+    4: "lg:col-span-4",
+    5: "lg:col-span-5",
+    6: "lg:col-span-6",
+};
+
+// Tiles per row depends on the width of the CARD (container query), not of the screen:
+// stacked in a narrow card, side by side in a wide one
+const HOME_TILE_COLS = {
+    1: "@xl:grid-cols-1",
+    2: "@xl:grid-cols-2",
+    3: "@xl:grid-cols-3",
+};
+
 export function getHomeSectionClasses(dark) {
     const theme = (color) => HOME_TILE[color]?.[dark ? "dark" : "light"];
+    const divider = dark ? "border-slate-700" : "border-gray-200";
 
     return {
-        section: "min-w-0 w-full flex flex-col gap-3",
-
-        // Blue bar (whole page): label on the left, total on the right (! beats the base justify-center)
-        allBar: "w-full justify-between! text-left text-base!",
-        allTitle: "min-w-0 wrap-break-word",
-        allTotal: "text-xl tabular-nums",
-        allArrow: "transition-transform group-hover:translate-x-1",
+        // Card
+        card: `@container flex min-w-0 flex-col rounded-xl border shadow-sm ${
+            dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        span: (columns) => HOME_CARD_SPAN[columns] ?? HOME_CARD_SPAN[2],
+        header: `flex items-start justify-between gap-3 border-b px-5 py-4 ${divider}`,
+        title: `min-w-0 text-base font-semibold wrap-break-word ${dark ? "text-white" : "text-gray-900"}`,
+        seeAll: `inline-flex shrink-0 items-center gap-1 rounded text-sm font-medium transition-colors ` +
+            `focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ` +
+            `${dark ? "text-indigo-300 hover:text-indigo-200" : "text-indigo-600 hover:text-indigo-800"} hover:underline`,
+        body: "flex-1 p-4",
 
         // Status tiles
-        grid: (count) => `grid grid-cols-1 gap-3 ${HOME_GRID_COLS[count] ?? "sm:grid-cols-3"}`,
+        grid: (count) => `grid grid-cols-1 gap-3 ${HOME_TILE_COLS[count] ?? HOME_TILE_COLS[3]}`,
         tileIcon: (color) => HOME_TILE[color]?.icon,
         tile: (color, disabled = false) => disabled
             ? `${HOME_TILE_DISABLED} ${theme(color)?.tile ?? ""}`
@@ -304,6 +330,7 @@ export function getHomeSectionClasses(dark) {
             `flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full px-2.5 text-lg font-bold tabular-nums ${theme(color)?.chip ?? ""}`,
     };
 }
+
 
 // endregion
 

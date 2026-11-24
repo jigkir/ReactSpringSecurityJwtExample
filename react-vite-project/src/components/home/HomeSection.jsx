@@ -8,14 +8,12 @@
  *
  * All the classes live in AppStyles.jsx (getHomeSectionClasses): this file only holds the logic.
  *
- * Every tile opens the page: the top bar unfiltered, the others with
- * `?<section.param>=<COLOR>` (read by the page as the initial filter).
- * A tile whose count is 0 is disabled: not a link, faded, not focusable.
- * The tile texts are the wording of the page's filter select (STATUS_LABEL_KEYS in StatusColor.js).
- * The counts come from `section.load`, refreshed by usePolling (every 10 s).
+ * "See all" opens the page unfiltered; every tile opens it with `?<section.param>=<COLOR>`
+ * (read by the page as the initial filter). A tile whose count is 0 is disabled.
+ * Counts come from `section.load`, refreshed by usePolling.
  * Sections that list the navbar session wait for `selectedSession`.
  *
- * Props: section (see HomeSections.js), user, dark
+ * Props: section (see HomeSections.js), user, dark, span (1..6 columns of the 6-column grid)
  */
 
 import {useCallback, useEffect, useMemo, useState} from "react";
@@ -28,7 +26,7 @@ import {ALL, statusLabelKey} from "../../utils/StatusColor.js";
 import {usePolling} from "../../utils/usePolling.js";
 import {useSession} from "../../utils/useSession.js";
 
-function HomeSection({section, user, dark}) {
+function HomeSection({section, user, dark, span = 2}) {
     const {t} = useTranslation();
     const {selectedSession} = useSession();
     const s = getHomeSectionClasses(dark);
@@ -107,19 +105,21 @@ function HomeSection({section, user, dark}) {
     };
 
     return (
-        <section aria-label={t(titleKey)} className={s.section}>
-            <Button as={Link} to={to} tone="primary" lockTone size="lg" dark={dark}
-                    aria-label={`${t(titleKey)} (${countText(ALL)})`}
-                    className={s.allBar}>
-                <span className={s.allTitle}>{t(titleKey)}</span>
-                <span className="flex items-center gap-3">
-                    <span className={s.allTotal} aria-live="polite">{countText(ALL)}</span>
-                    <Icon name="arrow_forward" size={20} className={s.allArrow}/>
-                </span>
-            </Button>
+        <section aria-label={t(titleKey)} className={`${s.card} ${s.span(span)}`}>
+            <header className={s.header}>
+                <h2 className={s.title}>{t(titleKey)}</h2>
+                <Button as={Link} to={to} tone="ghost" dark={dark} size="sm"
+                        className="bg-blue-600! border-transparent! text-white! hover:bg-blue-700! hover:text-white!"
+                        aria-label={`${t(titleKey)} (${countText(ALL)})`}>
+                    {t("home.seeAll")}
+                    <span className="tabular-nums" aria-live="polite">({countText(ALL)})</span>
+                </Button>
+            </header>
 
-            <div className={s.grid(buttonColors.length)}>
-                {buttonColors.map(renderTile)}
+            <div className={s.body}>
+                <div className={s.grid(buttonColors.length)}>
+                    {buttonColors.map(renderTile)}
+                </div>
             </div>
         </section>
     );
