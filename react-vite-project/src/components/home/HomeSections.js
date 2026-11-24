@@ -2,26 +2,28 @@
  * HomeSections.js — The sections the Home page shows for each role.
  * Location: src/components/home/HomeSections.js
  *
- * One section per page. Each section is a blue bar (whole page) over status tiles
- * (RED / YELLOW / GREEN) that show a live count and open the page with that filter selected.
+ * One section per page. Each section is a card with the total of the page and one row per status
+ * (RED / YELLOW / GREEN) that shows a live count and opens the page with that filter selected.
  *
- * Tile order is always the same on every page: RED → YELLOW → GREEN
+ * Row order is always the same on every page: RED → YELLOW → GREEN
  * (rejected / waiting / approved, or the closest equivalent when a color does not exist).
  *
  * to          page the section links to
+ * icon        Material Symbols name of the page (must be in the icon_names list of index.html)
  * titleKey    translation key of the section title
- * page        wording of the status tiles: STATUS_LABEL_KEYS[page] (utils/StatusColor.js),
+ * page        wording of the status rows: STATUS_LABEL_KEYS[page] (utils/StatusColor.js),
  *             the same words as the filter select of that page
  * param       query param read by the page as the initial filter ("status", or "applied" for student internships)
  * scoped      true when the page lists the session chosen in the navbar (the load waits for it)
- * colors      colors of the tiles in display order, ALL (blue) is always the top bar
+ * colors      colors of the status rows in display order
  * load        ({sessionId, user}) => Promise<(color|null)[]>, one color per item of the page
- *             (null = item without color: counted by the blue bar only)
+ *             (null = item without color: counted in the total only)
  *
  * Pure data + loaders: no React, no i18n. Colors, never translation keys, drive the counts.
  */
 
 import {
+    ALL,
     COLOR,
     colorOf
 } from "../../utils/StatusColor.js";
@@ -45,6 +47,35 @@ import {
     getStudentOffers,
     getUsers,
 } from "../api/Api.jsx";
+
+// The status that waits for an action: its items are listed in the "To do" panel of the Home
+export const ACTION_COLOR = COLOR.YELLOW;
+
+// Colors of a page whose load failed
+export const LOAD_FAILED = "LOAD_FAILED";
+
+/** {ALL: n, RED: n, ...} of a page's colors, or null while they load or after a failure. */
+export const countColors = (colors) => {
+    if (!Array.isArray(colors)) return null;
+
+    const counts = {[ALL]: colors.length};
+    colors.filter(Boolean).forEach((color) => {
+        counts[color] = (counts[color] ?? 0) + 1;
+    });
+    return counts;
+};
+
+export const countOf = (counts, color) => (counts ? (counts[color] ?? 0) : null);
+
+/** Count to show: the number, "…" while loading, "–" after a failure. */
+export const countText = (counts, failed, color) => {
+    const count = countOf(counts, color);
+    if (count !== null) return String(count);
+    return failed ? "–" : "…";
+};
+
+/** The page of a section with one status color selected as its filter. */
+export const filteredPage = (section, color) => `${section.to}?${section.param}=${color}`;
 
 const STATUS_COLORS = [COLOR.RED, COLOR.YELLOW, COLOR.GREEN];
 
@@ -73,11 +104,17 @@ const loadInterviews = (getter) => async () => asList(await getter()).map(getInt
 export const SECTIONS_BY_ROLE = {
     STUDENT: [
         {
-            to: "/portfolio", page: "studentCv", titleKey: "home.studentCvLink", param: "status", colors: STATUS_COLORS,
+            to: "/portfolio",
+            icon: "upload_file",
+            page: "studentCv",
+            titleKey: "home.studentCvLink",
+            param: "status",
+            colors: STATUS_COLORS,
             load: async () => statusColors((await getDocuments("CV")).filter(isVisible)),
         },
         {
             to: "/internship",
+            icon: "work",
             page: "studentApplied",
             titleKey: "home.studentInternshipsLink",
             param: "applied",
@@ -92,6 +129,7 @@ export const SECTIONS_BY_ROLE = {
         },
         {
             to: "/interviews",
+            icon: "event",
             page: "studentInterviews",
             titleKey: "home.studentInterviewsLink",
             param: "status",
@@ -99,11 +137,17 @@ export const SECTIONS_BY_ROLE = {
             load: loadInterviews(getStudentInterviews),
         },
         {
-            to: "/offers", page: "studentOffers", titleKey: "navbar.offers", param: "status", colors: STATUS_COLORS,
+            to: "/offers",
+            icon: "star",
+            page: "studentOffers",
+            titleKey: "navbar.offers",
+            param: "status",
+            colors: STATUS_COLORS,
             load: async () => asList(await getStudentOffers()).map((offer) => colorOf(offer.studentInternshipConsent)),
         },
         {
             to: "/student/contracts",
+            icon: "edit",
             page: "contracts",
             titleKey: "home.studentContractsLink",
             param: "status",
@@ -115,6 +159,7 @@ export const SECTIONS_BY_ROLE = {
     EMPLOYER: [
         {
             to: "/internships",
+            icon: "business_center",
             page: "employerInternships",
             titleKey: "home.employerInternshipsLink",
             param: "status",
@@ -124,6 +169,7 @@ export const SECTIONS_BY_ROLE = {
         },
         {
             to: "/applications",
+            icon: "person",
             page: "employerApplications",
             titleKey: "home.employerApplicationsLink",
             param: "status",
@@ -134,6 +180,7 @@ export const SECTIONS_BY_ROLE = {
         },
         {
             to: "/employer/interviews",
+            icon: "event",
             page: "employerInterviews",
             titleKey: "navbar.interviews",
             param: "status",
@@ -142,6 +189,7 @@ export const SECTIONS_BY_ROLE = {
         },
         {
             to: "/employer/contracts",
+            icon: "edit",
             page: "contracts",
             titleKey: "home.employerContractsLink",
             param: "status",
@@ -152,12 +200,18 @@ export const SECTIONS_BY_ROLE = {
     ],
     MANAGER: [
         {
-            to: "/manager/cvs", page: "managerCv", titleKey: "home.managerCvLink", param: "status", scoped: true,
+            to: "/manager/cvs",
+            icon: "picture_as_pdf",
+            page: "managerCv",
+            titleKey: "home.managerCvLink",
+            param: "status",
+            scoped: true,
             colors: PENDING_ONLY,
             load: async ({sessionId}) => statusColors(await getPublicCvs(sessionId)),
         },
         {
             to: "/manager/internships",
+            icon: "business_center",
             page: "managerInternships",
             titleKey: "home.managerInternshipsLink",
             param: "status",
@@ -167,6 +221,7 @@ export const SECTIONS_BY_ROLE = {
         },
         {
             to: "/manager/contracts",
+            icon: "edit",
             page: "contracts",
             titleKey: "home.managerContractsLink",
             param: "status",
@@ -177,6 +232,7 @@ export const SECTIONS_BY_ROLE = {
         {
             // Accounts: APPROVED / PENDING / REJECTED (the backend may send any case)
             to: "/users",
+            icon: "admin_panel_settings",
             page: "managerUsers",
             titleKey: "navbar.users",
             param: "status",
@@ -186,6 +242,7 @@ export const SECTIONS_BY_ROLE = {
         {
             // Internship tracking: still to assign (YELLOW), then teacher assigned (GREEN)
             to: "/tracking",
+            icon: "co_present",
             page: "managerTracking",
             titleKey: "navbar.tracking",
             param: "status",
@@ -198,6 +255,7 @@ export const SECTIONS_BY_ROLE = {
         {
             // Workplace evaluations: still to complete / sign (YELLOW), then signed (GREEN)
             to: "/evaluations",
+            icon: "share_reviews",
             page: "teacherEvaluations",
             titleKey: "workplaceEvaluation.title",
             param: "status",

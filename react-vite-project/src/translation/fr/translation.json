@@ -340,6 +340,8 @@
     }
   },
   "home": {
+    "toDo": "À traiter",
+    "allCaughtUp": "Tout est à jour.",
     "welcome": "Bienvenue",
     "seeAll": "Tout voir",
     "subtitle": "Vue rapide des suivis importants.",

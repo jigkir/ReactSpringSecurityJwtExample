@@ -207,130 +207,100 @@ export function getNotificationMenuClasses(dark) {
 
 // endregion
 
-// region Home
+// region Home (welcome banner, "To do" panel and page cards)
+// Shared by the "To do" panel and the page cards
+const HOME_FOCUS = "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
+
+const HOME_ARROW = "transition-transform group-hover:translate-x-1 motion-reduce:transition-none";
+
 export function getHomeClasses(dark) {
     return {
-        page: `flex-1 p-4 md:p-10 ${dark ? "text-white" : "text-gray-900"}`,
+        page: `flex-1 px-4 py-6 md:px-10 md:py-10 ${dark ? "text-white" : "text-gray-900"}`,
         container: "mx-auto flex w-full max-w-7xl flex-col gap-6",
-        header: "text-left",
-        heading: "text-2xl font-bold",
-        subtitle: `mt-1 text-sm ${dark ? "text-slate-400" : "text-gray-600"}`,
-        // 6 columns: a card spans 2 (three per row), 4 or 6 (see spanOf in Home.jsx)
-        grid: "grid grid-cols-1 gap-6 lg:grid-cols-6",
+
+        // Welcome banner
+        banner: `flex items-center gap-5 rounded-2xl px-6 py-6 md:px-8 md:py-8 ${getBrandSurface(dark)}`,
+        bannerIcon: `hidden h-14 w-14 shrink-0 items-center justify-center rounded-full sm:flex ${
+            dark ? "bg-white/10 text-amber-300" : "bg-white/70 text-amber-500"}`,
+        heading: "text-2xl font-bold md:text-3xl",
+        subtitle: `mt-1 text-sm md:text-base ${dark ? "text-slate-300" : "text-gray-700"}`,
+
+        // Narrow "To do" column on the right, as tall as the cards (first on mobile)
+        layout: "grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]",
+        cards: "grid grid-cols-1 content-start gap-6 sm:grid-cols-2 xl:grid-cols-3 lg:col-start-1 lg:row-start-1",
+        empty: `py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`,
+
+        // "To do" panel: a colored column, unlike the white page cards
+        panel: `flex flex-col gap-4 rounded-2xl bg-linear-to-b p-5 text-white shadow-lg lg:col-start-2 lg:row-start-1 ${
+            dark ? "from-indigo-900 to-violet-900" : "from-indigo-900 to-violet-800"}`,
+        panelHeader: "flex items-center gap-2",
+        panelIcon: "text-amber-300",
+        panelTitle: "flex-1 text-lg font-bold",
+        panelTotal: "rounded-full bg-amber-400 px-2.5 py-0.5 text-sm font-bold text-amber-950 tabular-nums",
+        todoList: "flex flex-col gap-2",
+        todoLink: "group flex items-center gap-3 rounded-xl bg-white/10 p-3 ring-1 ring-white/15 transition-colors " +
+            "hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
+        todoIcon: "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-indigo-700",
+        todoText: "min-w-0 flex-1",
+        todoTitle: "block text-sm font-semibold leading-snug wrap-break-word",
+        todoStatus: "block text-xs text-indigo-100",
+        todoCount: "text-lg font-bold tabular-nums",
+        arrow: HOME_ARROW,
+        caughtUp: "flex items-center gap-2 rounded-xl bg-white/10 p-3 text-sm font-medium",
+        skeleton: "h-14 animate-pulse rounded-xl bg-white/10",
     };
 }
-
 
 // endregion
 
-// region HomeSection (dashboard card holding the status tiles)
-// Per color: icon + classes of the tile (colors / hover), the round icon badge and the count chip
-const HOME_TILE = {
-    GREEN: {
-        icon: "check_circle",
-        light: {
-            tile: "border-green-300 bg-green-50 text-green-900",
-            hover: "hover:bg-green-100 hover:border-green-400",
-            badge: "bg-green-600 text-white",
-            chip: "bg-green-600 text-white",
-        },
-        dark: {
-            tile: "border-green-500/40 bg-green-500/10 text-green-100",
-            hover: "hover:bg-green-500/20 hover:border-green-400/70",
-            badge: "bg-green-500/25 text-green-300",
-            chip: "bg-green-500 text-green-950",
-        },
+// region HomeSection (page card: total and one tinted row per status)
+// Soft tinted row and solid count chip of each status color
+const HOME_STATUS_TONES = {
+    RED: {
+        light: {row: "bg-red-50 text-red-800 hover:bg-red-100", chip: "bg-red-500 text-white"},
+        dark: {row: "bg-red-500/10 text-red-200 hover:bg-red-500/20", chip: "bg-red-500 text-white"},
     },
     YELLOW: {
-        icon: "schedule",
-        light: {
-            tile: "border-amber-300 bg-amber-50 text-amber-900",
-            hover: "hover:bg-amber-100 hover:border-amber-400",
-            badge: "bg-amber-500 text-white",
-            chip: "bg-amber-500 text-white",
-        },
-        dark: {
-            tile: "border-amber-500/40 bg-amber-500/10 text-amber-100",
-            hover: "hover:bg-amber-500/20 hover:border-amber-400/70",
-            badge: "bg-amber-500/25 text-amber-300",
-            chip: "bg-amber-400 text-amber-950",
-        },
+        light: {row: "bg-amber-50 text-amber-900 hover:bg-amber-100", chip: "bg-amber-400 text-amber-950"},
+        dark: {row: "bg-amber-500/10 text-amber-100 hover:bg-amber-500/20", chip: "bg-amber-400 text-amber-950"},
     },
-    RED: {
-        icon: "close",
-        light: {
-            tile: "border-red-300 bg-red-50 text-red-900",
-            hover: "hover:bg-red-100 hover:border-red-400",
-            badge: "bg-red-600 text-white",
-            chip: "bg-red-600 text-white",
-        },
-        dark: {
-            tile: "border-red-500/40 bg-red-500/10 text-red-100",
-            hover: "hover:bg-red-500/20 hover:border-red-400/70",
-            badge: "bg-red-500/25 text-red-300",
-            chip: "bg-red-500 text-red-950",
-        },
+    GREEN: {
+        light: {row: "bg-emerald-50 text-emerald-800 hover:bg-emerald-100", chip: "bg-emerald-500 text-white"},
+        dark: {row: "bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20", chip: "bg-emerald-500 text-white"},
     },
 };
 
-const HOME_TILE_SHAPE = "flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left";
-
-const HOME_TILE_LINK =
-    `group ${HOME_TILE_SHAPE} shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ` +
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " +
-    "active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100";
-
-// A tile with a count of 0: same shape, but inert and faded
-const HOME_TILE_DISABLED = `${HOME_TILE_SHAPE} opacity-45 grayscale-[40%] cursor-not-allowed select-none`;
-
-// Tailwind only sees complete class names: no `lg:col-span-${n}`
-const HOME_CARD_SPAN = {
-    1: "lg:col-span-1",
-    2: "lg:col-span-2",
-    3: "lg:col-span-3",
-    4: "lg:col-span-4",
-    5: "lg:col-span-5",
-    6: "lg:col-span-6",
-};
-
-// Tiles per row depends on the width of the CARD (container query), not of the screen:
-// stacked in a narrow card, side by side in a wide one
-const HOME_TILE_COLS = {
-    1: "@xl:grid-cols-1",
-    2: "@xl:grid-cols-2",
-    3: "@xl:grid-cols-3",
+// A status with no item stays neutral
+const HOME_EMPTY_STATUS_TONE = {
+    light: {row: "bg-gray-50 text-gray-400", chip: "bg-gray-200 text-gray-500"},
+    dark: {row: "bg-slate-700/30 text-slate-500", chip: "bg-slate-700 text-slate-400"},
 };
 
 export function getHomeSectionClasses(dark) {
-    const theme = (color) => HOME_TILE[color]?.[dark ? "dark" : "light"];
-    const divider = dark ? "border-slate-700" : "border-gray-200";
+    const theme = dark ? "dark" : "light";
+    const tone = (color, empty) => (empty ? HOME_EMPTY_STATUS_TONE : HOME_STATUS_TONES[color])[theme];
 
     return {
-        // Card
-        card: `@container flex min-w-0 flex-col rounded-xl border shadow-sm ${
+        card: `flex min-w-0 flex-col rounded-2xl border shadow-sm transition-shadow hover:shadow-md ${
             dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
-        span: (columns) => HOME_CARD_SPAN[columns] ?? HOME_CARD_SPAN[2],
-        header: `flex items-start justify-between gap-3 border-b px-5 py-4 ${divider}`,
-        title: `min-w-0 text-base font-semibold wrap-break-word ${dark ? "text-white" : "text-gray-900"}`,
-        seeAll: `inline-flex shrink-0 items-center gap-1 rounded text-sm font-medium transition-colors ` +
-            `focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ` +
-            `${dark ? "text-indigo-300 hover:text-indigo-200" : "text-indigo-600 hover:text-indigo-800"} hover:underline`,
-        body: "flex-1 p-4",
+        header: "flex items-start gap-3 p-5 pb-4",
+        icon: `flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+            dark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`,
+        title: "min-w-0 flex-1 self-center text-base font-semibold leading-snug wrap-break-word",
+        total: "text-3xl font-bold leading-none tabular-nums",
 
-        // Status tiles
-        grid: (count) => `grid grid-cols-1 gap-3 ${HOME_TILE_COLS[count] ?? HOME_TILE_COLS[3]}`,
-        tileIcon: (color) => HOME_TILE[color]?.icon,
-        tile: (color, disabled = false) => disabled
-            ? `${HOME_TILE_DISABLED} ${theme(color)?.tile ?? ""}`
-            : `${HOME_TILE_LINK} ${theme(color)?.tile ?? ""} ${theme(color)?.hover ?? ""}`,
-        tileBadge: (color) =>
-            `flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${theme(color)?.badge ?? ""}`,
-        tileLabel: "min-w-0 flex-1 text-sm font-semibold leading-snug wrap-break-word",
-        tileCount: (color) =>
-            `flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full px-2.5 text-lg font-bold tabular-nums ${theme(color)?.chip ?? ""}`,
+        statuses: "flex flex-col gap-2 px-4 pb-4",
+        status: (color, empty) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${HOME_FOCUS} ${
+            tone(color, empty).row}`,
+        statusLabel: "min-w-0 flex-1 wrap-break-word",
+        statusCount: (color, empty) => `flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full px-2 text-sm font-bold tabular-nums ${
+            tone(color, empty).chip}`,
+
+        seeAll: `group mt-auto flex items-center justify-between rounded-b-2xl border-t px-5 py-3 text-sm font-semibold transition-colors ${HOME_FOCUS} ${
+            dark ? "border-slate-700 text-indigo-300 hover:bg-slate-700/60" : "border-gray-200 text-indigo-700 hover:bg-indigo-50"}`,
+        arrow: HOME_ARROW,
     };
 }
-
 
 // endregion
 

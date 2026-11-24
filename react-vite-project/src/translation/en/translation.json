@@ -340,6 +340,8 @@
     }
   },
   "home": {
+    "toDo": "To do",
+    "allCaughtUp": "You're all caught up.",
     "welcome": "Welcome",
     "seeAll": "See all",
     "subtitle": "Quick overview of what matters.",
