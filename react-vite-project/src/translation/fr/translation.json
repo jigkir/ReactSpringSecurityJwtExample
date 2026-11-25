@@ -181,7 +181,33 @@
     "registrationSessionError": "Impossible de charger la session d'inscription. Actualisez la page pour réessayer."
   },
   "studentStatuses": {
-    "title": "Suivi des statuts des étudiants"
+    "title": "Statuts des étudiants",
+    "search": "Rechercher",
+    "searchPlaceholder": "Nom ou matricule...",
+    "account": "Statut du compte",
+    "internship": "Recherche de stage",
+    "count_one": "{{count}} étudiant",
+    "count_other": "{{count}} étudiants",
+    "empty": "Aucun étudiant trouvé.",
+    "unknown": "Non disponible",
+    "accountStatuses": {
+      "PENDING": "En attente",
+      "APPROVED": "Approuvé",
+      "REJECTED": "Refusé",
+      "INACTIVE": "Accès expiré ou désactivé"
+    },
+    "internshipStatuses": {
+      "NO_CV": "Sans CV",
+      "CV_PENDING": "CV en attente de validation",
+      "CV_REJECTED": "CV refusé",
+      "NO_APPLICATION": "Sans candidature",
+      "NO_INTERVIEW": "Sans convocation d'entrevue",
+      "UPCOMING_INTERVIEW": "En attente d'entrevue",
+      "AWAITING_DECISION": "Entrevue effectuée, en attente de la réponse d'embauche",
+      "OFFER_PENDING": "Offre reçue, en attente de sa réponse",
+      "CONTRACT_PENDING": "Stage trouvé : contrat à signer",
+      "CONTRACT_SIGNED": "Stage trouvé : contrat signé"
+    }
   },
   "commonFields": {
     "firstName": "Prénom",
