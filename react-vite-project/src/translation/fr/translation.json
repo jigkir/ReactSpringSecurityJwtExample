@@ -950,7 +950,8 @@
       "welcomeAgainRequired": "Veuillez indiquer si le milieu désire accueillir le même stagiaire.",
       "variableShiftsRequired": "Veuillez indiquer si le milieu offre des quarts de travail variables.",
       "shiftRangeRequired": "Veuillez saisir au moins une plage horaire complète (de / à).",
-      "submitFailed": "Impossible d'envoyer l'évaluation pour le moment."
+      "submitFailed": "Impossible d'envoyer l'évaluation pour le moment.",
+      "signing": "Veuillez accepter les conditions et saisir votre mot de passe pour confirmer votre signature."
     },
     "clearSelection": "Effacer",
     "title": "Évaluations en milieu de stage",
@@ -961,10 +962,6 @@
     "previewEmpty": "Aucune évaluation en milieu de stage à remplir ou à signer.",
     "loadError": "Impossible de charger les évaluations en milieu de stage.",
     "retryBtn": "Réessayer",
-    "page": {
-      "title": "Évaluations en milieu de stage",
-      "subtitle": "Remplissez les critères d'évaluation et signez une fois toutes les sections complétées."
-    },
     "status": {
       "inProgress": "En cours",
       "completed": "Complétée",
