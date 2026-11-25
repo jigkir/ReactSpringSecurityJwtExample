@@ -20,6 +20,7 @@ import {
 } from "../../utils/WorkplaceEvaluation.js";
 import {fetchWorkplaceEvaluations, saveWorkplaceEvaluations, signWorkplaceEvaluation} from "../api/Api.jsx";
 import WorkplaceEvaluationCard from "./WorkplaceEvaluationCard.jsx";
+import {devSignWorkplaceEvaluation} from "../api/DevApi.jsx";
 
 const byNewest = (a, b) =>
     new Date(b.updatedAt ?? b.createdAt ?? 0) -
@@ -67,7 +68,9 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
         if (!isEvaluationComplete(evaluation)) return { success: false };
 
         try {
-            await signWorkplaceEvaluation(id, sign);
+             devMode
+                ? await devSignWorkplaceEvaluation(id, user?.email)
+                :await signWorkplaceEvaluation(id, sign);
             await reload();
             return { success: true };
         } catch (error) {

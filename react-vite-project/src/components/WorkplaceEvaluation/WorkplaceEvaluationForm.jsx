@@ -133,6 +133,9 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                             id={`criterion-${key}`}
                             value={formData.criteria[key]}
                             onChange={(e) => updateCriterion(key, e.target.value)}
+                            className={`text-center ${
+                                dark ? "bg-slate-800 text-white" : "bg-white text-slate-900"
+                            }`}
                         >
                             <option value="">{t("workplaceEvaluation.selectPlaceholder")}</option>
                             {EVALUATION_RATINGS.map((rating) => (
