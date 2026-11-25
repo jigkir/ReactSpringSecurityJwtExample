@@ -87,6 +87,8 @@ export const PATHS = {
 
     // Teacher
     TEACHER_EVALUATIONS: "/teacher/evaluations",
+    TEACHER_EVALUATION: "/teacher/evaluations/:id",
+
 
     // Manager
     MANAGER_CVS: "/manager/cvs",
@@ -165,6 +167,9 @@ export const ROUTES = [
     {
         path: PATHS.TEACHER_EVALUATIONS, roles: [ROLE.TEACHER], nav: {TEACHER: "navbar.evaluations"}, home: [ROLE.TEACHER],
         element: () => <WorkplaceEvaluations/>
+    },
+    {
+        path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <div>Test</div>
     },
 
     // ───────── Manager ─────────
