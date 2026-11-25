@@ -101,7 +101,8 @@
     "newContractNotification": "{{amount}} nouveau(x) contrat(s) ajouté(s)",
     "contractReadyToSignNotification": "{{amount}} contrat(s) prêt(s) à signer",
     "newContractNotificationDetail": "Vous pourrez le signer une fois que l'étudiant et l'employeur l'auront signé.",
-    "contractReadyToSignNotificationDetail": "L'étudiant et l'employeur ont signé : le contrat attend votre signature."
+    "contractReadyToSignNotificationDetail": "L'étudiant et l'employeur ont signé : le contrat attend votre signature.",
+    "studentStatuses": "Statuts des étudiants"
   },
   "teacher": {
     "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces.",
@@ -178,6 +179,9 @@
     "passwordRequirements": "8 à 50 caractères, avec un chiffre, une minuscule, une majuscule et un caractère spécial. Sans espaces.",
     "registrationSession": "Vous vous inscrivez pour la session de stage {{session}}.",
     "registrationSessionError": "Impossible de charger la session d'inscription. Actualisez la page pour réessayer."
+  },
+  "studentStatuses": {
+    "title": "Suivi des statuts des étudiants"
   },
   "commonFields": {
     "firstName": "Prénom",
