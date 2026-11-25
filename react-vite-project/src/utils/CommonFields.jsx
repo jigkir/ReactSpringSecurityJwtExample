@@ -2,9 +2,9 @@ import {useTranslation} from 'react-i18next';
 import Icon from '../styles/Icon.jsx';
 
 export const RoleField = ({
-    value, onChange, labelClass, errorClass, fieldClass,
+                              value, onChange, labelClass, errorClass, fieldClass,
                               label, options = [], loading = false, fetchError = "",
-}) => {
+                          }) => {
     const {t} = useTranslation();
     const effectiveLabel = label ?? t("commonFields.role");
     const roleOptions = options.map(v => ({value: v, label: t(`signup.${v}`)}));
@@ -124,10 +124,10 @@ export const Field = ({id, label, warning, labelClass, errorClass, children}) =>
 export const EyeIcon = ({open}) => <Icon name={open ? "visibility_off" : "visibility"} size={16}/>;
 
 export const MatriculeField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass,
-    name = "studentId",
-    limit = 7,
-}) => {
+                                   value, onChange, warning, labelClass, errorClass, fieldClass,
+                                   name = "studentId",
+                                   limit = 7,
+                               }) => {
     const {t} = useTranslation();
     const handleChange = (e) => {
         const digits = e.target.value.replace(/\D/g, "").slice(0, limit);
@@ -192,10 +192,10 @@ export const EmailField = ({value, onChange, warning, labelClass, errorClass, fi
 };
 
 export const DisciplineField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass,
-    options = [], loading = false, fetchError = "", name = "discipline",
-    label,
-}) => {
+                                    value, onChange, warning, labelClass, errorClass, fieldClass,
+                                    options = [], loading = false, fetchError = "", name = "discipline",
+                                    label,
+                                }) => {
     const {t} = useTranslation();
 
     const effectiveLabel = label ?? t("commonFields.discipline");
@@ -227,9 +227,9 @@ export const DisciplineField = ({
 };
 
 export const PasswordField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-    show, onToggleShow, hint, passwordHintClass,
-}) => {
+                                  value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
+                                  show, onToggleShow, hint, passwordHintClass,
+                              }) => {
     const {t} = useTranslation();
     return (
         <Field id="password" label={t("commonFields.password")} warning={warning} labelClass={labelClass}
@@ -253,10 +253,10 @@ export const PasswordField = ({
 };
 
 export const PhoneNumberField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass,
-}) => {
+                                     value, onChange, warning, labelClass, errorClass, fieldClass,
+                                 }) => {
     const {t} = useTranslation();
-    return(<Field
+    return (<Field
         id="phoneNumber" label={t("employer.phoneNumber")} warning={warning}
         labelClass={labelClass} errorClass={errorClass}
     >
@@ -273,9 +273,9 @@ export const PhoneNumberField = ({
 
 
 export const ConfirmPasswordField = ({
-    value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
-    show, onToggleShow,
-}) => {
+                                         value, onChange, warning, labelClass, errorClass, fieldClass, eyeClass,
+                                         show, onToggleShow,
+                                     }) => {
     const {t} = useTranslation();
     return (
         <Field id="confirmPassword" label={t("commonFields.confirmPassword")} warning={warning} labelClass={labelClass}
@@ -297,13 +297,16 @@ export const ConfirmPasswordField = ({
     );
 };
 
-export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClass}) => (
+export const SubmitButton = ({disabled, loading, loadingLabel, label, submitClass, icon = "person_add"}) => (
     <button
         type="submit"
         disabled={disabled}
         className={submitClass}
     >
-        {loading ? loadingLabel : label}
+        <span className="inline-flex items-center justify-center gap-2">
+            {icon && <Icon name={icon} size={18} className="shrink-0"/>}
+            {loading ? loadingLabel : label}
+        </span>
     </button>
 );
 

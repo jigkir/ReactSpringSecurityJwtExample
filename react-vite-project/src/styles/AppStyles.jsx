@@ -207,11 +207,98 @@ export function getNotificationMenuClasses(dark) {
 
 // endregion
 
-// region Home
+// region Home (welcome banner, "To do" panel and page cards)
+// Shared by the "To do" panel and the page cards
+const HOME_FOCUS = "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
+
+const HOME_ARROW = "transition-transform group-hover:translate-x-1 motion-reduce:transition-none";
+
 export function getHomeClasses(dark) {
     return {
-        page: `flex-1 p-6 ${dark ? "text-white" : "text-gray-900"}`,
-        heading: "text-2xl font-bold mb-6",
+        page: `flex-1 px-4 py-6 md:px-10 md:py-10 ${dark ? "text-white" : "text-gray-900"}`,
+        container: "mx-auto flex w-full max-w-7xl flex-col gap-6",
+
+        // Welcome banner
+        banner: `flex items-center gap-5 rounded-2xl px-6 py-6 md:px-8 md:py-8 ${getBrandSurface(dark)}`,
+        bannerIcon: `hidden h-14 w-14 shrink-0 items-center justify-center rounded-full sm:flex ${
+            dark ? "bg-white/10 text-amber-300" : "bg-white/70 text-amber-500"}`,
+        heading: "text-2xl font-bold md:text-3xl",
+        subtitle: `mt-1 text-sm md:text-base ${dark ? "text-slate-300" : "text-gray-700"}`,
+
+        // Narrow "To do" column on the right, as tall as the cards (first on mobile)
+        layout: "grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]",
+        cards: "grid grid-cols-1 content-start gap-6 sm:grid-cols-2 xl:grid-cols-3 lg:col-start-1 lg:row-start-1",
+        empty: `py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`,
+
+        // "To do" panel: a colored column, unlike the white page cards
+        panel: `flex flex-col gap-4 rounded-2xl bg-linear-to-b p-5 text-white shadow-lg lg:col-start-2 lg:row-start-1 ${
+            dark ? "from-indigo-900 to-violet-900" : "from-indigo-900 to-violet-800"}`,
+        panelHeader: "flex items-center gap-2",
+        panelIcon: "text-amber-300",
+        panelTitle: "flex-1 text-lg font-bold",
+        panelTotal: "rounded-full bg-amber-400 px-2.5 py-0.5 text-sm font-bold text-amber-950 tabular-nums",
+        todoList: "flex flex-col gap-2",
+        todoLink: "group flex items-center gap-3 rounded-xl bg-white/10 p-3 ring-1 ring-white/15 transition-colors " +
+            "hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white",
+        todoIcon: "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-indigo-700",
+        todoText: "min-w-0 flex-1",
+        todoTitle: "block text-sm font-semibold leading-snug wrap-break-word",
+        todoStatus: "block text-xs text-indigo-100",
+        todoCount: "text-lg font-bold tabular-nums",
+        arrow: HOME_ARROW,
+        caughtUp: "flex items-center gap-2 rounded-xl bg-white/10 p-3 text-sm font-medium",
+        skeleton: "h-14 animate-pulse rounded-xl bg-white/10",
+    };
+}
+
+// endregion
+
+// region HomeSection (page card: total and one tinted row per status)
+// Soft tinted row and solid count chip of each status color
+const HOME_STATUS_TONES = {
+    RED: {
+        light: {row: "bg-red-50 text-red-800 hover:bg-red-100", chip: "bg-red-500 text-white"},
+        dark: {row: "bg-red-500/10 text-red-200 hover:bg-red-500/20", chip: "bg-red-500 text-white"},
+    },
+    YELLOW: {
+        light: {row: "bg-amber-50 text-amber-900 hover:bg-amber-100", chip: "bg-amber-400 text-amber-950"},
+        dark: {row: "bg-amber-500/10 text-amber-100 hover:bg-amber-500/20", chip: "bg-amber-400 text-amber-950"},
+    },
+    GREEN: {
+        light: {row: "bg-emerald-50 text-emerald-800 hover:bg-emerald-100", chip: "bg-emerald-500 text-white"},
+        dark: {row: "bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20", chip: "bg-emerald-500 text-white"},
+    },
+};
+
+// A status with no item stays neutral
+const HOME_EMPTY_STATUS_TONE = {
+    light: {row: "bg-gray-50 text-gray-400", chip: "bg-gray-200 text-gray-500"},
+    dark: {row: "bg-slate-700/30 text-slate-500", chip: "bg-slate-700 text-slate-400"},
+};
+
+export function getHomeSectionClasses(dark) {
+    const theme = dark ? "dark" : "light";
+    const tone = (color, empty) => (empty ? HOME_EMPTY_STATUS_TONE : HOME_STATUS_TONES[color])[theme];
+
+    return {
+        card: `flex min-w-0 flex-col rounded-2xl border shadow-sm transition-shadow hover:shadow-md ${
+            dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        header: "flex items-start gap-3 p-5 pb-4",
+        icon: `flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+            dark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`,
+        title: "min-w-0 flex-1 self-center text-base font-semibold leading-snug wrap-break-word",
+        total: "text-3xl font-bold leading-none tabular-nums",
+
+        statuses: "flex flex-col gap-2 px-4 pb-4",
+        status: (color, empty) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${HOME_FOCUS} ${
+            tone(color, empty).row}`,
+        statusLabel: "min-w-0 flex-1 wrap-break-word",
+        statusCount: (color, empty) => `flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full px-2 text-sm font-bold tabular-nums ${
+            tone(color, empty).chip}`,
+
+        seeAll: `group mt-auto flex items-center justify-between rounded-b-2xl border-t px-5 py-3 text-sm font-semibold transition-colors ${HOME_FOCUS} ${
+            dark ? "border-slate-700 text-indigo-300 hover:bg-slate-700/60" : "border-gray-200 text-indigo-700 hover:bg-indigo-50"}`,
+        arrow: HOME_ARROW,
     };
 }
 

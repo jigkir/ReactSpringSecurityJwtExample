@@ -1,36 +1,12 @@
 import {useCallback, useEffect, useState} from 'react';
-import {Navigate, Route, Routes, useLocation, useNavigate} from 'react-router-dom';
+import {Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 import {useDarkMode} from './styles/DarkMode.jsx';
 import PageLayout from './components/PageLayout.jsx';
-import About from './components/About.jsx';
-import Login from './components/page/auth/Login.jsx';
-import Signup from './components/page/auth/Signup.jsx';
 import {checkUserStatus, getCurrentUser} from './components/api/Api.jsx';
-import ErrorPage from './components/ErrorPage.jsx';
-import Logout from './components/page/auth/Logout.jsx';
-import PostInternship from './components/page/employer/internship/PostInternship.jsx';
-import Home from './components/Home.jsx';
-import Portfolio from './components/page/portfolio/Portfolio.jsx';
-import ManagerCv from './components/page/manager/Cv.jsx';
-import ManagerInternships from './components/page/manager/Internships.jsx';
-import ManagerContracts from './components/page/manager/Contracts.jsx';
-import EmployerContracts from './components/page/employer/contracts/Contracts.jsx';
-import StudentContracts from './components/page/student/contracts/Contracts.jsx';
-import ContractFile from './components/contracts/ContractFile.jsx';
-import RequireRole from "./components/RequireRole.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
-import StudentInternships from "./components/page/student/Internships.jsx";
-import ViewApplications from "./components/page/employer/application/ViewApplications.jsx";
-import Applications from "./components/page/employer/application/Applications.jsx";
-import Interviews from "./components/page/student/Interviews.jsx";
-import Offers from "./components/page/student/Offers.jsx";
-import ExpiredUser from "./components/page/ExpiredUser.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
-import Users from "./components/page/Users.jsx";
-import EmployerInterviews from "./components/page/employer/interview/EmployerInterviews.jsx";
-import Tracking from "./components/page/Tracking.jsx";
-import WorkplaceEvaluations from "./components/page/WorkplaceEvaluations.jsx";
+import {appRoutes} from "./routes/AppRoutes.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -100,55 +76,8 @@ function App() {
                 <Routes>
                     <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
                                                 toggleDark={toggleDark}/>}>
-
-                        {/* Public: Home shows the landing page when logged out, the role home when logged in */}
-                        <Route path="/" element={<Home/>}/>
-                        <Route path="/about" element={<About/>}/>
-                        <Route path="/login" element={<Login user={user} setError={setError}/>}/>
-                        <Route path="/signup" element={<Signup/>}/>
-                        <Route path="/logout" element={<Logout setUser={setUser}/>}/>
-                        <Route path="/error" element={<ErrorPage error={error}/>}/>
-
-                        {/* Any logged-in role */}
-                        <Route
-                            element={<RequireRole user={user} roles={["STUDENT", "TEACHER", "EMPLOYER", "MANAGER"]}/>}>
-                            <Route path="/home" element={<Home/>}/>
-                        </Route>
-
-                        {/* Student */}
-                        <Route element={<RequireRole user={user} roles={["STUDENT"]}/>}>
-                            <Route path="/portfolio" element={<Portfolio/>}/>
-                            <Route path="/cv" element={<Navigate to="/portfolio" replace/>}/>
-                            <Route path="/internship" element={<StudentInternships/>}/>
-                            <Route path="/interviews" element={<Interviews/>}/>
-                            <Route path="/offers" element={<Offers/>}/>
-                            <Route path="/student/contracts" element={<StudentContracts/>}/>
-                            <Route path="/student/contracts/:id" element={<ContractFile/>}/>
-                        </Route>
-
-                        {/* Manager */}
-                        <Route element={<RequireRole user={user} roles={["MANAGER"]}/>}>
-                            <Route path="/manager/cvs" element={<ManagerCv/>}/>
-                            <Route path="/manager/internships" element={<ManagerInternships/>}/>
-                            <Route path="/manager/contracts" element={<ManagerContracts/>}/>
-                            <Route path="/manager/contracts/:id" element={<ContractFile/>}/>
-                            <Route path="/users" element={<Users user={user}/>}/>
-                            <Route path="/tracking" element={<Tracking/>}/>
-                        </Route>
-
-                        {/* Employer */}
-                        <Route element={<RequireRole user={user} roles={["EMPLOYER"]}/>}>
-                            <Route path="/internships" element={<PostInternship user={user}/>}/>
-                            <Route path="/applications" element={<Applications user={user}/>}/>
-                            <Route path="/application/:id" element={<ViewApplications user={user}/>}/>
-                            <Route path="/employer/interviews" element={<EmployerInterviews user={user}/>}/>
-                            <Route path="/employer/contracts" element={<EmployerContracts/>}/>
-                            <Route path="/employer/contracts/:id" element={<ContractFile/>}/>
-                        </Route>
-
-                        <Route path="*" element={<Navigate to="/" replace/>}/>
-                        <Route path="/expired" element={<ExpiredUser user={user}/>}/>
-                        <Route path="/evaluations" element={<WorkplaceEvaluations/>}/>
+                        {/* Every route lives in routes/AppRoutes.jsx */}
+                        {appRoutes({user, setUser, setError, error})}
                     </Route>
                 </Routes>
             </div>

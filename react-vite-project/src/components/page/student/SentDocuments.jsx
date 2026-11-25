@@ -57,7 +57,7 @@ function SentDocuments({application, dark}) {
                                     )}
                                 </div>
                                 <Button tone={isOpen ? "danger" : "accent"} lockTone dark={dark}
-                                        icon={isOpen ? "close" : "visibility"}
+                                        icon={isOpen ? "visibility_off" : "visibility"}
                                         aria-expanded={isOpen}
                                         aria-label={doc.fileName ? `${label} : ${doc.fileName}` : label}
                                         onClick={() => previews.toggle(key)}>

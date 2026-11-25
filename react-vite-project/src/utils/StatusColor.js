@@ -112,12 +112,17 @@ export const STATUS_LABEL_KEYS = {
     employerInterviews: interviewKeys("employerInterviews", ALL_STATUSES),
     managerCv: managerKeys("managerStatus"),
     managerInternships: managerKeys("internshipFilters"),
-    // Accounts and tracking cards already show the managerStatus pills (approved / pending / rejected)
-    managerUsers: managerKeys("managerStatus"),
+
+    managerUsers: {
+        [ALL]: ALL_STATUSES,
+        [COLOR.RED]: "users.statuses.rejected",
+        [COLOR.YELLOW]: "users.filters.pendingDecision",
+        [COLOR.GREEN]: "users.statuses.approved",
+    },
     managerTracking: {
         [ALL]: ALL_STATUSES,
-        [COLOR.YELLOW]: "managerStatus.pending",
-        [COLOR.GREEN]: "managerStatus.approved",
+        [COLOR.YELLOW]: "tracking.filters.pendingAttribution",
+        [COLOR.GREEN]: "users.statuses.assigned",
     },
     // Teacher evaluations: signed or not yet (no red)
     teacherEvaluations: {

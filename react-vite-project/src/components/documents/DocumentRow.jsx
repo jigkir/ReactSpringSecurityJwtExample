@@ -110,7 +110,7 @@ function DocumentRow({
                 {/* Actions: one vertical stack, every button the same width */}
                 <div className="flex min-w-0 flex-col items-stretch gap-2 @2xl:justify-self-end @2xl:w-full">
                     <Button tone={isOpen ? "danger" : "accent"} lockTone dark={dark}
-                            icon={isOpen ? "close" : "visibility"}
+                            icon={isOpen ? "visibility_off" : "visibility"}
                             onClick={onToggle}
                             disabled={busy}
                             className={ROW_BTN}

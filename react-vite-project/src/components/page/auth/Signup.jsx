@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
 import {getAuthClasses} from '../../../styles/AppStyles.jsx';
+import Button from '../../../styles/Button.jsx';
 import {RoleField, translateWarning} from '../../../utils/CommonFields.jsx';
 import {getRoles} from '../../api/Api.jsx';
 import Student from './signup/Student.jsx';
@@ -75,12 +76,13 @@ const Signup = () => {
                     </p>
                 ))}
 
-                <p className={subtextClass}>
-                    {t("signup.alreadyHaveAnAccount")}{' '}
-                    <button onClick={() => navigate('/login')} className="text-blue-500 hover:underline font-medium">
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                    <p className={`${subtextClass} mt-0!`}>{t("signup.alreadyHaveAnAccount")}</p>
+                    <Button type="button" tone="primary" lockTone dark={dark} size="sm" icon="login"
+                            onClick={() => navigate('/login')}>
                         {t("signup.signupFormConfirm")}
-                    </button>
-                </p>
+                    </Button>
+                </div>
             </div>
         </div>
     );

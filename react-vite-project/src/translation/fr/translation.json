@@ -340,7 +340,11 @@
     }
   },
   "home": {
+    "toDo": "À traiter",
+    "allCaughtUp": "Tout est à jour.",
     "welcome": "Bienvenue",
+    "seeAll": "Tout voir",
+    "subtitle": "Vue rapide des suivis importants.",
     "studentCvLink": "Accéder à mon portfolio",
     "studentInternshipsLink": "Trouver un stage et postuler",
     "studentInterviewsLink": "Consulter mes entrevues",
@@ -844,6 +848,9 @@
       "pending": "En attente",
       "assigned": "Assigné"
     },
+    "filters": {
+      "pendingDecision": "En attente de décision"
+    },
     "reactivate": "Réactiver",
     "deactivate": "Désactiver",
     "studentId": "Matricule : {{studentId}}"
@@ -856,7 +863,10 @@
     "assigneDefault": "Assigner l'enseignant",
     "loading": "Chargement...",
     "error": "Échec du chargement des suivis de stage.",
-    "empty": "Aucun suivi de stage trouvé."
+    "empty": "Aucun suivi de stage trouvé.",
+    "filters": {
+      "pendingAttribution": "En attente d'attribution"
+    }
   },
   "workplaceEvaluation": {
     "selectPlaceholder": "-- Sélectionner --",

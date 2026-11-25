@@ -1,18 +1,18 @@
 import {NavLink} from 'react-router-dom';
-import Icon from '../../styles/Icon.jsx';
+import Icon from '../styles/Icon.jsx';
 import {forwardRef} from "react";
-import SessionSelect from "../session/SessionSelect.jsx";
+import SessionSelect from "./session/SessionSelect.jsx";
 
-const MobileSidebar = forwardRef(function MobileSidebar({
-                                                            isOpen,
-                                                            onClose,
-                                                            navItems,
-                                                            dark,
-                                                            t,
-                                                            mobileLinkClass,
-                                                            isLoggedIn,
-                                                            isAccessGranted,
-                                                        }, ref) {
+const NavbarMobile = forwardRef(function MobileSidebar({
+                                                           isOpen,
+                                                           onClose,
+                                                           navItems,
+                                                           dark,
+                                                           t,
+                                                           mobileLinkClass,
+                                                           isLoggedIn,
+                                                           isAccessGranted,
+                                                       }, ref) {
     if (!isOpen) return null;
 
     return (
@@ -85,4 +85,4 @@ const MobileSidebar = forwardRef(function MobileSidebar({
     );
 });
 
-export default MobileSidebar;
+export default NavbarMobile;

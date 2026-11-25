@@ -95,6 +95,7 @@ function Users({user}) {
                         studentid={u.studentId}
                         status={u.status}
                         dark={dark}
+                        filterColor={status}
                         onReactivate={() => handleReactivate(u.id)}
                         onDeny={() => handleDeny(u.id)}
                     />
