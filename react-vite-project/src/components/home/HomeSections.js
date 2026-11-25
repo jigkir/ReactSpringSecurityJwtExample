@@ -107,7 +107,7 @@ const loadInterviews = (getter) => async () => asList(await getter()).map(getInt
 // region Card config of each page, keyed by the path of its route in AppRoutes.jsx
 const HOME_CARDS = {
     // ───────── Student ─────────
-    "/portfolio": {
+    "/student/portfolio": {
         icon: "upload_file",
         page: "studentCv",
         titleKey: "home.studentCvLink",
@@ -115,7 +115,7 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: async () => statusColors((await getDocuments("CV")).filter(isVisible)),
     },
-    "/interviews": {
+    "/student/interviews": {
         icon: "event",
         page: "studentInterviews",
         titleKey: "home.studentInterviewsLink",
@@ -123,7 +123,7 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: loadInterviews(getStudentInterviews),
     },
-    "/offers": {
+    "/student/offers": {
         icon: "star",
         page: "studentOffers",
         titleKey: "navbar.offers",
@@ -131,7 +131,7 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: async () => asList(await getStudentOffers()).map((offer) => colorOf(offer.studentInternshipConsent)),
     },
-    "/internship": {
+    "/student/internship": {
         icon: "work",
         page: "studentApplied",
         titleKey: "home.studentInternshipsLink",
@@ -156,7 +156,7 @@ const HOME_CARDS = {
     },
 
     // ───────── Employer ─────────
-    "/internships": {
+    "/employer/internships": {
         icon: "business_center",
         page: "employerInternships",
         titleKey: "home.employerInternshipsLink",
@@ -165,7 +165,7 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: async ({sessionId}) => statusColors(await getEmployerInternships(sessionId)),
     },
-    "/applications": {
+    "/employer/applications": {
         icon: "person",
         page: "employerApplications",
         titleKey: "home.employerApplicationsLink",
@@ -222,7 +222,7 @@ const HOME_CARDS = {
         load: loadContracts,
     },
     // Accounts: APPROVED / PENDING / REJECTED (the backend may send any case)
-    "/users": {
+    "/manager/users": {
         icon: "admin_panel_settings",
         page: "managerUsers",
         titleKey: "navbar.users",
@@ -231,7 +231,7 @@ const HOME_CARDS = {
         load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
     },
     // Internship tracking: still to assign (YELLOW), then teacher assigned (GREEN)
-    "/tracking": {
+    "/manager/tracking": {
         icon: "co_present",
         page: "managerTracking",
         titleKey: "navbar.tracking",
@@ -243,7 +243,7 @@ const HOME_CARDS = {
 
     // ───────── Teacher ─────────
     // Workplace evaluations: still to complete / sign (YELLOW), then signed (GREEN)
-    "/evaluations": {
+    "/teacher/evaluations": {
         icon: "share_reviews",
         page: "teacherEvaluations",
         titleKey: "workplaceEvaluation.title",

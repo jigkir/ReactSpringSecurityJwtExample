@@ -149,8 +149,9 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
 });
 
 const EMPLOYER = {id: 2, role: 'EMPLOYER'};
-const INTERNSHIPS_PAGE_PATH = '/internships';
-const APPLICATIONS_PAGE_PATH = '/applications';
+const INTERNSHIPS_PAGE_PATH = '/employer/internships';
+const APPLICATIONS_PAGE_PATH = '/employer/applications';
+const STUDENT_INTERVIEWS_PAGE_PATH = '/student/interviews';
 const NEW_INTERNSHIP_APPLICATION = 'NEW_INTERNSHIP_APPLICATION';
 
 const SHOWN_APPLICATION_ID = 30;
@@ -338,7 +339,7 @@ describe('NotificationsProvider - Student interview notifications', () => {
 
         // Act
         render(
-            <MemoryRouter initialEntries={['/interviews']}>
+            <MemoryRouter initialEntries={[STUDENT_INTERVIEWS_PAGE_PATH]}>
                 <NotificationsProvider user={{id: 3, role: 'STUDENT'}} accountStatus={ACCOUNT_STATUS.APPROVED}>
                     <span/>
                 </NotificationsProvider>

@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {getMainContainerClasses, REVEAL_FROM} from '../../styles/AppStyles.jsx';
 import Icon from '../../styles/Icon.jsx';
 import Reveal from '../../styles/Reveal.jsx';
+import AuthButtons from '../AuthButtons.jsx';
 
 const WAVE_PATH = "M0,0 H1440 V40 C1200,80 960,80 720,48 C480,16 240,16 0,48 Z";
 
@@ -21,8 +22,7 @@ function Landing({dark}) {
                     <p className={classes.subtitle}>{t("mainContainer.subtitle")}</p>
                 </Reveal>
                 <Reveal from={REVEAL_FROM.UP} className={classes.authActions}>
-                    <Link to="/login" className={classes.primaryBtn}>{t("navbar.login")}</Link>
-                    <Link to="/signup" className={classes.secondaryBtn}>{t("navbar.signup")}</Link>
+                    <AuthButtons variant="hero" dark={dark}/>
                 </Reveal>
             </section>
 

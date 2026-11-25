@@ -10,6 +10,7 @@ import SessionSelect from "./session/SessionSelect.jsx";
 import {useSession} from "../utils/useSession.js";
 import {useAdaptiveNavbar} from "../utils/useAdaptiveNavbar.js";
 import {getNavLinks} from "../routes/AppRoutes.jsx";
+import AuthButtons from "./AuthButtons.jsx";
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
 
@@ -107,8 +108,6 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     // Mobile dropdown styling
     const dropdownPanel = `absolute mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`;
     const mobileLinkClass = ({isActive}) => `block px-4 py-2 text-lg pl-8 ${isActive ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700") : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")}`;
-
-    const authBtnDesktop = "inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
 
     const tldBadge = `ml-1 px-1.5 py-0.5 rounded-md font-bold transition-all duration-150 group-hover:scale-105 whitespace-nowrap ${dark ? "bg-indigo-500/20 text-indigo-600 border border-indigo-700/30 group-hover:bg-indigo-500/30" : "bg-indigo-500/10 text-indigo-200 border border-indigo-400/30 group-hover:bg-indigo-500/20"}`;
 
@@ -229,18 +228,8 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                     </div>
                                 )}
 
-                                {!isLoggedIn && (<>
-                                    <Link to="/login" className={`${authBtnDesktop} ${theme.authBtn}`}
-                                          aria-label={t("navbar.login")} title={t("navbar.login")}>
-                                        <Icon name="login" size={16}/>
-                                        {!compact && <span>{t("navbar.login")}</span>}
-                                    </Link>
-                                    <Link to="/signup" className={`${authBtnDesktop} ${theme.signupBtn}`}
-                                          aria-label={t("navbar.signup")} title={t("navbar.signup")}>
-                                        <Icon name="person_add" size={16}/>
-                                        {!compact && <span>{t("navbar.signup")}</span>}
-                                    </Link>
-                                </>)}
+                                {/* Log in / Sign up: same component as the home page */}
+                                {!isLoggedIn && <AuthButtons variant="navbar" dark={dark} compact={compact}/>}
 
                                 {isLoggedIn && (
                                     <Link to="/logout"

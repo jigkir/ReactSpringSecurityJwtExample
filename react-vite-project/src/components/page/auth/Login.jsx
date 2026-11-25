@@ -74,7 +74,7 @@ const Login = ({user, setError}) => {
             } catch {
             }
             if (hasCv) navigate("/home");
-            else navigate("/portfolio", {state: {requireCv: true}});
+            else navigate("/student/portfolio", {state: {requireCv: true}});
         } else {
             navigate("/home");
         }

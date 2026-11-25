@@ -192,7 +192,7 @@ function Applications({user}) {
                         <Badge tone="new">{t("applicationsPage.unreadCount", {count: group.unread})}</Badge>
                     )}
                     <NavLink
-                        to={`/application/${group.id}`}
+                        to={`/employer/applications/${group.id}`}
                         className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
                     >
                         {t("applicationsPage.openInternship")}

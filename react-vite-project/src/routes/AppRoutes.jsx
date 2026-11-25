@@ -1,21 +1,32 @@
 /**
- * AppRoutes.jsx — THE single place where routes are declared.
+ * AppRoutes.jsx — THE single place where routes AND their URLs are declared.
  * Location: src/routes/AppRoutes.jsx
  *
+ * PATHS holds every URL of the app. No other file writes a route as a string:
+ * links, navigate(), <Navigate/>, notifications and Home cards all use PATHS.
+ *
  * Each entry of ROUTES describes ONE page:
- *   path     URL of the page
+ *   path     URL of the page (always a PATHS value)
  *   element  (ctx) => JSX      ctx = {user, setUser, setError, error}
  *   roles    optional          roles allowed (guarded by <RequireRole/>). No `roles` = public page.
  *   nav      optional          {ROLE: "translation.key"} -> the page shows up in the navbar of that role.
  *                              The ORDER of ROUTES is the order of the navbar links.
+ *   home     optional          [ROLE] -> the page gets a card on the Home of that role
+ *                              (its config lives in components/home/HomeSections.js, keyed by `path`).
  *
  * App.jsx    -> <Route element={<PageLayout/>}>{appRoutes(ctx)}</Route>
  * Navbar.jsx -> getNavLinks(role)
  *
- * To add a page: add ONE line here. Nothing to change in App.jsx or Navbar.jsx.
+ * To add a page: add its URL to PATHS, then ONE line in ROUTES. Nothing to change in App.jsx or Navbar.jsx.
+ * If the page has a Home card, also add its entry in HomeSections.js (same path),
+ * and if it has notifications, its entry in NotificationsProvider.jsx.
+ *
+ * IMPORTANT: this file imports the pages, and the pages import PATHS from here (a cycle).
+ * So PATHS must only be READ when a function or component runs, never at the top level of a
+ * module (no `const X = PATHS.FOO;` outside a function): at load time it does not exist yet.
  */
 
-import {Navigate, Outlet, Route, useOutletContext} from 'react-router-dom';
+import {generatePath, Navigate, Outlet, Route, useOutletContext} from 'react-router-dom';
 import {ACCOUNT_STATUS} from '../utils/AccountStatus.js';
 import Home from '../components/Home.jsx';
 import About from '../components/About.jsx';
@@ -51,111 +62,177 @@ export const ROLE = {
 
 const ALL_ROLES = Object.values(ROLE);
 
+// region The URLs: the only place where a route is written as a string
+export const PATHS = {
+    // Public
+    ROOT: "/",
+    ABOUT: "/about",
+    LOGIN: "/login",
+    SIGNUP: "/signup",
+    LOGOUT: "/logout",
+    ERROR: "/error",
+    EXPIRED: "/expired",
+
+    // Any logged-in role
+    HOME: "/home",
+
+    // Student
+    STUDENT_PORTFOLIO: "/student/portfolio",
+    STUDENT_CV: "/student/cv",
+    STUDENT_INTERNSHIPS: "/student/internship",
+    STUDENT_INTERVIEWS: "/student/interviews",
+    STUDENT_OFFERS: "/student/offers",
+    STUDENT_CONTRACTS: "/student/contracts",
+    STUDENT_CONTRACT: "/student/contracts/:id",
+
+    // Teacher
+    TEACHER_EVALUATIONS: "/teacher/evaluations",
+
+    // Manager
+    MANAGER_CVS: "/manager/cvs",
+    MANAGER_INTERNSHIPS: "/manager/internships",
+    MANAGER_CONTRACTS: "/manager/contracts",
+    MANAGER_CONTRACT: "/manager/contracts/:id",
+    MANAGER_USERS: "/manager/users",
+    MANAGER_TRACKING: "/manager/tracking",
+
+    // Employer
+    EMPLOYER_INTERNSHIPS: "/employer/internships",
+    EMPLOYER_APPLICATIONS: "/employer/applications",
+    EMPLOYER_APPLICATION: "/employer/applications/:id",
+    EMPLOYER_INTERVIEWS: "/employer/interviews",
+    EMPLOYER_CONTRACTS: "/employer/contracts",
+    EMPLOYER_CONTRACT: "/employer/contracts/:id",
+
+    // Anything else
+    NOT_FOUND: "*",
+};
+
+/** "/employer/applications/12": the applications of one internship offer. */
+export const employerApplicationPath = (internshipId) =>
+    generatePath(PATHS.EMPLOYER_APPLICATION, {id: internshipId});
+
+/** URL of a contract page from a pattern of PATHS (STUDENT_CONTRACT, MANAGER_CONTRACT, EMPLOYER_CONTRACT). */
+export const contractFilePath = (pattern, contractId) => generatePath(pattern, {id: contractId});
+// endregion
+
 // region The routes (order = order of the navbar links)
 export const ROUTES = [
     // ───────── Public ─────────
-    {path: "/", element: () => <Home/>},
-    {path: "/about", element: () => <About/>},
-    {path: "/login", element: ({user, setError}) => <Login user={user} setError={setError}/>},
-    {path: "/signup", element: () => <Signup/>},
-    {path: "/logout", element: ({setUser}) => <Logout setUser={setUser}/>},
-    {path: "/error", element: ({error}) => <ErrorPage error={error}/>},
-    {path: "/expired", element: ({user}) => <ExpiredUser user={user}/>},
-    // Not guarded (same as before)
-    {path: "/evaluations", home: [ROLE.TEACHER], element: () => <WorkplaceEvaluations/>},
+    {path: PATHS.ROOT, element: () => <Home/>},
+    {path: PATHS.ABOUT, element: () => <About/>},
+    {path: PATHS.LOGIN, element: ({user, setError}) => <Login user={user} setError={setError}/>},
+    {path: PATHS.SIGNUP, element: () => <Signup/>},
+    {path: PATHS.LOGOUT, element: ({setUser}) => <Logout setUser={setUser}/>},
+    {path: PATHS.ERROR, element: ({error}) => <ErrorPage error={error}/>},
+    {path: PATHS.EXPIRED, element: ({user}) => <ExpiredUser user={user}/>},
 
     // ───────── Any logged-in role ─────────
-    {path: "/home", roles: ALL_ROLES, element: () => <Home/>},
+    {path: PATHS.HOME, roles: ALL_ROLES, element: () => <Home/>},
 
     // ───────── Student ─────────
     {
-        path: "/portfolio", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.portfolio"}, home: [ROLE.STUDENT],
+        path: PATHS.STUDENT_PORTFOLIO, roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.portfolio"},
+        home: [ROLE.STUDENT],
         element: () => <Portfolio/>
     },
-    {path: "/cv", roles: [ROLE.STUDENT], element: () => <Navigate to="/portfolio" replace/>},
     {
-        path: "/internship", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.internships"}, home: [ROLE.STUDENT],
+        path: PATHS.STUDENT_CV, roles: [ROLE.STUDENT],
+        element: () => <Navigate to={PATHS.STUDENT_PORTFOLIO} replace/>
+    },
+    {
+        path: PATHS.STUDENT_INTERNSHIPS, roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.internships"},
+        home: [ROLE.STUDENT],
         element: () => <StudentInternships/>
     },
     {
-        path: "/interviews", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.interviews"}, home: [ROLE.STUDENT],
+        path: PATHS.STUDENT_INTERVIEWS, roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.interviews"},
+        home: [ROLE.STUDENT],
         element: () => <StudentInterviews/>
     },
     {
-        path: "/offers", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.offers"}, home: [ROLE.STUDENT],
+        path: PATHS.STUDENT_OFFERS, roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.offers"}, home: [ROLE.STUDENT],
         element: () => <StudentOffers/>
     },
     {
-        path: "/student/contracts", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.contracts"}, home: [ROLE.STUDENT],
+        path: PATHS.STUDENT_CONTRACTS, roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.contracts"},
+        home: [ROLE.STUDENT],
         element: () => <StudentContracts/>
     },
-    {path: "/student/contracts/:id", roles: [ROLE.STUDENT], element: () => <ContractFile/>},
+    {path: PATHS.STUDENT_CONTRACT, roles: [ROLE.STUDENT], element: () => <ContractFile/>},
+
+    // ───────── Teacher ─────────
+    {
+        path: PATHS.TEACHER_EVALUATIONS, roles: [ROLE.TEACHER], nav: {TEACHER: "navbar.evaluations"}, home: [ROLE.TEACHER],
+        element: () => <WorkplaceEvaluations/>
+    },
 
     // ───────── Manager ─────────
     {
-        path: "/manager/cvs", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.cv"}, home: [ROLE.MANAGER],
+        path: PATHS.MANAGER_CVS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.cv"}, home: [ROLE.MANAGER],
         element: () => <ManagerCv/>
     },
     {
-        path: "/manager/internships", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.internships"},
+        path: PATHS.MANAGER_INTERNSHIPS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.internships"},
         home: [ROLE.MANAGER],
         element: () => <ManagerInternships/>
     },
     {
-        path: "/manager/contracts", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.contracts"},
+        path: PATHS.MANAGER_CONTRACTS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.contracts"},
         home: [ROLE.MANAGER],
         element: () => <ManagerContracts/>
     },
-    {path: "/manager/contracts/:id", roles: [ROLE.MANAGER], element: () => <ContractFile/>},
+    {path: PATHS.MANAGER_CONTRACT, roles: [ROLE.MANAGER], element: () => <ContractFile/>},
     {
-        path: "/users", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.users"}, home: [ROLE.MANAGER],
+        path: PATHS.MANAGER_USERS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.users"}, home: [ROLE.MANAGER],
         element: ({user}) => <Users user={user}/>
     },
     {
-        path: "/tracking", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.tracking"}, home: [ROLE.MANAGER],
+        path: PATHS.MANAGER_TRACKING, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.tracking"},
+        home: [ROLE.MANAGER],
         element: () => <Tracking/>
     },
 
     // ───────── Employer ─────────
     {
-        path: "/internships", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.postInternship"},
+        path: PATHS.EMPLOYER_INTERNSHIPS, roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.postInternship"},
         home: [ROLE.EMPLOYER],
         element: ({user}) => <PostInternship user={user}/>
     },
     {
-        path: "/applications", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.applications"},
+        path: PATHS.EMPLOYER_APPLICATIONS, roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.applications"},
         home: [ROLE.EMPLOYER],
         element: ({user}) => <Applications user={user}/>
     },
     {
-        path: "/applications/:id", roles: [ROLE.EMPLOYER],
+        path: PATHS.EMPLOYER_APPLICATION, roles: [ROLE.EMPLOYER],
         element: ({user}) => <ViewApplications user={user}/>
     },
     {
-        path: "/employer/interviews", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.interviews"},
+        path: PATHS.EMPLOYER_INTERVIEWS, roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.interviews"},
         home: [ROLE.EMPLOYER],
         element: ({user}) => <EmployerInterviews user={user}/>
     },
     {
-        path: "/employer/contracts", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.contracts"},
+        path: PATHS.EMPLOYER_CONTRACTS, roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.contracts"},
         home: [ROLE.EMPLOYER],
         element: () => <EmployerContracts/>
     },
-    {path: "/employer/contracts/:id", roles: [ROLE.EMPLOYER], element: () => <ContractFile/>},
+    {path: PATHS.EMPLOYER_CONTRACT, roles: [ROLE.EMPLOYER], element: () => <ContractFile/>},
 
     // ───────── Anything else ─────────
-    {path: "*", element: () => <Navigate to="/" replace/>},
+    {path: PATHS.NOT_FOUND, element: () => <Navigate to={PATHS.ROOT} replace/>},
 ];
 // endregion
 
 // region Role guard
 /**
  * Layout route: renders its children only if the user has one of `roles`.
- *   no token          → /login
+ *   no token          → PATHS.LOGIN
  *   still loading     → blank (avoids a redirect flash)
- *   not logged in     → /login
- *   wrong role        → /home
- *   access not active → /expired
+ *   not logged in     → PATHS.LOGIN
+ *   wrong role        → PATHS.HOME
+ *   access not active → PATHS.EXPIRED
  * The backend still enforces access; this is UX only.
  *
  * It forwards PageLayout's outlet context ({dark, user, accountStatus}) to the child routes:
@@ -164,15 +241,15 @@ export const ROUTES = [
 function RequireRole({user, roles}) {
     const ctx = useOutletContext();
 
-    if (!localStorage.getItem("token")) return <Navigate to="/login" replace/>;
+    if (!localStorage.getItem("token")) return <Navigate to={PATHS.LOGIN} replace/>;
     if (user?.isLoggedIn === undefined) return <div aria-busy="true"/>;
-    if (!user.isLoggedIn) return <Navigate to="/login" replace/>;
+    if (!user.isLoggedIn) return <Navigate to={PATHS.LOGIN} replace/>;
 
     const role = (user.role ?? "").toString().replace("ROLE_", "");
-    if (!roles.includes(role)) return <Navigate to="/home" replace/>;
+    if (!roles.includes(role)) return <Navigate to={PATHS.HOME} replace/>;
 
     if (ctx.accountStatus === null) return <div aria-busy="true"/>;
-    if (ctx.accountStatus !== ACCOUNT_STATUS.APPROVED) return <Navigate to="/expired" replace/>;
+    if (ctx.accountStatus !== ACCOUNT_STATUS.APPROVED) return <Navigate to={PATHS.EXPIRED} replace/>;
 
     return <Outlet context={ctx}/>;
 }

@@ -41,7 +41,7 @@ function ApplyControls({
                 }`}>
                 <Icon name="error" size={20}/>
                 {t("studentInternship.noApprovedCv")}
-                <Link to="/portfolio" className="font-bold underline underline-offset-2 hover:opacity-80">
+                <Link to="/student/portfolio" className="font-bold underline underline-offset-2 hover:opacity-80">
                     {t("studentInternship.goToCv")}
                 </Link>
             </span>
@@ -51,7 +51,7 @@ function ApplyControls({
     if (application?.internshipApplicationStatus === READ_BY_EMPLOYER) {
         return <SentDocuments application={application} dark={dark}/>;
     }
-    
+
     if (hired) {
         return application ? <SentDocuments application={application} dark={dark}/> : null;
     }

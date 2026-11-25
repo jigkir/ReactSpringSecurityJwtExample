@@ -191,7 +191,7 @@ describe('Applications page groups applications by internship', () => {
 
         // Assert
         expect(within(dataSection).getByRole('link', {name: 'applicationsPage.openInternship'}))
-            .toHaveAttribute('href', '/application/20');
+            .toHaveAttribute('href', '/employer/applications/20');
     });
 
     it('shouldShowUnreadBadgeOnlyOnInternshipsWithUnreadApplications', async () => {
