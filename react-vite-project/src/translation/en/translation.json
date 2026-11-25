@@ -100,7 +100,8 @@
     "newContractNotification": "{{amount}} new contract(s) added",
     "contractReadyToSignNotification": "{{amount}} contract(s) ready to sign",
     "newContractNotificationDetail": "You can sign it once the student and the employer have signed it.",
-    "contractReadyToSignNotificationDetail": "The student and the employer have signed: the contract is waiting for your signature."
+    "contractReadyToSignNotificationDetail": "The student and the employer have signed: the contract is waiting for your signature.",
+    "studentStatuses": "Student Statuses"
   },
   "teacher": {
     "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces.",
@@ -177,6 +178,9 @@
     "passwordRequirements": "8 to 50 characters, with a digit, a lowercase letter, an uppercase letter and a special character. No spaces.",
     "registrationSession": "You are signing up for the {{session}} internship session.",
     "registrationSessionError": "Unable to load the registration session. Refresh the page to try again."
+  },
+  "studentStatuses": {
+    "title": "Student Status Tracking"
   },
   "commonFields": {
     "firstName": "First name",

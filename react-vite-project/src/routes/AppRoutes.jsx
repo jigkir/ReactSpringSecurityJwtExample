@@ -36,6 +36,7 @@ import StudentContracts from '../components/page/student/contracts/Contracts.jsx
 import ManagerCv from '../components/page/manager/Cv.jsx';
 import ManagerInternships from '../components/page/manager/Internships.jsx';
 import ManagerContracts from '../components/page/manager/Contracts.jsx';
+import ManagerStudentStatuses from '../components/page/manager/StudentStatuses.jsx';
 import PostInternship from '../components/page/employer/internship/PostInternship.jsx';
 import Applications from '../components/page/employer/application/Applications.jsx';
 import ViewApplications from '../components/page/employer/application/ViewApplications.jsx';
@@ -112,6 +113,12 @@ export const ROUTES = [
     {
         path: "/tracking", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.tracking"},
         element: () => <Tracking/>
+    },
+    {
+        path: "/manager/student-statuses",
+        roles: [ROLE.MANAGER],
+        nav: {MANAGER: "navbar.studentStatuses"},
+        element: () => <ManagerStudentStatuses/>
     },
 
     // ───────── Employer ─────────
