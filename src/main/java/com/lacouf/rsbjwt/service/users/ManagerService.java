@@ -63,6 +63,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus;
+import static com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus.*;
+
 @Service
 public class ManagerService {
 
@@ -287,7 +290,7 @@ public class ManagerService {
     }
 
     @Transactional(readOnly = true)
-    public List<ManagerStudentSummaryDto> getStudentsSummary() throws UserNotFoundException {
+    public List<ManagerStudentSummaryDto> getStudentsStatus() throws UserNotFoundException {
         List<ManagerStudentSummaryDto> summaries = new ArrayList<>();
 
         for (Student student : studentRepository.findAll()) {
@@ -298,32 +301,35 @@ public class ManagerService {
     }
 
     private ManagerStudentSummaryDto toSummary(Student student) throws UserNotFoundException {
-        Set<CV> cvs = student.getCvs().stream()
-                .filter(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE)
-                .collect(Collectors.toSet());
-        long cvCount = cvs.size();
+        List<CV> cvs = cvRepository.findByUser(student).stream()
+                .filter(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE).toList();
+        long cvApproved = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.APPROVED).count();
         long cvPending = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.PENDING).count();
-        long cvDenied = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.REJECTED).count();
 
         long applications = applicationRepository.countByStudent(student);
-        long interviews = interviewRepository.countByInternshipApplication_Student(student);
-        long upcomingInterviews = interviewRepository.countByInternshipApplication_StudentAndInterviewDateAfter(student, LocalDateTime.now());
-        long completedAwaitingAnswer = interviewRepository.countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(student, EmployerDecision.INTERVIEW_OFFERED, LocalDateTime.now());
+        long upcoming = interviewRepository.countByInternshipApplication_StudentAndInterviewDateAfter(student, LocalDateTime.now());
+        long awaiting = interviewRepository.countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(student, EmployerDecision.INTERVIEW_OFFERED, LocalDateTime.now());
         long offersPending = applicationRepository.countByStudentAndEmployerDecisionAndStudentInternshipConsent(student, EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING);
-        boolean hasToSignContract = contractRepository.existsByStudentAndStudentSignedAtIsNull(student);
-        boolean hasSignedContract = contractRepository.existsByStudentAndStudentSignedAtIsNotNull(student);
+        long contractsToSign = contractRepository.countByStudentAndStudentSignedAtIsNull(student);
+        long signedContracts = contractRepository.countByStudentAndStudentSignedAtIsNotNull(student);
 
-        boolean hasFoundInternship = student.isEmployed();
+        InternshipStatus status;
+        if (signedContracts > 0)       status = CONTRACT_SIGNED;
+        else if (contractsToSign > 0)  status = CONTRACT_PENDING;
+        else if (offersPending > 0)    status = OFFER_PENDING;
+        else if (awaiting > 0)         status = AWAITING_DECISION;
+        else if (upcoming > 0)         status = UPCOMING_INTERVIEW;
+        else if (applications > 0)     status = NO_INTERVIEW;
+        else if (cvApproved > 0)       status = NO_APPLICATION;
+        else if (cvPending > 0)        status = CV_PENDING;
+        else if (!cvs.isEmpty())       status = CV_REJECTED;
+        else                           status = NO_CV;
 
         return new ManagerStudentSummaryDto(
-                student.getId(),
-                student.getFirstName(),
-                student.getLastName(),
+                student.getId(), student.getStudentId(),
+                student.getFirstName(), student.getLastName(),
                 accountAccessService.getAccountStatus(student.getEmail()),
-                cvCount, cvPending, cvDenied,
-                applications, interviews, upcomingInterviews, completedAwaitingAnswer,
-                offersPending, hasFoundInternship, hasToSignContract, hasSignedContract
-        );
+                status);
     }
 
     private InternshipTracking findTracking(long trackingId) throws InternshipTrackingNotFoundException {
