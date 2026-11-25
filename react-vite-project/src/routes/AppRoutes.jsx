@@ -62,65 +62,69 @@ export const ROUTES = [
     {path: "/error", element: ({error}) => <ErrorPage error={error}/>},
     {path: "/expired", element: ({user}) => <ExpiredUser user={user}/>},
     // Not guarded (same as before)
-    {path: "/evaluations", element: () => <WorkplaceEvaluations/>},
+    {path: "/evaluations", home: [ROLE.TEACHER], element: () => <WorkplaceEvaluations/>},
 
     // ───────── Any logged-in role ─────────
     {path: "/home", roles: ALL_ROLES, element: () => <Home/>},
 
     // ───────── Student ─────────
     {
-        path: "/portfolio", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.portfolio"},
+        path: "/portfolio", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.portfolio"}, home: [ROLE.STUDENT],
         element: () => <Portfolio/>
     },
     {path: "/cv", roles: [ROLE.STUDENT], element: () => <Navigate to="/portfolio" replace/>},
     {
-        path: "/internship", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.internships"},
+        path: "/internship", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.internships"}, home: [ROLE.STUDENT],
         element: () => <StudentInternships/>
     },
     {
-        path: "/interviews", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.interviews"},
+        path: "/interviews", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.interviews"}, home: [ROLE.STUDENT],
         element: () => <StudentInterviews/>
     },
     {
-        path: "/offers", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.offers"},
+        path: "/offers", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.offers"}, home: [ROLE.STUDENT],
         element: () => <StudentOffers/>
     },
     {
-        path: "/student/contracts", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.contracts"},
+        path: "/student/contracts", roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.contracts"}, home: [ROLE.STUDENT],
         element: () => <StudentContracts/>
     },
     {path: "/student/contracts/:id", roles: [ROLE.STUDENT], element: () => <ContractFile/>},
 
     // ───────── Manager ─────────
     {
-        path: "/manager/cvs", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.cv"},
+        path: "/manager/cvs", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.cv"}, home: [ROLE.MANAGER],
         element: () => <ManagerCv/>
     },
     {
         path: "/manager/internships", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.internships"},
+        home: [ROLE.MANAGER],
         element: () => <ManagerInternships/>
     },
     {
         path: "/manager/contracts", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.contracts"},
+        home: [ROLE.MANAGER],
         element: () => <ManagerContracts/>
     },
     {path: "/manager/contracts/:id", roles: [ROLE.MANAGER], element: () => <ContractFile/>},
     {
-        path: "/users", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.users"},
+        path: "/users", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.users"}, home: [ROLE.MANAGER],
         element: ({user}) => <Users user={user}/>
     },
     {
-        path: "/tracking", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.tracking"},
+        path: "/tracking", roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.tracking"}, home: [ROLE.MANAGER],
         element: () => <Tracking/>
     },
 
     // ───────── Employer ─────────
     {
         path: "/internships", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.postInternship"},
+        home: [ROLE.EMPLOYER],
         element: ({user}) => <PostInternship user={user}/>
     },
     {
         path: "/applications", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.applications"},
+        home: [ROLE.EMPLOYER],
         element: ({user}) => <Applications user={user}/>
     },
     {
@@ -129,10 +133,12 @@ export const ROUTES = [
     },
     {
         path: "/employer/interviews", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.interviews"},
+        home: [ROLE.EMPLOYER],
         element: ({user}) => <EmployerInterviews user={user}/>
     },
     {
         path: "/employer/contracts", roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.contracts"},
+        home: [ROLE.EMPLOYER],
         element: () => <EmployerContracts/>
     },
     {path: "/employer/contracts/:id", roles: [ROLE.EMPLOYER], element: () => <ContractFile/>},
