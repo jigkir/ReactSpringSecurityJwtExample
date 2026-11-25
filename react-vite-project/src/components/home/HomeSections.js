@@ -260,12 +260,27 @@ const HOME_CARDS = {
 // One array per role, built once: Home uses it as a hook dependency, so its identity must be stable
 const sectionsByRole = new Map();
 
-/** [{to, ...card}] of the role: the routes with `home: [role]`, in the order of ROUTES. */
+const HOME_ORDER_BY_ROLE = {
+    STUDENT: [
+        "/student/portfolio",
+        "/student/interviews",
+        "/student/offers",
+        "/student/internship",
+        "/student/contracts",
+    ],
+};
+
+/** [{to, ...card}] of the role: the routes with `home: [role]`, in display order. */
 export const getHomeSections = (role) => {
     if (!sectionsByRole.has(role)) {
-        sectionsByRole.set(role, ROUTES
+        const sections = ROUTES
             .filter((route) => route.home?.includes(role) && HOME_CARDS[route.path])
-            .map((route) => ({to: route.path, ...HOME_CARDS[route.path]})));
+            .map((route) => ({to: route.path, ...HOME_CARDS[route.path]}));
+        const order = HOME_ORDER_BY_ROLE[role];
+        if (order) {
+            sections.sort((a, b) => order.indexOf(a.to) - order.indexOf(b.to));
+        }
+        sectionsByRole.set(role, sections);
     }
     return sectionsByRole.get(role);
 };
