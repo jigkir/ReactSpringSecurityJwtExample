@@ -313,7 +313,7 @@ public class ManagerService {
         long hasToSignContract = contractRepository.countByStudentAndStudentSignedAtIsNull(student);
         long hasSignedContract = contractRepository.countByStudentAndStudentSignedAtIsNotNull(student);
 
-        boolean hasFoundInternship = student.isEmployed();
+        String studentInternshipStatus = String.valueOf(student.getStudentInternshipStatus());
 
         return new ManagerStudentSummaryDto(
                 student.getId(),
@@ -322,7 +322,7 @@ public class ManagerService {
                 accountAccessService.getAccountStatus(student.getEmail()),
                 cvCount, cvPending, cvDenied,
                 applications, interviews, upcomingInterviews, completedAwaitingAnswer,
-                offersPending, hasFoundInternship, hasToSignContract, hasSignedContract
+                offersPending, studentInternshipStatus, hasToSignContract, hasSignedContract
         );
     }
 

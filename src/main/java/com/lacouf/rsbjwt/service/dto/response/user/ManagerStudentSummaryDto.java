@@ -16,7 +16,7 @@ public record ManagerStudentSummaryDto(
         long numberOfInterviewsCompletedAndAwaitingAnswer,
 
         long numberOfOffersPending,
-        boolean hasFoundAnInternship,
+        String studentInternshipStatus,
         long numberOfContractsToSign,
         long numberOfSignedContract
 ) {}
