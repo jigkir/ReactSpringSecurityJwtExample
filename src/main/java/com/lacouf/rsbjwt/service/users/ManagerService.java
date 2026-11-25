@@ -10,6 +10,8 @@ import com.lacouf.rsbjwt.exception.user.UserAlreadyExistsException;
 import com.lacouf.rsbjwt.exception.user.UserNotFoundException;
 import com.lacouf.rsbjwt.model.Discipline;
 import com.lacouf.rsbjwt.model.ReviewStatus;
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
+import com.lacouf.rsbjwt.model.application.StudentInternshipConsent;
 import com.lacouf.rsbjwt.model.auth.Credentials;
 import com.lacouf.rsbjwt.model.auth.Role;
 import com.lacouf.rsbjwt.model.document.DocumentVisibility;
@@ -25,10 +27,12 @@ import com.lacouf.rsbjwt.model.user.Manager;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.model.user.Teacher;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
 import com.lacouf.rsbjwt.repository.internship_tracking.TeacherStudentCount;
+import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.TeacherRepository;
@@ -38,6 +42,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvRespo
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.dto.response.user.UserResponseDto;
 import com.lacouf.rsbjwt.service.internship.InternshipService;
@@ -51,6 +56,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,13 +75,16 @@ public class ManagerService {
     private final InternshipApplicationRepository applicationRepository;
     private final InternshipTrackingRepository internshipTrackingRepository;
     private final TeacherRepository teacherRepository;
+    private final InterviewRepository interviewRepository;
+    private final ContractRepository contractRepository;
 
+    private final AccountAccessService accountAccessService;
     private final NotificationService notificationService;
     private final UserAppService userAppService;
     private final InternshipService internshipService;
     private final AcademicSessionService academicSessionService;
 
-    public ManagerService(ApplicationEventPublisher eventPublisher, ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService) {
+    public ManagerService(ApplicationEventPublisher eventPublisher, ManagerRepository managerRepository, CVRepository cvRepository, InternshipRepository internshipRepository, StudentRepository studentRepository, InternshipApplicationRepository applicationRepository, InternshipTrackingRepository internshipTrackingRepository, TeacherRepository teacherRepository, InterviewRepository interviewRepository, AccountAccessService accountAccessService, NotificationService notificationService, UserAppService userAppService, InternshipService internshipService, AcademicSessionService academicSessionService, ContractRepository contractRepository) {
         this.eventPublisher = eventPublisher;
         this.managerRepository = managerRepository;
         this.cvRepository = cvRepository;
@@ -83,10 +93,13 @@ public class ManagerService {
         this.applicationRepository = applicationRepository;
         this.internshipTrackingRepository = internshipTrackingRepository;
         this.teacherRepository = teacherRepository;
+        this.interviewRepository = interviewRepository;
+        this.accountAccessService = accountAccessService;
         this.notificationService = notificationService;
         this.userAppService = userAppService;
         this.internshipService = internshipService;
         this.academicSessionService = academicSessionService;
+        this.contractRepository = contractRepository;
     }
 
     public UserResponseDto save(String firstName, String lastName, String email, String password, String phoneNumber) throws UserAlreadyExistsException {
@@ -271,6 +284,46 @@ public class ManagerService {
         notifyTeacherOfEvaluationToFill(tracking.getWorkplaceEvaluation(), teacher);
 
         return InternshipTrackingResponseDto.of(internshipTrackingRepository.save(tracking));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ManagerStudentSummaryDto> getStudentsSummary() throws UserNotFoundException {
+        List<ManagerStudentSummaryDto> summaries = new ArrayList<>();
+
+        for (Student student : studentRepository.findAll()) {
+            summaries.add(toSummary(student));
+        }
+
+        return summaries;
+    }
+
+    private ManagerStudentSummaryDto toSummary(Student student) throws UserNotFoundException {
+        Set<CV> cvs = student.getCvs().stream()
+                .filter(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE)
+                .collect(Collectors.toSet());
+        long cvCount = cvs.size();
+        long cvPending = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.PENDING).count();
+        long cvDenied = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.REJECTED).count();
+
+        long applications = applicationRepository.countByStudent(student);
+        long interviews = interviewRepository.countByInternshipApplication_Student(student);
+        long upcomingInterviews = interviewRepository.countByInternshipApplication_StudentAndInterviewDateAfter(student, LocalDateTime.now());
+        long completedAwaitingAnswer = interviewRepository.countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(student, EmployerDecision.INTERVIEW_OFFERED, LocalDateTime.now());
+        long offersPending = applicationRepository.countByStudentAndEmployerDecisionAndStudentInternshipConsent(student, EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING);
+        boolean hasToSignContract = contractRepository.existsByStudentAndStudentSignedAtIsNull(student);
+        boolean hasSignedContract = contractRepository.existsByStudentAndStudentSignedAtIsNotNull(student);
+
+        boolean hasFoundInternship = student.isEmployed();
+
+        return new ManagerStudentSummaryDto(
+                student.getId(),
+                student.getFirstName(),
+                student.getLastName(),
+                accountAccessService.getAccountStatus(student.getEmail()),
+                cvCount, cvPending, cvDenied,
+                applications, interviews, upcomingInterviews, completedAwaitingAnswer,
+                offersPending, hasFoundInternship, hasToSignContract, hasSignedContract
+        );
     }
 
     private InternshipTracking findTracking(long trackingId) throws InternshipTrackingNotFoundException {
