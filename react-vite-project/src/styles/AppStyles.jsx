@@ -344,7 +344,7 @@ export function getMainContainerClasses(dark) {
 export function getPostInternshipClasses(dark) {
     return {
         page: `p-4 md:p-10 flex flex-col flex-1 w-full min-w-0`,
-        headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? "border-slate-700" : "border-gray-200"}`,
+        headerSection: `max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-6 shrink-0 ${dark ? "border-slate-700" : "border-gray-400"}`,
         title: `text-3xl font-bold ${dark ? "text-white" : "text-gray-900"}`,
         subtitle: `mt-1 ${dark ? "text-slate-400" : "text-gray-600"}`,
         listSection: "max-w-5xl w-full mx-auto flex-1 flex flex-col",

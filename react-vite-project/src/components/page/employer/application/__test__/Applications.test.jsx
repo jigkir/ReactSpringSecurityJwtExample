@@ -193,17 +193,6 @@ describe('Applications page groups applications by internship', () => {
         expect(within(dataSection).getByRole('link', {name: 'applicationsPage.openInternship'}))
             .toHaveAttribute('href', '/employer/applications/20');
     });
-
-    it('shouldShowUnreadBadgeOnlyOnInternshipsWithUnreadApplications', async () => {
-        // Arrange + Act
-        await renderLoaded();
-        const dataSection = await screen.findByRole('region', {name: 'Data Intern'});
-        const softwareSection = screen.getByRole('region', {name: 'Software Engineering Intern'});
-
-        // Assert
-        expect(within(dataSection).getByText('applicationsPage.unreadCount')).toBeInTheDocument();
-        expect(within(softwareSection).queryByText('applicationsPage.unreadCount')).not.toBeInTheDocument();
-    });
 });
 
 describe('Applications page filters', () => {
@@ -313,7 +302,6 @@ describe('Applications page CV preview', () => {
         // Assert
         await waitFor(() => expect(getApplicationCv).toHaveBeenCalledWith(2));
         expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
-        expect(screen.getByText('applicationsPage.unreadCount')).toBeInTheDocument();
     });
 
     it('shouldKeepNewBadgeEvenWhenServerReportsTheApplicationAsReadAfterPreview', async () => {

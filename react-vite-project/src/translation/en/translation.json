@@ -379,8 +379,6 @@
     "fromInternship": "Applications for the offer",
     "applicationCount_one": "{{count}} application",
     "applicationCount_other": "{{count}} applications",
-    "unreadCount_one": "{{count}} new",
-    "unreadCount_other": "{{count}} new",
     "openInternship": "View all candidates for this offer"
   },
   "applicationCard": {
