@@ -16,6 +16,8 @@ import {useNotifications} from "../../../notification/NotificationsProvider.jsx"
 import {usePolling} from "../../../../utils/usePolling.js";
 import {useNewApplications} from "../../../../utils/useNewApplications.js";
 
+const INTERNSHIPS_PATH = "/employer/internships";
+
 const canHireApplication = (application) => application.employerDecision !== "INTERNSHIP_OFFERED" && application.employerDecision !== "REJECTED";
 
 function ViewApplications({user}) {
@@ -217,7 +219,7 @@ function ViewApplications({user}) {
     }, [clearNew, refresh]);
 
     if (allowed === false) {
-        return <Navigate to="/internships" replace/>;
+        return <Navigate to={INTERNSHIPS_PATH} replace/>;
     }
 
     if (error) {
@@ -239,7 +241,7 @@ function ViewApplications({user}) {
         <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
             <Button
                 as={NavLink}
-                to="/internships"
+                to={INTERNSHIPS_PATH}
                 tone="primary"
                 dark={dark}
                 icon="arrow_back"

@@ -31,6 +31,7 @@ import {
     getInterviewColor
 } from "../../utils/interviewStatus.js";
 import {getContractRole} from "../../utils/ContractRole.js";
+import {ROUTES} from "../../routes/AppRoutes.jsx";
 import {
     fetchWorkplaceEvaluations,
     getApplications,
@@ -48,17 +49,19 @@ import {
     getUsers,
 } from "../api/Api.jsx";
 
-// The status that waits for an action: its items are listed in the "To do" panel of the Home
-export const ACTION_COLOR = COLOR.YELLOW;
-
 // Colors of a page whose load failed
 export const LOAD_FAILED = "LOAD_FAILED";
 
-/** {ALL: n, RED: n, ...} of a page's colors, or null while they load or after a failure. */
-export const countColors = (colors) => {
+/**
+ * {ALL: n, RED: n, ...} of a page's colors, or null while they load or after a failure.
+ * ALL is the total of the card: it only counts the colors the card shows (`shown`),
+ * and never GREEN. Manager cards show YELLOW only, so their total is the pending items.
+ */
+export const countColors = (colors, shown = [COLOR.RED, COLOR.YELLOW]) => {
     if (!Array.isArray(colors)) return null;
 
-    const counts = {[ALL]: colors.length};
+    const counted = shown.filter((color) => color !== COLOR.GREEN);
+    const counts = {[ALL]: colors.filter((color) => counted.includes(color)).length};
     colors.filter(Boolean).forEach((color) => {
         counts[color] = (counts[color] ?? 0) + 1;
     });
@@ -101,168 +104,169 @@ const loadContracts = async ({sessionId, user}) => {
 
 const loadInterviews = (getter) => async () => asList(await getter()).map(getInterviewColor);
 
-export const SECTIONS_BY_ROLE = {
-    STUDENT: [
-        {
-            to: "/portfolio",
-            icon: "upload_file",
-            page: "studentCv",
-            titleKey: "home.studentCvLink",
-            param: "status",
-            colors: STATUS_COLORS,
-            load: async () => statusColors((await getDocuments("CV")).filter(isVisible)),
+// region Card config of each page, keyed by the path of its route in AppRoutes.jsx
+const HOME_CARDS = {
+    // ───────── Student ─────────
+    "/student/portfolio": {
+        icon: "upload_file",
+        page: "studentCv",
+        titleKey: "home.studentCvLink",
+        param: "status",
+        colors: STATUS_COLORS,
+        load: async () => statusColors((await getDocuments("CV")).filter(isVisible)),
+    },
+    "/student/interviews": {
+        icon: "event",
+        page: "studentInterviews",
+        titleKey: "home.studentInterviewsLink",
+        param: "status",
+        colors: STATUS_COLORS,
+        load: loadInterviews(getStudentInterviews),
+    },
+    "/student/offers": {
+        icon: "star",
+        page: "studentOffers",
+        titleKey: "navbar.offers",
+        param: "status",
+        colors: STATUS_COLORS,
+        load: async () => asList(await getStudentOffers()).map((offer) => colorOf(offer.studentInternshipConsent)),
+    },
+    "/student/internship": {
+        icon: "work",
+        page: "studentApplied",
+        titleKey: "home.studentInternshipsLink",
+        param: "applied",
+        scoped: true,
+        colors: APPLIED_COLORS,
+        load: async ({sessionId}) => {
+            const [internships, applications] = await Promise.all([
+                getStudentInternships(sessionId), getStudentAppliedInternships(sessionId)]);
+            const appliedIds = new Set(asList(applications).map((application) => application.internshipId));
+            return asList(internships).map((i) => (appliedIds.has(i.id) ? COLOR.GREEN : COLOR.RED));
         },
-        {
-            to: "/internship",
-            icon: "work",
-            page: "studentApplied",
-            titleKey: "home.studentInternshipsLink",
-            param: "applied",
-            scoped: true,
-            colors: APPLIED_COLORS,
-            load: async ({sessionId}) => {
-                const [internships, applications] = await Promise.all([
-                    getStudentInternships(sessionId), getStudentAppliedInternships(sessionId)]);
-                const appliedIds = new Set(asList(applications).map((application) => application.internshipId));
-                return asList(internships).map((i) => (appliedIds.has(i.id) ? COLOR.GREEN : COLOR.RED));
-            },
-        },
-        {
-            to: "/interviews",
-            icon: "event",
-            page: "studentInterviews",
-            titleKey: "home.studentInterviewsLink",
-            param: "status",
-            colors: STATUS_COLORS,
-            load: loadInterviews(getStudentInterviews),
-        },
-        {
-            to: "/offers",
-            icon: "star",
-            page: "studentOffers",
-            titleKey: "navbar.offers",
-            param: "status",
-            colors: STATUS_COLORS,
-            load: async () => asList(await getStudentOffers()).map((offer) => colorOf(offer.studentInternshipConsent)),
-        },
-        {
-            to: "/student/contracts",
-            icon: "edit",
-            page: "contracts",
-            titleKey: "home.studentContractsLink",
-            param: "status",
-            scoped: true,
-            colors: CONTRACT_COLORS,
-            load: loadContracts,
-        },
-    ],
-    EMPLOYER: [
-        {
-            to: "/internships",
-            icon: "business_center",
-            page: "employerInternships",
-            titleKey: "home.employerInternshipsLink",
-            param: "status",
-            scoped: true,
-            colors: STATUS_COLORS,
-            load: async ({sessionId}) => statusColors(await getEmployerInternships(sessionId)),
-        },
-        {
-            to: "/applications",
-            icon: "person",
-            page: "employerApplications",
-            titleKey: "home.employerApplicationsLink",
-            param: "status",
-            scoped: true,
-            colors: STATUS_COLORS,
-            load: async ({sessionId}) =>
-                asList(await getApplications(sessionId)).map((application) => colorOf(application.employerDecision)),
-        },
-        {
-            to: "/employer/interviews",
-            icon: "event",
-            page: "employerInterviews",
-            titleKey: "navbar.interviews",
-            param: "status",
-            colors: STATUS_COLORS,
-            load: loadInterviews(getEmployerInterviews),
-        },
-        {
-            to: "/employer/contracts",
-            icon: "edit",
-            page: "contracts",
-            titleKey: "home.employerContractsLink",
-            param: "status",
-            scoped: true,
-            colors: CONTRACT_COLORS,
-            load: loadContracts,
-        },
-    ],
-    MANAGER: [
-        {
-            to: "/manager/cvs",
-            icon: "picture_as_pdf",
-            page: "managerCv",
-            titleKey: "home.managerCvLink",
-            param: "status",
-            scoped: true,
-            colors: PENDING_ONLY,
-            load: async ({sessionId}) => statusColors(await getPublicCvs(sessionId)),
-        },
-        {
-            to: "/manager/internships",
-            icon: "business_center",
-            page: "managerInternships",
-            titleKey: "home.managerInternshipsLink",
-            param: "status",
-            scoped: true,
-            colors: PENDING_ONLY,
-            load: async ({sessionId}) => statusColors(await getManagerInternships(sessionId)),
-        },
-        {
-            to: "/manager/contracts",
-            icon: "edit",
-            page: "contracts",
-            titleKey: "home.managerContractsLink",
-            param: "status",
-            scoped: true,
-            colors: PENDING_ONLY,
-            load: loadContracts,
-        },
-        {
-            // Accounts: APPROVED / PENDING / REJECTED (the backend may send any case)
-            to: "/users",
-            icon: "admin_panel_settings",
-            page: "managerUsers",
-            titleKey: "navbar.users",
-            param: "status",
-            colors: PENDING_ONLY,
-            load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
-        },
-        {
-            // Internship tracking: still to assign (YELLOW), then teacher assigned (GREEN)
-            to: "/tracking",
-            icon: "co_present",
-            page: "managerTracking",
-            titleKey: "navbar.tracking",
-            param: "status",
-            colors: PENDING_ONLY,
-            load: async () => asList(await getInternshipTrackings())
-                .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
-        },
-    ],
-    TEACHER: [
-        {
-            // Workplace evaluations: still to complete / sign (YELLOW), then signed (GREEN)
-            to: "/evaluations",
-            icon: "share_reviews",
-            page: "teacherEvaluations",
-            titleKey: "workplaceEvaluation.title",
-            param: "status",
-            scoped: true,
-            colors: CONTRACT_COLORS,
-            load: async ({sessionId}) => asList(await fetchWorkplaceEvaluations(sessionId))
-                .map((evaluation) => (evaluation.signedAt ? COLOR.GREEN : COLOR.YELLOW)),
-        },
-    ],
+    },
+    "/student/contracts": {
+        icon: "edit",
+        page: "contracts",
+        titleKey: "home.studentContractsLink",
+        param: "status",
+        scoped: true,
+        colors: CONTRACT_COLORS,
+        load: loadContracts,
+    },
+
+    // ───────── Employer ─────────
+    "/employer/internships": {
+        icon: "business_center",
+        page: "employerInternships",
+        titleKey: "home.employerInternshipsLink",
+        param: "status",
+        scoped: true,
+        colors: STATUS_COLORS,
+        load: async ({sessionId}) => statusColors(await getEmployerInternships(sessionId)),
+    },
+    "/employer/applications": {
+        icon: "person",
+        page: "employerApplications",
+        titleKey: "home.employerApplicationsLink",
+        param: "status",
+        scoped: true,
+        colors: STATUS_COLORS,
+        load: async ({sessionId}) =>
+            asList(await getApplications(sessionId)).map((application) => colorOf(application.employerDecision)),
+    },
+    "/employer/interviews": {
+        icon: "event",
+        page: "employerInterviews",
+        titleKey: "navbar.interviews",
+        param: "status",
+        colors: STATUS_COLORS,
+        load: loadInterviews(getEmployerInterviews),
+    },
+    "/employer/contracts": {
+        icon: "edit",
+        page: "contracts",
+        titleKey: "home.employerContractsLink",
+        param: "status",
+        scoped: true,
+        colors: CONTRACT_COLORS,
+        load: loadContracts,
+    },
+
+    // ───────── Manager ─────────
+    "/manager/cvs": {
+        icon: "picture_as_pdf",
+        page: "managerCv",
+        titleKey: "home.managerCvLink",
+        param: "status",
+        scoped: true,
+        colors: PENDING_ONLY,
+        load: async ({sessionId}) => statusColors(await getPublicCvs(sessionId)),
+    },
+    "/manager/internships": {
+        icon: "business_center",
+        page: "managerInternships",
+        titleKey: "home.managerInternshipsLink",
+        param: "status",
+        scoped: true,
+        colors: PENDING_ONLY,
+        load: async ({sessionId}) => statusColors(await getManagerInternships(sessionId)),
+    },
+    "/manager/contracts": {
+        icon: "edit",
+        page: "contracts",
+        titleKey: "home.managerContractsLink",
+        param: "status",
+        scoped: true,
+        colors: PENDING_ONLY,
+        load: loadContracts,
+    },
+    // Accounts: APPROVED / PENDING / REJECTED (the backend may send any case)
+    "/manager/users": {
+        icon: "admin_panel_settings",
+        page: "managerUsers",
+        titleKey: "navbar.users",
+        param: "status",
+        colors: PENDING_ONLY,
+        load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
+    },
+    // Internship tracking: still to assign (YELLOW), then teacher assigned (GREEN)
+    "/manager/tracking": {
+        icon: "co_present",
+        page: "managerTracking",
+        titleKey: "navbar.tracking",
+        param: "status",
+        colors: PENDING_ONLY,
+        load: async () => asList(await getInternshipTrackings())
+            .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
+    },
+
+    // ───────── Teacher ─────────
+    // Workplace evaluations: still to complete / sign (YELLOW), then signed (GREEN)
+    "/teacher/evaluations": {
+        icon: "share_reviews",
+        page: "teacherEvaluations",
+        titleKey: "workplaceEvaluation.title",
+        param: "status",
+        scoped: true,
+        colors: CONTRACT_COLORS,
+        load: async ({sessionId}) => asList(await fetchWorkplaceEvaluations(sessionId))
+            .map((evaluation) => (evaluation.signedAt ? COLOR.GREEN : COLOR.YELLOW)),
+    },
 };
+// endregion
+
+// region Sections of a role, built from ROUTES
+// One array per role, built once: Home uses it as a hook dependency, so its identity must be stable
+const sectionsByRole = new Map();
+
+/** [{to, ...card}] of the role: the routes with `home: [role]`, in the order of ROUTES. */
+export const getHomeSections = (role) => {
+    if (!sectionsByRole.has(role)) {
+        sectionsByRole.set(role, ROUTES
+            .filter((route) => route.home?.includes(role) && HOME_CARDS[route.path])
+            .map((route) => ({to: route.path, ...HOME_CARDS[route.path]})));
+    }
+    return sectionsByRole.get(role);
+};
+// endregion

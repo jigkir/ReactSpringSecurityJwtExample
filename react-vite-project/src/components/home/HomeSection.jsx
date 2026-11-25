@@ -19,14 +19,15 @@
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import Icon from "../../styles/Icon.jsx";
+import Button from "../../styles/Button.jsx";
 import {getHomeSectionClasses} from "../../styles/AppStyles.jsx";
-import {ALL, statusLabelKey} from "../../utils/StatusColor.js";
+import {ALL, COLOR, statusLabelKey} from "../../utils/StatusColor.js";
 import {countColors, countOf, countText, filteredPage, LOAD_FAILED} from "./HomeSections.js";
 
 function HomeSection({section, colors, dark}) {
     const {t} = useTranslation();
     const s = getHomeSectionClasses(dark);
-    const counts = countColors(colors);
+    const counts = countColors(colors, section.colors);
     const failed = colors === LOAD_FAILED;
     const title = t(section.titleKey);
 
@@ -61,13 +62,23 @@ function HomeSection({section, colors, dark}) {
             </header>
 
             <div className={s.statuses}>
-                {section.colors.map(renderStatus)}
+                {section.colors.filter((color) => color !== COLOR.GREEN).map(renderStatus)}
             </div>
 
-            <Link to={section.to} className={s.seeAll}>
-                {t("home.seeAll")}
-                <Icon name="arrow_forward" size={20} className={s.arrow}/>
-            </Link>
+            <div className={s.footer}>
+                <Button
+                    as={Link}
+                    to={section.to}
+                    tone="accent"
+                    lockTone
+                    dark={dark}
+                    className={s.seeAll}
+                >
+                    {t("home.seeAll")}
+                    <Icon name="arrow_forward" size={18}
+                          className="shrink-0 transition-transform group-hover:translate-x-1 motion-reduce:transition-none"/>
+                </Button>
+            </div>
         </section>
     );
 }

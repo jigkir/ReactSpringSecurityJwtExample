@@ -44,7 +44,7 @@ describe('ViewApplications Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         getEmployerInterviewsByApplicationId.mockResolvedValue([]);
-        window.history.pushState({}, '', '/application/10');
+        window.history.pushState({}, '', '/employer/applications/10');
     });
 
     it('renders loading state initially', () => {
@@ -117,7 +117,7 @@ describe('ViewApplications Component', () => {
         render(<MockViewApplications user={loggedInUser}/>);
 
         await waitFor(() => {
-            expect(window.location.pathname).toBe('/internships');
+            expect(window.location.pathname).toBe('/employer/internships');
         });
         expect(screen.queryByText('viewApplication.empty')).not.toBeInTheDocument();
     });
@@ -129,7 +129,7 @@ describe('ViewApplications Component', () => {
         render(<MockViewApplications user={loggedInUser}/>);
 
         await waitFor(() => {
-            expect(window.location.pathname).toBe('/internships');
+            expect(window.location.pathname).toBe('/employer/internships');
         });
         expect(getApplications).not.toHaveBeenCalled();
     });

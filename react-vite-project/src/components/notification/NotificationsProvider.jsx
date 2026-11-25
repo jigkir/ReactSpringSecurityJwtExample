@@ -49,19 +49,19 @@ export const TARGET_TYPE = {
 };
 
 const PAGE = {
-    STUDENT_CVS: "/portfolio",
-    STUDENT_INTERNSHIPS: "/internship",
-    STUDENT_INTERVIEWS: "/interviews",
-    STUDENT_OFFERS: "/offers",
+    STUDENT_CVS: "/student/portfolio",
+    STUDENT_INTERNSHIPS: "/student/internship",
+    STUDENT_INTERVIEWS: "/student/interviews",
+    STUDENT_OFFERS: "/student/offers",
     STUDENT_CONTRACTS: "/student/contracts",
 
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
     MANAGER_CONTRACTS: "/manager/contracts",
-    MANAGER_USERS: "/users",
+    MANAGER_USERS: "/manager/users",
 
-    EMPLOYER_INTERNSHIPS: "/internships",
-    EMPLOYER_APPLICATIONS: "/applications",
+    EMPLOYER_INTERNSHIPS: "/employer/internships",
+    EMPLOYER_APPLICATIONS: "/employer/applications",
     EMPLOYER_CONTRACTS: "/employer/contracts",
     EMPLOYER_INTERVIEWS: "/employer/interviews",
 };
