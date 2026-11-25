@@ -1,5 +1,6 @@
 package com.lacouf.rsbjwt.repository.interview;
 
+import com.lacouf.rsbjwt.model.application.EmployerDecision;
 import com.lacouf.rsbjwt.model.application.InternshipApplication;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.interview.Interview;
@@ -28,4 +29,10 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     Optional<Interview> findByIdAndInternshipApplication_Student_Credentials_Email(Long id, String email);
 
     List<Interview> findByInternshipApplication_StudentAndInterviewStatusAndInterviewDateAfter(Student student, InterviewStatus interviewStatus, LocalDateTime date);
+
+    long countByInternshipApplication_Student(Student student);
+
+    long countByInternshipApplication_StudentAndInterviewDateAfter(Student student, LocalDateTime date);
+
+    long countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(Student student, EmployerDecision employerDecision, LocalDateTime date);
 }

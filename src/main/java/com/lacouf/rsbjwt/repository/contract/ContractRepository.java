@@ -21,4 +21,8 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     @Query("select contract.internship.id from Contract contract where contract.internship.postedBy.credentials.email = :email")
     Set<Long> findInternshipIdsOfEmployer(@Param("email") String email);
+
+    boolean existsByStudentAndStudentSignedAtIsNull(Student student);
+
+    boolean existsByStudentAndStudentSignedAtIsNotNull(Student student);
 }
