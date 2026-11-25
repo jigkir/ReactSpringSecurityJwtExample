@@ -146,7 +146,7 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                             <p className="text-sm text-red-500">{t(errors[`criteria.${key}`])}</p>
                         )}
 
-                        {extra === "supervisionHours" && (
+                        {extra === "supervisionHoursPerWeek" && (
                             <div className="mt-3 space-y-2">
                                 <p className="text-xs font-medium">
                                     {t("workplaceEvaluation.supervisionHours.title")} *

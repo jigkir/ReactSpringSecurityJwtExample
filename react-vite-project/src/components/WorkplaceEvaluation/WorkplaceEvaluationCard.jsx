@@ -21,7 +21,7 @@ export default function WorkplaceEvaluationCard({
     const [isSigning, setIsSigning] = useState(false);
 
     const source = evaluation ?? {};
-    const normalizedEvaluation = createInitialEvaluation(source);
+    const normalizedEvaluation = createInitialEvaluation(source.form);
 
     const isSigned = Boolean(source.signedAt);
     const isCompleted =
