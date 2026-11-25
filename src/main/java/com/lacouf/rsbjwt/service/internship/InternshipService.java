@@ -60,6 +60,19 @@ public class InternshipService {
         );
     }
 
+    public boolean isUnchanged(Internship internship, InternshipRequestDto internshipRequestDto) {
+        return internship.getTitle().equals(internshipRequestDto.title())
+                && internship.getDescription().equals(internshipRequestDto.description())
+                && internship.getRequiredSkills().equals(internshipRequestDto.requiredSkills())
+                && internship.getDurationInWeeks() == internshipRequestDto.durationInWeeks()
+                && internship.getLocation().equals(internshipRequestDto.location())
+                && internship.getWorkMode() == internshipRequestDto.workMode()
+                && internship.getStartDate().equals(internshipRequestDto.startDate())
+                && internship.getApplicationDeadline().equals(internshipRequestDto.applicationDeadline())
+                && isSameAmount(internship.getCompensationAmount(), internshipRequestDto.compensationAmount())
+                && internship.isCompensationNegotiable() == internshipRequestDto.compensationNegotiable();
+    }
+
     private void verifyIfInternshipHasApplications(Internship internship) throws InternshipWithApplicationsNotEditableException {
         if (internshipApplicationRepository.existsByInternship(internship)) {
             throw new InternshipWithApplicationsNotEditableException(internship.getId());
@@ -76,5 +89,9 @@ public class InternshipService {
         if (amount == null && !negotiable) {
             throw new InvalidCompensationException();
         }
+    }
+
+    private boolean isSameAmount(BigDecimal current, BigDecimal requested) {
+        return current == null ? requested == null : requested != null && current.compareTo(requested) == 0;
     }
 }

@@ -136,6 +136,10 @@ public class EmployerService {
                 .findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(id, employerEmail)
                 .orElseThrow(() -> new InternshipNotFoundException(id));
 
+        if (internshipService.isUnchanged(internship, dto)) {
+            return InternshipResponseDto.of(internship);
+        }
+
         internshipService.updateDetails(internship, dto, academicSessionService.getTargetSessionForUpdate(internship.getSession(), dto.startDate()));
         internship.resubmitForReview();
 
