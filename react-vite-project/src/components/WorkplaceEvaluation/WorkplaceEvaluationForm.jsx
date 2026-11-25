@@ -133,7 +133,7 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                             id={`criterion-${key}`}
                             value={formData.criteria[key]}
                             onChange={(e) => updateCriterion(key, e.target.value)}
-                            className={`text-center ${
+                            className={`text-center border border-slate-700  ${
                                 dark ? "bg-slate-800 text-white" : "bg-white text-slate-900"
                             }`}
                         >
@@ -167,6 +167,7 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                                                 step="0.5"
                                                 required
                                                 value={formData.criteria.supervisionHoursPerWeek[month]}
+                                                className="border border-slate-700"
                                                 onChange={(e) => {
                                                     updateSupervisionHours(month, e.target.value);
                                                     setErrors((prev) => ({ ...prev, supervisionHoursPerWeek: undefined }));
@@ -194,6 +195,7 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                                     min="0"
                                     step="0.01"
                                     required
+                                    className="border border-slate-700"
                                     value={formData.criteria.hourlySalary}
                                     onChange={(e) => {
                                         setFormData((prev) => ({

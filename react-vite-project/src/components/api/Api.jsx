@@ -689,3 +689,7 @@ export async function signWorkplaceEvaluation(evaluationId, signature){
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(signature)}))
 }
+
+export async function getWorkplaceEvaluationFile(evaluationId, language){
+    return handleResponse(await fetcher(`teacher/workplace-evaluations/${evaluationId}/file?language=${language}`))
+}

@@ -53,6 +53,7 @@ import Applications from '../components/page/employer/application/Applications.j
 import ViewApplications from '../components/page/employer/application/ViewApplications.jsx';
 import EmployerInterviews from '../components/page/employer/interview/EmployerInterviews.jsx';
 import EmployerContracts from '../components/page/employer/contracts/Contracts.jsx';
+import WorkplaceEvaluationFile from "../components/WorkplaceEvaluation/WorkplaceEvaluationFile.jsx";
 
 export const ROLE = {
     STUDENT: "STUDENT",
@@ -169,9 +170,7 @@ export const ROUTES = [
         path: PATHS.TEACHER_EVALUATIONS, roles: [ROLE.TEACHER], nav: {TEACHER: "navbar.evaluations"}, home: [ROLE.TEACHER],
         element: () => <WorkplaceEvaluations/>
     },
-    {
-        path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <div>Test</div>
-    },
+    {path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <WorkplaceEvaluationFile/>},
 
     // ───────── Manager ─────────
     {

@@ -158,13 +158,13 @@ export default function WorkplaceEvaluationCard({
                         : t("workplaceEvaluation.card.variableShiftsMissing")}
                 </span>
 
-                <span className={cardClasses.detailBadge}>
-                    {isSigned
-                        ? t("workplaceEvaluation.card.signedOn", {
-                            date: source.signedAt,
-                        })
-                        : t("workplaceEvaluation.card.notSignedYet")}
-                </span>
+                {/*<span className={cardClasses.detailBadge}>*/}
+                {/*    {isSigned*/}
+                {/*        ? t("workplaceEvaluation.card.signedOn", {*/}
+                {/*            date: source.signedAt,*/}
+                {/*        })*/}
+                {/*        : t("workplaceEvaluation.card.notSignedYet")}*/}
+                {/*</span>*/}
             </div>
 
             <div className={`${cardClasses.detailsRow} justify-end`}>
@@ -200,7 +200,7 @@ export default function WorkplaceEvaluationCard({
                 )}
                 {isSigned && (<Button
                     as={Link}
-                    to={`evaluations/${evaluation.id}`}
+                    to={`${evaluation.id}`}
                      state={{studentName: evaluation.studentName}}
                     tone="accent"
                     lockTone

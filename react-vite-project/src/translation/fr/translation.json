@@ -548,7 +548,7 @@
       "languageGroup": "Langue du contrat",
       "language": {
         "fr": "Français",
-        "en": "English"
+        "en": "Anglais"
       },
       "downloadCurrent": "Télécharger le PDF ({{language}})",
       "downloadBoth": "Télécharger les deux PDF",
@@ -973,7 +973,7 @@
       "unassignedSupervisor": "Superviseur non précisé",
       "weekLabel": "Semaine {{week}}",
       "pendingPeriod": "Période non précisée",
-      "supervisorLabel": "Superviseur : {{supervisor}}",
+      "supervisorLabel": "Professeur assignée : {{supervisor}}",
       "noCommentsYet": "Aucun commentaire enregistré pour le moment.",
       "criteriaProgress": "{{answered}} / {{total}} critères remplis",
       "hourlySalary": "{{rate}} $/h",
@@ -998,6 +998,10 @@
       "errorTerms": "Veuillez confirmer l'évaluation avant de signer.",
       "errorPassword": "Veuillez entrer votre mot de passe pour signer.",
       "errorFailed": "Impossible de signer l'évaluation en milieu de stage pour le moment."
+    },
+    "file": {
+      "subtitle": "Consultez l’évaluation en milieu de travail en format PDF, en français ou en anglais, et téléchargez-la.",
+      "back": "Retour aux évaluations"
     }
   }
 }
