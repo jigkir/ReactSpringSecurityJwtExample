@@ -20,6 +20,7 @@ public class Student extends UserApp {
     @Column(nullable = false)
     private Discipline discipline;
 
+    @Getter
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private Set<CV> cvs = new HashSet<>();
 

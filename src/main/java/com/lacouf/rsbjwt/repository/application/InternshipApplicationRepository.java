@@ -44,4 +44,8 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
     List<InternshipApplication> findByStudentAndEmployerDecision(Student student, EmployerDecision employerDecision);
 
     List<InternshipApplication> findByStudentAndStudentInternshipConsent(Student student, StudentInternshipConsent studentInternshipConsent);
+
+    long countByStudent (Student student);
+
+    long countByStudentAndEmployerDecisionAndStudentInternshipConsent(Student student, EmployerDecision employerDecision, StudentInternshipConsent studentInternshipConsent);
 }

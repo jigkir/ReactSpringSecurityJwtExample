@@ -26,9 +26,11 @@ import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.*;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.repository.contract.ContractRepository;
 import com.lacouf.rsbjwt.repository.document.student.cv.CVRepository;
 import com.lacouf.rsbjwt.repository.internship.InternshipRepository;
 import com.lacouf.rsbjwt.repository.internship_tracking.InternshipTrackingRepository;
+import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.TeacherRepository;
@@ -77,6 +79,8 @@ public class ManagerServiceTest {
     private UserAppService userAppService;
     @Mock
     private AcademicSessionService academicSessionService;
+    @Mock
+    private AccountAccessService accountAccessService;
 
     @Mock
     private ManagerRepository managerRepository;
@@ -92,6 +96,10 @@ public class ManagerServiceTest {
     private InternshipTrackingRepository internshipTrackingRepository;
     @Mock
     private TeacherRepository teacherRepository;
+    @Mock
+    private InterviewRepository interviewRepository;
+    @Mock
+    private ContractRepository contractRepository;
 
     @Captor
     private ArgumentCaptor<Manager> managerArgumentCaptor;
@@ -102,7 +110,7 @@ public class ManagerServiceTest {
 
     @BeforeEach
     void setUp() {
-        managerService = new ManagerService(eventPublisher, managerRepository, cvRepository, internshipRepository, studentRepository, applicationRepository, internshipTrackingRepository, teacherRepository, notificationService, userAppService, new InternshipService(applicationRepository), academicSessionService);
+        managerService = new ManagerService(eventPublisher, managerRepository, cvRepository, internshipRepository, studentRepository, applicationRepository, internshipTrackingRepository, teacherRepository, interviewRepository, accountAccessService,  notificationService, userAppService, new InternshipService(applicationRepository), academicSessionService, contractRepository);
 
         currentSession = new AcademicSession(Season.WINTER, 2027);
         currentSession.setId(1L);
