@@ -12,6 +12,7 @@ vi.mock('../../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),
+    getApplicationCoverLetter: vi.fn(),
     getEmployerInterviewsByApplicationId: vi.fn(),
     createInterview: vi.fn(),
     updateInterview: vi.fn(),
@@ -289,33 +290,31 @@ describe('Applications page filters', () => {
 });
 
 describe('Applications page CV preview', () => {
-    it('shouldLoadCvAndKeepNewBadgeWhileOnThePageWhenPreviewIsOpened', async () => {
+    it('shouldRemoveNewBadgeWhenCvPreviewIsOpened', async () => {
         // Arrange
         getApplicationCv.mockResolvedValue({content: 'base64'});
         await renderLoaded([bob], INTERNSHIPS);
         const dataSection = await screen.findByRole('region', {name: 'Data Intern'});
-        expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
 
         // Act
         fireEvent.click(within(dataSection).getByRole('button', {name: 'cvDocuments.viewCVBtn'}));
 
         // Assert
-        await waitFor(() => expect(getApplicationCv).toHaveBeenCalledWith(2));
-        expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
+        await waitFor(() => expect(within(dataSection).queryByText('viewApplication.new')).not.toBeInTheDocument());
+        expect(getApplicationCv).toHaveBeenCalledWith(2);
     });
 
-    it('shouldKeepNewBadgeEvenWhenServerReportsTheApplicationAsReadAfterPreview', async () => {
-        // Arrange: first load is UNREAD
+    it('shouldRemoveNewBadgeAndMarkAsReadWhenCoverLetterIsOpened', async () => {
+        // Arrange
         getApplicationCv.mockResolvedValue({content: 'base64'});
-        await renderLoaded([bob], INTERNSHIPS);
+        await renderLoaded([{...bob, coverLetterId: 5}], INTERNSHIPS);
         const dataSection = await screen.findByRole('region', {name: 'Data Intern'});
 
-        // Act: the page was already rendered with the frozen "new" state, a later refresh says READ
-        getApplications.mockResolvedValue([{...bob, internshipApplicationStatus: 'READ'}]);
-        fireEvent.click(within(dataSection).getByRole('button', {name: 'cvDocuments.viewCVBtn'}));
-        await waitFor(() => expect(getApplicationCv).toHaveBeenCalledWith(2));
+        // Act
+        fireEvent.click(within(dataSection).getByRole('button', {name: 'applicationCard.coverLetter'}));
 
         // Assert
-        expect(within(dataSection).getByText('viewApplication.new')).toBeInTheDocument();
+        await waitFor(() => expect(within(dataSection).queryByText('viewApplication.new')).not.toBeInTheDocument());
+        expect(getApplicationCv).toHaveBeenCalledWith(2);
     });
 });

@@ -39,7 +39,7 @@ function ViewApplications({user}) {
     const [hireError, setHireError] = useState(null);
 
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
-    const {register, isNew, clear: clearNew} = useNewApplications();
+    const {register, isNew, clear: clearNew, markAsSeen} = useNewApplications();
 
     const {refresh} = useNotifications();
     const isLoggedIn = Boolean(user?.isLoggedIn);
@@ -201,19 +201,20 @@ function ViewApplications({user}) {
         setOpenPreviewIds((prev) => prev.includes(appId) ? prev.filter((item) => item !== appId) : [...prev, appId]);
     };
 
-    // Opening the CV marks the application as read on the server (and closes its notification),
-    // but the "New" badge stays until the invitation is sent or the page is left.
+    // Opening the CV marks the application as read on the server (and closes its notification):
+    // the "New" badge goes away right now
     const getUrl = useCallback(async (appId) => {
         const cv = await getApplicationCv(appId);
         if (!cv?.content) throw new Error("missing content");
 
+        markAsSeen(appId);
         void refresh();
 
         return base64ToBlobUrl(cv.content);
-    }, [refresh]);
+    }, [markAsSeen, refresh]);
 
-    // Interview invitation sent: remove the New badge
-    const handleInterviewSent = useCallback((appId) => {
+    // Cover letter or transcript opened, or interview invitation sent: the badge goes away right now
+    const handleApplicationSeen = useCallback((appId) => {
         clearNew(appId);
         void refresh();
     }, [clearNew, refresh]);
@@ -356,7 +357,8 @@ function ViewApplications({user}) {
                     isPreviewOpen={isPreviewOpen}
                     onTogglePreview={() => togglePreview(application.id)}
                     getUrl={getUrl}
-                    onInterviewSent={handleInterviewSent}
+                    onInterviewSent={handleApplicationSeen}
+                    onDocumentOpened={handleApplicationSeen}
                     selectionMode={selectionMode}
                     selected={selectedIds.includes(application.id)}
                     onSelect={selectionMode ? toggleSelection : undefined}
