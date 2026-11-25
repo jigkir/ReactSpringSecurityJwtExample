@@ -545,137 +545,10 @@ export async function assignTeacher(trackingId,teacherId){
 }
 //endregion
 
-const MOCK_EVALUATIONS = [
-    {
-        id: "eval-101",
-        internshipId: "int-204",
-        workplaceName: "Studio Nord-Ouest",
-        companyName: "Studio Nord-Ouest",
-        internName: "Camille Tremblay",
-        week: 4,
-        comments:
-            "Week 4 check-in: settled into the sprint workflow and started pairing on API endpoints.",
-        criteria: {
-            supervisionQuality: "VERY_GOOD",
-            trainingRelevance: "GOOD",
-            taskVariety: "SATISFACTORY",
-            workEnvironment: "VERY_GOOD",
-            safetyAndErgonomics: "GOOD",
-            integrationWithTeam: "VERY_GOOD",
-            hourlySalary: 21.5,
-            supervisionHoursPerWeek: 6,
-        },
-        generalObservations: {
-            preferredForStage: "STRONG_YES",
-            openToInternCount: "TWO_TO_THREE",
-            wouldWelcomeSameInternAgain: true,
-            variableShifts: true,
-            shiftRanges: [
-                { from: "08:30", to: "16:30" },
-                { from: "10:00", to: "18:00" },
-            ],
-        },
-    },
-    {
-        id: "eval-102",
-        internshipId: "int-209",
-        workplaceName: "Atelier Saint-Laurent",
-        companyName: "Atelier Saint-Laurent",
-        internName: "Marc-Antoine Roy",
-        week: 8,
-        comments:
-            "Consistent weekly follow-ups completed; strong mentorship and clear onboarding throughout the term.",
-        criteria: {
-            supervisionQuality: "VERY_GOOD",
-            trainingRelevance: "VERY_GOOD",
-            taskVariety: "VERY_GOOD",
-            workEnvironment: "VERY_GOOD",
-            safetyAndErgonomics: "VERY_GOOD",
-            integrationWithTeam: "GOOD",
-            hourlySalary: 23.0,
-            supervisionHoursPerWeek: 8,
-        },
-        generalObservations: {
-            preferredForStage: "STRONG_YES",
-            openToInternCount: "ONE",
-            wouldWelcomeSameInternAgain: true,
-            variableShifts: false,
-            shiftRanges: [{ from: "09:00", to: "17:00" }],
-        },
-    },
-    {
-        id: "eval-103",
-        internshipId: "int-215",
-        workplaceName: "Solutions Lachine",
-        companyName: "Solutions Lachine",
-        internName: "Sofia Benali",
-        week: 2,
-        comments:
-            "Initial draft after week 2; waiting on full shift schedule confirmation.",
-        criteria: {
-            supervisionQuality: "GOOD",
-            trainingRelevance: "",
-            taskVariety: "",
-            workEnvironment: "SATISFACTORY",
-            safetyAndErgonomics: "",
-            integrationWithTeam: "",
-            hourlySalary: "",
-            supervisionHoursPerWeek: "",
-        },
-        generalObservations: {
-            preferredForStage: "",
-            openToInternCount: "",
-            wouldWelcomeSameInternAgain: null,
-            variableShifts: null,
-            shiftRanges: [{ from: "", to: "" }],
-        },
-    },
-    {
-        id: "eval-105",
-        workplaceName: "Northstar Digital Labs",
-        internName: "Alex Rivera",
-        supervisorName: "Marc-Antoine Gagnon",
-        week: 10,
-        evaluationDate: "2026-11-18",
-        updatedAt: "2026-11-18T16:30:00.000Z",
-        signedAt: null,
-        signedBy: null,
-        criteria: {
-            tasksMatchAgreement: "TOTALLY_AGREE",
-            onboardingMeasures: "SOMEWHAT_AGREE",
-            supervisionSufficient: "TOTALLY_AGREE",
-            supervisionHoursPerWeek: {
-                month1: 5,
-                month2: 4,
-                month3: 3,
-            },
-            healthAndSafetyCompliant: "TOTALLY_AGREE",
-            workClimatePleasant: "TOTALLY_AGREE",
-            publicTransitAccessible: "SOMEWHAT_AGREE",
-            salaryInteresting: "SOMEWHAT_AGREE",
-            hourlySalary: 22.5,
-            supervisorCommunicationSmooth: "TOTALLY_AGREE",
-            equipmentAdequate: "TOTALLY_AGREE",
-            workloadAcceptable: "SOMEWHAT_AGREE",
-        },
-        comments:
-            "Strong integration into the team and consistent technical mentorship across all three months.",
-        generalObservations: {
-            preferredForStage: "SECOND",
-            openToInternCount: "TWO",
-            wouldWelcomeSameInternAgain: true,
-            variableShifts: true,
-            shiftRanges: [
-                { from: "08:30", to: "16:30" },
-                { from: "09:30", to: "17:30" },
-            ],
-        },
-    }
-];
 
+//region Workplace evaluation teacher
 export async function fetchWorkplaceEvaluations(sessionId) {
     return handleResponse(await fetcher(`teacher/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
-    //return structuredClone(MOCK_EVALUATIONS);
 }
 
 export async function saveWorkplaceEvaluations(evaluationId, form){
@@ -692,4 +565,9 @@ export async function signWorkplaceEvaluation(evaluationId, signature){
 
 export async function getWorkplaceEvaluationFile(evaluationId, language){
     return handleResponse(await fetcher(`teacher/workplace-evaluations/${evaluationId}/file?language=${language}`))
+}
+//endregion
+
+export async function fetchWorkplaceEvaluationsManager(sessionId){
+    return handleResponse(await fetcher(`manager/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
 }

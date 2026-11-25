@@ -956,6 +956,7 @@
     "clearSelection": "Effacer",
     "title": "Évaluations en milieu de stage",
     "subtitle": "Consultez, remplissez et signez les évaluations en milieu de stage pour la session sélectionnée.",
+    "subtitlemanager": "Consultez les évaluations en milieu de stage pour la session sélectionnée.",
     "loading": "Chargement des évaluations en milieu de stage...",
     "empty": "Aucune évaluation en milieu de stage trouvée pour cette session.",
     "noMatch": "Aucune évaluation en milieu de stage ne correspond à ce filtre.",

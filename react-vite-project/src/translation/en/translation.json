@@ -956,6 +956,7 @@
     "clearSelection": "Clear",
     "title": "Workplace Evaluations",
     "subtitle": "Review, complete, and sign workplace evaluations for your active session.",
+    "subtitlemanager": "Review workplace evaluations for your active session.",
     "loading": "Loading workplace evaluations...",
     "empty": "No workplace evaluations found for this session.",
     "noMatch": "No workplace evaluations match this filter.",

@@ -37,7 +37,7 @@ import ErrorPage from '../components/ErrorPage.jsx';
 import ExpiredUser from '../components/page/ExpiredUser.jsx';
 import Users from '../components/page/Users.jsx';
 import Tracking from '../components/page/Tracking.jsx';
-import WorkplaceEvaluations from '../components/page/WorkplaceEvaluations.jsx';
+import WorkplaceEvaluations from '../components/page/teacher/WorkplaceEvaluations.jsx';
 import Portfolio from '../components/page/portfolio/Portfolio.jsx';
 import ContractFile from '../components/contracts/ContractFile.jsx';
 import StudentInternships from '../components/page/student/Internships.jsx';
@@ -54,6 +54,7 @@ import ViewApplications from '../components/page/employer/application/ViewApplic
 import EmployerInterviews from '../components/page/employer/interview/EmployerInterviews.jsx';
 import EmployerContracts from '../components/page/employer/contracts/Contracts.jsx';
 import WorkplaceEvaluationFile from "../components/WorkplaceEvaluation/WorkplaceEvaluationFile.jsx";
+import WorkplaceEvaluationsManager from "../components/page/manager/WorkplaceEvaluation/WorkplaceEvaluation.jsx";
 
 export const ROLE = {
     STUDENT: "STUDENT",
@@ -93,6 +94,8 @@ export const PATHS = {
 
 
     // Manager
+    MANAGER_EVALUATIONS: "/manager/evaluations",
+    MANAGER_EVALUATION: "/manager/evaluations/:id",
     MANAGER_CVS: "/manager/cvs",
     MANAGER_INTERNSHIPS: "/manager/internships",
     MANAGER_CONTRACTS: "/manager/contracts",
@@ -188,6 +191,11 @@ export const ROUTES = [
         element: () => <ManagerContracts/>
     },
     {path: PATHS.MANAGER_CONTRACT, roles: [ROLE.MANAGER], element: () => <ContractFile/>},
+    {
+        path: PATHS.MANAGER_EVALUATIONS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.evaluations"}, home: [ROLE.MANAGER],
+        element: () => <WorkplaceEvaluationsManager/>
+    },
+    {path: PATHS.MANAGER_EVALUATION, roles: [ROLE.MANAGER], element: () => <WorkplaceEvaluationFile/>},
     {
         path: PATHS.MANAGER_USERS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.users"}, home: [ROLE.MANAGER],
         element: ({user}) => <Users user={user}/>
