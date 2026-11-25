@@ -15,6 +15,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvRespo
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
+import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto;
 import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
@@ -130,5 +131,10 @@ public class ManagerController {
     @PutMapping("/internship-trackings/{trackingId}/teacher/{teacherId}")
     public ResponseEntity<InternshipTrackingResponseDto> assignTeacher(@PathVariable long trackingId, @PathVariable long teacherId) throws InternshipTrackingNotFoundException, UserNotFoundException, TeacherDisciplineMismatchException {
         return ResponseEntity.ok(managerService.assignTeacher(trackingId, teacherId));
+    }
+
+    @GetMapping("/student-summary")
+    public ResponseEntity<List<ManagerStudentSummaryDto>> getStudentSummary() throws UserNotFoundException {
+        return ResponseEntity.ok(managerService.getStudentsSummary());
     }
 }
