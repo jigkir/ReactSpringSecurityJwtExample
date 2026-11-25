@@ -49,9 +49,6 @@ import {
     getUsers,
 } from "../api/Api.jsx";
 
-// The status that waits for an action
-export const ACTION_COLOR = COLOR.YELLOW;
-
 // Colors of a page whose load failed
 export const LOAD_FAILED = "LOAD_FAILED";
 

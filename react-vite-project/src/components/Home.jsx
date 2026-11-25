@@ -4,13 +4,11 @@ import {useTranslation} from 'react-i18next';
 import {getHomeClasses} from '../styles/AppStyles.jsx';
 import Icon from '../styles/Icon.jsx';
 import HomeSection from './home/HomeSection.jsx';
-import {LOAD_FAILED, SECTIONS_BY_ROLE} from './home/HomeSections.js';
+import {getHomeSections, LOAD_FAILED} from './home/HomeSections.js';
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 import {usePolling} from "../utils/usePolling.js";
 import {useSession} from "../utils/useSession.js";
 import Landing from "./home/Landing.jsx";
-
-const NO_SECTIONS = [];
 
 // region Colors of every page of the role, refreshed by the polling
 const loadColors = async (section, sessionId, user) => {
@@ -72,7 +70,7 @@ function Dashboard({dark, user}) {
     const {t} = useTranslation();
     const classes = getHomeClasses(dark);
     const role = (user?.role ?? "").toString().replace("ROLE_", "");
-    const sections = SECTIONS_BY_ROLE[role] ?? NO_SECTIONS;
+    const sections = getHomeSections(role);
     const colorsByPage = useSectionColors(sections, user);
 
     return (
