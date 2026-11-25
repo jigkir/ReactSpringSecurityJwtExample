@@ -181,7 +181,33 @@
     "registrationSessionError": "Unable to load the registration session. Refresh the page to try again."
   },
   "studentStatuses": {
-    "title": "Student Status Tracking"
+    "title": "Student Statuses",
+    "search": "Search",
+    "searchPlaceholder": "Name or student ID...",
+    "account": "Account status",
+    "internship": "Internship search",
+    "count_one": "{{count}} student",
+    "count_other": "{{count}} students",
+    "empty": "No students found.",
+    "unknown": "Unavailable",
+    "accountStatuses": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "INACTIVE": "Expired or disabled access"
+    },
+    "internshipStatuses": {
+      "NO_CV": "No CV",
+      "CV_PENDING": "CV awaiting approval",
+      "CV_REJECTED": "CV rejected",
+      "NO_APPLICATION": "No applications",
+      "NO_INTERVIEW": "No interview invitations",
+      "UPCOMING_INTERVIEW": "Upcoming interview",
+      "AWAITING_DECISION": "Interview completed, awaiting hiring decision",
+      "OFFER_PENDING": "Offer received, awaiting student response",
+      "CONTRACT_PENDING": "Internship secured: contract to sign",
+      "CONTRACT_SIGNED": "Internship secured: contract signed"
+    }
   },
   "commonFields": {
     "firstName": "First name",
