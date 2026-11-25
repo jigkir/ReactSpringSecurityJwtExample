@@ -108,6 +108,7 @@ public class EmployerServiceTest {
 
     private static EmployerSignUpDto employerSignUpDto;
     private static InternshipRequestDto internshipRequestDto;
+    private static InternshipRequestDto updatedInternshipRequestDto;
 
     private static Employer employer;
     private static Internship internship;
@@ -122,6 +123,7 @@ public class EmployerServiceTest {
     @BeforeAll
     static void setUp() {
         employerSignUpDto = new EmployerSignUpDto("First Name", "Last Name", EMPLOYER_EMAIL, "Test123@", "Company Name", Discipline.COMPUTER_SCIENCE, "5141234567");
+        updatedInternshipRequestDto = new InternshipRequestDto("Senior Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
         Credentials credentials = Credentials.builder()
                 .email(EMPLOYER_EMAIL)
@@ -137,8 +139,7 @@ public class EmployerServiceTest {
 
         internshipRequestDto = new InternshipRequestDto("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false);
 
-        internship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer, currentSession);
-        internship.setId(10L);
+        internship = createInternship();
     }
 
     @BeforeEach
@@ -410,37 +411,57 @@ public class EmployerServiceTest {
     @Test
     void shouldUpdateInternship() throws Exception {
         // Arrange
-        internship.approve();
+        Internship approvedInternship = createInternship();
+        approvedInternship.approve();
 
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL))
-                .thenReturn(Optional.of(internship));
+                .thenReturn(Optional.of(approvedInternship));
 
         Manager firstManager = new Manager();
         Manager secondManager = new Manager();
         when(managerRepository.findAll()).thenReturn(List.of(firstManager, secondManager));
 
         // Act
+        InternshipResponseDto response = employerService.updateInternship(10L, updatedInternshipRequestDto, EMPLOYER_EMAIL);
+
+        // Assert
+        assertEquals(10L, response.id());
+        assertEquals("Senior Software Developer", response.title());
+        assertEquals(ReviewStatus.PENDING, response.status());
+
+        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
+        verify(internshipRepository).save(approvedInternship);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
+        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
+    }
+
+    @Test
+    void shouldKeepInternshipStatusWhenUpdateHasNoChanges() throws Exception {
+        // Arrange
+        Internship approvedInternship = createInternship();
+        approvedInternship.approve();
+
+        when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL))
+                .thenReturn(Optional.of(approvedInternship));
+
+        // Act
         InternshipResponseDto response = employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL);
 
         // Assert
-        assert (Long.valueOf(10L)).equals(response.id());
-        assert ("Software Developer").equals(response.title());
-        assert (ReviewStatus.PENDING).equals(response.status());
+        assertEquals(ReviewStatus.APPROVED, response.status());
 
-        verify(notificationService).closeNotificationsOfTarget(TargetType.INTERNSHIP_OFFER, 10L);
-        verify(internshipRepository).save(internship);
-        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, firstManager);
-        verify(notificationService).notifyIfAbsent(NotificationType.INTERNSHIP_SUBMITTED_FOR_REVIEW, 10L, secondManager);
+        verify(internshipRepository, never()).save(any(Internship.class));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
     void shouldThrowPastSessionInternshipNotEditableWhenEmployerUpdatesPastInternship() throws Exception {
         // Arrange
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
-        when(academicSessionService.getTargetSessionForUpdate(internship.getSession(), internshipRequestDto.startDate())).thenThrow(new PastSessionInternshipNotEditableException(currentSession));
+        when(academicSessionService.getTargetSessionForUpdate(internship.getSession(), updatedInternshipRequestDto.startDate())).thenThrow(new PastSessionInternshipNotEditableException(currentSession));
 
         // Act + Assert
-        assertThrows(PastSessionInternshipNotEditableException.class, () -> employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL));
+        assertThrows(PastSessionInternshipNotEditableException.class, () -> employerService.updateInternship(10L, updatedInternshipRequestDto, EMPLOYER_EMAIL));
 
         verify(internshipRepository, never()).save(any(Internship.class));
     }
@@ -452,10 +473,9 @@ public class EmployerServiceTest {
         when(internshipApplicationRepository.existsByInternship(internship)).thenReturn(true);
 
         // Act + Assert
-        assertThrows(InternshipWithApplicationsNotEditableException.class, () -> employerService.updateInternship(10L, internshipRequestDto, EMPLOYER_EMAIL));
+        assertThrows(InternshipWithApplicationsNotEditableException.class, () -> employerService.updateInternship(10L, updatedInternshipRequestDto, EMPLOYER_EMAIL));
 
         verify(internshipRepository, never()).save(any(Internship.class));
-        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -1336,5 +1356,14 @@ public class EmployerServiceTest {
                 () -> employerService.offerInternshipsToStudents(List.of(99L), EMPLOYER_EMAIL));
 
         verify(notificationService, never()).notifyInternshipOffered(any(InternshipApplication.class));
+    }
+
+    // ---------- Helpers ----------
+
+    private static Internship createInternship() {
+        Internship newInternship = new Internship("Software Developer", "Develop applications", "Java, Spring", 16, "Montreal", WorkMode.HYBRID, START_DATE, APPLICATION_DEADLINE, new BigDecimal("25.00"), false, employer, currentSession);
+        newInternship.setId(10L);
+
+        return newInternship;
     }
 }

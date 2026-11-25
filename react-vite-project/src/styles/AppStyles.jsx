@@ -224,6 +224,7 @@ export function getHomeClasses(dark) {
 
         // Page cards, full width
         cards: "grid grid-cols-1 content-start gap-6 sm:grid-cols-2 xl:grid-cols-3",
+        cardsLoading: "invisible",
         empty: `py-8 text-center ${dark ? "text-slate-400" : "text-gray-500"}`,
     };
 }

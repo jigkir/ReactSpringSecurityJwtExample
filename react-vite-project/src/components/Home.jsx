@@ -20,18 +20,34 @@ const loadColors = async (section, sessionId, user) => {
     }
 };
 
-// Last colors loaded for each user and session. App reloads the user (a new object) on every
-// page change: without them, coming back to the Home shows "…" for a moment before the counts
-const lastColors = new Map();
+// Last colors loaded for each user and session, kept in the tab's sessionStorage: a reload, a page
+// change or a new login in the same tab shows the last counts right away instead of "…"
+const LAST_COLORS_PREFIX = "homeColors:";
 
-const lastColorsKey = (user, sessionId) => `${user?.id}:${sessionId}`;
+const lastColorsKey = (user, sessionId) => `${LAST_COLORS_PREFIX}${user?.id}:${sessionId}`;
+
+const readLastColors = (key) => {
+    try {
+        return JSON.parse(sessionStorage.getItem(key)) ?? {};
+    } catch {
+        return {};
+    }
+};
+
+const saveLastColors = (key, colors) => {
+    try {
+        sessionStorage.setItem(key, JSON.stringify(colors));
+    } catch {
+        // Storage blocked or full: the counts simply load again next time
+    }
+};
 
 // {[section.to]: colors[] | LOAD_FAILED}; a page is missing while it loads for the first time
 function useSectionColors(sections, user) {
     const {selectedSession} = useSession();
     const sessionId = selectedSession?.id;
     const key = lastColorsKey(user, sessionId);
-    const [colorsByPage, setColorsByPage] = useState(() => lastColors.get(key) ?? {});
+    const [colorsByPage, setColorsByPage] = useState(() => readLastColors(key));
     const mounted = useRef(false);
 
     useEffect(() => {
@@ -49,12 +65,12 @@ function useSectionColors(sections, user) {
 
         const loaded = Object.fromEntries(entries);
 
-        lastColors.set(lastColorsKey(user, sessionId), loaded);
+        saveLastColors(lastColorsKey(user, sessionId), loaded);
         if (mounted.current) setColorsByPage(loaded);
     }, [sections, sessionId, user]);
 
     useEffect(() => {
-        setColorsByPage(lastColors.get(key) ?? {});
+        setColorsByPage(readLastColors(key));
         void refresh();
     }, [refresh, key]);
 
@@ -72,6 +88,7 @@ function Dashboard({dark, user}) {
     const role = (user?.role ?? "").toString().replace("ROLE_", "");
     const sections = getHomeSections(role);
     const colorsByPage = useSectionColors(sections, user);
+    const loaded = sections.every((section) => section.to in colorsByPage);
 
     return (
         <div className={classes.page}>
@@ -89,7 +106,8 @@ function Dashboard({dark, user}) {
                 {sections.length === 0 ? (
                     <p className={classes.empty}>{t("home.noPreviews")}</p>
                 ) : (
-                    <div className={classes.cards}>
+                    <div className={loaded ? classes.cards : `${classes.cards} ${classes.cardsLoading}`}
+                         aria-busy={!loaded}>
                         {sections.map((section) => (
                             <HomeSection key={section.to} section={section}
                                          colors={colorsByPage[section.to]} dark={dark}/>
