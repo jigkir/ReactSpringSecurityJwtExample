@@ -8,6 +8,7 @@ const ROLE = {
     MANAGER: "MANAGER",
     STUDENT: "STUDENT",
     EMPLOYER: "EMPLOYER",
+    TEACHER: "TEACHER"
 };
 
 const NOTIFICATION_TYPE = {
@@ -224,6 +225,7 @@ const NOTIFICATION_ITEMS = {
             sessionScoped: true,
         },
     ],
+    [ROLE.TEACHER]: []
 };
 
 const NO_ITEMS = [];

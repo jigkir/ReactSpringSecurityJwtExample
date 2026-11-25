@@ -946,7 +946,8 @@
       "welcomeAgainRequired": "Please indicate if the workplace would host the same intern again.",
       "variableShiftsRequired": "Please indicate if the workplace offers variable shifts.",
       "shiftRangeRequired": "Please provide at least one complete time slot (from / to).",
-      "submitFailed": "Unable to submit the evaluation right now."
+      "submitFailed": "Unable to submit the evaluation right now.",
+      "signing": "Please accept the terms and enter your password to confirm your signature."
     },
     "clearSelection": "Clear",
     "title": "Workplace Evaluations",
@@ -957,10 +958,6 @@
     "previewEmpty": "No workplace evaluations waiting for your completion or signature.",
     "loadError": "Unable to load workplace evaluations.",
     "retryBtn": "Retry",
-    "page": {
-      "title": "Workplace Evaluations",
-      "subtitle": "Fill in evaluation details and sign once all required sections are complete."
-    },
     "status": {
       "inProgress": "In progress",
       "completed": "Completed",

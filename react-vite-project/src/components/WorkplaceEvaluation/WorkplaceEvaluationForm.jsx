@@ -133,6 +133,9 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                             id={`criterion-${key}`}
                             value={formData.criteria[key]}
                             onChange={(e) => updateCriterion(key, e.target.value)}
+                            className={`text-center ${
+                                dark ? "bg-slate-800 text-white" : "bg-white text-slate-900"
+                            }`}
                         >
                             <option value="">{t("workplaceEvaluation.selectPlaceholder")}</option>
                             {EVALUATION_RATINGS.map((rating) => (
@@ -146,7 +149,7 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                             <p className="text-sm text-red-500">{t(errors[`criteria.${key}`])}</p>
                         )}
 
-                        {extra === "supervisionHours" && (
+                        {extra === "supervisionHoursPerWeek" && (
                             <div className="mt-3 space-y-2">
                                 <p className="text-xs font-medium">
                                     {t("workplaceEvaluation.supervisionHours.title")} *

@@ -21,7 +21,7 @@ export default function WorkplaceEvaluationCard({
     const [isSigning, setIsSigning] = useState(false);
 
     const source = evaluation ?? {};
-    const normalizedEvaluation = createInitialEvaluation(source);
+    const normalizedEvaluation = createInitialEvaluation(source.form);
 
     const isSigned = Boolean(source.signedAt);
     const isCompleted =
@@ -165,7 +165,7 @@ export default function WorkplaceEvaluationCard({
                 </span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3 border-t border-slate-700/30">
+            <div className={`${cardClasses.detailsRow} justify-end`}>
                 {!isSigned && (
                     <button
                         type="button"

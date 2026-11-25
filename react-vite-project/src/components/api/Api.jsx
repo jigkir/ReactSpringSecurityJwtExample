@@ -673,11 +673,19 @@ const MOCK_EVALUATIONS = [
     }
 ];
 
-export async function fetchWorkplaceEvaluations() {
-    // Later, swap this return for your real API call:
-    // const response = await fetch("/api/workplace-evaluations");
-    // if (!response.ok) throw new Error("Failed to load workplace evaluations");
-    // return await response.json();
+export async function fetchWorkplaceEvaluations(sessionId) {
+    return handleResponse(await fetcher(`teacher/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
+    //return structuredClone(MOCK_EVALUATIONS);
+}
 
-    return structuredClone(MOCK_EVALUATIONS);
+export async function saveWorkplaceEvaluations(evaluationId, form){
+    return handleEmpty(await fetcher(`teacher/workplace-evaluations/${evaluationId}`, {method:"PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(form)}))
+}
+
+export async function signWorkplaceEvaluation(evaluationId, signature){
+    return handleEmpty(await fetcher(`teacher/workplace-evaluations/${evaluationId}/signature`,{method:"PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(signature)}))
 }

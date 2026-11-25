@@ -1,6 +1,7 @@
 /**
- * WorkplaceEvaluation.js — Constants, initial form state, and validation helpers
- * for the teacher's workplace evaluation form (Évaluation du milieu de stage).
+ * WorkplaceEvaluation.js — Constants, initial form state, normalization,
+ * and validation helpers for the teacher's workplace evaluation form
+ * (Évaluation du milieu de stage).
  */
 
 export const EVALUATION_RATINGS = [
@@ -36,44 +37,155 @@ export const EVALUATION_CRITERIA = [
     { key: "equipmentAdequate" },
     { key: "workloadAcceptable" },
     { key: "salaryInteresting", extra: "hourlySalary" },
-    { key: "supervisionSufficient", extra: "supervisionHours" },
+    { key: "supervisionSufficient", extra: "supervisionHoursPerWeek" },
 ];
 
 export const createEmptyShiftRange = () => ({ from: "", to: "" });
 
-export const createInitialEvaluation = (existing = {}) => ({
-    criteria: {
-        tasksMatchAgreement: "",
-        onboardingMeasures: "",
-        supervisionSufficient: "",
-        supervisionHoursPerWeek: {
-            month1: "",
-            month2: "",
-            month3: "",
-            ...existing.criteria?.supervisionHoursPerWeek,
+const toScreamingSnakeCase = (str) =>
+    str.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase();
+
+const toCamelCase = (str) =>
+    str.toLowerCase().replace(/_([a-z0-9])/g, (_, char) => char.toUpperCase());
+
+const emptyToNull = (val) => {
+    if (val == null) return null;
+    const str = String(val).trim();
+    if (str === "") return null;
+    const num = Number(str);
+    return Number.isNaN(num) ? null : num;
+};
+
+const emptyToString = (val) => (val == null ? "" : val);
+
+/**
+ * Normalizes a backend evaluation response (which uses enum keys like
+ * `TASKS_MATCH_AGREEMENT` in `ratings` and top-level fields) into the
+ * camelCase form state shape expected by `createInitialEvaluation`.
+ */
+export const normalizeFetchedEvaluation = (backendData = {}) => {
+    if (!backendData || typeof backendData !== "object") {
+        return {};
+    }
+
+    const rawRatings = backendData.ratings ?? {};
+    const criteriaFromRatings = {};
+
+    for (const [key, value] of Object.entries(rawRatings)) {
+        if (value != null) {
+            criteriaFromRatings[toCamelCase(key)] = value;
+        }
+    }
+
+    const rawHours =
+        backendData.supervisionHoursPerWeek ??
+        backendData.criteria?.supervisionHoursPerWeek ??
+        {};
+
+    const rawSalary =
+        backendData.hourlySalary !== undefined
+            ? backendData.hourlySalary
+            : backendData.criteria?.hourlySalary;
+
+    const existingCriteria = backendData.criteria ?? {};
+    const cleanedExistingCriteria = Object.fromEntries(
+        Object.entries(existingCriteria).map(([k, v]) => [k, emptyToString(v)])
+    );
+
+    const rawShiftRanges =
+        backendData.generalObservations?.shiftRanges ?? backendData.shiftRanges;
+
+    const normalizedShiftRanges = Array.isArray(rawShiftRanges) && rawShiftRanges.length
+        ? rawShiftRanges.map((r) => ({
+            from: emptyToString(r?.from),
+            to: emptyToString(r?.to),
+        }))
+        : undefined;
+
+    return {
+        comments: emptyToString(backendData.comments),
+        criteria: {
+            ...criteriaFromRatings,
+            ...cleanedExistingCriteria,
+            hourlySalary: emptyToString(rawSalary),
+            supervisionHoursPerWeek: {
+                month1: emptyToString(rawHours.month1),
+                month2: emptyToString(rawHours.month2),
+                month3: emptyToString(rawHours.month3),
+            },
         },
-        healthAndSafetyCompliant: "",
-        workClimatePleasant: "",
-        publicTransitAccessible: "",
-        salaryInteresting: "",
-        hourlySalary: "",
-        supervisorCommunicationSmooth: "",
-        equipmentAdequate: "",
-        workloadAcceptable: "",
-        ...existing.criteria,
-    },
-    comments: existing.comments ?? "",
-    generalObservations: {
-        preferredForStage: "",
-        openToInternCount: "",
-        wouldWelcomeSameInternAgain: null,
-        variableShifts: null,
-        shiftRanges: existing.generalObservations?.shiftRanges?.length
-            ? existing.generalObservations.shiftRanges
-            : [createEmptyShiftRange()],
-        ...existing.generalObservations,
-    },
-});
+        generalObservations: {
+            ...(backendData.generalObservations ?? {}),
+            preferredForStage: emptyToString(
+                backendData.generalObservations?.preferredForStage ??
+                backendData.preferredForStage
+            ),
+            openToInternCount: emptyToString(
+                backendData.generalObservations?.openToInternCount ??
+                backendData.openToInternCount
+            ),
+            wouldWelcomeSameInternAgain:
+                backendData.generalObservations?.wouldWelcomeSameInternAgain ??
+                backendData.wouldWelcomeSameInternAgain ??
+                null,
+            variableShifts:
+                backendData.generalObservations?.variableShifts ??
+                backendData.variableShifts ??
+                null,
+            ...(normalizedShiftRanges ? { shiftRanges: normalizedShiftRanges } : {}),
+        },
+    };
+};
+
+export const createInitialEvaluation = (existing = {}) => {
+    const normalizedInput =
+        existing?.ratings || existing?.supervisionHoursPerWeek || existing?.hourlySalary !== undefined
+            ? normalizeFetchedEvaluation(existing)
+            : existing;
+
+    const exCriteria = normalizedInput.criteria ?? {};
+    const exHours = exCriteria.supervisionHoursPerWeek ?? {};
+    const exObs = normalizedInput.generalObservations ?? {};
+
+    const shiftRanges =
+        Array.isArray(exObs.shiftRanges) && exObs.shiftRanges.length
+            ? exObs.shiftRanges.map((r) => ({
+                from: emptyToString(r?.from),
+                to: emptyToString(r?.to),
+            }))
+            : [createEmptyShiftRange()];
+
+    return {
+        criteria: {
+            tasksMatchAgreement: emptyToString(exCriteria.tasksMatchAgreement),
+            onboardingMeasures: emptyToString(exCriteria.onboardingMeasures),
+            supervisionSufficient: emptyToString(exCriteria.supervisionSufficient),
+            supervisionHoursPerWeek: {
+                month1: emptyToString(exHours.month1),
+                month2: emptyToString(exHours.month2),
+                month3: emptyToString(exHours.month3),
+            },
+            healthAndSafetyCompliant: emptyToString(exCriteria.healthAndSafetyCompliant),
+            workClimatePleasant: emptyToString(exCriteria.workClimatePleasant),
+            publicTransitAccessible: emptyToString(exCriteria.publicTransitAccessible),
+            salaryInteresting: emptyToString(exCriteria.salaryInteresting),
+            hourlySalary: emptyToString(exCriteria.hourlySalary),
+            supervisorCommunicationSmooth: emptyToString(
+                exCriteria.supervisorCommunicationSmooth
+            ),
+            equipmentAdequate: emptyToString(exCriteria.equipmentAdequate),
+            workloadAcceptable: emptyToString(exCriteria.workloadAcceptable),
+        },
+        comments: emptyToString(normalizedInput.comments),
+        generalObservations: {
+            preferredForStage: emptyToString(exObs.preferredForStage),
+            openToInternCount: emptyToString(exObs.openToInternCount),
+            wouldWelcomeSameInternAgain: exObs.wouldWelcomeSameInternAgain ?? null,
+            variableShifts: exObs.variableShifts ?? null,
+            shiftRanges,
+        },
+    };
+};
 
 export const hasDisagreement = (criteria = {}) =>
     EVALUATION_CRITERIA.some(({ key }) => DISAGREE_RATINGS.has(criteria[key]));
@@ -98,16 +210,24 @@ export function validateEvaluation(formData, { requireComplete = false } = {}) {
         }
 
         const { month1, month2, month3 } = criteria.supervisionHoursPerWeek;
-        if (month1 === "" || month2 === "" || month3 === "") {
-            errors.supervisionHoursPerWeek = "workplaceEvaluation.errors.supervisionHoursRequired";
+        if (
+            String(month1).trim() === "" ||
+            String(month2).trim() === "" ||
+            String(month3).trim() === ""
+        ) {
+            errors.supervisionHoursPerWeek =
+                "workplaceEvaluation.errors.supervisionHoursRequired";
         }
 
-        if (criteria.hourlySalary === "" && criteria.salaryInteresting !== "CANNOT_SAY") {
+        if (
+            String(criteria.hourlySalary).trim() === "" &&
+            criteria.salaryInteresting !== "CANNOT_SAY"
+        ) {
             errors.hourlySalary = "workplaceEvaluation.errors.hourlySalaryRequired";
         }
     }
 
-    if (hasDisagreement(criteria) && !comments.trim()) {
+    if (requireComplete && hasDisagreement(criteria) && !comments.trim()) {
         errors.comments = "workplaceEvaluation.errors.commentRequiredOnDisagreement";
     }
 
@@ -121,7 +241,8 @@ export function validateEvaluation(formData, { requireComplete = false } = {}) {
         }
 
         if (generalObservations.wouldWelcomeSameInternAgain === null) {
-            errors.wouldWelcomeSameInternAgain = "workplaceEvaluation.errors.welcomeAgainRequired";
+            errors.wouldWelcomeSameInternAgain =
+                "workplaceEvaluation.errors.welcomeAgainRequired";
         }
 
         if (generalObservations.variableShifts === null) {
@@ -145,20 +266,26 @@ export function validateEvaluation(formData, { requireComplete = false } = {}) {
  * Normalizes form state into the JSON payload expected by the backend.
  */
 export function buildEvaluationPayload(formData) {
-    const { criteria, comments, generalObservations } = formData;
-    const toNumberOrNull = (val) => (val === "" || val == null ? null : Number(val));
+    const normalized = createInitialEvaluation(formData);
+    const { criteria, comments, generalObservations } = normalized;
+
+    const ratings = {};
+    for (const { key } of EVALUATION_CRITERIA) {
+        const value = criteria[key];
+        if (value !== "" && value != null) {
+            ratings[toScreamingSnakeCase(key)] = value;
+        }
+    }
 
     return {
-        criteria: {
-            ...criteria,
-            supervisionHoursPerWeek: {
-                month1: toNumberOrNull(criteria.supervisionHoursPerWeek.month1),
-                month2: toNumberOrNull(criteria.supervisionHoursPerWeek.month2),
-                month3: toNumberOrNull(criteria.supervisionHoursPerWeek.month3),
-            },
-            hourlySalary: toNumberOrNull(criteria.hourlySalary),
+        ratings,
+        supervisionHoursPerWeek: {
+            month1: emptyToNull(criteria.supervisionHoursPerWeek.month1),
+            month2: emptyToNull(criteria.supervisionHoursPerWeek.month2),
+            month3: emptyToNull(criteria.supervisionHoursPerWeek.month3),
         },
-        comments: comments.trim(),
+        hourlySalary: emptyToNull(criteria.hourlySalary),
+        comments: (comments ?? "").trim(),
         generalObservations: {
             preferredForStage: generalObservations.preferredForStage || null,
             openToInternCount: generalObservations.openToInternCount || null,
@@ -166,9 +293,12 @@ export function buildEvaluationPayload(formData) {
             variableShifts: generalObservations.variableShifts,
             shiftRanges:
                 generalObservations.variableShifts === true
-                    ? generalObservations.shiftRanges.filter(
-                        (r) => r.from.trim() && r.to.trim()
-                    )
+                    ? (generalObservations.shiftRanges ?? [])
+                        .filter((r) => r.from?.trim() && r.to?.trim())
+                        .map((r) => ({
+                            from: r.from.trim(),
+                            to: r.to.trim(),
+                        }))
                     : [],
         },
     };

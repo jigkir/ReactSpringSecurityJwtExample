@@ -14,13 +14,13 @@ import Button from "../../styles/Button.jsx";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
 import {useDevMode} from "../dev/DevMode.jsx";
 import {useLoadedList} from "../../utils/useLoadedList.js";
-import {useSession} from "../../utils/useSession.js";
 import {
     createInitialEvaluation,
     validateEvaluation,
 } from "../../utils/WorkplaceEvaluation.js";
-import {fetchWorkplaceEvaluations} from "../api/Api.jsx";
+import {fetchWorkplaceEvaluations, saveWorkplaceEvaluations, signWorkplaceEvaluation} from "../api/Api.jsx";
 import WorkplaceEvaluationCard from "./WorkplaceEvaluationCard.jsx";
+import {devSignWorkplaceEvaluation} from "../api/DevApi.jsx";
 
 const byNewest = (a, b) =>
     new Date(b.updatedAt ?? b.createdAt ?? 0) -
@@ -37,57 +37,48 @@ const sortEvaluations = (list) =>
         (a, b) => Number(Boolean(a.signedAt)) - Number(Boolean(b.signedAt)) || byNewest(a, b)
     );
 
-const WorkplaceEvaluationList = ({dark, user}) => {
+const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
     const {t} = useTranslation();
-    const {selectedSession} = useSession();
     const {devMode} = useDevMode();
     const s = getPostInternshipClasses(dark);
 
     const loadEvaluations = useCallback(async () => {
-        return selectedSession ? fetchWorkplaceEvaluations(selectedSession.id) : null;
-    }, [selectedSession]);
+        if (!selectedSession?.id) return null;
+        return fetchWorkplaceEvaluations(selectedSession.id);
+    }, [selectedSession?.id]);
 
-    const {items, setItems, failed, reload} = useLoadedList(loadEvaluations);
+    const { items, setItems, failed, reload } = useLoadedList(loadEvaluations);
 
     const shown = useMemo(() => (items ? sortEvaluations(items) : null), [items]);
 
     const handleSave = async (id, payload) => {
-        // Swap with your PUT/PATCH API call when ready, e.g. saveWorkplaceEvaluation(id, payload)
-        setItems((previous) =>
-            (previous ?? []).map((item) =>
-                item.id === id
-                    ? {
-                        ...item,
-                        ...payload,
-                        id: item.id ?? id,
-                        updatedAt: new Date().toISOString(),
-                    }
-                    : item
-            )
-        );
-        return {success: true};
+        try {
+            const answer = await saveWorkplaceEvaluations(id, payload);
+            await reload();
+            return { success: true };
+        } catch (err) {
+            return {
+                success: false,
+                message: err?.message ?? t("workplaceEvaluation.errors.submitFailed"),
+            };
+        }
     };
 
-    const handleSign = async (id, evaluation) => {
-        if (!isEvaluationComplete(evaluation)) return {success: false};
+    const handleSign = async (id, evaluation, sign) => {
+        if (!isEvaluationComplete(evaluation)) return { success: false };
 
-        // Swap with your sign endpoint when ready, e.g. signWorkplaceEvaluation(id, credentials)
-        const signedAt = new Date().toISOString();
-        setItems((previous) =>
-            (previous ?? []).map((item) =>
-                item.id === id
-                    ? {
-                        ...item,
-                        ...evaluation,
-                        id: item.id ?? id,
-                        signedAt,
-                        signedBy: user?.name || user?.email || "Teacher",
-                    }
-                    : item
-            )
-        );
-
-        return {success: true};
+        try {
+             devMode
+                ? await devSignWorkplaceEvaluation(id, user?.email)
+                :await signWorkplaceEvaluation(id, sign);
+            await reload();
+            return { success: true };
+        } catch (error) {
+            return {
+                success: false,
+                message: {key: "workplaceEvaluation.errors.signing"},
+            };
+        }
     };
 
     const cards = (shown ?? []).map((evaluation) => (
@@ -130,13 +121,6 @@ const WorkplaceEvaluationList = ({dark, user}) => {
 
     return (
         <div className={s.page}>
-            <div className={s.headerSection}>
-                <div>
-                    <h1 className={s.title}>{t("workplaceEvaluation.title")}</h1>
-                    <p className={s.subtitle}>{t("workplaceEvaluation.subtitle")}</p>
-                </div>
-            </div>
-
             <div className={s.listSection}>
                 <div className={s.scrollArea}>{body}</div>
             </div>
