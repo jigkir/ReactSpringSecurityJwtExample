@@ -49,6 +49,7 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
 
     const loadEvaluations = useCallback(async () => {
         if (!selectedSession?.id) return null;
+        console.log(user.role)
         return user.role == "TEACHER" ?
          fetchWorkplaceEvaluations(selectedSession.id) :
          fetchWorkplaceEvaluationsManager(selectedSession.id);

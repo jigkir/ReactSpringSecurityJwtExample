@@ -1000,7 +1000,8 @@
     },
     "file": {
       "subtitle": "Read the workplace evaluation as a PDF, in French or in English, and download it.",
-      "back": "Back to evaluations"
+      "back": "Back to evaluations",
+      "open": "View evaluation"
     }
   }
 }

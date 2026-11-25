@@ -1000,7 +1000,8 @@
     },
     "file": {
       "subtitle": "Consultez l’évaluation en milieu de travail en format PDF, en français ou en anglais, et téléchargez-la.",
-      "back": "Retour aux évaluations"
+      "back": "Retour aux évaluations",
+      "open": "Voir l'évaluation"
     }
   }
 }

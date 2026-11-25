@@ -571,3 +571,7 @@ export async function getWorkplaceEvaluationFile(evaluationId, language){
 export async function fetchWorkplaceEvaluationsManager(sessionId){
     return handleResponse(await fetcher(`manager/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
 }
+
+export async function getWorkplaceEvaluationFileManager(evaluationId, language){
+    return handleResponse(await fetcher(`manager/workplace-evaluations/${evaluationId}/file?language=${language}`))
+}

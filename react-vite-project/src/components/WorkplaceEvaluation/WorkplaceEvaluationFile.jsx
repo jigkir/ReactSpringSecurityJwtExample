@@ -28,7 +28,7 @@ import {Link, useLocation, useOutletContext, useParams} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import Button from '../../styles/Button.jsx';
 import {getAuthClasses, getPostInternshipClasses} from '../../styles/AppStyles.jsx';
-import {getWorkplaceEvaluationFile} from '../api/Api.jsx';
+import {getWorkplaceEvaluationFile, getWorkplaceEvaluationFileManager} from '../api/Api.jsx';
 import {TARGET_TYPE, useCloseShownNotifications} from '../notification/NotificationsProvider.jsx';
 import {blobUrlFromFile, buildFileName, saveFile} from '../../utils/Documents.js';
 import PdfPreview from '../documents/PdfPreview.jsx';
@@ -59,7 +59,7 @@ const WorkplaceEvaluationFile = () => {
 
     // Stable reference per language: PdfPreview reloads the PDF when it changes
     const getEvaluationUrl = useCallback(
-        async (evaluationId) => blobUrlFromFile(await getWorkplaceEvaluationFile(evaluationId, language)),
+        async (evaluationId) => blobUrlFromFile(user.role == "TEACHER" ? await getWorkplaceEvaluationFile(evaluationId, language): await getWorkplaceEvaluationFileManager(evaluationId, language)),
         [language],
     );
 

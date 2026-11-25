@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../styles/Button.jsx';
-import RadioGroup from '../../styles/RadioGroup.jsx'
+import RadioGroup from '../../styles/RadioGroup.jsx';
 import { getInternshipFormClasses } from '../../styles/AppStyles.jsx';
 import {
     EVALUATION_CRITERIA,
@@ -113,6 +113,10 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
         }
     };
 
+    const gridColsStyle = {
+        gridTemplateColumns: `minmax(0, 1fr) repeat(${EVALUATION_RATINGS.length}, minmax(4.5rem, 6.5rem))`,
+    };
+
     return (
         <form onSubmit={handleSubmit} noValidate aria-busy={submitting} className="space-y-6">
             {submitError && (
@@ -121,99 +125,144 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                 </div>
             )}
 
-            {/* SECTION 1: 10 Evaluation Criteria (<select> + conditional extra inputs) */}
-            <section className="space-y-4">
-                {EVALUATION_CRITERIA.map(({ key, extra }) => (
-                    <div key={key} className="space-y-2">
-                        <label htmlFor={`criterion-${key}`}>
-                            {t(`workplaceEvaluation.criteria.${key}`)}
-                        </label>
-
-                        <select
-                            id={`criterion-${key}`}
-                            value={formData.criteria[key]}
-                            onChange={(e) => updateCriterion(key, e.target.value)}
-                            className={`text-center border border-slate-700  ${
-                                dark ? "bg-slate-800 text-white" : "bg-white text-slate-900"
-                            }`}
+            {/* SECTION 1: Evaluation Criteria */}
+            <section className="space-y-2">
+                {/* Shared rating column labels once at the top */}
+                <div
+                    style={gridColsStyle}
+                    className={`grid items-center gap-2 border-b pb-2 text-center text-xs font-semibold sm:gap-3 ${
+                        dark ? "border-slate-700 text-slate-300" : "border-slate-200 text-slate-600"
+                    }`}
+                >
+                    <span className="text-left">
+                        {t("workplaceEvaluation.criteriaLabel", { defaultValue: "" })}
+                    </span>
+                    {EVALUATION_RATINGS.map((rating) => (
+                        <span
+                            key={rating}
+                            className="flex h-full items-center justify-center break-words leading-tight"
                         >
-                            <option value="">{t("workplaceEvaluation.selectPlaceholder")}</option>
-                            {EVALUATION_RATINGS.map((rating) => (
-                                <option key={rating} value={rating}>
-                                    {t(`workplaceEvaluation.ratings.${rating}`)}
-                                </option>
-                            ))}
-                        </select>
+                            {t(`workplaceEvaluation.ratings.${rating}`)}
+                        </span>
+                    ))}
+                </div>
 
-                        {errors[`criteria.${key}`] && (
-                            <p className="text-sm text-red-500">{t(errors[`criteria.${key}`])}</p>
-                        )}
+                <div className="divide-y divide-slate-700/30">
+                    {EVALUATION_CRITERIA.map(({ key, extra }) => {
+                        const criterionLabel = t(`workplaceEvaluation.criteria.${key}`);
 
-                        {extra === "supervisionHoursPerWeek" && (
-                            <div className="mt-3 space-y-2">
-                                <p className="text-xs font-medium">
-                                    {t("workplaceEvaluation.supervisionHours.title")} *
-                                </p>
-                                <div className="grid gap-3 sm:grid-cols-3">
-                                    {["month1", "month2", "month3"].map((month) => (
-                                        <div key={month} className="space-y-1">
-                                            <label htmlFor={`hours-${month}`} className="block text-xs">
-                                                {t(`workplaceEvaluation.supervisionHours.${month}`)}
-                                            </label>
-                                            <input
-                                                id={`hours-${month}`}
-                                                type="number"
-                                                min="0"
-                                                step="0.5"
-                                                required
-                                                value={formData.criteria.supervisionHoursPerWeek[month]}
-                                                className="border border-slate-700"
-                                                onChange={(e) => {
-                                                    updateSupervisionHours(month, e.target.value);
-                                                    setErrors((prev) => ({ ...prev, supervisionHoursPerWeek: undefined }));
-                                                }}
-                                            />
-                                        </div>
-                                    ))}
+                        return (
+                            <div key={key} className="space-y-2 py-3">
+                                <div style={gridColsStyle} className="grid items-center gap-2 sm:gap-3">
+                                    <span
+                                        id={`criterion-label-${key}`}
+                                        className="min-w-0 break-words pr-2 text-sm font-medium leading-snug"
+                                    >
+                                        {criterionLabel}
+                                    </span>
+
+                                    {EVALUATION_RATINGS.map((rating) => {
+                                        const checked = formData.criteria[key] === rating;
+                                        const ratingLabel = t(`workplaceEvaluation.ratings.${rating}`);
+                                        const checkboxId = `criterion-${key}-${rating}`;
+
+                                        return (
+                                            <div key={rating} className="flex min-w-0 items-center justify-center">
+                                                <input
+                                                    id={checkboxId}
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    aria-label={`${criterionLabel} — ${ratingLabel}`}
+                                                    onChange={() => updateCriterion(key, checked ? "" : rating)}
+                                                    className={`h-4 w-4 shrink-0 cursor-pointer rounded border text-indigo-600 focus:ring-2 focus:ring-indigo-500 ${
+                                                        checked
+                                                            ? "border-indigo-500"
+                                                            : dark
+                                                                ? "border-slate-600 bg-slate-800"
+                                                                : "border-slate-300 bg-white"
+                                                    }`}
+                                                />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                {errors.supervisionHoursPerWeek && (
-                                    <p className="text-sm text-red-500" role="alert">
-                                        {t(errors.supervisionHoursPerWeek)}
-                                    </p>
-                                )}
-                            </div>
-                        )}
 
-                        {extra === "hourlySalary" && (
-                            <div className="mt-3 space-y-1">
-                                <label htmlFor="hourly-salary" className="block text-xs font-medium">
-                                    {t("workplaceEvaluation.hourlySalary.label")} *
-                                </label>
-                                <input
-                                    id="hourly-salary"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    required
-                                    className="border border-slate-700"
-                                    value={formData.criteria.hourlySalary}
-                                    onChange={(e) => {
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            criteria: { ...prev.criteria, hourlySalary: e.target.value },
-                                        }));
-                                        setErrors((prev) => ({ ...prev, hourlySalary: undefined }));
-                                    }}
-                                />
-                                {errors.hourlySalary && (
+                                {errors[`criteria.${key}`] && (
                                     <p className="text-sm text-red-500" role="alert">
-                                        {t(errors.hourlySalary)}
+                                        {t(errors[`criteria.${key}`])}
                                     </p>
                                 )}
+
+                                {extra === "supervisionHoursPerWeek" && (
+                                    <div className="mt-3 space-y-2 pl-2">
+                                        <p className="text-xs font-medium">
+                                            {t("workplaceEvaluation.supervisionHours.title")} *
+                                        </p>
+                                        <div className="grid gap-3 sm:grid-cols-3">
+                                            {["month1", "month2", "month3"].map((month) => (
+                                                <div key={month} className="space-y-1">
+                                                    <label htmlFor={`hours-${month}`} className="block text-xs">
+                                                        {t(`workplaceEvaluation.supervisionHours.${month}`)}
+                                                    </label>
+                                                    <input
+                                                        id={`hours-${month}`}
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.5"
+                                                        required
+                                                        value={formData.criteria.supervisionHoursPerWeek[month]}
+                                                        className="border border-slate-700"
+                                                        onChange={(e) => {
+                                                            updateSupervisionHours(month, e.target.value);
+                                                            setErrors((prev) => ({
+                                                                ...prev,
+                                                                supervisionHoursPerWeek: undefined,
+                                                            }));
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {errors.supervisionHoursPerWeek && (
+                                            <p className="text-sm text-red-500" role="alert">
+                                                {t(errors.supervisionHoursPerWeek)}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {extra === "hourlySalary" && (
+                                    <div className="mt-3 space-y-1 pl-2">
+                                        <label htmlFor="hourly-salary" className="block text-xs font-medium">
+                                            {t("workplaceEvaluation.hourlySalary.label")} *
+                                        </label>
+                                        <input
+                                            id="hourly-salary"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            required
+                                            className="border border-slate-700"
+                                            value={formData.criteria.hourlySalary}
+                                            onChange={(e) => {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    criteria: { ...prev.criteria, hourlySalary: e.target.value },
+                                                }));
+                                                setErrors((prev) => ({ ...prev, hourlySalary: undefined }));
+                                            }}
+                                        />
+                                        {errors.hourlySalary && (
+                                            <p className="text-sm text-red-500" role="alert">
+                                                {t(errors.hourlySalary)}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                ))}
+                        );
+                    })}
+                </div>
             </section>
 
             {/* SECTION 2: Comments */}

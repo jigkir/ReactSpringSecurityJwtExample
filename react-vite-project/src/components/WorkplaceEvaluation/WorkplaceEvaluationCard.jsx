@@ -157,14 +157,6 @@ export default function WorkplaceEvaluationCard({
                         })
                         : t("workplaceEvaluation.card.variableShiftsMissing")}
                 </span>
-
-                {/*<span className={cardClasses.detailBadge}>*/}
-                {/*    {isSigned*/}
-                {/*        ? t("workplaceEvaluation.card.signedOn", {*/}
-                {/*            date: source.signedAt,*/}
-                {/*        })*/}
-                {/*        : t("workplaceEvaluation.card.notSignedYet")}*/}
-                {/*</span>*/}
             </div>
 
             <div className={`${cardClasses.detailsRow} justify-end`}>
@@ -207,7 +199,7 @@ export default function WorkplaceEvaluationCard({
                     dark={dark}
                     icon="download"
                 >
-                    {t("managerContracts.download.open")}
+                    {t("workplaceEvaluation.file.open")}
                 </Button>)}
             </div>
         </article>
