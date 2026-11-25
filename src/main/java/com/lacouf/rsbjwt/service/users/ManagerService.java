@@ -310,8 +310,8 @@ public class ManagerService {
         long upcomingInterviews = interviewRepository.countByInternshipApplication_StudentAndInterviewDateAfter(student, LocalDateTime.now());
         long completedAwaitingAnswer = interviewRepository.countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(student, EmployerDecision.INTERVIEW_OFFERED, LocalDateTime.now());
         long offersPending = applicationRepository.countByStudentAndEmployerDecisionAndStudentInternshipConsent(student, EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING);
-        boolean hasToSignContract = contractRepository.existsByStudentAndStudentSignedAtIsNull(student);
-        boolean hasSignedContract = contractRepository.existsByStudentAndStudentSignedAtIsNotNull(student);
+        long hasToSignContract = contractRepository.countByStudentAndStudentSignedAtIsNull(student);
+        long hasSignedContract = contractRepository.countByStudentAndStudentSignedAtIsNotNull(student);
 
         boolean hasFoundInternship = student.isEmployed();
 

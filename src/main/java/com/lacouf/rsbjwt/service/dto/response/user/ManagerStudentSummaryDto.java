@@ -17,6 +17,6 @@ public record ManagerStudentSummaryDto(
 
         long numberOfOffersPending,
         boolean hasFoundAnInternship,
-        boolean hasToSignAContract,
-        boolean hasSignedContract
+        long numberOfContractsToSign,
+        long numberOfSignedContract
 ) {}
