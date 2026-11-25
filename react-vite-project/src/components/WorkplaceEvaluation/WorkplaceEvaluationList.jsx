@@ -18,7 +18,12 @@ import {
     createInitialEvaluation,
     validateEvaluation,
 } from "../../utils/WorkplaceEvaluation.js";
-import {fetchWorkplaceEvaluations, saveWorkplaceEvaluations, signWorkplaceEvaluation} from "../api/Api.jsx";
+import {
+    fetchWorkplaceEvaluations,
+    fetchWorkplaceEvaluationsManager,
+    saveWorkplaceEvaluations,
+    signWorkplaceEvaluation
+} from "../api/Api.jsx";
 import WorkplaceEvaluationCard from "./WorkplaceEvaluationCard.jsx";
 import {devSignWorkplaceEvaluation} from "../api/DevApi.jsx";
 
@@ -44,7 +49,10 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
 
     const loadEvaluations = useCallback(async () => {
         if (!selectedSession?.id) return null;
-        return fetchWorkplaceEvaluations(selectedSession.id);
+        console.log(user.role)
+        return user.role == "TEACHER" ?
+         fetchWorkplaceEvaluations(selectedSession.id) :
+         fetchWorkplaceEvaluationsManager(selectedSession.id);
     }, [selectedSession?.id]);
 
     const { items, setItems, failed, reload } = useLoadedList(loadEvaluations);

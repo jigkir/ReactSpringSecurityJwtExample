@@ -21,10 +21,7 @@ import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvRespo
 import com.lacouf.rsbjwt.service.dto.response.internship.InternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship.ManagerInternshipResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.internship_tracking.InternshipTrackingResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.user.StudentAccessResponseDto;
-import com.lacouf.rsbjwt.service.dto.response.user.StudentSummaryDto;
-import com.lacouf.rsbjwt.service.dto.response.user.TeacherAssignmentDto;
-import com.lacouf.rsbjwt.service.dto.response.user.TeacherSummaryDto;
+import com.lacouf.rsbjwt.service.dto.response.user.*;
 import com.lacouf.rsbjwt.service.users.AccountAccessService;
 import com.lacouf.rsbjwt.service.users.ManagerService;
 import org.junit.jupiter.api.Test;
@@ -504,6 +501,47 @@ public class ManagerControllerTest {
         // Act + Assert
         mockMvc.perform(put("/api/manager/internship-trackings/1/teacher/5"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturnStudentsSummary() throws Exception {
+        // Arrange
+        ManagerStudentSummaryDto dto = new ManagerStudentSummaryDto(
+                2L, "2234567", "Marie", "Tremblay", null,
+                ManagerStudentSummaryDto.InternshipStatus.CV_PENDING);
+
+        when(managerService.getStudentsStatus()).thenReturn(List.of(dto));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/student-status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(2))
+                .andExpect(jsonPath("$[0].studentId").value("2234567"))
+                .andExpect(jsonPath("$[0].firstName").value("Marie"))
+                .andExpect(jsonPath("$[0].lastName").value("Tremblay"))
+                .andExpect(jsonPath("$[0].internshipStatus").value("CV_PENDING"));
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoStudents() throws Exception {
+        // Arrange
+        when(managerService.getStudentsStatus()).thenReturn(List.of());
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/student-status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenStudentAccountIsMissing() throws Exception {
+        // Arrange
+        when(managerService.getStudentsStatus()).thenThrow(new UserNotFoundException());
+
+        // Act + Assert
+        mockMvc.perform(get("/api/manager/student-status"))
+                .andExpect(status().isNotFound());
     }
 
     // ---------- Helpers ----------
