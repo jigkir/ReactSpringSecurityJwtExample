@@ -54,6 +54,8 @@ import com.lacouf.rsbjwt.service.traduction.cv.CVChangedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus;
+import static com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,9 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus;
-import static com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus.*;
 
 @Service
 public class ManagerService {
