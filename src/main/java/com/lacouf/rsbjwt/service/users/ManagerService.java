@@ -51,6 +51,7 @@ import com.lacouf.rsbjwt.service.session.AcademicSessionService;
 import com.lacouf.rsbjwt.service.traduction.Internship.InternshipChangedEvent;
 import com.lacouf.rsbjwt.service.traduction.TraductionService;
 import com.lacouf.rsbjwt.service.traduction.cv.CVChangedEvent;
+import org.springframework.aot.generate.AccessControl;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -298,9 +299,8 @@ public class ManagerService {
     }
 
     private ManagerStudentSummaryDto toSummary(Student student) throws UserNotFoundException {
-        Set<CV> cvs = student.getCvs().stream()
-                .filter(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE)
-                .collect(Collectors.toSet());
+        List<CV> cvs = cvRepository.findByUser(student)
+                .stream().filter(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE).toList();
         long cvCount = cvs.size();
         long cvPending = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.PENDING).count();
         long cvDenied = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.REJECTED).count();
