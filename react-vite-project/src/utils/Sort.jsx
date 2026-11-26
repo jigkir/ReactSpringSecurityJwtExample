@@ -28,12 +28,12 @@
  * (see pages/student/Internships.jsx); the chosen sort orders items inside each group.
  */
 
-import {useMemo, useState} from 'react';
-import {useSearchParams} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {getSelectClass} from '../styles/FormControls.jsx';
-import {getStatusBorder} from '../styles/AppStyles.jsx';
-import {ALL, COLOR, COLOR_VALUES, colorOf, matchesColor, statusLabelKey} from './StatusColor.js';
+import {useMemo, useState} from "react";
+import {useSearchParams} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getSelectClass} from "../styles/FormControls.jsx";
+import {getStatusBorder} from "../styles/AppStyles.jsx";
+import {ALL, COLOR, COLOR_VALUES, colorOf, matchesColor, statusLabelKey} from "./StatusColor.js";
 
 // ─── 1. Generic helpers ───────────────────────────────────────────────────────
 

@@ -1,8 +1,9 @@
-import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
+import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 import Icon from "../../styles/Icon.jsx";
 import Button from "../../styles/Button.jsx";
 import {ACCOUNT_STATUS} from "../../utils/AccountStatus.js";
+import {PATHS} from "../../routes/AppRoutes.jsx";
 
 function ExpiredUser({user}) {
     const navigate = useNavigate();
@@ -10,9 +11,9 @@ function ExpiredUser({user}) {
     // App keeps polling the status, so this page updates by itself
     const {dark, accountStatus} = useOutletContext();
 
-    if (!localStorage.getItem("token")) return <Navigate to="/login" replace/>;
+    if (!localStorage.getItem("token")) return <Navigate to={PATHS.LOGIN} replace/>;
     if (accountStatus === null) return <div aria-busy="true"/>;
-    if (accountStatus === ACCOUNT_STATUS.APPROVED) return <Navigate to="/home" replace/>;
+    if (accountStatus === ACCOUNT_STATUS.APPROVED) return <Navigate to={PATHS.HOME} replace/>;
 
     const isPending = accountStatus === ACCOUNT_STATUS.PENDING;
 
@@ -66,7 +67,7 @@ function ExpiredUser({user}) {
 
                 {/* Action Link */}
                 <div className="flex justify-center">
-                    <Button dark={dark} tone="primary" size="lg" icon="logout" onClick={() => navigate('/logout')}
+                    <Button dark={dark} tone="primary" size="lg" icon="logout" onClick={() => navigate(PATHS.LOGOUT)}
                             className=" mx-auto">
                         {t("expiredUser.signOut")}
                     </Button>

@@ -1,5 +1,5 @@
-import {CV_BUTTON_BASE, CV_BUTTON_LIFT, CV_BUTTON_SIZES, CV_BUTTON_TONES} from './AppStyles.jsx';
-import Icon from './Icon.jsx';
+import {CV_BUTTON_BASE, CV_BUTTON_LIFT, CV_BUTTON_SIZES, CV_BUTTON_TONES} from "./AppStyles.jsx";
+import Icon from "./Icon.jsx";
 
 // tone: neutral | accent | danger | success      icon: Material Symbols name (optional)
 export const ICON_TONES = {

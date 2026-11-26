@@ -1,5 +1,5 @@
-import {useTranslation} from 'react-i18next';
-import {getFooterClasses} from '../styles/AppStyles.jsx';
+import {useTranslation} from "react-i18next";
+import {getFooterClasses} from "../styles/AppStyles.jsx";
 
 function Footer({dark}) {
     const {t} = useTranslation();

@@ -1,14 +1,15 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {Navigate, useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {getHomeClasses} from '../styles/AppStyles.jsx';
-import Icon from '../styles/Icon.jsx';
-import HomeSection from './home/HomeSection.jsx';
-import {getHomeSections, LOAD_FAILED} from './home/HomeSections.js';
+import {useCallback, useEffect, useRef, useState} from "react";
+import {Navigate, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getHomeClasses} from "../styles/AppStyles.jsx";
+import Icon from "../styles/Icon.jsx";
+import HomeSection from "./home/HomeSection.jsx";
+import {getHomeSections, LOAD_FAILED} from "./home/HomeSections.js";
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 import {usePolling} from "../utils/usePolling.js";
 import {useSession} from "../utils/useSession.js";
 import Landing from "./home/Landing.jsx";
+import {PATHS} from "../routes/AppRoutes.jsx";
 
 // region Colors of every page of the role, refreshed by the polling
 const loadColors = async (section, sessionId, user) => {
@@ -136,7 +137,7 @@ const Home = () => {
 
     // region Logged in: wait for the account status, then send an inactive account to /expired
     if (accountStatus === null) return <div aria-busy="true"/>;
-    if (accountStatus !== ACCOUNT_STATUS.APPROVED) return <Navigate to="/expired" replace/>;
+    if (accountStatus !== ACCOUNT_STATUS.APPROVED) return <Navigate to={PATHS.EXPIRED} replace/>;
     // endregion
 
     return <Dashboard dark={dark} user={user}/>;

@@ -1,7 +1,8 @@
-import {Link} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import Icon from '../styles/Icon.jsx';
-import {getMainContainerClasses, getNavbarClasses} from '../styles/AppStyles.jsx';
+import {Link} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import Icon from "../styles/Icon.jsx";
+import {getMainContainerClasses, getNavbarClasses} from "../styles/AppStyles.jsx";
+import {PATHS} from "../routes/AppRoutes.jsx";
 
 /**
  * AuthButtons.jsx: the "Log in" and "Sign up" buttons, shared by the Navbar and the Landing page.
@@ -13,9 +14,9 @@ import {getMainContainerClasses, getNavbarClasses} from '../styles/AppStyles.jsx
  *   compact  boolean             navbar only: icon-only buttons
  */
 
-const AUTH_LINKS = [
-    {to: "/login", labelKey: "navbar.login", icon: "login", role: "login"},
-    {to: "/signup", labelKey: "navbar.signup", icon: "person_add", role: "signup"},
+const getAuthLinks = () => [
+    {to: PATHS.LOGIN, labelKey: "navbar.login", icon: "login", role: "login"},
+    {to: PATHS.SIGNUP, labelKey: "navbar.signup", icon: "person_add", role: "signup"},
 ];
 
 const NAVBAR_BTN = "inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-full transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400";
@@ -34,7 +35,7 @@ function AuthButtons({variant = "navbar", dark, compact = false}) {
 
     return (
         <>
-            {AUTH_LINKS.map(({to, labelKey, icon, role}) => (
+            {getAuthLinks().map(({to, labelKey, icon, role}) => (
                 <Link key={to} to={to} className={classOf(role)}
                       aria-label={t(labelKey)} title={t(labelKey)}>
                     <Icon name={icon} size={isNavbar ? 16 : 20}/>

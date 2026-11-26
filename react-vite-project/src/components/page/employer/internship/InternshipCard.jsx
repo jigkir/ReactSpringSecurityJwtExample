@@ -1,10 +1,11 @@
-import {useTranslation} from 'react-i18next';
+import {useTranslation} from "react-i18next";
 import {NavLink} from "react-router-dom";
-import {getCvDocumentsClasses, getInternshipCardClasses} from '../../../../styles/AppStyles.jsx';
-import Button from '../../../../styles/Button.jsx';
-import Icon from '../../../../styles/Icon.jsx';
-import Badge from '../../../../styles/Badge.jsx';
-import {formatDate} from '../../../../utils/Documents.js';
+import {getCvDocumentsClasses, getInternshipCardClasses} from "../../../../styles/AppStyles.jsx";
+import Button from "../../../../styles/Button.jsx";
+import Icon from "../../../../styles/Icon.jsx";
+import Badge from "../../../../styles/Badge.jsx";
+import {formatDate} from "../../../../utils/Documents.js";
+import {employerApplicationPath} from "../../../../routes/AppRoutes.jsx";
 
 const STATUS_KEY_MAP = {
     PENDING: "internshipCard.status.pendingValidation",
@@ -227,7 +228,7 @@ function InternshipCard({
                         {internship.status === "APPROVED" && Number(totalApplications) > 0 && (
                             <Button
                                 as={NavLink}
-                                to={`/employer/applications/${internship.id}`}
+                                to={employerApplicationPath(internship.id)}
                                 state={{internshipData: internship}}
                                 tone="primary"
                                 dark={dark}

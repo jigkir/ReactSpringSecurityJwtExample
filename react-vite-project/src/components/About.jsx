@@ -1,8 +1,9 @@
-import {Link, useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {getAboutClasses, REVEAL_FROM} from '../styles/AppStyles.jsx';
-import Icon from '../styles/Icon.jsx';
+import {Link, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getAboutClasses, REVEAL_FROM} from "../styles/AppStyles.jsx";
+import Icon from "../styles/Icon.jsx";
 import Reveal from "../styles/Reveal.jsx";
+import {PATHS} from "../routes/AppRoutes.jsx";
 
 const ROLES = [
     {icon: "admin_panel_settings", titleKey: "about.managerTitle", summaryKey: "about.managerSummary"},
@@ -37,7 +38,7 @@ function TimelineItem({role: {icon, titleKey, summaryKey}, index, classes}) {
 function About() {
     const {t} = useTranslation();
     const {dark, user} = useOutletContext();
-    const homePath = user?.isLoggedIn ? "/home" : "/";
+    const homePath = user?.isLoggedIn ? PATHS.HOME : PATHS.ROOT;
     const classes = getAboutClasses(dark);
 
     return (

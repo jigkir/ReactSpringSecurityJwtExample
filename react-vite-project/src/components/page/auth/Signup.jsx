@@ -1,13 +1,14 @@
-import {useEffect, useState} from 'react';
-import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
-import {getAuthClasses} from '../../../styles/AppStyles.jsx';
-import Button from '../../../styles/Button.jsx';
-import {RoleField, translateWarning} from '../../../utils/CommonFields.jsx';
-import {getRoles} from '../../api/Api.jsx';
-import Student from './signup/Student.jsx';
-import Employer from './signup/Employer.jsx';
-import Teacher from './signup/Teacher.jsx';
-import {useTranslation} from 'react-i18next';
+import {useEffect, useState} from "react";
+import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
+import {getAuthClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/Button.jsx";
+import {RoleField, translateWarning} from "../../../utils/CommonFields.jsx";
+import {getRoles} from "../../api/Api.jsx";
+import Student from "./signup/Student.jsx";
+import Employer from "./signup/Employer.jsx";
+import Teacher from "./signup/Teacher.jsx";
+import {useTranslation} from "react-i18next";
+import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 // Roles that are allowed to self-register — MANAGER are login-only
 const SIGNUP_ROLES = ['student', 'employer', 'teacher'];
@@ -47,7 +48,7 @@ const Signup = () => {
             .finally(() => setRolesLoading(false));
     }, []);
 
-    if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
+    if (user?.isLoggedIn) return <Navigate to={PATHS.HOME} replace/>;
 
     const roleComponents = ROLE_COMPONENTS(classes);
 
@@ -79,7 +80,7 @@ const Signup = () => {
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                     <p className={`${subtextClass} mt-0!`}>{t("signup.alreadyHaveAnAccount")}</p>
                     <Button type="button" tone="primary" lockTone dark={dark} size="sm" icon="login"
-                            onClick={() => navigate('/login')}>
+                            onClick={() => navigate(PATHS.LOGIN)}>
                         {t("signup.signupFormConfirm")}
                     </Button>
                 </div>

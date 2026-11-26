@@ -28,17 +28,24 @@
  *   className  string    optional, applied to the trigger button (e.g. "w-full")
  */
 
-import {useEffect, useId, useRef, useState} from 'react';
-import {createPortal} from 'react-dom';
-import {useTranslation} from 'react-i18next';
-import Button from '../../../styles/Button.jsx';
-import {getSelectClass} from '../../../styles/FormControls.jsx';
-import {getDocumentFile, getMaxCvSize, hideDocument, uploadDocument} from '../../api/Api.jsx';
-import {ACCEPTED_EXT, base64ToFile, bytesToMb, FALLBACK_MAX_BYTES, validateFile} from '../../../utils/Documents.js';
-import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
-import {translateWarning} from '../../../utils/CommonFields.jsx';
+import {useEffect, useId, useRef, useState} from "react";
+import {createPortal} from "react-dom";
+import {useTranslation} from "react-i18next";
+import Button from "../../../styles/Button.jsx";
+import {getSelectClass} from "../../../styles/FormControls.jsx";
+import {getDocumentFile, getMaxCvSize, hideDocument, uploadDocument} from "../../api/Api.jsx";
+import {ACCEPTED_EXT, base64ToFile, bytesToMb, FALLBACK_MAX_BYTES, validateFile} from "../../../utils/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
+import {translateWarning} from "../../../utils/CommonFields.jsx";
 
 const MODE = {MOVE: "move", REPLACE: "replace"};
+
+/** The stored document as a File, ready to be uploaded again. Throws if it has no content. */
+async function loadOriginalFile(type, id) {
+    const original = await getDocumentFile(type, id);
+    if (!original?.content) throw new Error("missing content");
+    return base64ToFile(original.content, original.fileName);
+}
 
 function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChanged, className = ""}) {
     const {t} = useTranslation();
@@ -122,9 +129,7 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
             if (mode === MODE.REPLACE) {
                 await uploadDocument(type, selectedFile);
             } else {
-                const original = await getDocumentFile(type, id);
-                if (!original?.content) throw new Error("missing content");
-                await uploadDocument(target, base64ToFile(original.content, original.fileName));
+                await uploadDocument(target, await loadOriginalFile(type, id));
             }
             await hideDocument(type, id);
             reset();

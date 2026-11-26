@@ -18,9 +18,9 @@
  *   children     the rows (a <ul>)
  */
 
-import {useTranslation} from 'react-i18next';
-import Button from '../../styles/Button.jsx';
-import {getCvDocumentsClasses} from '../../styles/AppStyles.jsx';
+import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
+import {getCvDocumentsClasses} from "../../styles/AppStyles.jsx";
 
 export default function DocumentListShell({
                                               dark, title, headerAction, label, items, failed, onRetry,

@@ -1,8 +1,9 @@
-import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {useLocation} from 'react-router-dom';
-import {getNotifications, markNotificationsAsRead} from '../api/Api.jsx';
+import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
+import {useLocation} from "react-router-dom";
+import {getNotifications, markNotificationsAsRead} from "../api/Api.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {ACCOUNT_STATUS} from "../../utils/AccountStatus.js";
+import {PATHS} from "../../routes/AppRoutes.jsx";
 
 const ROLE = {
     MANAGER: "MANAGER",
@@ -48,35 +49,17 @@ export const TARGET_TYPE = {
     CONTRACT: "CONTRACT",
 };
 
-const PAGE = {
-    STUDENT_CVS: "/student/portfolio",
-    STUDENT_INTERNSHIPS: "/student/internship",
-    STUDENT_INTERVIEWS: "/student/interviews",
-    STUDENT_OFFERS: "/student/offers",
-    STUDENT_CONTRACTS: "/student/contracts",
-
-    MANAGER_CVS: "/manager/cvs",
-    MANAGER_INTERNSHIPS: "/manager/internships",
-    MANAGER_CONTRACTS: "/manager/contracts",
-    MANAGER_USERS: "/manager/users",
-
-    EMPLOYER_INTERNSHIPS: "/employer/internships",
-    EMPLOYER_APPLICATIONS: "/employer/applications",
-    EMPLOYER_CONTRACTS: "/employer/contracts",
-    EMPLOYER_INTERVIEWS: "/employer/interviews",
-};
-
 // A notification closes when its page is opened (clicking it opens that page).
 // A `sessionScoped` notification targets an item listed by session: it closes only once its page
 // shows that item, so opening the page on another session keeps it.
-const NOTIFICATION_ITEMS = {
+const buildNotificationItems = () => ({
     [ROLE.MANAGER]: [
         {
             id: "cvPosted",
             notificationType: NOTIFICATION_TYPE.CV_SUBMITTED_FOR_REVIEW,
             targetType: TARGET_TYPE.CV,
             labelKey: "navbar.cvNotification",
-            to: PAGE.MANAGER_CVS,
+            to: PATHS.MANAGER_CVS,
             sessionScoped: true,
         },
         {
@@ -84,7 +67,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_SUBMITTED_FOR_REVIEW,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipSubmittedForReviewNotification",
-            to: PAGE.MANAGER_INTERNSHIPS,
+            to: PATHS.MANAGER_INTERNSHIPS,
             sessionScoped: true,
         },
         {
@@ -92,7 +75,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.STUDENT_ACCESS_REQUESTED,
             targetType: TARGET_TYPE.STUDENT_ACCOUNT,
             labelKey: "navbar.pendingUserNotification",
-            to: PAGE.MANAGER_USERS
+            to: PATHS.MANAGER_USERS
         },
         {
             id: "newContract",
@@ -100,7 +83,7 @@ const NOTIFICATION_ITEMS = {
             targetType: TARGET_TYPE.CONTRACT,
             labelKey: "navbar.newContractNotification",
             detailKey: "navbar.newContractNotificationDetail",
-            to: PAGE.MANAGER_CONTRACTS,
+            to: PATHS.MANAGER_CONTRACTS,
             sessionScoped: true,
         },
         {
@@ -109,7 +92,7 @@ const NOTIFICATION_ITEMS = {
             targetType: TARGET_TYPE.CONTRACT,
             labelKey: "navbar.contractReadyToSignNotification",
             detailKey: "navbar.contractReadyToSignNotificationDetail",
-            to: PAGE.MANAGER_CONTRACTS,
+            to: PATHS.MANAGER_CONTRACTS,
             sessionScoped: true,
         },
     ],
@@ -119,7 +102,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.NEW_INTERNSHIP_OFFER,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipNotification",
-            to: PAGE.STUDENT_INTERNSHIPS,
+            to: PATHS.STUDENT_INTERNSHIPS,
             sessionScoped: true,
         },
         {
@@ -127,21 +110,21 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.CV_APPROVED,
             targetType: TARGET_TYPE.CV,
             labelKey: "navbar.cvApprovedNotification",
-            to: PAGE.STUDENT_CVS
+            to: PATHS.STUDENT_PORTFOLIO
         },
         {
             id: "cvsRejected",
             notificationType: NOTIFICATION_TYPE.CV_REJECTED,
             targetType: TARGET_TYPE.CV,
             labelKey: "navbar.cvRejectedNotification",
-            to: PAGE.STUDENT_CVS
+            to: PATHS.STUDENT_PORTFOLIO
         },
         {
             id: "interviewConvocation",
             notificationType: NOTIFICATION_TYPE.INTERVIEW_CONVOCATION,
             targetType: TARGET_TYPE.INTERVIEW,
             labelKey: "navbar.interviewConvocationNotification",
-            to: PAGE.STUDENT_INTERVIEWS,
+            to: PATHS.STUDENT_INTERVIEWS,
             detailed: true, // one menu line per convocation (company, title, date)
         },
         {
@@ -149,7 +132,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERVIEW_UPDATED,
             targetType: TARGET_TYPE.INTERVIEW,
             labelKey: "navbar.interviewUpdatedNotification",
-            to: PAGE.STUDENT_INTERVIEWS,
+            to: PATHS.STUDENT_INTERVIEWS,
             detailed: true,
         },
         {
@@ -157,7 +140,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFERED,
             targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
             labelKey: "navbar.internshipOfferedNotification",
-            to: PAGE.STUDENT_OFFERS,
+            to: PATHS.STUDENT_OFFERS,
             detailed: true, // one menu line per offer (company, title)
         },
         {
@@ -165,7 +148,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN_BY_STUDENT,
             targetType: TARGET_TYPE.CONTRACT,
             labelKey: "navbar.contractToSignNotification",
-            to: PAGE.STUDENT_CONTRACTS,
+            to: PATHS.STUDENT_CONTRACTS,
             sessionScoped: true,
         },
     ],
@@ -175,7 +158,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_APPROVED,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipApprovedNotification",
-            to: PAGE.EMPLOYER_INTERNSHIPS,
+            to: PATHS.EMPLOYER_INTERNSHIPS,
             sessionScoped: true,
         },
         {
@@ -183,7 +166,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_REJECTED,
             targetType: TARGET_TYPE.INTERNSHIP_OFFER,
             labelKey: "navbar.internshipRejectedNotification",
-            to: PAGE.EMPLOYER_INTERNSHIPS,
+            to: PATHS.EMPLOYER_INTERNSHIPS,
             sessionScoped: true,
         },
         {
@@ -191,7 +174,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.NEW_INTERNSHIP_APPLICATION,
             targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
             labelKey: "navbar.newInternshipApplicationNotification",
-            to: PAGE.EMPLOYER_APPLICATIONS,
+            to: PATHS.EMPLOYER_APPLICATIONS,
             sessionScoped: true,
         },
         {
@@ -199,7 +182,7 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERNSHIP_OFFER_REFUSED,
             targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
             labelKey: "navbar.internshipOfferRefusedNotification",
-            to: PAGE.EMPLOYER_APPLICATIONS,
+            to: PATHS.EMPLOYER_APPLICATIONS,
             sessionScoped: true,
         },
         {
@@ -207,26 +190,30 @@ const NOTIFICATION_ITEMS = {
             notificationType: NOTIFICATION_TYPE.INTERVIEW_REFUSED,
             targetType: TARGET_TYPE.INTERVIEW,
             labelKey: "navbar.interviewRefusedNotification",
-            to: PAGE.EMPLOYER_INTERVIEWS,
+            to: PATHS.EMPLOYER_INTERVIEWS,
         },
         {
             id: "interviewCancelled",
             notificationType: NOTIFICATION_TYPE.INTERVIEW_CANCELLED_STUDENT_HIRED,
             targetType: TARGET_TYPE.INTERVIEW,
             labelKey: "navbar.interviewCancelledNotification",
-            to: PAGE.EMPLOYER_INTERVIEWS,
+            to: PATHS.EMPLOYER_INTERVIEWS,
         },
         {
             id: "contractToSign",
             notificationType: NOTIFICATION_TYPE.CONTRACT_TO_SIGN_BY_EMPLOYER,
             targetType: TARGET_TYPE.CONTRACT,
             labelKey: "navbar.contractToSignNotification",
-            to: PAGE.EMPLOYER_CONTRACTS,
+            to: PATHS.EMPLOYER_CONTRACTS,
             sessionScoped: true,
         },
     ],
     [ROLE.TEACHER]: []
-};
+});
+
+// Built on first use: PATHS does not exist yet while the modules load (circular import)
+let notificationItems = null;
+const getNotificationItems = () => (notificationItems ??= buildNotificationItems());
 
 const NO_ITEMS = [];
 
@@ -266,7 +253,7 @@ export function NotificationsProvider({user, children, accountStatus}) {
     const role = normalizeRole(user);
     const userId = user?.id;
 
-    const roleItems = NOTIFICATION_ITEMS[role] ?? NO_ITEMS;
+    const roleItems = getNotificationItems()[role] ?? NO_ITEMS;
     const [notifications, setNotifications] = useState([]);
     const [errorKey, setErrorKey] = useState(null);
     const requestId = useRef(0); // ignore responses from outdated requests

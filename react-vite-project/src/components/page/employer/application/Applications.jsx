@@ -2,7 +2,7 @@
  * Employer page: every application received, grouped by the internship offer it comes from.
  * Location: src/components/page/application/Applications.jsx
  *
- * - One section per internship (title + number of applications).
+ * - One section per internship (title + number of applications, unread count).
  * - A dropdown lets the employer pick which internship to look at ("All internships" by default).
  * - A status color filter (ALL | RED | YELLOW | GREEN) on the employer decision
  *   (PENDING = YELLOW, ACCEPTED / INTERNSHIP_OFFERED = GREEN, REJECTED = RED); initial value from `?status=`.
@@ -15,24 +15,26 @@
  * Access control: <RequireRole roles={["EMPLOYER"]}/> in App.jsx + backend.
  */
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
-import {NavLink, useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import ApplicationCard from './ApplicationCard.jsx';
-import Icon from '../../../../styles/Icon.jsx';
-import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
-import {getApplicationCv, getApplications, getEmployerInternships} from '../../../api/Api.jsx';
-import {base64ToBlobUrl} from '../../../../utils/Documents.js';
-import {matchesSearch, StatusColorSelect, toNum, useColorParam} from '../../../../utils/Sort.jsx';
-import {ALL, colorOf, matchesColor} from '../../../../utils/StatusColor.js';
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {NavLink, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import ApplicationCard from "./ApplicationCard.jsx";
+import Icon from "../../../../styles/Icon.jsx";
+import Badge from "../../../../styles/Badge.jsx";
+import {getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../../../api/Api.jsx";
+import {base64ToBlobUrl} from "../../../../utils/Documents.js";
+import {matchesSearch, StatusColorSelect, toNum, useColorParam} from "../../../../utils/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../../../utils/StatusColor.js";
 import {
     TARGET_TYPE,
     useCloseShownNotifications,
     useNotifications
-} from '../../../notification/NotificationsProvider.jsx';
-import {usePolling} from '../../../../utils/usePolling.js';
+} from "../../../notification/NotificationsProvider.jsx";
+import {usePolling} from "../../../../utils/usePolling.js";
 import {useSession} from "../../../../utils/useSession.js";
 import {useNewApplications} from "../../../../utils/useNewApplications.js";
+import {employerApplicationPath} from "../../../../routes/AppRoutes.jsx";
 
 // New first (state frozen at first appearance), then newest (highest id) first
 const compareApplications = (isNew) => (a, b) =>
@@ -175,7 +177,8 @@ function Applications({user}) {
         body = visibleGroups.map((group) => (
             <section key={group.id} className="space-y-3" aria-label={group.title}>
                 {/* Which internship these applications come from */}
-                <div className="flex flex-wrap items-center gap-3">
+                <div
+                    className={`flex flex-wrap items-center gap-3 pb-2 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
                     <div className="min-w-48 flex-1">
                         <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
                             {t("applicationsPage.fromInternship")}
@@ -187,8 +190,11 @@ function Applications({user}) {
                         <Icon name="send" size={16}/>
                         {t("applicationsPage.applicationCount", {count: group.total})}
                     </span>
+                    {group.unread > 0 && (
+                        <Badge tone="new">{t("applicationsPage.unreadCount", {count: group.unread})}</Badge>
+                    )}
                     <NavLink
-                        to={`/employer/applications/${group.id}`}
+                        to={employerApplicationPath(group.id)}
                         className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
                     >
                         {t("applicationsPage.openInternship")}

@@ -1,7 +1,34 @@
+import {PATHS} from "../routes/AppRoutes.jsx";
+
 export const CONTRACT_ROLES = {
-    MANAGER: {signedAtField: "managerSignedAt", basePath: "/manager/contracts", signsLast: true},
-    EMPLOYER: {signedAtField: "employerSignedAt", basePath: "/employer/contracts"},
-    STUDENT: {signedAtField: "studentSignedAt", basePath: "/student/contracts"},
+    MANAGER: {
+        signedAtField: "managerSignedAt",
+        get basePath() {
+            return PATHS.MANAGER_CONTRACTS;
+        },
+        get filePath() {
+            return PATHS.MANAGER_CONTRACT;
+        },
+        signsLast: true,
+    },
+    EMPLOYER: {
+        signedAtField: "employerSignedAt",
+        get basePath() {
+            return PATHS.EMPLOYER_CONTRACTS;
+        },
+        get filePath() {
+            return PATHS.EMPLOYER_CONTRACT;
+        },
+    },
+    STUDENT: {
+        signedAtField: "studentSignedAt",
+        get basePath() {
+            return PATHS.STUDENT_CONTRACTS;
+        },
+        get filePath() {
+            return PATHS.STUDENT_CONTRACT;
+        },
+    },
 };
 
 export const getContractRole = (user) => {

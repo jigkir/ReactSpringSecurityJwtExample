@@ -25,20 +25,20 @@
  * Props: dark, user (needs user.email for Dev signing, user.role for the role)
  */
 
-import {useCallback, useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import Button from '../../styles/Button.jsx';
-import {getPostInternshipClasses} from '../../styles/AppStyles.jsx';
-import {getContracts, signContract} from '../api/Api.jsx';
-import {devSignContract} from '../api/DevApi.jsx';
-import {useDevMode} from '../dev/DevMode.jsx';
-import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../notification/NotificationsProvider.jsx';
-import {useLoadedList} from '../../utils/useLoadedList.js';
-import {useSession} from '../../utils/useSession.js';
-import {getContractRole} from '../../utils/ContractRole.js';
-import {StatusColorSelect, useColorParam} from '../../utils/Sort.jsx';
-import {ALL, COLOR, matchesColor} from '../../utils/StatusColor.js';
-import ContractCard from './ContractCard.jsx';
+import {useCallback, useMemo, useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
+import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
+import {getContracts, signContract} from "../api/Api.jsx";
+import {devSignContract} from "../api/DevApi.jsx";
+import {useDevMode} from "../dev/DevMode.jsx";
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../notification/NotificationsProvider.jsx";
+import {useLoadedList} from "../../utils/useLoadedList.js";
+import {useSession} from "../../utils/useSession.js";
+import {getContractRole} from "../../utils/ContractRole.js";
+import {StatusColorSelect, useColorParam} from "../../utils/Sort.jsx";
+import {ALL, COLOR, matchesColor} from "../../utils/StatusColor.js";
+import ContractCard from "./ContractCard.jsx";
 
 const HTTP = {BAD_REQUEST: 400, NOT_FOUND: 404, CONFLICT: 409};
 

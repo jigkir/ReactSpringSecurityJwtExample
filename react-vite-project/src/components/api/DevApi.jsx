@@ -1,5 +1,5 @@
-import fetcher from '../../utils/fetcher.js';
-import {handleResponse, signWorkplaceEvaluation} from './Api.jsx';
+import fetcher from "../../utils/fetcher.js";
+import {handleResponse} from "./Api.jsx";
 
 // GET /api/dev/users -> UserResponseDto[]
 export async function getDevUsers() {
@@ -17,6 +17,6 @@ export async function devSignContract(contractId, email) {
         `dev/contracts/${contractId}/signature?email=${encodeURIComponent(email)}`, {method: "PUT"}));
 }
 
-export async function devSignWorkplaceEvaluation(evaluationId, email){
+export async function devSignWorkplaceEvaluation(evaluationId, email) {
     return handleResponse(await fetcher(`dev/workplace-evaluations/${evaluationId}/signature?email=${encodeURIComponent(email)}`, {method: "PUT"}))
 }

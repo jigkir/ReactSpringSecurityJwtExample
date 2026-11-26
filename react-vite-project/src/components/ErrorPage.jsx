@@ -1,5 +1,5 @@
-import {useTranslation} from 'react-i18next';
-import {translateWarning} from '../utils/CommonFields.jsx';
+import {useTranslation} from "react-i18next";
+import {translateWarning} from "../utils/CommonFields.jsx";
 
 function ErrorPage({error}) {
     const {t} = useTranslation();

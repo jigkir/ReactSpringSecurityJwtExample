@@ -1,5 +1,5 @@
-import {useCallback, useEffect, useState} from 'react';
-import {usePolling} from './usePolling.js';
+import {useCallback, useEffect, useState} from "react";
+import {usePolling} from "./usePolling.js";
 
 /**
  * Loads a list with `fetchList`, then keeps it fresh on the polling clock.

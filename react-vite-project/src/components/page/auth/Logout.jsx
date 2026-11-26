@@ -1,5 +1,6 @@
-import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useEffect} from "react";
+import {useNavigate} from "react-router-dom";
+import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 const Logout = ({setUser}) => {
     const navigate = useNavigate();
@@ -7,7 +8,7 @@ const Logout = ({setUser}) => {
     useEffect(() => {
         localStorage.removeItem("token");
         setUser({});
-        navigate("/");
+        navigate(PATHS.ROOT);
     }, []);
 
     return null;

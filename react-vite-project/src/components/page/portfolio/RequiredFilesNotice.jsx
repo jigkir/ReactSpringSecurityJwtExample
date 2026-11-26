@@ -7,8 +7,8 @@
  *   dark  boolean
  */
 
-import {useTranslation} from 'react-i18next';
-import Icon from '../../../styles/Icon.jsx';
+import {useTranslation} from "react-i18next";
+import Icon from "../../../styles/Icon.jsx";
 
 function RequiredFilesNotice({dark}) {
     const {t} = useTranslation();

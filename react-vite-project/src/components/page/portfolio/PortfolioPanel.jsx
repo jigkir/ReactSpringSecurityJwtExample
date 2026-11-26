@@ -13,14 +13,14 @@
  *   onUploaded   function  optional, called after an upload attempt
  */
 
-import {useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import Button from '../../../styles/Button.jsx';
-import DocumentList from './DocumentList.jsx';
-import PortfolioUpload from './PortfolioUpload.jsx';
-import {getMaxCvSize} from '../../api/Api.jsx';
-import {FALLBACK_MAX_BYTES} from '../../../utils/Documents.js';
-import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
+import {useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "../../../styles/Button.jsx";
+import DocumentList from "./DocumentList.jsx";
+import PortfolioUpload from "./PortfolioUpload.jsx";
+import {getMaxCvSize} from "../../api/Api.jsx";
+import {FALLBACK_MAX_BYTES} from "../../../utils/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
 
 const TABS = ["ALL", ...DOC_TYPE_KEYS];
 

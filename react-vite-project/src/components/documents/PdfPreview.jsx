@@ -10,10 +10,10 @@
  *   getUrl   (id: number) => Promise<string>   returns a blob: URL. Must be a stable reference.
  */
 
-import {useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {getCvPreviewClasses} from '../../styles/AppStyles.jsx';
-import PdfViewer from './PdfViewer.jsx';
+import {useEffect, useRef, useState} from "react";
+import {useTranslation} from "react-i18next";
+import {getCvPreviewClasses} from "../../styles/AppStyles.jsx";
+import PdfViewer from "./PdfViewer.jsx";
 
 const PdfPreview = ({doc, dark, getUrl}) => {
     const {t} = useTranslation();

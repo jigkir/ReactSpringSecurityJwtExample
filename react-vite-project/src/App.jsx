@@ -1,12 +1,12 @@
-import {useCallback, useEffect, useState} from 'react';
-import {Route, Routes, useLocation, useNavigate} from 'react-router-dom';
-import {useDarkMode} from './styles/DarkMode.jsx';
-import PageLayout from './components/PageLayout.jsx';
-import {checkUserStatus, getCurrentUser} from './components/api/Api.jsx';
+import {useCallback, useEffect, useState} from "react";
+import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import {useDarkMode} from "./styles/DarkMode.jsx";
+import PageLayout from "./components/PageLayout.jsx";
+import {checkUserStatus, getCurrentUser} from "./components/api/Api.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";
-import {appRoutes} from "./routes/AppRoutes.jsx";
+import {appRoutes, PATHS} from "./routes/AppRoutes.jsx";
 
 function App() {
     const [user, setUser] = useState({});
@@ -44,7 +44,7 @@ function App() {
                 else if (err.status === 404) setError(i18nError("error.notFound"));
                 else if (err.status) setError(i18nError("error.apiStatus", {status: err.status}));
                 else setError(i18nError("error.network"));
-                navigate("/error");
+                navigate(PATHS.ERROR);
             });
 
         return () => {
