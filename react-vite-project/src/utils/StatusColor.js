@@ -124,6 +124,12 @@ export const STATUS_LABEL_KEYS = {
         [COLOR.YELLOW]: "tracking.filters.pendingAttribution",
         [COLOR.GREEN]: "users.statuses.assigned",
     },
+    managerStudentStatuses: {
+        [ALL]: ALL_STATUSES,
+        [COLOR.RED]: "studentStatuses.progress.RED",
+        [COLOR.YELLOW]: "studentStatuses.progress.YELLOW",
+        [COLOR.GREEN]: "studentStatuses.progress.GREEN",
+    },
     // Teacher evaluations: signed or not yet (no red)
     teacherEvaluations: {
         [ALL]: ALL_STATUSES,
@@ -134,3 +140,22 @@ export const STATUS_LABEL_KEYS = {
 
 /** Translation key of a color on a page, or undefined (the color name is shown instead). */
 export const statusLabelKey = (page, color) => STATUS_LABEL_KEYS[page]?.[color];
+
+// ─── Internship search progress of a student ──────────────────────────────────
+
+const STUDENT_PROGRESS_COLORS = {
+    NO_CV: COLOR.RED,
+    CV_REJECTED: COLOR.RED,
+    NO_APPLICATION: COLOR.RED,
+    NO_INTERVIEW: COLOR.RED,
+    CV_PENDING: COLOR.YELLOW,
+    UPCOMING_INTERVIEW: COLOR.YELLOW,
+    AWAITING_DECISION: COLOR.YELLOW,
+    OFFER_PENDING: COLOR.YELLOW,
+    CONTRACT_PENDING: COLOR.YELLOW,
+    CONTRACT_SIGNED: COLOR.GREEN,
+};
+
+/** Color of a student's internship search; null if the account is not approved. */
+export const studentStatusColor = (student) =>
+    student.accountStatus === "APPROVED" ? (STUDENT_PROGRESS_COLORS[student.internshipStatus] ?? null) : null;

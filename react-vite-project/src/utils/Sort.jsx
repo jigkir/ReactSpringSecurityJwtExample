@@ -33,7 +33,7 @@ import {useSearchParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getSelectClass} from "../styles/FormControls.jsx";
 import {getStatusBorder} from "../styles/AppStyles.jsx";
-import {ALL, COLOR, COLOR_VALUES, colorOf, matchesColor, statusLabelKey} from "./StatusColor.js";
+import {ALL, COLOR, COLOR_VALUES, colorOf, matchesColor, statusLabelKey, studentStatusColor} from "./StatusColor.js";
 
 // ─── 1. Generic helpers ───────────────────────────────────────────────────────
 
@@ -299,6 +299,7 @@ export function filterStudentStatuses(list, {
     search = "",
     accountStatus = ALL,
     internshipStatus = ALL,
+    progress = ALL,
 } = {}) {
     return list.filter((student) => {
         if (
@@ -311,25 +312,34 @@ export function filterStudentStatuses(list, {
             student.internshipStatus !== internshipStatus
         ) return false;
 
+        if (!matchesColor(studentStatusColor(student), progress)) return false;
+
         return matchesSearch([student.firstName, student.lastName, student.studentId,], search);
     });
 }
 
 export function useStudentStatusFilters(list) {
+    const initialProgress = useColorParam("status");
+
     const [search, setSearch] = useState("");
     const [accountStatus, setAccountStatus] = useState(ALL);
     const [internshipStatus, setInternshipStatus] = useState(ALL);
+    const [progress, setProgress] = useState(initialProgress);
 
     const visible = useMemo(() => {
         return filterStudentStatuses(list, {
             search,
             accountStatus,
             internshipStatus,
+            progress,
         }).sort((a, b) =>
             compareText("lastName")(a, b) ||
             compareText("firstName")(a, b)
         );
-    }, [list, search, accountStatus, internshipStatus]);
+    }, [list, search, accountStatus, internshipStatus, progress]);
 
-    return {search, setSearch, accountStatus, setAccountStatus, internshipStatus, setInternshipStatus, visible,};
+    return {
+        search, setSearch, accountStatus, setAccountStatus, internshipStatus, setInternshipStatus,
+        progress, setProgress, visible,
+    };
 }

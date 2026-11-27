@@ -209,6 +209,7 @@ export const ROUTES = [
     },
     {
         path: PATHS.MANAGER_STUDENT_STATUSES, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.studentStatuses"},
+        home: [ROLE.MANAGER],
         element: () => <ManagerStudentStatuses/>
     },
 

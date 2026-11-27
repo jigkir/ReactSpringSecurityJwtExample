@@ -207,6 +207,12 @@
       "OFFER_PENDING": "Offer received, awaiting student response",
       "CONTRACT_PENDING": "Internship secured: contract to sign",
       "CONTRACT_SIGNED": "Internship secured: contract signed"
+    },
+    "progressLabel": "Progress",
+    "progress": {
+      "RED": "Needs follow-up",
+      "YELLOW": "In progress",
+      "GREEN": "Internship confirmed"
     }
   },
   "commonFields": {
@@ -391,7 +397,8 @@
     "employerInterviewsLink": "My interviews with students",
     "managerUsersLink": "Review student access",
     "managerTrackingLink": "Assign teachers to internships",
-    "teacherEvaluationsLink": "Evaluate internship workplaces"
+    "teacherEvaluationsLink": "Evaluate internship workplaces",
+    "managerStudentStatusesLink": "Track students"
   },
   "applicationsPage": {
     "title": "Applications received",

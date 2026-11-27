@@ -25,13 +25,15 @@
 import {
     ALL,
     COLOR,
-    colorOf
+    colorOf,
+    studentStatusColor
 } from "../../utils/StatusColor.js";
 import {
     getInterviewColor
 } from "../../utils/interviewStatus.js";
 import {getContractRole} from "../../utils/ContractRole.js";
 import {PATHS, ROUTES} from "../../routes/AppRoutes.jsx";
+import {MOCK_STUDENTS} from "../page/manager/StudentStatusMock.js";
 import {
     fetchWorkplaceEvaluations,
     getApplications,
@@ -242,6 +244,15 @@ const buildHomeCards = () => ({
         colors: PENDING_ONLY,
         load: async () => asList(await getInternshipTrackings())
             .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
+    },
+    // Student statuses: needs follow-up (RED), in progress (YELLOW). Mock data until the backend exists
+    [PATHS.MANAGER_STUDENT_STATUSES]: {
+        icon: "person",
+        page: "managerStudentStatuses",
+        titleKey: "home.managerStudentStatusesLink",
+        param: "status",
+        colors: [COLOR.RED, COLOR.YELLOW],
+        load: async () => MOCK_STUDENTS.map(studentStatusColor),
     },
 
     // ───────── Teacher ─────────

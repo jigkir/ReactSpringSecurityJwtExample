@@ -207,6 +207,12 @@
       "OFFER_PENDING": "Offre reçue, en attente de sa réponse",
       "CONTRACT_PENDING": "Stage trouvé : contrat à signer",
       "CONTRACT_SIGNED": "Stage trouvé : contrat signé"
+    },
+    "progressLabel": "Progression",
+    "progress": {
+      "RED": "Suivi requis",
+      "YELLOW": "En cours",
+      "GREEN": "Stage confirmé"
     }
   },
   "commonFields": {
@@ -391,7 +397,8 @@
     "employerInterviewsLink": "Consulter mes entrevues avec les étudiants",
     "managerUsersLink": "Vérifier les accès étudiants",
     "managerTrackingLink": "Assigner les professeurs aux stages",
-    "teacherEvaluationsLink": "Évaluer les milieux de stage"
+    "teacherEvaluationsLink": "Évaluer les milieux de stage",
+    "managerStudentStatusesLink": "Suivre les étudiants"
   },
   "applicationsPage": {
     "title": "Candidatures reçues",
