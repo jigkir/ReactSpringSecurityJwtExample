@@ -14,6 +14,8 @@ import Button from "../../styles/Button.jsx";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
 import {useDevMode} from "../dev/DevMode.jsx";
 import {useLoadedList} from "../../utils/useLoadedList.js";
+import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
+import {ALL, COLOR, matchesColor} from "../../utils/StatusColor.js";
 import {
     createInitialEvaluation,
     validateEvaluation,
@@ -26,6 +28,10 @@ import {
 } from "../api/Api.jsx";
 import WorkplaceEvaluationCard from "./WorkplaceEvaluationCard.jsx";
 import {devSignWorkplaceEvaluation} from "../api/DevApi.jsx";
+
+// Evaluations have no red: signed (GREEN) or not signed yet (YELLOW)
+const EVALUATION_COLORS = [ALL, COLOR.YELLOW, COLOR.GREEN];
+const evaluationColor = (item) => (item.signedAt ? COLOR.GREEN : COLOR.YELLOW);
 
 const byNewest = (a, b) =>
     new Date(b.updatedAt ?? b.createdAt ?? 0) -
@@ -47,23 +53,31 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
     const {devMode} = useDevMode();
     const s = getPostInternshipClasses(dark);
 
+    // Status color lives in the URL (?status=), so the Home buttons open the page already filtered
+    const [status, setStatus] = useColorFilter("status", EVALUATION_COLORS);
+
     const loadEvaluations = useCallback(async () => {
         if (!selectedSession?.id) return null;
         console.log(user.role)
         return user.role == "TEACHER" ?
-         fetchWorkplaceEvaluations(selectedSession.id) :
-         fetchWorkplaceEvaluationsManager(selectedSession.id);
+            fetchWorkplaceEvaluations(selectedSession.id) :
+            fetchWorkplaceEvaluationsManager(selectedSession.id);
     }, [selectedSession?.id]);
 
-    const { items, setItems, failed, reload } = useLoadedList(loadEvaluations);
+    const {items, setItems, failed, reload} = useLoadedList(loadEvaluations);
 
-    const shown = useMemo(() => (items ? sortEvaluations(items) : null), [items]);
+    // Filter by status color, then unsigned first / newest first
+    const shown = useMemo(
+        () => (items
+            ? sortEvaluations(items.filter((item) => matchesColor(evaluationColor(item), status)))
+            : null),
+        [items, status]);
 
     const handleSave = async (id, payload) => {
         try {
             const answer = await saveWorkplaceEvaluations(id, payload);
             await reload();
-            return { success: true };
+            return {success: true};
         } catch (err) {
             return {
                 success: false,
@@ -73,14 +87,14 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
     };
 
     const handleSign = async (id, evaluation, sign) => {
-        if (!isEvaluationComplete(evaluation)) return { success: false };
+        if (!isEvaluationComplete(evaluation)) return {success: false};
 
         try {
-             devMode
+            devMode
                 ? await devSignWorkplaceEvaluation(id, user?.email)
-                :await signWorkplaceEvaluation(id, sign);
+                : await signWorkplaceEvaluation(id, sign);
             await reload();
-            return { success: true };
+            return {success: true};
         } catch (error) {
             return {
                 success: false,
@@ -95,6 +109,7 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
             evaluation={evaluation}
             dark={dark}
             devMode={devMode}
+            filterColor={status}
             onSave={(payload) => handleSave(evaluation.id, payload)}
             onSign={handleSign}
         />
@@ -121,17 +136,24 @@ const WorkplaceEvaluationList = ({dark, user, selectedSession}) => {
                 {t("workplaceEvaluation.loading")}
             </p>
         );
-    } else if (shown.length === 0) {
+    } else if (items.length === 0) {
         body = <p className={s.emptyText}>{t("workplaceEvaluation.empty")}</p>;
+    } else if (shown.length === 0) {
+        body = <p className={s.emptyText}>{t("workplaceEvaluation.noMatch")}</p>;
     } else {
         body = cards;
     }
 
     return (
-        <div className={s.page}>
-            <div className={s.listSection}>
-                <div className={s.scrollArea}>{body}</div>
-            </div>
+        <div className="flex w-full min-w-0 flex-col gap-4">
+            {items && items.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    <StatusColorSelect dark={dark} value={status} onChange={setStatus}
+                                       colors={EVALUATION_COLORS} page="teacherEvaluations"
+                                       ariaLabel={t("internshipFilters.statusAria")}/>
+                </div>
+            )}
+            <div className="space-y-4">{body}</div>
         </div>
     );
 };
