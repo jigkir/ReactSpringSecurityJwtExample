@@ -24,7 +24,7 @@ import Badge from "../../../../styles/Badge.jsx";
 import {getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
 import {getApplicationCv, getApplications, getEmployerInternships} from "../../../api/Api.jsx";
 import {base64ToBlobUrl} from "../../../../utils/Documents.js";
-import {matchesSearch, StatusColorSelect, toNum, useColorParam} from "../../../../utils/Sort.jsx";
+import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../../../utils/Sort.jsx";
 import {ALL, colorOf, matchesColor} from "../../../../utils/StatusColor.js";
 import {
     TARGET_TYPE,
@@ -50,12 +50,11 @@ function Applications({user}) {
     const {selectedSession} = useSession();
     const {register, isNew: isNewApp, clear: clearNew, markAsSeen, version: newVersion} = useNewApplications();
 
-    const initialStatus = useColorParam("status");
     const [applications, setApplications] = useState(null); // null = loading
     const [internships, setInternships] = useState([]);
     const [loadFailed, setLoadFailed] = useState(false);
     const [search, setSearch] = useState("");
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     const [internshipFilter, setInternshipFilter] = useState(ALL);
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 

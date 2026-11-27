@@ -6,7 +6,7 @@ import Icon from "../../../styles/Icon.jsx";
 import {acceptOffer, denyOffer, getStudentOffers} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
 import {translateWarning} from "../../../utils/CommonFields.jsx";
-import {StatusColorSelect, useColorParam} from "../../../utils/Sort.jsx";
+import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
 import {ALL, borderStatusOf, colorOf, matchesColor} from "../../../utils/StatusColor.js";
 import Button from "../../../styles/Button.jsx";
 import {useNotifications} from "../../notification/NotificationsProvider.jsx";
@@ -51,8 +51,7 @@ function Offers() {
     const {hash} = useLocation();
     const s = getPostInternshipClasses(dark);
 
-    const initialStatus = useColorParam("status");
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     // While a color is selected, every card gets a full border of that color
     const filtered = status !== ALL;
     const cardS = getInternshipCardClasses(dark, borderStatusOf(status));

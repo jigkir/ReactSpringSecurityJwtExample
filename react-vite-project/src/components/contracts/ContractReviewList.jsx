@@ -25,7 +25,7 @@
  * Props: dark, user (needs user.email for Dev signing, user.role for the role)
  */
 
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useMemo} from "react";
 import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
@@ -36,7 +36,7 @@ import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../noti
 import {useLoadedList} from "../../utils/useLoadedList.js";
 import {useSession} from "../../utils/useSession.js";
 import {getContractRole} from "../../utils/ContractRole.js";
-import {StatusColorSelect, useColorParam} from "../../utils/Sort.jsx";
+import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
 import {ALL, COLOR, matchesColor} from "../../utils/StatusColor.js";
 import ContractCard from "./ContractCard.jsx";
 
@@ -77,8 +77,7 @@ const ContractReviewList = ({dark, user}) => {
     const contractRole = getContractRole(user);
     const {signedAtField} = contractRole;
 
-    const initialStatus = useColorParam("status", CONTRACT_COLORS);
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status", CONTRACT_COLORS);
 
     const fetchContracts = useCallback(async () => {
         return selectedSession ? getContracts(selectedSession.id) : null; // sessions still loading

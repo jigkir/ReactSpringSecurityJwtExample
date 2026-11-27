@@ -208,7 +208,7 @@
       "CONTRACT_PENDING": "Stage trouvé : contrat à signer",
       "CONTRACT_SIGNED": "Stage trouvé : contrat signé"
     },
-    "progressLabel": "Progression",
+    "progressLabel": "Recherche de stage",
     "progress": {
       "RED": "Suivi requis",
       "YELLOW": "En cours",

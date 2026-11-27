@@ -208,7 +208,7 @@
       "CONTRACT_PENDING": "Internship secured: contract to sign",
       "CONTRACT_SIGNED": "Internship secured: contract signed"
     },
-    "progressLabel": "Progress",
+    "progressLabel": "Internship search",
     "progress": {
       "RED": "Needs follow-up",
       "YELLOW": "In progress",

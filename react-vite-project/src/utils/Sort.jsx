@@ -28,7 +28,7 @@
  * (see pages/student/Internships.jsx); the chosen sort orders items inside each group.
  */
 
-import {useMemo, useState} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {useSearchParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getSelectClass} from "../styles/FormControls.jsx";
@@ -97,6 +97,28 @@ export function useColorParam(name = "status", allowed = COLOR_VALUES) {
     const [params] = useSearchParams();
     const raw = (params.get(name) ?? "").toUpperCase();
     return allowed.includes(raw) ? raw : ALL;
+}
+
+/**
+ * Color filter whose value lives in the URL (`?status=GREEN`).
+ * Returns [color, setColor]. Selecting ALL removes the param; other params are kept.
+ * The URL is replaced (not pushed), so Back does not step through every filter change.
+ */
+export function useColorFilter(name = "status", allowed = COLOR_VALUES) {
+    const [params, setParams] = useSearchParams();
+    const raw = (params.get(name) ?? "").toUpperCase();
+    const value = allowed.includes(raw) ? raw : ALL;
+
+    const setValue = useCallback((color) => {
+        setParams((previous) => {
+            const next = new URLSearchParams(previous);
+            if (color === ALL) next.delete(name);
+            else next.set(name, color);
+            return next;
+        }, {replace: true});
+    }, [name, setParams]);
+
+    return [value, setValue];
 }
 
 /**
@@ -199,13 +221,10 @@ export function applyInternshipFilters(list, {
  * The initial `status` and `applied` colors come from `?status=` and `?applied=`.
  */
 export function useInternshipFilters(list, appliedIds = null, statusRanks = INTERNSHIP_STATUS_RANK) {
-    const initialStatus = useColorParam("status");
-    const initialApplied = useColorParam("applied", APPLIED_COLORS);
-
     const [search, setSearch] = useState("");
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     const [discipline, setDiscipline] = useState("ALL");
-    const [applied, setApplied] = useState(initialApplied);
+    const [applied, setApplied] = useColorFilter("applied", APPLIED_COLORS);
     const [sort, setSort] = useState("NEWEST");
 
     const disciplines = useMemo(() => getInternshipDisciplines(list), [list]);
@@ -270,9 +289,7 @@ export function applyCvFilters(docs, {status, discipline, search, sort} = {}) {
 
 /** Manager CV list: owns the filter state and returns the visible list + disciplines. */
 export function useCvFilters(docs) {
-    const initialStatus = useColorParam("status");
-
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     const [discipline, setDiscipline] = useState("ALL");
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("DATE_DESC");
@@ -319,12 +336,10 @@ export function filterStudentStatuses(list, {
 }
 
 export function useStudentStatusFilters(list) {
-    const initialProgress = useColorParam("status");
-
     const [search, setSearch] = useState("");
     const [accountStatus, setAccountStatus] = useState(ALL);
     const [internshipStatus, setInternshipStatus] = useState(ALL);
-    const [progress, setProgress] = useState(initialProgress);
+    const [progress, setProgress] = useColorFilter("status");
 
     const visible = useMemo(() => {
         return filterStudentStatuses(list, {
