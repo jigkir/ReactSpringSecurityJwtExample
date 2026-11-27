@@ -90,6 +90,9 @@ const CONTRACT_COLORS = [COLOR.YELLOW, COLOR.GREEN];
 
 const PENDING_ONLY = [COLOR.YELLOW];
 
+// Employer applications: the ones the employer refused need no follow-up
+const WITHOUT_REFUSED = [COLOR.YELLOW, COLOR.GREEN];
+
 const asList = (data) => (Array.isArray(data) ? data : []);
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
@@ -126,7 +129,7 @@ const buildHomeCards = () => ({
     [PATHS.STUDENT_OFFERS]: {
         icon: "star",
         page: "studentOffers",
-        titleKey: "navbar.offers",
+        titleKey: "home.studentOffersLink",
         param: "status",
         colors: STATUS_COLORS,
         load: async () => asList(await getStudentOffers()).map((offer) => colorOf(offer.studentInternshipConsent)),
@@ -171,14 +174,14 @@ const buildHomeCards = () => ({
         titleKey: "home.employerApplicationsLink",
         param: "status",
         scoped: true,
-        colors: STATUS_COLORS,
+        colors: WITHOUT_REFUSED,
         load: async ({sessionId}) =>
             asList(await getApplications(sessionId)).map((application) => colorOf(application.employerDecision)),
     },
     [PATHS.EMPLOYER_INTERVIEWS]: {
         icon: "event",
         page: "employerInterviews",
-        titleKey: "navbar.interviews",
+        titleKey: "home.employerInterviewsLink",
         param: "status",
         colors: STATUS_COLORS,
         load: loadInterviews(getEmployerInterviews),
@@ -225,7 +228,7 @@ const buildHomeCards = () => ({
     [PATHS.MANAGER_USERS]: {
         icon: "admin_panel_settings",
         page: "managerUsers",
-        titleKey: "navbar.users",
+        titleKey: "home.managerUsersLink",
         param: "status",
         colors: PENDING_ONLY,
         load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
@@ -234,7 +237,7 @@ const buildHomeCards = () => ({
     [PATHS.MANAGER_TRACKING]: {
         icon: "co_present",
         page: "managerTracking",
-        titleKey: "navbar.tracking",
+        titleKey: "home.managerTrackingLink",
         param: "status",
         colors: PENDING_ONLY,
         load: async () => asList(await getInternshipTrackings())
@@ -246,7 +249,7 @@ const buildHomeCards = () => ({
     [PATHS.TEACHER_EVALUATIONS]: {
         icon: "share_reviews",
         page: "teacherEvaluations",
-        titleKey: "workplaceEvaluation.title",
+        titleKey: "home.teacherEvaluationsLink",
         param: "status",
         scoped: true,
         colors: CONTRACT_COLORS,

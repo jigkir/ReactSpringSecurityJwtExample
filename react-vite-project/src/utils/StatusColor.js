@@ -108,7 +108,7 @@ export const STATUS_LABEL_KEYS = {
         [COLOR.YELLOW]: "internshipCard.status.pendingValidation",
         [COLOR.GREEN]: "internshipCard.status.approved",
     },
-    employerApplications: managerKeys("managerStatus"),
+    employerApplications: managerKeys("employerApplicationStatus"),
     employerInterviews: interviewKeys("employerInterviews", ALL_STATUSES),
     managerCv: managerKeys("managerStatus"),
     managerInternships: managerKeys("internshipFilters"),
