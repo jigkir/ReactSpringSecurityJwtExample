@@ -143,6 +143,7 @@ function StudentStatuses() {
                                 key={student.id}
                                 student={student}
                                 dark={dark}
+                                filterColor={progress}
                             />
                         ))
                     )}
