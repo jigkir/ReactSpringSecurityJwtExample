@@ -89,6 +89,7 @@ public class UserAppService {
                 .build();
     }
 
+
     public String formatPhoneNumber(String phoneNumber) {
         return phoneNumber.replaceFirst(PHONE_NUMBER_PATTERN, PHONE_NUMBER_FORMAT);
     }

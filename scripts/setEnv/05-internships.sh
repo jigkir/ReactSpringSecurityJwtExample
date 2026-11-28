@@ -24,7 +24,7 @@ internship "$T" "$(cat <<'JSON'
   "description": "Tu rejoindras l'équipe Plateforme qui maintient nos environnements de test et de production.\n\nTâches :\n- Automatiser les pipelines CI/CD avec GitHub Actions\n- Conteneuriser nos services avec Docker\n- Mettre en place des tableaux de bord de surveillance (Grafana)\n\nProfil recherché : intérêt pour Linux, l'automatisation et l'infonuagique.",
   "requiredSkills": "Docker, GitHub Actions, Linux, Bash",
   "durationInWeeks": 12, "location": "Longueuil", "workMode": "REMOTE",
-  "startDate": "2027-01-11", "applicationDeadline": "2026-11-27",
+  "startDate": "2027-01-11", "applicationDeadline": "2026-12-18",
   "compensationAmount": 23.00, "compensationNegotiable": false
 }
 JSON
@@ -75,7 +75,7 @@ internship "$T" "$(cat <<'JSON'
   "description": "Construction Rive-Sud prépare ses soumissions pour des projets résidentiels de l'hiver 2027.\n\nTâches :\n- Faire des relevés de quantités à partir des plans\n- Préparer des estimations de coûts dans Excel\n- Participer aux visites de chantier avec l'estimateur\n\nProfil recherché : rigueur, aisance avec la lecture de plans et les chiffriers.",
   "requiredSkills": "Lecture de plans, Excel, AutoCAD, Estimation",
   "durationInWeeks": 8, "location": "Brossard", "workMode": "IN_PERSON",
-  "startDate": "2027-01-11", "applicationDeadline": "2026-11-27",
+  "startDate": "2027-01-11", "applicationDeadline": "2026-12-18",
   "compensationAmount": 22.00, "compensationNegotiable": false
 }
 JSON
