@@ -47,7 +47,7 @@ import ManagerCv from "../components/page/manager/Cv.jsx";
 import ManagerInternships from "../components/page/manager/Internships.jsx";
 import ManagerContracts from "../components/page/manager/Contracts.jsx";
 import ManagerStudentStatuses from "../components/page/manager/StudentStatuses.jsx";
-import PostInternship from "../components/page/employer/internship/PostInternship.jsx";
+import PostInternship from "../components/page/employer/Internships.jsx";
 import Applications from "../components/page/employer/Applications.jsx";
 import ViewApplications from "../components/page/employer/ApplicationsOfInternship.jsx";
 import EmployerInterviews from "../components/page/employer/Interviews.jsx";

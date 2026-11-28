@@ -1,9 +1,9 @@
 import {useTranslation} from "react-i18next";
-import Icon from "../../../../styles/Icon.jsx";
+import Icon from "../../styles/Icon.jsx";
 import {
     INTERNSHIP_SORT_OPTIONS, StatusColorSelect, useInternshipFilters
-} from "../../../../utils/Sort.jsx";
-import {ALL, COLOR} from "../../../../utils/StatusColor.js";
+} from "../../utils/Sort.jsx";
+import {ALL, COLOR} from "../../utils/StatusColor.js";
 
 export {useInternshipFilters};
 
