@@ -31,7 +31,7 @@ import {
 import {
     getInterviewColor
 } from "../../utils/interviewStatus.js";
-import {getContractRole} from "../../utils/ContractRole.js";
+import {canSign, getContractRole} from "../../utils/ContractRole.js";
 import {PATHS, ROUTES} from "../../routes/AppRoutes.jsx";
 import {MOCK_STUDENTS} from "../page/manager/StudentStatusMock.js";
 import {
@@ -101,10 +101,15 @@ const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
 
 const statusColors = (list) => asList(list).map((item) => colorOf(item.status));
 
+// Signed (GREEN), to sign now (YELLOW), or no color while the manager waits for the student and the employer
+const contractColor = (contract, contractRole) => {
+    if (contract[contractRole.signedAtField]) return COLOR.GREEN;
+    return canSign(contract, contractRole) ? COLOR.YELLOW : null;
+};
+
 const loadContracts = async ({sessionId, user}) => {
-    const {signedAtField} = getContractRole(user);
-    return asList(await getContracts(sessionId))
-        .map((contract) => (contract[signedAtField] ? COLOR.GREEN : COLOR.YELLOW));
+    const contractRole = getContractRole(user);
+    return asList(await getContracts(sessionId)).map((contract) => contractColor(contract, contractRole));
 };
 
 const loadInterviews = (getter) => async () => asList(await getter()).map(getInterviewColor);
@@ -303,27 +308,60 @@ export const getHomeSections = (role) => {
     return sectionsByRole.get(role);
 };
 
+// Spotlight: the cards that need attention first (none while the colors load or after a failure)
+const hasColor = (colorsByPage, page, color) =>
+    Array.isArray(colorsByPage[page]) && colorsByPage[page].includes(color);
+
+const isLoaded = (colorsByPage, pages) => pages.every((page) => Array.isArray(colorsByPage[page]));
+
+/** Pages of the [page, color] pairs whose card has an item of that color. */
+const pagesWithToDo = (colorsByPage, toDos) => toDos
+    .filter(([page, color]) => hasColor(colorsByPage, page, color))
+    .map(([page]) => page);
+
 // Student: the next step of the internship search, one at a time
 //   contract to sign > hired (nothing) > offer to answer > no usable CV > internships to apply to and interviews to answer
 const studentSpotlight = (colorsByPage) => {
-    const has = (page, color) => Array.isArray(colorsByPage[page]) && colorsByPage[page].includes(color);
-    const loaded = [PATHS.STUDENT_PORTFOLIO, PATHS.STUDENT_OFFERS, PATHS.STUDENT_CONTRACTS]
-        .every((page) => Array.isArray(colorsByPage[page]));
-
-    if (!loaded) return [];
-    if (has(PATHS.STUDENT_CONTRACTS, COLOR.YELLOW)) return [PATHS.STUDENT_CONTRACTS];
-    if (has(PATHS.STUDENT_OFFERS, COLOR.GREEN)) return [];
-    if (has(PATHS.STUDENT_OFFERS, COLOR.YELLOW)) return [PATHS.STUDENT_OFFERS];
-    if (!has(PATHS.STUDENT_PORTFOLIO, COLOR.GREEN) && !has(PATHS.STUDENT_PORTFOLIO, COLOR.YELLOW)) {
+    if (!isLoaded(colorsByPage, [PATHS.STUDENT_PORTFOLIO, PATHS.STUDENT_OFFERS, PATHS.STUDENT_CONTRACTS])) return [];
+    if (hasColor(colorsByPage, PATHS.STUDENT_CONTRACTS, COLOR.YELLOW)) return [PATHS.STUDENT_CONTRACTS];
+    if (hasColor(colorsByPage, PATHS.STUDENT_OFFERS, COLOR.GREEN)) return [];
+    if (hasColor(colorsByPage, PATHS.STUDENT_OFFERS, COLOR.YELLOW)) return [PATHS.STUDENT_OFFERS];
+    if (!hasColor(colorsByPage, PATHS.STUDENT_PORTFOLIO, COLOR.GREEN)
+        && !hasColor(colorsByPage, PATHS.STUDENT_PORTFOLIO, COLOR.YELLOW)) {
         return [PATHS.STUDENT_PORTFOLIO];
     }
 
-    return [[PATHS.STUDENT_INTERNSHIPS, COLOR.RED], [PATHS.STUDENT_INTERVIEWS, COLOR.YELLOW]]
-        .filter(([page, color]) => has(page, color))
-        .map(([page]) => page);
+    return pagesWithToDo(colorsByPage, [[PATHS.STUDENT_INTERNSHIPS, COLOR.RED], [PATHS.STUDENT_INTERVIEWS, COLOR.YELLOW]]);
 };
 
-const SPOTLIGHT_BY_ROLE = {STUDENT: studentSpotlight};
+// Employer: contract to sign > no internship this session (publish one)
+//   > internships refused by the manager (to correct) and applications to review
+const employerSpotlight = (colorsByPage) => {
+    if (!isLoaded(colorsByPage, [PATHS.EMPLOYER_INTERNSHIPS, PATHS.EMPLOYER_CONTRACTS])) return [];
+    if (hasColor(colorsByPage, PATHS.EMPLOYER_CONTRACTS, COLOR.YELLOW)) return [PATHS.EMPLOYER_CONTRACTS];
+    if (colorsByPage[PATHS.EMPLOYER_INTERNSHIPS].length === 0) return [PATHS.EMPLOYER_INTERNSHIPS];
+
+    return pagesWithToDo(colorsByPage, [[PATHS.EMPLOYER_INTERNSHIPS, COLOR.RED], [PATHS.EMPLOYER_APPLICATIONS, COLOR.YELLOW]]);
+};
+
+// Manager: what blocks the others (accounts, CVs, internships, contracts ready to sign) > internships to assign to a teacher
+const managerSpotlight = (colorsByPage) => {
+    const tasks = [PATHS.MANAGER_USERS, PATHS.MANAGER_CVS, PATHS.MANAGER_INTERNSHIPS, PATHS.MANAGER_CONTRACTS];
+    if (!isLoaded(colorsByPage, tasks)) return [];
+
+    const toDo = pagesWithToDo(colorsByPage, tasks.map((page) => [page, COLOR.YELLOW]));
+    return toDo.length > 0 ? toDo : pagesWithToDo(colorsByPage, [[PATHS.MANAGER_TRACKING, COLOR.YELLOW]]);
+};
+
+// Teacher: workplace evaluations to complete and sign
+const teacherSpotlight = (colorsByPage) => pagesWithToDo(colorsByPage, [[PATHS.TEACHER_EVALUATIONS, COLOR.YELLOW]]);
+
+const SPOTLIGHT_BY_ROLE = {
+    STUDENT: studentSpotlight,
+    EMPLOYER: employerSpotlight,
+    MANAGER: managerSpotlight,
+    TEACHER: teacherSpotlight,
+};
 
 /** Pages whose card stands out for the role: none while the colors load or after a failure. */
 export const getSpotlightPages = (role, colorsByPage) => SPOTLIGHT_BY_ROLE[role]?.(colorsByPage) ?? [];
