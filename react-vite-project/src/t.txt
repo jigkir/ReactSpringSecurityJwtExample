@@ -1,0 +1,206 @@
+Folder PATH listing
+Volume serial number is B6D8-C130
+C:.
+¦   App.jsx
+¦   i18next.jsx
+¦   index.css
+¦   main.jsx
+¦   setupTests.js
+¦   t.txt
+¦   
++---components
+¦   ¦   About.jsx
+¦   ¦   AuthButtons.jsx
+¦   ¦   ErrorPage.jsx
+¦   ¦   Footer.jsx
+¦   ¦   Home.jsx
+¦   ¦   Navbar.jsx
+¦   ¦   NavbarMobile.jsx
+¦   ¦   PageLayout.jsx
+¦   ¦   
+¦   +---api
+¦   ¦   ¦   Api.jsx
+¦   ¦   ¦   DevApi.jsx
+¦   ¦   ¦   
+¦   ¦   +---__test__
+¦   ¦           DevApi.test.jsx
+¦   ¦           
+¦   +---config
+¦   ¦       Config.jsx
+¦   ¦       
+¦   +---contracts
+¦   ¦       ContractCard.jsx
+¦   ¦       ContractFile.jsx
+¦   ¦       ContractReviewList.jsx
+¦   ¦       SignContractForm.jsx
+¦   ¦       
+¦   +---dev
+¦   ¦   ¦   DevLoginPanel.jsx
+¦   ¦   ¦   DevMode.jsx
+¦   ¦   ¦   
+¦   ¦   +---__test__
+¦   ¦           DevLoginPanel.test.jsx
+¦   ¦           DevMode.disabled.test.jsx
+¦   ¦           DevMode.test.jsx
+¦   ¦           
+¦   +---documents
+¦   ¦       DocumentListShell.jsx
+¦   ¦       DocumentRow.jsx
+¦   ¦       PdfPreview.jsx
+¦   ¦       PdfViewer.jsx
+¦   ¦       
+¦   +---home
+¦   ¦       HomeSection.jsx
+¦   ¦       HomeSections.js
+¦   ¦       Landing.jsx
+¦   ¦       
+¦   +---interview
+¦   ¦       InterviewStatusPill.jsx
+¦   ¦       
+¦   +---notification
+¦   ¦   ¦   NotificationMenu.jsx
+¦   ¦   ¦   NotificationsProvider.jsx
+¦   ¦   ¦   
+¦   ¦   +---__test__
+¦   ¦           NotificationMenu.test.jsx
+¦   ¦           NotificationsProvider.test.jsx
+¦   ¦           
+¦   +---page
+¦   ¦   ¦   ExpiredUser.jsx
+¦   ¦   ¦   Tracking.jsx
+¦   ¦   ¦   UserCard.jsx
+¦   ¦   ¦   Users.jsx
+¦   ¦   ¦   
+¦   ¦   +---auth
+¦   ¦   ¦   ¦   Login.jsx
+¦   ¦   ¦   ¦   Logout.jsx
+¦   ¦   ¦   ¦   Signup.jsx
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---signup
+¦   ¦   ¦           Employer.jsx
+¦   ¦   ¦           Student.jsx
+¦   ¦   ¦           Teacher.jsx
+¦   ¦   ¦           
+¦   ¦   +---employer
+¦   ¦   ¦   +---application
+¦   ¦   ¦   ¦   ¦   ApplicationCard.jsx
+¦   ¦   ¦   ¦   ¦   Applications.jsx
+¦   ¦   ¦   ¦   ¦   ViewApplications.jsx
+¦   ¦   ¦   ¦   ¦   
+¦   ¦   ¦   ¦   +---__test__
+¦   ¦   ¦   ¦           Applicationcard.test.jsx
+¦   ¦   ¦   ¦           Applications.test.jsx
+¦   ¦   ¦   ¦           ViewApplications.test.jsx
+¦   ¦   ¦   ¦           
+¦   ¦   ¦   +---contracts
+¦   ¦   ¦   ¦       Contracts.jsx
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---internship
+¦   ¦   ¦   ¦       InternshipCard.jsx
+¦   ¦   ¦   ¦       InternshipFilters.jsx
+¦   ¦   ¦   ¦       InternshipForm.jsx
+¦   ¦   ¦   ¦       PostInternship.jsx
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---interview
+¦   ¦   ¦           EmployerInterviews.jsx
+¦   ¦   ¦           InterviewPicker.jsx
+¦   ¦   ¦           
+¦   ¦   +---manager
+¦   ¦   ¦   ¦   Contracts.jsx
+¦   ¦   ¦   ¦   Cv.jsx
+¦   ¦   ¦   ¦   CvReviewList.jsx
+¦   ¦   ¦   ¦   Internships.jsx
+¦   ¦   ¦   ¦   StudentStatusCard.jsx
+¦   ¦   ¦   ¦   StudentStatuses.jsx
+¦   ¦   ¦   ¦   StudentStatusMock.js
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---WorkplaceEvaluation
+¦   ¦   ¦           WorkplaceEvaluation.jsx
+¦   ¦   ¦           
+¦   ¦   +---portfolio
+¦   ¦   ¦       ChangeDocType.jsx
+¦   ¦   ¦       DocumentList.jsx
+¦   ¦   ¦       Portfolio.jsx
+¦   ¦   ¦       PortfolioPanel.jsx
+¦   ¦   ¦       PortfolioUpload.jsx
+¦   ¦   ¦       RequiredFilesNotice.jsx
+¦   ¦   ¦       
+¦   ¦   +---student
+¦   ¦   ¦   ¦   ApplyControls.jsx
+¦   ¦   ¦   ¦   Internships.jsx
+¦   ¦   ¦   ¦   InterviewCard.jsx
+¦   ¦   ¦   ¦   Interviews.jsx
+¦   ¦   ¦   ¦   Offers.jsx
+¦   ¦   ¦   ¦   SentDocuments.jsx
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---contracts
+¦   ¦   ¦   ¦       Contracts.jsx
+¦   ¦   ¦   ¦       
+¦   ¦   ¦   +---__test__
+¦   ¦   ¦           Internships.test.jsx
+¦   ¦   ¦           Interviews.test.jsx
+¦   ¦   ¦           
+¦   ¦   +---teacher
+¦   ¦           WorkplaceEvaluations.jsx
+¦   ¦           
+¦   +---session
+¦   ¦       SessionSelect.jsx
+¦   ¦       
+¦   +---WorkplaceEvaluation
+¦           SignEvaluationForm.jsx
+¦           WorkplaceEvaluationCard.jsx
+¦           WorkplaceEvaluationFile.jsx
+¦           WorkplaceEvaluationForm.jsx
+¦           WorkplaceEvaluationList.jsx
+¦           
++---routes
+¦       AppRoutes.jsx
+¦       
++---styles
+¦       AppStyles.jsx
+¦       AutoResizeTextarea.jsx
+¦       Badge.jsx
+¦       Button.jsx
+¦       DarkMode.jsx
+¦       FormControls.jsx
+¦       Icon.jsx
+¦       RadioGroup.jsx
+¦       Reveal.jsx
+¦       
++---translation
+¦   +---en
+¦   ¦       translation.json
+¦   ¦       
+¦   +---fr
+¦           translation.json
+¦           
++---utils
+    ¦   AccountStatus.js
+    ¦   CommonFields.jsx
+    ¦   ContractRole.js
+    ¦   Documents.js
+    ¦   DocumentTypes.js
+    ¦   fetcher.js
+    ¦   i18nError.jsx
+    ¦   interviewStatus.js
+    ¦   mergeheader.js
+    ¦   SessionContext.jsx
+    ¦   Sort.jsx
+    ¦   StatusColor.js
+    ¦   useAdaptiveNavbar.js
+    ¦   useLoadedList.js
+    ¦   useNewApplications.js
+    ¦   usePolling.js
+    ¦   useRevealOnScroll.js
+    ¦   useSession.js
+    ¦   useToggleSet.js
+    ¦   WorkplaceEvaluation.js
+    ¦   
+    +---pdf
+    ¦       pdfLoader.js
+    ¦       useCtrlZoom.js
+    ¦       usePdfDocument.js
+    ¦       
+    +---__test__
+            usePolling.test.jsx
+            
