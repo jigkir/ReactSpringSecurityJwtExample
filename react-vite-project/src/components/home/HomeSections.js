@@ -35,7 +35,6 @@ import {canSign, getContractRole} from "../../utils/ContractRole.js";
 import {PATHS, ROUTES} from "../../routes/AppRoutes.jsx";
 import {MOCK_STUDENTS} from "../page/manager/StudentStatusMock.js";
 import {
-    fetchWorkplaceEvaluations,
     getApplications,
     getContracts,
     getDocuments,
@@ -50,6 +49,7 @@ import {
     getStudentOffers,
     getUsers,
 } from "../api/Api.jsx";
+import {EVALUATION_ROLES, evaluationColor} from "../../utils/EvaluationRole.js";
 
 // Colors of a page whose load failed
 export const LOAD_FAILED = "LOAD_FAILED";
@@ -96,6 +96,8 @@ const PENDING_ONLY = [COLOR.YELLOW];
 const WITHOUT_REFUSED = [COLOR.YELLOW, COLOR.GREEN];
 
 const asList = (data) => (Array.isArray(data) ? data : []);
+const loadEvaluations = (role) => async ({sessionId}) =>
+    asList(await role.fetchList(sessionId)).map(evaluationColor);
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
 
@@ -250,6 +252,15 @@ const buildHomeCards = () => ({
         load: async () => asList(await getInternshipTrackings())
             .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
     },
+    [PATHS.MANAGER_EVALUATIONS]: {
+        icon: "share_reviews",
+        page: "managerEvaluations",
+        titleKey: "home.managerEvaluationsLink",
+        param: "status",
+        scoped: true,
+        colors: PENDING_ONLY,
+        load: loadEvaluations(EVALUATION_ROLES.MANAGER),
+    },
     // Student statuses: needs follow-up (RED), in progress (YELLOW). Mock data until the backend exists
     [PATHS.MANAGER_STUDENT_STATUSES]: {
         icon: "person",
@@ -269,8 +280,7 @@ const buildHomeCards = () => ({
         param: "status",
         scoped: true,
         colors: CONTRACT_COLORS,
-        load: async ({sessionId}) => asList(await fetchWorkplaceEvaluations(sessionId))
-            .map((evaluation) => (evaluation.signedAt ? COLOR.GREEN : COLOR.YELLOW)),
+        load: loadEvaluations(EVALUATION_ROLES.TEACHER),
     },
 });
 // endregion

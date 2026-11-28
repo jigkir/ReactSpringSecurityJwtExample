@@ -15,8 +15,9 @@ import {
     validateEvaluation,
 } from "../../utils/WorkplaceEvaluation.js";
 import AutoResizeTextarea from "../../styles/AutoResizeTextarea.jsx";
+import {translateWarning} from "../../utils/CommonFields.jsx";
 
-function WorkplaceEvaluationForm({dark, initialData, onSubmit, onCancel}) {
+function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
     const {t} = useTranslation();
     const s = getInternshipFormClasses(dark);
 
@@ -121,7 +122,7 @@ function WorkplaceEvaluationForm({dark, initialData, onSubmit, onCancel}) {
         <form onSubmit={handleSubmit} noValidate aria-busy={submitting} className="space-y-6">
             {submitError && (
                 <div className={s.errorBanner} role="alert">
-                    <span>{t(submitError)}</span>
+                    <span>{typeof submitError === "string" ? t(submitError) : translateWarning(t, submitError)}</span>
                 </div>
             )}
 
@@ -426,4 +427,4 @@ function WorkplaceEvaluationForm({dark, initialData, onSubmit, onCancel}) {
     );
 }
 
-export default WorkplaceEvaluationForm;
+export default EvaluationForm;

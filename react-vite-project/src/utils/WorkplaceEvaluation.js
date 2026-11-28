@@ -3,11 +3,6 @@
  * and validation helpers for the teacher's workplace evaluation form
  * (Évaluation du milieu de stage).
  */
-export const CONTRACT_ROLES = {
-    MANAGER: {basePath: "/manager/evaluations"},
-   TEACHER: {basePath: "/teacher/evaluations"}
-};
-
 export const EVALUATION_RATINGS = [
     "TOTALLY_AGREE",
     "SOMEWHAT_AGREE",
@@ -43,11 +38,6 @@ export const EVALUATION_CRITERIA = [
     { key: "salaryInteresting", extra: "hourlySalary" },
     { key: "supervisionSufficient", extra: "supervisionHoursPerWeek" },
 ];
-
-export const getEvaluationRole = (user) => {
-    const role = (user?.role ?? "").toString().replace("ROLE_", "");
-    return CONTRACT_ROLES[role] ?? CONTRACT_ROLES.MANAGER;
-}
 
 export const createEmptyShiftRange = () => ({ from: "", to: "" });
 

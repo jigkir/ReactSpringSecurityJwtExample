@@ -52,9 +52,9 @@ import Applications from "../components/page/employer/application/Applications.j
 import ViewApplications from "../components/page/employer/application/ViewApplications.jsx";
 import EmployerInterviews from "../components/page/employer/interview/EmployerInterviews.jsx";
 import EmployerContracts from "../components/page/employer/contracts/Contracts.jsx";
-import WorkplaceEvaluationFile from "../components/WorkplaceEvaluation/WorkplaceEvaluationFile.jsx";
-import WorkplaceEvaluationsManager from "../components/page/manager/WorkplaceEvaluation/WorkplaceEvaluation.jsx";
-import WorkplaceEvaluations from "../components/page/teacher/WorkplaceEvaluations.jsx";
+import EvaluationFile from "../components/evaluations/EvaluationFile.jsx";
+import WorkplaceEvaluationsManager from "../components/page/manager/Evaluations.jsx";
+import WorkplaceEvaluations from "../components/page/teacher/Evaluations.jsx";
 
 export const ROLE = {
     STUDENT: "STUDENT",
@@ -121,6 +121,7 @@ export const employerApplicationPath = (internshipId) =>
 
 /** URL of a contract page from a pattern of PATHS (STUDENT_CONTRACT, MANAGER_CONTRACT, EMPLOYER_CONTRACT). */
 export const contractFilePath = (pattern, contractId) => generatePath(pattern, {id: contractId});
+export const evaluationFilePath = (pattern, evaluationId) => generatePath(pattern, {id: evaluationId});
 // endregion
 
 // region The routes (order = order of the navbar links)
@@ -174,7 +175,7 @@ export const ROUTES = [
         home: [ROLE.TEACHER],
         element: () => <WorkplaceEvaluations/>
     },
-    {path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <WorkplaceEvaluationFile/>},
+    {path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <EvaluationFile/>},
 
     // ───────── Manager ─────────
     {
@@ -197,7 +198,7 @@ export const ROUTES = [
         home: [ROLE.MANAGER],
         element: () => <WorkplaceEvaluationsManager/>
     },
-    {path: PATHS.MANAGER_EVALUATION, roles: [ROLE.MANAGER], element: () => <WorkplaceEvaluationFile/>},
+    {path: PATHS.MANAGER_EVALUATION, roles: [ROLE.MANAGER], element: () => <EvaluationFile/>},
     {
         path: PATHS.MANAGER_USERS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.users"}, home: [ROLE.MANAGER],
         element: ({user}) => <Users user={user}/>

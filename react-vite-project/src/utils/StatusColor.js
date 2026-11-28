@@ -136,6 +136,11 @@ export const STATUS_LABEL_KEYS = {
         [COLOR.YELLOW]: "workplaceEvaluation.card.notSignedYet",
         [COLOR.GREEN]: "workplaceEvaluation.status.signed",
     },
+    managerEvaluations: {
+        [ALL]: ALL_STATUSES,
+        [COLOR.YELLOW]: "workplaceEvaluation.card.notSignedYet",
+        [COLOR.GREEN]: "workplaceEvaluation.status.signed",
+    },
 };
 
 /** Translation key of a color on a page, or undefined (the color name is shown instead). */

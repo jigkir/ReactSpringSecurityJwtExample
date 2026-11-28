@@ -546,7 +546,7 @@ export async function assignTeacher(trackingId,teacherId){
 //endregion
 
 
-//region Workplace evaluation teacher
+// region Workplace evaluations
 export async function fetchWorkplaceEvaluations(sessionId) {
     return handleResponse(await fetcher(`teacher/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
 }
@@ -566,7 +566,6 @@ export async function signWorkplaceEvaluation(evaluationId, signature){
 export async function getWorkplaceEvaluationFile(evaluationId, language){
     return handleResponse(await fetcher(`teacher/workplace-evaluations/${evaluationId}/file?language=${language}`))
 }
-//endregion
 
 export async function fetchWorkplaceEvaluationsManager(sessionId){
     return handleResponse(await fetcher(`manager/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
@@ -575,3 +574,4 @@ export async function fetchWorkplaceEvaluationsManager(sessionId){
 export async function getWorkplaceEvaluationFileManager(evaluationId, language){
     return handleResponse(await fetcher(`manager/workplace-evaluations/${evaluationId}/file?language=${language}`))
 }
+// endregion

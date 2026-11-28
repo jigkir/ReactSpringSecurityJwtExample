@@ -6,26 +6,30 @@ import {
     EVALUATION_CRITERIA,
     validateEvaluation,
 } from "../../utils/WorkplaceEvaluation.js";
-import WorkplaceEvaluationForm from "./WorkplaceEvaluationForm";
-import SignEvaluationForm from "./SignEvaluationForm";
+import EvaluationForm from "./EvaluationForm.jsx";
+import SignForm from "../documents/SignForm.jsx";
+import EvaluationActions from "./EvaluationActions.jsx";
 import Button from "../../styles/Button.jsx";
 import {Link} from "react-router-dom";
 import {ALL, borderStatusOf} from "../../utils/StatusColor.js";
+import {evaluationColor} from "../../utils/EvaluationRole.js";
+import {evaluationFilePath} from "../../routes/AppRoutes.jsx";
 
-export default function WorkplaceEvaluationCard({
+export default function EvaluationCard({
                                                     evaluation = {},
                                                     onSave,
                                                     onSign,
                                                     dark = false,
                                                     devMode = false,
                                                     filterColor = ALL,
+                                                    role,
                                                 }) {
     const {t} = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
     const [isSigning, setIsSigning] = useState(false);
 
     const source = evaluation ?? {};
-    const normalizedEvaluation = createInitialEvaluation(source.form);
+    const normalizedEvaluation = createInitialEvaluation(source.form ?? {});
 
     const isSigned = Boolean(source.signedAt);
     const isCompleted =
@@ -36,7 +40,7 @@ export default function WorkplaceEvaluationCard({
     // The card only gets a colored border while a status filter is selected (color of the filter)
     const cardClasses = getInternshipCardClasses(dark, borderStatusOf(filterColor));
     // The status badge keeps its own color
-    const badgeClasses = getInternshipCardClasses(dark, statusKey);
+    const badgeClasses = getInternshipCardClasses(dark, evaluationColor(source) === "GREEN" ? "APPROVED" : "PENDING");
 
     const answeredCriteriaCount = EVALUATION_CRITERIA.filter(({key}) =>
         Boolean(normalizedEvaluation.criteria?.[key])
@@ -61,11 +65,12 @@ export default function WorkplaceEvaluationCard({
         : source.evaluationDate || t("workplaceEvaluation.card.pendingPeriod");
 
     const handleSave = async (payload) => {
-        await onSave?.({
+        const result = await onSave?.({
             ...payload,
             id: source.id ?? payload.id,
         });
-        setIsEditing(false);
+        if (result?.success) setIsEditing(false);
+        return result ?? {success: false};
     };
 
     const handleSignSubmit = async ({termsAccepted, password}) => {
@@ -84,7 +89,7 @@ export default function WorkplaceEvaluationCard({
     if (isEditing && !isSigned) {
         return (
             <div className={cardClasses.card}>
-                <WorkplaceEvaluationForm
+                <EvaluationForm
                     initialData={normalizedEvaluation}
                     dark={dark}
                     onSubmit={handleSave}
@@ -97,11 +102,13 @@ export default function WorkplaceEvaluationCard({
     if (isSigning && !isSigned && isCompleted) {
         return (
             <div className={cardClasses.card}>
-                <SignEvaluationForm
+                <SignForm
                     dark={dark}
                     devMode={devMode}
                     onSubmit={handleSignSubmit}
                     onClose={() => setIsSigning(false)}
+                    i18nPrefix="workplaceEvaluation"
+                    fallbackErrorKey="workplaceEvaluation.sign.errorFailed"
                 />
             </div>
         );
@@ -165,39 +172,14 @@ export default function WorkplaceEvaluationCard({
             </div>
 
             <div className={`${cardClasses.detailsRow} justify-end`}>
-                {!isSigned && (
-                    <Button
-                        tone="warning"
-                        icon="edit"
-                        dark={dark}
-                        onClick={() => {
-                            setIsSigning(false);
-                            setIsEditing(true);
-                        }}
-                    >
-                        {isCompleted
-                            ? t("workplaceEvaluation.card.reviewOrEdit")
-                            : t("workplaceEvaluation.card.fillEvaluation")}
-                    </Button>
-                )}
-
-                {isCompleted && !isSigned && onSign && (
-                    <Button
-                        dark={dark}
-                        lockTone
-                        icon="edit"
-                        tone="success"
-                        onClick={() => {
-                            setIsEditing(false);
-                            setIsSigning(true);
-                        }}
-                    >
-                        {t("workplaceEvaluation.card.sign")}
-                    </Button>
-                )}
-                {isSigned && (<Button
+                <EvaluationActions
+                    dark={dark} role={role} isSigned={isSigned} isCompleted={isCompleted}
+                    onEdit={() => { setIsSigning(false); setIsEditing(true); }}
+                    onSign={() => { setIsEditing(false); setIsSigning(true); }}
+                />
+                {isSigned && role?.can.openFile && (<Button
                     as={Link}
-                    to={`${evaluation.id}`}
+                    to={evaluationFilePath(role.filePath, evaluation.id)}
                     state={{studentName: evaluation.studentName}}
                     tone="accent"
                     lockTone

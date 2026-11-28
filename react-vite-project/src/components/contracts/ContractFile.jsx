@@ -23,134 +23,27 @@
  * (a contract of another party is not found).
  */
 
-import {useCallback, useMemo, useState} from "react";
-import {Link, useLocation, useOutletContext, useParams} from "react-router-dom";
-import {useTranslation} from "react-i18next";
-import Button from "../../styles/Button.jsx";
-import {getAuthClasses, getPostInternshipClasses} from "../../styles/AppStyles.jsx";
+import {useMemo} from "react";
+import {useOutletContext, useParams} from "react-router-dom";
 import {getContractFile} from "../api/Api.jsx";
 import {TARGET_TYPE, useCloseShownNotifications} from "../notification/NotificationsProvider.jsx";
-import {blobUrlFromFile, buildFileName, saveFile} from "../../utils/Documents.js";
 import {getContractRole} from "../../utils/ContractRole.js";
-import PdfPreview from "../documents/PdfPreview.jsx";
-
-const LANGUAGES = ["FR", "EN"];
-const DOC_TYPE = "contract";
+import PdfFilePage from "../documents/PdfFilePage.jsx";
 
 const ContractFile = () => {
-    const {t, i18n} = useTranslation();
     const {dark, user} = useOutletContext();
     const {id} = useParams();
-    const {state} = useLocation();
-    const {pageClass} = getAuthClasses(dark);
-    const s = getPostInternshipClasses(dark);
     const {basePath} = getContractRole(user);
-
-    const [language, setLanguage] = useState(i18n.resolvedLanguage?.startsWith("fr") ? "FR" : "EN");
-    const [downloading, setDownloading] = useState(null); // "FR" | "EN" | "BOTH" | null
-    const [downloadFailed, setDownloadFailed] = useState(false);
-
     const contractId = Number(id);
-    const studentName = state?.studentName;
-
-    // Opening the contract closes its notification (must be memoized)
     const shownIds = useMemo(() => [contractId], [contractId]);
     useCloseShownNotifications(TARGET_TYPE.CONTRACT, shownIds);
-
-    // Stable reference per language: PdfPreview reloads the PDF when it changes
-    const getContractUrl = useCallback(
-        async (contractId) => blobUrlFromFile(await getContractFile(contractId, language)),
-        [language],
-    );
-
-    const download = async (languages, mode) => {
-        setDownloading(mode);
-        setDownloadFailed(false);
-        try {
-            for (const lang of languages) {
-                const file = await getContractFile(contractId, lang);
-                saveFile(file, buildFileName({
-                    language: lang,
-                    docType: DOC_TYPE,
-                    studentName,
-                    originalName: file.fileName,
-                }));
-            }
-        } catch {
-            setDownloadFailed(true);
-        } finally {
-            setDownloading(null);
-        }
-    };
-
-    const busy = downloading !== null;
-    const segment = (active) => `px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-        active
-            ? "bg-indigo-600 text-white"
-            : dark ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-white text-gray-700 hover:bg-gray-100"
-    }`;
-
     return (
-        <div className={`${pageClass} items-start`}>
-            <div className="w-full max-w-4xl min-w-0 space-y-4">
-                <div className={s.headerSection}>
-                    <div>
-                        <h1 className={s.title}>{t("managerContracts.file.title")}</h1>
-                        <p className={s.subtitle}>{t("managerContracts.file.subtitle")}</p>
-                    </div>
-                    <Button as={Link} to={basePath} tone="neutral" dark={dark} icon="arrow_back">
-                        {t("managerContracts.file.back")}
-                    </Button>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div role="group" aria-label={t("managerContracts.file.languageGroup")}
-                         className={`inline-flex overflow-hidden rounded-lg border ${dark ? "border-slate-600" : "border-gray-300"}`}>
-                        {LANGUAGES.map((lang) => (
-                            <button
-                                key={lang}
-                                type="button"
-                                aria-pressed={language === lang}
-                                onClick={() => setLanguage(lang)}
-                                className={segment(language === lang)}
-                            >
-                                {t(`managerContracts.file.language.${lang.toLowerCase()}`)}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div role="group" aria-label={t("managerContracts.download.group")}
-                         className="flex flex-wrap items-center justify-end gap-2">
-                        <Button tone="accent" lockTone dark={dark} icon="download" disabled={busy}
-                                onClick={() => download([language], language)}>
-                            {downloading === language
-                                ? t("managerContracts.file.downloading")
-                                : t("managerContracts.file.downloadCurrent", {
-                                    language: t(`managerContracts.file.language.${language.toLowerCase()}`),
-                                })}
-                        </Button>
-                        <Button tone="accent" lockTone dark={dark} icon="download" disabled={busy}
-                                onClick={() => download(LANGUAGES, "BOTH")}>
-                            {downloading === "BOTH"
-                                ? t("managerContracts.file.downloading")
-                                : t("managerContracts.file.downloadBoth")}
-                        </Button>
-                    </div>
-                </div>
-
-                {downloadFailed && (
-                    <p className={`text-sm ${dark ? "text-red-300" : "text-red-600"}`} role="alert">
-                        {t("managerContracts.download.failed")}
-                    </p>
-                )}
-
-                <PdfPreview
-                    doc={{id: contractId, fileName: t("managerContracts.file.title")}}
-                    dark={dark}
-                    getUrl={getContractUrl}
-                />
-            </div>
-        </div>
+        <PdfFilePage
+            dark={dark} id={contractId} backTo={basePath}
+            titleKey="managerContracts.file.title" subtitleKey="managerContracts.file.subtitle"
+            backKey="managerContracts.file.back" docType="contract"
+            fetchFile={getContractFile}
+        />
     );
 };
 
