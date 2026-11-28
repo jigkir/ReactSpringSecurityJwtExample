@@ -1,12 +1,13 @@
-import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
-import {BrowserRouter} from 'react-router-dom';
-import Applications from '../Applications.jsx';
+import {fireEvent, render, screen, waitFor, within} from "@testing-library/react";
+import {BrowserRouter} from "react-router-dom";
+import Applications from "../Applications.jsx";
 import {
     getApplicationCv,
     getApplications,
     getEmployerInterviewsByApplicationId,
     getEmployerInternships
-} from '../../../../api/Api.jsx';
+} from "../../../../api/Api.jsx";
+import {employerApplicationPath} from "../../../../../routes/AppRoutes.jsx";
 
 vi.mock('../../../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
@@ -38,7 +39,8 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-vi.mock('react-i18next', () => ({
+vi.mock('react-i18next', async (importOriginal) => ({
+    ...await importOriginal(),
     useTranslation: () => ({t: (key) => key}),
 }));
 
@@ -192,7 +194,7 @@ describe('Applications page groups applications by internship', () => {
 
         // Assert
         expect(within(dataSection).getByRole('link', {name: 'applicationsPage.openInternship'}))
-            .toHaveAttribute('href', '/employer/applications/20');
+            .toHaveAttribute('href', employerApplicationPath(20));
     });
 });
 

@@ -5,7 +5,7 @@ import UserCard from "./UserCard.jsx";
 import {useOutletContext} from "react-router-dom";
 import {usePolling} from "../../utils/usePolling.js";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
-import {StatusColorSelect, useColorParam} from "../../utils/Sort.jsx";
+import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
 import {colorOf, matchesColor} from "../../utils/StatusColor.js";
 
 const normalizeStatus = (status) => String(status ?? "").toUpperCase();
@@ -22,7 +22,7 @@ function Users({user}) {
     const {t} = useTranslation();
     const [users, setUsers] = useState([]);
     // Initial filter comes from the Home buttons (?status=GREEN|YELLOW|RED)
-    const [status, setStatus] = useState(useColorParam("status"));
+    const [status, setStatus] = useColorFilter("status");
     const isLoggedIn = Boolean(user?.isLoggedIn);
     const {dark} = useOutletContext();
     const s = getPostInternshipClasses(dark);

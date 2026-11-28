@@ -1,4 +1,4 @@
-import Icon from './Icon.jsx';
+import Icon from "./Icon.jsx";
 
 /**
  * Class of a <select> / text input / textarea.

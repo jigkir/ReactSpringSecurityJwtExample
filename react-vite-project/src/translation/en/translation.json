@@ -62,7 +62,7 @@
     "postInternship": "My internship offers",
     "applications": "Applications received",
     "cv": "CV review",
-    "portfolio": "My portfolio",
+    "portfolio": "My documents",
     "internships": "Internships",
     "contracts": "Contracts",
     "cvReview": "CVs to review",
@@ -94,8 +94,8 @@
     "interviewNotificationDetail": "{{company}} — {{title}}, on {{date}}",
     "sessionSelector": "Session",
     "sessionsLoadError": "Unable to load the sessions.",
-    "offers": "Offers received",
-    "internshipOfferedNotification": "Internship offer received",
+    "offers": "Job offers",
+    "internshipOfferedNotification": "Job offer received",
     "internshipOfferedNotificationDetail": "{{company}} — {{title}}",
     "contractToSignNotification": "{{amount}} contract(s) to sign",
     "newContractNotification": "{{amount}} new contract(s) added",
@@ -207,6 +207,12 @@
       "OFFER_PENDING": "Offer received, awaiting student response",
       "CONTRACT_PENDING": "Internship secured: contract to sign",
       "CONTRACT_SIGNED": "Internship secured: contract signed"
+    },
+    "progressLabel": "Internship search",
+    "progress": {
+      "RED": "Needs follow-up",
+      "YELLOW": "In progress",
+      "GREEN": "Internship confirmed"
     }
   },
   "commonFields": {
@@ -270,7 +276,7 @@
     "viewCVBtn": "Preview CV",
     "viewCoverBtn": "Preview cover letter",
     "hideBtn": "Delete",
-    "hideAsk": "Delete this document? It will no longer appear in your portfolio.",
+    "hideAsk": "Delete this document? It will no longer appear in your documents.",
     "confirmBtn": "Confirm",
     "cancelBtn": "Cancel",
     "approveBtn": "Approve CV",
@@ -309,7 +315,7 @@
     "closeBtn": "Close preview"
   },
   "portfolio": {
-    "title": "My portfolio",
+    "title": "My documents",
     "types": {
       "CV": "CV",
       "COVER_LETTER": "Cover letters",
@@ -347,7 +353,7 @@
       "failed": "Unable to change the document type. Please try again."
     },
     "onboarding": {
-      "title": "Welcome! Let's set up your portfolio",
+      "title": "Welcome! Let's set up your documents",
       "intro": "Before you can apply to internships, we need a few documents from you.",
       "requiredLabel": "Required",
       "requiredFile": "Your CV",
@@ -375,18 +381,25 @@
     "allCaughtUp": "You're all caught up.",
     "welcome": "Welcome",
     "seeAll": "See all",
+    "spotlight": "Priority",
     "subtitle": "Quick overview of what matters.",
-    "studentCvLink": "Go to my portfolio",
-    "studentInternshipsLink": "Find and apply to internships",
-    "studentInterviewsLink": "View my interviews",
+    "studentCvLink": "Manage my documents",
+    "studentInternshipsLink": "Find an internship and apply",
+    "studentInterviewsLink": "My interview invitations",
     "employerInternshipsLink": "Manage my internship offers",
     "employerApplicationsLink": "Review applications received",
-    "employerContractsLink": "Sign pending contracts",
-    "studentContractsLink": "Sign pending contracts",
-    "managerCvLink": "Review CVs waiting for approval",
+    "employerContractsLink": "Sign internship contracts",
+    "studentContractsLink": "Sign my internship contracts",
+    "managerCvLink": "Review student CVs",
     "managerInternshipsLink": "Review internship offers",
-    "managerContractsLink": "Sign pending contracts",
-    "noPreviews": "Nothing to show here for your role yet."
+    "managerContractsLink": "Sign internship contracts",
+    "noPreviews": "Nothing to show here for your role yet.",
+    "studentOffersLink": "Job offers received",
+    "employerInterviewsLink": "My interviews with students",
+    "managerUsersLink": "Review student access",
+    "managerTrackingLink": "Assign teachers to internships",
+    "teacherEvaluationsLink": "Evaluate internship workplaces",
+    "managerStudentStatusesLink": "Track students"
   },
   "applicationsPage": {
     "title": "Applications received",
@@ -589,8 +602,8 @@
     "hide": "Hide",
     "new": "New",
     "viewed": "Viewed",
-    "noApprovedCv": "You need an approved CV before you can apply. Upload one in your portfolio and wait for a manager to approve it.",
-    "goToCv": "Go to my portfolio",
+    "noApprovedCv": "You need an approved CV before you can apply. Upload one in “My documents” and wait for a manager to approve it.",
+    "goToCv": "Go to my documents",
     "appliedBadge": "Applied",
     "chooseCv": "Choose a CV",
     "apply": "Apply to this internship",
@@ -779,7 +792,7 @@
     "invalidDate": "Date unavailable",
     "phoneNumber": "Phone Number",
     "statuses": {
-      "awaitingResponse": "Awaiting response",
+      "awaitingResponse": "Awaiting your response",
       "upcoming": "Upcoming",
       "rejected": "Declined",
       "past": "Past",
@@ -825,7 +838,7 @@
     "notProvided": "Not provided",
     "rejectionReason": "Reason for declining",
     "statuses": {
-      "awaitingResponse": "Awaiting response",
+      "awaitingResponse": "Awaiting the student's response",
       "upcoming": "Upcoming",
       "rejected": "Declined by the student",
       "past": "Past",
@@ -854,11 +867,11 @@
     "rejectedStudent": "Your internship supervisor reviewed and declined your access request. Please contact your program coordinator for help."
   },
   "studentOffers": {
-    "title": "Internship offers received",
+    "title": "Job offers received",
     "subtitle": "Employers who decided to hire you appear here.",
     "loading": "Loading offers…",
     "loadError": "Unable to load offers. They will refresh automatically.",
-    "empty": "You haven't received any internship offers yet.",
+    "empty": "You haven't received any job offers yet.",
     "noMatch": "No offers match this filter.",
     "statusAria": "Filter by status",
     "acceptFailed": "Unable to accept this offer. It may have changed: the list has been refreshed.",
@@ -1029,5 +1042,10 @@
       "back": "Back to evaluations",
       "open": "View evaluation"
     }
+  },
+  "employerApplicationStatus": {
+    "pending": "Awaiting your decision",
+    "rejected": "Rejected",
+    "approved": "Job offered"
   }
 }

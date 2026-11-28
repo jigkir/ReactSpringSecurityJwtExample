@@ -1,9 +1,10 @@
-import {Link} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {getMainContainerClasses, REVEAL_FROM} from '../../styles/AppStyles.jsx';
-import Icon from '../../styles/Icon.jsx';
-import Reveal from '../../styles/Reveal.jsx';
-import AuthButtons from '../AuthButtons.jsx';
+import {Link} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {getMainContainerClasses, REVEAL_FROM} from "../../styles/AppStyles.jsx";
+import Icon from "../../styles/Icon.jsx";
+import Reveal from "../../styles/Reveal.jsx";
+import AuthButtons from "../AuthButtons.jsx";
+import {PATHS} from "../../routes/AppRoutes.jsx";
 
 const WAVE_PATH = "M0,0 H1440 V40 C1200,80 960,80 720,48 C480,16 240,16 0,48 Z";
 
@@ -32,7 +33,7 @@ function Landing({dark}) {
 
             <Reveal from={REVEAL_FROM.UP} className={classes.learnMore}>
                 <h2 className={classes.question}>{t("mainContainer.learnMore")}</h2>
-                <Link to="/about" className={classes.secondaryBtn}>
+                <Link to={PATHS.ABOUT} className={classes.secondaryBtn}>
                     {t("navbar.about")}
                     <Icon name="arrow_forward" size={20}/>
                 </Link>

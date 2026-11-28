@@ -1,15 +1,15 @@
-import {Link, NavLink, useLocation} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {useEffect, useRef, useState} from 'react';
-import {getNavbarClasses} from '../styles/AppStyles.jsx';
-import Icon from '../styles/Icon.jsx';
+import {Link, NavLink, useLocation} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {useEffect, useRef, useState} from "react";
+import {getNavbarClasses} from "../styles/AppStyles.jsx";
+import Icon from "../styles/Icon.jsx";
 import NavbarMobile from "./NavbarMobile.jsx";
-import NotificationMenu from './notification/NotificationMenu.jsx';
+import NotificationMenu from "./notification/NotificationMenu.jsx";
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
 import SessionSelect from "./session/SessionSelect.jsx";
 import {useSession} from "../utils/useSession.js";
 import {useAdaptiveNavbar} from "../utils/useAdaptiveNavbar.js";
-import {getNavLinks} from "../routes/AppRoutes.jsx";
+import {getNavLinks, PATHS} from "../routes/AppRoutes.jsx";
 import AuthButtons from "./AuthButtons.jsx";
 
 const normalizeRole = (user) => (user?.role?.toString() ?? "").replace("ROLE_", "");
@@ -30,7 +30,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
     const role = normalizeRole(user);
     const isLoggedIn = user?.isLoggedIn ?? false;
-    const homePath = isLoggedIn ? "/home" : "/";
+    const homePath = isLoggedIn ? PATHS.HOME : PATHS.ROOT;
     const isAccessGranted = accountStatus === ACCOUNT_STATUS.APPROVED;
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
@@ -100,7 +100,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         ...(isLoggedIn && isAccessGranted ? getNavLinks(role) : []).map(({to, labelKey}) => ({
             to, label: t(labelKey),
         })),
-        {to: "/about", label: t("navbar.about")},
+        {to: PATHS.ABOUT, label: t("navbar.about")},
     ];
 
     const linkClass = ({isActive}) => `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
@@ -232,7 +232,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                 {!isLoggedIn && <AuthButtons variant="navbar" dark={dark} compact={compact}/>}
 
                                 {isLoggedIn && (
-                                    <Link to="/logout"
+                                    <Link to={PATHS.LOGOUT}
                                           className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1 ${dark ? "text-red-400!" : "border border-red-200! bg-red-50! hover:bg-red-100! text-red-700!"}`}
                                           aria-label={t("navbar.disconnect")}
                                           title={t("navbar.disconnect")}>
@@ -260,7 +260,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                         <Icon name="person" size={20}/>
                                     </span>
                                 </button>) : (<Link
-                                    to="/login"
+                                    to={PATHS.LOGIN}
                                     className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 transition duration-200 active:scale-95 motion-reduce:active:scale-100 shadow-md hover:shadow-lg ${theme.authBtn}`}
                                     aria-label={t("navbar.login")}
                                 >
@@ -282,7 +282,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                             </p>
                                         )}
                                     </div>
-                                    <Link to="/logout"
+                                    <Link to={PATHS.LOGOUT}
                                           className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold ${dark ? "text-red-400 hover:bg-slate-700/50" : "text-red-600 hover:bg-red-50"}`}>
                                         <Icon name="logout" size={16}/>
                                         {t("navbar.disconnect")}

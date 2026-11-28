@@ -7,9 +7,9 @@
  * and enforced again by the backend.
  */
 
-import {useOutletContext} from 'react-router-dom';
-import CvReviewList from './CvReviewList.jsx';
-import {getAuthClasses} from '../../../styles/AppStyles.jsx';
+import {useOutletContext} from "react-router-dom";
+import CvReviewList from "./CvReviewList.jsx";
+import {getAuthClasses} from "../../../styles/AppStyles.jsx";
 
 const Cv = () => {
     const {dark} = useOutletContext();

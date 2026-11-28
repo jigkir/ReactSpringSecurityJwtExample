@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useEffect} from "react";
 
 // Short enough for changes to appear quickly, long enough to avoid overloading the server
 export const REFRESH_INTERVAL_MS = 10_000;

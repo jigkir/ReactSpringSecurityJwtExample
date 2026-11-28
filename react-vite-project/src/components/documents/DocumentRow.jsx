@@ -23,11 +23,11 @@
  *   bordered   boolean  coloured border from the status (manager, status filter active)
  */
 
-import {useTranslation} from 'react-i18next';
-import Button from '../../styles/Button.jsx';
-import Icon from '../../styles/Icon.jsx';
-import PdfPreview from './PdfPreview.jsx';
-import {getCvDocumentsClasses, getStatusBorder} from '../../styles/AppStyles.jsx';
+import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
+import Icon from "../../styles/Icon.jsx";
+import PdfPreview from "./PdfPreview.jsx";
+import {getCvDocumentsClasses, getStatusBorder} from "../../styles/AppStyles.jsx";
 
 // Full-width buttons inside the vertical action stack
 export const ROW_BTN = "w-full min-w-0 text-center";

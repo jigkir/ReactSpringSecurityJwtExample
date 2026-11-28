@@ -8,7 +8,7 @@ import {usePolling} from "../../../../utils/usePolling.js";
 import InterviewPicker from "./InterviewPicker.jsx";
 import Button from "../../../../styles/Button.jsx";
 import InterviewStatusPill from "../../../interview/InterviewStatusPill.jsx";
-import {StatusColorSelect, useColorParam} from "../../../../utils/Sort.jsx";
+import {StatusColorSelect, useColorFilter} from "../../../../utils/Sort.jsx";
 import {ALL, borderStatusOf, matchesColor} from "../../../../utils/StatusColor.js";
 import {
     getInterviewColor,
@@ -41,8 +41,7 @@ function EmployerInterviews({user}) {
     const s = getPostInternshipClasses(dark);
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
-    const initialStatus = useColorParam("status");
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     // While a color is selected, every card gets a full border of that color
     const filtered = status !== ALL;
     const cardS = getInternshipCardClasses(dark, borderStatusOf(status));

@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useState} from "react";
 
 // A set of ids that can be toggled (open previews, expanded rows…)
 export function useToggleSet() {

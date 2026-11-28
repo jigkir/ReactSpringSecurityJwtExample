@@ -1,5 +1,5 @@
-import {useTranslation} from 'react-i18next';
-import Icon from '../styles/Icon.jsx';
+import {useTranslation} from "react-i18next";
+import Icon from "../styles/Icon.jsx";
 
 export const RoleField = ({
                               value, onChange, labelClass, errorClass, fieldClass,

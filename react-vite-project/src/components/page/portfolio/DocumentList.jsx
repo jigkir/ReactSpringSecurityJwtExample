@@ -38,20 +38,20 @@
  *   onCloseClick   function  closes the upload panel
  */
 
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import Button from '../../../styles/Button.jsx';
-import ChangeDocType from './ChangeDocType.jsx';
-import DocumentListShell from '../../documents/DocumentListShell.jsx';
-import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
-import {getDocumentFile, getDocuments, hideDocument} from '../../api/Api.jsx';
-import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
-import {blobUrlFromFile, formatBytes, formatDate} from '../../../utils/Documents.js';
-import {DOC_TYPE_KEYS, DOC_TYPES} from '../../../utils/DocumentTypes.js';
-import {sortCvsNewest, StatusColorSelect, useColorParam} from '../../../utils/Sort.jsx';
-import {ALL, colorOf, matchesColor} from '../../../utils/StatusColor.js';
-import {useLoadedList} from '../../../utils/useLoadedList.js';
-import {useToggleSet} from '../../../utils/useToggleSet.js';
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "../../../styles/Button.jsx";
+import ChangeDocType from "./ChangeDocType.jsx";
+import DocumentListShell from "../../documents/DocumentListShell.jsx";
+import DocumentRow, {getRowListClass, ROW_BTN} from "../../documents/DocumentRow.jsx";
+import {getDocumentFile, getDocuments, hideDocument} from "../../api/Api.jsx";
+import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
+import {blobUrlFromFile, formatBytes, formatDate} from "../../../utils/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
+import {sortCvsNewest, StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../../utils/StatusColor.js";
+import {useLoadedList} from "../../../utils/useLoadedList.js";
+import {useToggleSet} from "../../../utils/useToggleSet.js";
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
 const keyOf = (doc) => `${doc.docType}-${doc.id}`;
@@ -98,8 +98,7 @@ function DocumentList({
     }, [reloadToken, reload]);
 
     const previews = useToggleSet();
-    const initialStatus = useColorParam("status");
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     const [busyKey, setBusyKey] = useState(null);
     const [confirmKey, setConfirmKey] = useState(null);
     const [typeEditKey, setTypeEditKey] = useState(null);

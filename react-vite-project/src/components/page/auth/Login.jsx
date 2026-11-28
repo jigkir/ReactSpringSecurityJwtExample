@@ -1,20 +1,21 @@
-import {useState} from 'react';
-import {Navigate, useNavigate, useOutletContext} from 'react-router-dom';
-import {getAuthClasses} from '../../../styles/AppStyles.jsx';
-import Button from '../../../styles/Button.jsx';
-import {getCurrentUser, getCvCount, login} from '../../api/Api.jsx';
-import {devLoginAs} from '../../api/DevApi.jsx';
+import {useState} from "react";
+import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
+import {getAuthClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/Button.jsx";
+import {getCurrentUser, getCvCount, login} from "../../api/Api.jsx";
+import {devLoginAs} from "../../api/DevApi.jsx";
 import {
     EmailField,
     PasswordField,
     SubmitButton,
     translateWarning,
     validateField,
-} from '../../../utils/CommonFields.jsx';
-import {useTranslation} from 'react-i18next';
+} from "../../../utils/CommonFields.jsx";
+import {useTranslation} from "react-i18next";
 import {i18nError} from "../../../utils/i18nError.jsx";
-import {useDevMode} from '../../dev/DevMode.jsx';
-import DevLoginPanel from '../../dev/DevLoginPanel.jsx';
+import {useDevMode} from "../../dev/DevMode.jsx";
+import DevLoginPanel from "../../dev/DevLoginPanel.jsx";
+import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 const DEFAULT_WARNINGS = {email: "", password: ""};
 
@@ -73,10 +74,10 @@ const Login = ({user, setError}) => {
                 hasCv = count > 0;
             } catch {
             }
-            if (hasCv) navigate("/home");
-            else navigate("/student/portfolio", {state: {requireCv: true}});
+            if (hasCv) navigate(PATHS.HOME);
+            else navigate(PATHS.STUDENT_PORTFOLIO, {state: {requireCv: true}});
         } else {
-            navigate("/home");
+            navigate(PATHS.HOME);
         }
     };
 
@@ -99,7 +100,7 @@ const Login = ({user, setError}) => {
             } else {
                 setError(i18nError("login.genericError"));
             }
-            navigate("/error");
+            navigate(PATHS.ERROR);
         } finally {
             setSubmitting(false);
         }
@@ -115,7 +116,7 @@ const Login = ({user, setError}) => {
         } catch (err) {
             if (err.i18n) setError(err);
             else setError(i18nError("login.genericError"));
-            navigate("/error");
+            navigate(PATHS.ERROR);
         }
     };
 
@@ -128,7 +129,7 @@ const Login = ({user, setError}) => {
         }
     };
 
-    if (user?.isLoggedIn) return <Navigate to="/home" replace/>;
+    if (user?.isLoggedIn) return <Navigate to={PATHS.HOME} replace/>;
 
     const serverErrorText = translateWarning(t, serverError);
 
@@ -196,7 +197,7 @@ const Login = ({user, setError}) => {
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                     <p className={`${subtextClass} mt-0!`}>{t("login.noAccount")}</p>
                     <Button type="button" tone="primary" lockTone dark={dark} size="sm" icon="person_add"
-                            onClick={() => navigate("/signup")}>
+                            onClick={() => navigate(PATHS.SIGNUP)}>
                         {t("login.signupLink")}
                     </Button>
                 </div>

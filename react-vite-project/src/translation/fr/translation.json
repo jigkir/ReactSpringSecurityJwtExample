@@ -62,7 +62,7 @@
     "postInternship": "Mes offres de stage",
     "applications": "Candidatures reçues",
     "cv": "Validation des CV",
-    "portfolio": "Mon portfolio",
+    "portfolio": "Mes documents",
     "internships": "Stages",
     "contracts": "Contrats",
     "cvReview": "CV à valider",
@@ -202,11 +202,17 @@
       "CV_REJECTED": "CV refusé",
       "NO_APPLICATION": "Sans candidature",
       "NO_INTERVIEW": "Sans convocation d'entrevue",
-      "UPCOMING_INTERVIEW": "En attente d'entrevue",
+      "UPCOMING_INTERVIEW": "Entrevue à venir",
       "AWAITING_DECISION": "Entrevue effectuée, en attente de la réponse d'embauche",
       "OFFER_PENDING": "Offre reçue, en attente de sa réponse",
       "CONTRACT_PENDING": "Stage trouvé : contrat à signer",
       "CONTRACT_SIGNED": "Stage trouvé : contrat signé"
+    },
+    "progressLabel": "Recherche de stage",
+    "progress": {
+      "RED": "Suivi requis",
+      "YELLOW": "En cours",
+      "GREEN": "Stage confirmé"
     }
   },
   "commonFields": {
@@ -268,9 +274,9 @@
     "uploadedOn": "déposé le",
     "viewBtn": "Aperçu",
     "viewCVBtn": "Aperçu du CV",
-    "viewCoverBtn": "Aperçu de la lettre de présentation",
+    "viewCoverBtn": "Aperçu de la lettre de motivation",
     "hideBtn": "Supprimer",
-    "hideAsk": "Supprimer ce document ? Il n'apparaîtra plus dans votre portfolio.",
+    "hideAsk": "Supprimer ce document ? Il n'apparaîtra plus dans vos documents.",
     "confirmBtn": "Confirmer",
     "cancelBtn": "Annuler",
     "approveBtn": "Approuver le CV",
@@ -309,7 +315,7 @@
     "closeBtn": "Fermer l'aperçu"
   },
   "portfolio": {
-    "title": "Mon portfolio",
+    "title": "Mes documents",
     "types": {
       "CV": "CV",
       "COVER_LETTER": "Lettres de motivation",
@@ -347,7 +353,7 @@
       "failed": "Impossible de changer le type du document. Veuillez réessayer."
     },
     "onboarding": {
-      "title": "Bienvenue! Configurons votre portfolio",
+      "title": "Bienvenue! Configurons vos documents",
       "intro": "Avant de pouvoir postuler à des stages, nous avons besoin de quelques documents.",
       "requiredLabel": "Obligatoire",
       "requiredFile": "Votre CV",
@@ -375,18 +381,25 @@
     "allCaughtUp": "Tout est à jour.",
     "welcome": "Bienvenue",
     "seeAll": "Tout voir",
+    "spotlight": "Prioritaire",
     "subtitle": "Vue rapide des suivis importants.",
-    "studentCvLink": "Accéder à mon portfolio",
+    "studentCvLink": "Gérer mes documents",
     "studentInternshipsLink": "Trouver un stage et postuler",
-    "studentInterviewsLink": "Consulter mes entrevues",
+    "studentInterviewsLink": "Mes convocations en entrevue",
     "employerInternshipsLink": "Gérer mes offres de stage",
     "employerApplicationsLink": "Consulter les candidatures reçues",
-    "employerContractsLink": "Signer les contrats en attente",
-    "studentContractsLink": "Signer les contrats en attente",
-    "managerCvLink": "Valider les CV en attente",
+    "employerContractsLink": "Signer les contrats de stage",
+    "studentContractsLink": "Signer mes contrats de stage",
+    "managerCvLink": "Réviser les CV des étudiants",
     "managerInternshipsLink": "Réviser les offres de stage",
-    "managerContractsLink": "Signer les contrats en attente",
-    "noPreviews": "Rien à afficher pour votre rôle pour le moment."
+    "managerContractsLink": "Signer les contrats de stage",
+    "noPreviews": "Rien à afficher pour votre rôle pour le moment.",
+    "studentOffersLink": "Consulter mes offres reçues",
+    "employerInterviewsLink": "Consulter mes entrevues avec les étudiants",
+    "managerUsersLink": "Vérifier les accès étudiants",
+    "managerTrackingLink": "Assigner les professeurs aux stages",
+    "teacherEvaluationsLink": "Évaluer les milieux de stage",
+    "managerStudentStatusesLink": "Suivre les étudiants"
   },
   "applicationsPage": {
     "title": "Candidatures reçues",
@@ -589,8 +602,8 @@
     "hide": "Cacher",
     "new": "Nouveau",
     "viewed": "Consulté",
-    "noApprovedCv": "Vous devez avoir un CV approuvé pour postuler. Téléversez-en un dans votre portfolio et attendez l'approbation d'un gestionnaire.",
-    "goToCv": "Accéder à mon portfolio",
+    "noApprovedCv": "Vous devez avoir un CV approuvé pour postuler. Téléversez-en un dans « Mes documents » et attendez l'approbation d'un gestionnaire.",
+    "goToCv": "Accéder à mes documents",
     "appliedBadge": "Postulé",
     "chooseCv": "Choisissez un CV",
     "apply": "Postuler à ce stage",
@@ -768,25 +781,25 @@
   "studentInterviews": {
     "title": "Mes entrevues",
     "loading": "Chargement des entrevues...",
-    "loadError": "Impossible de charger les entrevues.",
-    "empty": "Vous n'avez aucune convocation d'entrevue pour le moment.",
+    "loadError": "Impossible de charger les entrevues. Elles s'actualiseront automatiquement.",
+    "empty": "Aucune convocation en entrevue pour le moment. Lorsqu'un employeur vous convoquera, elle apparaîtra ici.",
     "date": "Date et heure",
     "type": "Type de rencontre",
-    "details": "Détails de la rencontre",
+    "details": "Comment participer",
     "message": "Message de l'employeur",
     "openLink": "Rejoindre la rencontre",
     "notProvided": "Non précisé",
-    "phoneNumber": "Numéro de téléphone",
     "invalidDate": "Date non disponible",
+    "phoneNumber": "Numéro de téléphone",
     "statuses": {
-      "awaitingResponse": "En attente de réponse",
+      "awaitingResponse": "En attente de votre réponse",
       "upcoming": "À venir",
       "rejected": "Refusée",
       "past": "Passée",
       "cancelled": "Annulée"
     },
     "types": {
-      "ONLINE": "En ligne",
+      "ONLINE": "En ligne (appel vidéo)",
       "PHONE": "Par téléphone",
       "IN_PERSON": "En personne"
     },
@@ -825,7 +838,7 @@
     "notProvided": "Non fourni",
     "rejectionReason": "Motif du refus",
     "statuses": {
-      "awaitingResponse": "En attente de réponse",
+      "awaitingResponse": "En attente de la réponse de l'étudiant",
       "upcoming": "À venir",
       "rejected": "Refusée par l'étudiant",
       "past": "Passée",
@@ -885,11 +898,11 @@
     "studentId": "Matricule : {{studentId}}"
   },
   "tracking": {
-    "selectDefault": "Sélectionner un enseignant",
+    "selectDefault": "Sélectionner un professeur",
     "selectLoading": "Chargement...",
-    "selectNull": "Aucun enseignant disponible",
+    "selectNull": "Aucun professeur disponible",
     "assigneLoading": "Attribution en cours...",
-    "assigneDefault": "Assigner l'enseignant",
+    "assigneDefault": "Assigner le professeur",
     "loading": "Chargement...",
     "error": "Échec du chargement des suivis de stage.",
     "empty": "Aucun suivi de stage trouvé.",
@@ -998,7 +1011,7 @@
       "unassignedSupervisor": "Superviseur non précisé",
       "weekLabel": "Semaine {{week}}",
       "pendingPeriod": "Période non précisée",
-      "supervisorLabel": "Professeur assignée : {{supervisor}}",
+      "supervisorLabel": "Professeur assigné : {{supervisor}}",
       "noCommentsYet": "Aucun commentaire enregistré pour le moment.",
       "criteriaProgress": "{{answered}} / {{total}} critères remplis",
       "hourlySalary": "{{rate}} $/h",
@@ -1025,9 +1038,14 @@
       "errorFailed": "Impossible de signer l'évaluation en milieu de stage pour le moment."
     },
     "file": {
-      "subtitle": "Consultez l’évaluation en milieu de travail en format PDF, en français ou en anglais, et téléchargez-la.",
+      "subtitle": "Consultez l'évaluation en milieu de stage en format PDF, en français ou en anglais, et téléchargez-la.",
       "back": "Retour aux évaluations",
       "open": "Voir l'évaluation"
     }
+  },
+  "employerApplicationStatus": {
+    "pending": "En attente de votre décision",
+    "rejected": "Refusée",
+    "approved": "Offre envoyée"
   }
 }

@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import Button from '../../styles/Button.jsx';
-import RadioGroup from '../../styles/RadioGroup.jsx';
-import { getInternshipFormClasses } from '../../styles/AppStyles.jsx';
+import {useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
+import RadioGroup from "../../styles/RadioGroup.jsx";
+import {getInternshipFormClasses} from "../../styles/AppStyles.jsx";
 import {
     EVALUATION_CRITERIA,
     EVALUATION_RATINGS,
@@ -13,11 +13,11 @@ import {
     createInitialEvaluation,
     hasDisagreement,
     validateEvaluation,
-} from '../../utils/WorkplaceEvaluation.js';
+} from "../../utils/WorkplaceEvaluation.js";
 import AutoResizeTextarea from "../../styles/AutoResizeTextarea.jsx";
 
-function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
-    const { t } = useTranslation();
+function WorkplaceEvaluationForm({dark, initialData, onSubmit, onCancel}) {
+    const {t} = useTranslation();
     const s = getInternshipFormClasses(dark);
 
     const [formData, setFormData] = useState(() => createInitialEvaluation(initialData));
@@ -32,9 +32,9 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
     const updateCriterion = (key, value) => {
         setFormData((prev) => ({
             ...prev,
-            criteria: { ...prev.criteria, [key]: value },
+            criteria: {...prev.criteria, [key]: value},
         }));
-        setErrors((prev) => ({ ...prev, [`criteria.${key}`]: undefined }));
+        setErrors((prev) => ({...prev, [`criteria.${key}`]: undefined}));
     };
 
     const updateSupervisionHours = (month, value) => {
@@ -53,22 +53,22 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
     const updateObservation = (key, value) => {
         setFormData((prev) => ({
             ...prev,
-            generalObservations: { ...prev.generalObservations, [key]: value },
+            generalObservations: {...prev.generalObservations, [key]: value},
         }));
-        setErrors((prev) => ({ ...prev, [key]: undefined }));
+        setErrors((prev) => ({...prev, [key]: undefined}));
     };
 
     const updateShiftRange = (index, field, value) => {
         setFormData((prev) => {
             const updated = prev.generalObservations.shiftRanges.map((range, i) =>
-                i === index ? { ...range, [field]: value } : range
+                i === index ? {...range, [field]: value} : range
             );
             return {
                 ...prev,
-                generalObservations: { ...prev.generalObservations, shiftRanges: updated },
+                generalObservations: {...prev.generalObservations, shiftRanges: updated},
             };
         });
-        setErrors((prev) => ({ ...prev, shiftRanges: undefined }));
+        setErrors((prev) => ({...prev, shiftRanges: undefined}));
     };
 
     const addShiftRange = () => {
@@ -135,12 +135,12 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                     }`}
                 >
                     <span className="text-left">
-                        {t("workplaceEvaluation.criteriaLabel", { defaultValue: "" })}
+                        {t("workplaceEvaluation.criteriaLabel", {defaultValue: ""})}
                     </span>
                     {EVALUATION_RATINGS.map((rating) => (
                         <span
                             key={rating}
-                            className="flex h-full items-center justify-center break-words leading-tight"
+                            className="flex h-full items-center justify-center wrap-break-word leading-tight"
                         >
                             {t(`workplaceEvaluation.ratings.${rating}`)}
                         </span>
@@ -148,7 +148,7 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                 </div>
 
                 <div className="divide-y divide-slate-700/30">
-                    {EVALUATION_CRITERIA.map(({ key, extra }) => {
+                    {EVALUATION_CRITERIA.map(({key, extra}) => {
                         const criterionLabel = t(`workplaceEvaluation.criteria.${key}`);
 
                         return (
@@ -247,9 +247,9 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                                             onChange={(e) => {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    criteria: { ...prev.criteria, hourlySalary: e.target.value },
+                                                    criteria: {...prev.criteria, hourlySalary: e.target.value},
                                                 }));
-                                                setErrors((prev) => ({ ...prev, hourlySalary: undefined }));
+                                                setErrors((prev) => ({...prev, hourlySalary: undefined}));
                                             }}
                                         />
                                         {errors.hourlySalary && (
@@ -287,9 +287,9 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                     placeholder={t("workplaceEvaluation.comments.placeholder")}
                     className={s.input}
                     onChange={(e) => {
-                        setFormData((prev) => ({ ...prev, comments: e.target.value }));
+                        setFormData((prev) => ({...prev, comments: e.target.value}));
                         if (errors.comments) {
-                            setErrors((prev) => ({ ...prev, comments: undefined }));
+                            setErrors((prev) => ({...prev, comments: undefined}));
                         }
                     }}
                 />
@@ -339,8 +339,8 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                     error={errors.wouldWelcomeSameInternAgain}
                     onChange={(val) => updateObservation("wouldWelcomeSameInternAgain", val)}
                     options={[
-                        { value: true, label: t("workplaceEvaluation.observations.welcomeAgain.yes") },
-                        { value: false, label: t("workplaceEvaluation.observations.welcomeAgain.no") },
+                        {value: true, label: t("workplaceEvaluation.observations.welcomeAgain.yes")},
+                        {value: false, label: t("workplaceEvaluation.observations.welcomeAgain.no")},
                     ]}
                 />
 
@@ -353,12 +353,12 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                     onChange={(val) => {
                         updateObservation("variableShifts", val);
                         if (val !== true) {
-                            setErrors((prev) => ({ ...prev, shiftRanges: undefined }));
+                            setErrors((prev) => ({...prev, shiftRanges: undefined}));
                         }
                     }}
                     options={[
-                        { value: true, label: t("workplaceEvaluation.observations.variableShifts.yes") },
-                        { value: false, label: t("workplaceEvaluation.observations.variableShifts.no") },
+                        {value: true, label: t("workplaceEvaluation.observations.variableShifts.yes")},
+                        {value: false, label: t("workplaceEvaluation.observations.variableShifts.no")},
                     ]}
                 />
 
@@ -366,13 +366,15 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
                     <div className="space-y-3 rounded-lg border border-slate-700/40 p-3">
                         {formData.generalObservations.shiftRanges.map((range, index) => (
                             <div key={index} className="flex flex-wrap items-center gap-2">
-                                <span className="text-sm">{t("workplaceEvaluation.observations.variableShifts.from")}</span>
+                                <span
+                                    className="text-sm">{t("workplaceEvaluation.observations.variableShifts.from")}</span>
                                 <input
                                     type="time"
                                     value={range.from}
                                     onChange={(e) => updateShiftRange(index, "from", e.target.value)}
                                 />
-                                <span className="text-sm">{t("workplaceEvaluation.observations.variableShifts.to")}</span>
+                                <span
+                                    className="text-sm">{t("workplaceEvaluation.observations.variableShifts.to")}</span>
                                 <input
                                     type="time"
                                     value={range.to}
@@ -411,7 +413,8 @@ function WorkplaceEvaluationForm({ dark, initialData, onSubmit, onCancel }) {
 
             <div className="flex flex-wrap justify-end gap-2">
                 {onCancel && (
-                    <Button type="button" tone="neutral" dark={dark} icon="close" disabled={submitting} onClick={onCancel}>
+                    <Button type="button" tone="neutral" dark={dark} icon="close" disabled={submitting}
+                            onClick={onCancel}>
                         {t("workplaceEvaluation.cancel")}
                     </Button>
                 )}

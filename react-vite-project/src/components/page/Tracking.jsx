@@ -5,7 +5,7 @@ import {usePolling} from "../../utils/usePolling.js";
 import {useOutletContext} from "react-router-dom";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
 import {COLOR, matchesColor} from "../../utils/StatusColor.js";
-import {StatusColorSelect, useColorParam} from "../../utils/Sort.jsx";
+import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
 import UserCard from "./UserCard.jsx";
 import Button from "../../styles/Button.jsx";
 
@@ -23,7 +23,7 @@ function Tracking() {
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(true);
     // Initial filter comes from the Home buttons (?status=GREEN|YELLOW)
-    const [status, setStatus] = useState(useColorParam("status", TRACKING_COLORS));
+    const [status, setStatus] = useColorFilter("status", TRACKING_COLORS);
 
     // Store teachers per trackingId: { [trackingId]: TeacherAssignmentDto[] }
     const [teachersByTracking, setTeachersByTracking] = useState({});

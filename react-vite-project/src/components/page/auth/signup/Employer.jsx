@@ -1,7 +1,8 @@
-import {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {getDisciplines, signupEmployer} from '../../../api/Api.jsx';
+import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {PATHS} from "../../../../routes/AppRoutes.jsx";
+import {getDisciplines, signupEmployer} from "../../../api/Api.jsx";
 import {
     ConfirmPasswordField,
     DisciplineField,
@@ -13,7 +14,7 @@ import {
     SubmitButton,
     translateWarning,
     validateField,
-} from '../../../../utils/CommonFields.jsx';
+} from "../../../../utils/CommonFields.jsx";
 
 const DEFAULT_FORM = {
     companyName: "",
@@ -127,7 +128,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 discipline: form.sectorActivity,
                 phoneNumber: form.phoneNumber,
             });
-            navigate("/login");
+            navigate(PATHS.LOGIN);
         } catch (err) {
             switch (err.status) {
                 case 409: {
@@ -196,10 +197,10 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
             />
 
             <PhoneNumberField
-            value={form.phoneNumber}
-            onChange={handlePhoneChange}
-            warning={translateWarning(t, warnings.phoneNumber)}
-            labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
+                value={form.phoneNumber}
+                onChange={handlePhoneChange}
+                warning={translateWarning(t, warnings.phoneNumber)}
+                labelClass={labelClass} errorClass={errorClass} fieldClass={fieldClass}
             />
 
             <PasswordField

@@ -8,11 +8,11 @@
  * Without the provider (e.g. in tests) the default context is "off".
  */
 
-import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import Icon from '../../styles/Icon.jsx';
-import {getDevClasses} from '../../styles/AppStyles.jsx';
-import {DEV_MODE_ENABLED} from '../config/Config.jsx';
+import {createContext, useCallback, useContext, useEffect, useMemo, useState} from "react";
+import {useTranslation} from "react-i18next";
+import Icon from "../../styles/Icon.jsx";
+import {getDevClasses} from "../../styles/AppStyles.jsx";
+import {DEV_MODE_ENABLED} from "../config/Config.jsx";
 
 const DEV_AVAILABLE = DEV_MODE_ENABLED;
 const STORAGE_KEY = "devMode";

@@ -1,9 +1,9 @@
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {getInternshipFormClasses} from '../../../../styles/AppStyles.jsx';
-import Button from '../../../../styles/Button.jsx';
-import {Field, translateWarning} from '../../../../utils/CommonFields.jsx';
-import AutoResizeTextarea from '../../../../styles/AutoResizeTextarea.jsx';
+import {useState} from "react";
+import {useTranslation} from "react-i18next";
+import {getInternshipFormClasses} from "../../../../styles/AppStyles.jsx";
+import Button from "../../../../styles/Button.jsx";
+import {Field, translateWarning} from "../../../../utils/CommonFields.jsx";
+import AutoResizeTextarea from "../../../../styles/AutoResizeTextarea.jsx";
 import {useSession} from "../../../../utils/useSession.js";
 
 const INITIAL_FORM = {

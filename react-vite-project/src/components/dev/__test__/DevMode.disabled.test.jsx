@@ -1,6 +1,6 @@
-import {fireEvent, render, screen} from '@testing-library/react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {DevModeProvider, DevModeToggle, useDevMode} from '../DevMode.jsx';
+import {fireEvent, render, screen} from "@testing-library/react";
+import {beforeEach, describe, expect, it, vi} from "vitest";
+import {DevModeProvider, DevModeToggle, useDevMode} from "../DevMode.jsx";
 
 vi.mock('../../config/Config.jsx', () => ({
     DEV_MODE_ENABLED: false,

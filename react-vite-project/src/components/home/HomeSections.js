@@ -25,13 +25,15 @@
 import {
     ALL,
     COLOR,
-    colorOf
+    colorOf,
+    studentStatusColor
 } from "../../utils/StatusColor.js";
 import {
     getInterviewColor
 } from "../../utils/interviewStatus.js";
 import {getContractRole} from "../../utils/ContractRole.js";
-import {ROUTES} from "../../routes/AppRoutes.jsx";
+import {PATHS, ROUTES} from "../../routes/AppRoutes.jsx";
+import {MOCK_STUDENTS} from "../page/manager/StudentStatusMock.js";
 import {
     fetchWorkplaceEvaluations,
     getApplications,
@@ -90,6 +92,9 @@ const CONTRACT_COLORS = [COLOR.YELLOW, COLOR.GREEN];
 
 const PENDING_ONLY = [COLOR.YELLOW];
 
+// Employer applications: the ones the employer refused need no follow-up
+const WITHOUT_REFUSED = [COLOR.YELLOW, COLOR.GREEN];
+
 const asList = (data) => (Array.isArray(data) ? data : []);
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
@@ -105,9 +110,9 @@ const loadContracts = async ({sessionId, user}) => {
 const loadInterviews = (getter) => async () => asList(await getter()).map(getInterviewColor);
 
 // region Card config of each page, keyed by the path of its route in AppRoutes.jsx
-const HOME_CARDS = {
+const buildHomeCards = () => ({
     // ───────── Student ─────────
-    "/student/portfolio": {
+    [PATHS.STUDENT_PORTFOLIO]: {
         icon: "upload_file",
         page: "studentCv",
         titleKey: "home.studentCvLink",
@@ -115,7 +120,7 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: async () => statusColors((await getDocuments("CV")).filter(isVisible)),
     },
-    "/student/interviews": {
+    [PATHS.STUDENT_INTERVIEWS]: {
         icon: "event",
         page: "studentInterviews",
         titleKey: "home.studentInterviewsLink",
@@ -123,15 +128,15 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: loadInterviews(getStudentInterviews),
     },
-    "/student/offers": {
+    [PATHS.STUDENT_OFFERS]: {
         icon: "star",
         page: "studentOffers",
-        titleKey: "navbar.offers",
+        titleKey: "home.studentOffersLink",
         param: "status",
         colors: STATUS_COLORS,
         load: async () => asList(await getStudentOffers()).map((offer) => colorOf(offer.studentInternshipConsent)),
     },
-    "/student/internship": {
+    [PATHS.STUDENT_INTERNSHIPS]: {
         icon: "work",
         page: "studentApplied",
         titleKey: "home.studentInternshipsLink",
@@ -145,7 +150,7 @@ const HOME_CARDS = {
             return asList(internships).map((i) => (appliedIds.has(i.id) ? COLOR.GREEN : COLOR.RED));
         },
     },
-    "/student/contracts": {
+    [PATHS.STUDENT_CONTRACTS]: {
         icon: "edit",
         page: "contracts",
         titleKey: "home.studentContractsLink",
@@ -156,7 +161,7 @@ const HOME_CARDS = {
     },
 
     // ───────── Employer ─────────
-    "/employer/internships": {
+    [PATHS.EMPLOYER_INTERNSHIPS]: {
         icon: "business_center",
         page: "employerInternships",
         titleKey: "home.employerInternshipsLink",
@@ -165,25 +170,25 @@ const HOME_CARDS = {
         colors: STATUS_COLORS,
         load: async ({sessionId}) => statusColors(await getEmployerInternships(sessionId)),
     },
-    "/employer/applications": {
+    [PATHS.EMPLOYER_APPLICATIONS]: {
         icon: "person",
         page: "employerApplications",
         titleKey: "home.employerApplicationsLink",
         param: "status",
         scoped: true,
-        colors: STATUS_COLORS,
+        colors: WITHOUT_REFUSED,
         load: async ({sessionId}) =>
             asList(await getApplications(sessionId)).map((application) => colorOf(application.employerDecision)),
     },
-    "/employer/interviews": {
+    [PATHS.EMPLOYER_INTERVIEWS]: {
         icon: "event",
         page: "employerInterviews",
-        titleKey: "navbar.interviews",
+        titleKey: "home.employerInterviewsLink",
         param: "status",
         colors: STATUS_COLORS,
         load: loadInterviews(getEmployerInterviews),
     },
-    "/employer/contracts": {
+    [PATHS.EMPLOYER_CONTRACTS]: {
         icon: "edit",
         page: "contracts",
         titleKey: "home.employerContractsLink",
@@ -194,7 +199,7 @@ const HOME_CARDS = {
     },
 
     // ───────── Manager ─────────
-    "/manager/cvs": {
+    [PATHS.MANAGER_CVS]: {
         icon: "picture_as_pdf",
         page: "managerCv",
         titleKey: "home.managerCvLink",
@@ -203,7 +208,7 @@ const HOME_CARDS = {
         colors: PENDING_ONLY,
         load: async ({sessionId}) => statusColors(await getPublicCvs(sessionId)),
     },
-    "/manager/internships": {
+    [PATHS.MANAGER_INTERNSHIPS]: {
         icon: "business_center",
         page: "managerInternships",
         titleKey: "home.managerInternshipsLink",
@@ -212,7 +217,7 @@ const HOME_CARDS = {
         colors: PENDING_ONLY,
         load: async ({sessionId}) => statusColors(await getManagerInternships(sessionId)),
     },
-    "/manager/contracts": {
+    [PATHS.MANAGER_CONTRACTS]: {
         icon: "edit",
         page: "contracts",
         titleKey: "home.managerContractsLink",
@@ -222,61 +227,74 @@ const HOME_CARDS = {
         load: loadContracts,
     },
     // Accounts: APPROVED / PENDING / REJECTED (the backend may send any case)
-    "/manager/users": {
+    [PATHS.MANAGER_USERS]: {
         icon: "admin_panel_settings",
         page: "managerUsers",
-        titleKey: "navbar.users",
+        titleKey: "home.managerUsersLink",
         param: "status",
         colors: PENDING_ONLY,
         load: async () => asList(await getUsers()).map((u) => colorOf(String(u.status ?? "").toUpperCase())),
     },
     // Internship tracking: still to assign (YELLOW), then teacher assigned (GREEN)
-    "/manager/tracking": {
+    [PATHS.MANAGER_TRACKING]: {
         icon: "co_present",
         page: "managerTracking",
-        titleKey: "navbar.tracking",
+        titleKey: "home.managerTrackingLink",
         param: "status",
         colors: PENDING_ONLY,
         load: async () => asList(await getInternshipTrackings())
             .map((tracking) => (tracking.teacher ? COLOR.GREEN : COLOR.YELLOW)),
     },
+    // Student statuses: needs follow-up (RED), in progress (YELLOW). Mock data until the backend exists
+    [PATHS.MANAGER_STUDENT_STATUSES]: {
+        icon: "person",
+        page: "managerStudentStatuses",
+        titleKey: "home.managerStudentStatusesLink",
+        param: "status",
+        colors: [COLOR.RED, COLOR.YELLOW],
+        load: async () => MOCK_STUDENTS.map(studentStatusColor),
+    },
 
     // ───────── Teacher ─────────
     // Workplace evaluations: still to complete / sign (YELLOW), then signed (GREEN)
-    "/teacher/evaluations": {
+    [PATHS.TEACHER_EVALUATIONS]: {
         icon: "share_reviews",
         page: "teacherEvaluations",
-        titleKey: "workplaceEvaluation.title",
+        titleKey: "home.teacherEvaluationsLink",
         param: "status",
         scoped: true,
         colors: CONTRACT_COLORS,
         load: async ({sessionId}) => asList(await fetchWorkplaceEvaluations(sessionId))
             .map((evaluation) => (evaluation.signedAt ? COLOR.GREEN : COLOR.YELLOW)),
     },
-};
+});
 // endregion
 
 // region Sections of a role, built from ROUTES
 // One array per role, built once: Home uses it as a hook dependency, so its identity must be stable
 const sectionsByRole = new Map();
 
-const HOME_ORDER_BY_ROLE = {
+const getHomeOrderByRole = () => ({
     STUDENT: [
-        "/student/portfolio",
-        "/student/interviews",
-        "/student/offers",
-        "/student/internship",
-        "/student/contracts",
+        PATHS.STUDENT_INTERNSHIPS,
+        PATHS.STUDENT_INTERVIEWS,
+        PATHS.STUDENT_OFFERS,
+        PATHS.STUDENT_PORTFOLIO,
+        PATHS.STUDENT_CONTRACTS,
     ],
-};
+});
+
+// Built on first use: PATHS does not exist yet while the modules load (circular import)
+let homeCards = null;
+const getHomeCards = () => (homeCards ??= buildHomeCards());
 
 /** [{to, ...card}] of the role: the routes with `home: [role]`, in display order. */
 export const getHomeSections = (role) => {
     if (!sectionsByRole.has(role)) {
         const sections = ROUTES
-            .filter((route) => route.home?.includes(role) && HOME_CARDS[route.path])
-            .map((route) => ({to: route.path, ...HOME_CARDS[route.path]}));
-        const order = HOME_ORDER_BY_ROLE[role];
+            .filter((route) => route.home?.includes(role) && getHomeCards()[route.path])
+            .map((route) => ({to: route.path, ...getHomeCards()[route.path]}));
+        const order = getHomeOrderByRole()[role];
         if (order) {
             sections.sort((a, b) => order.indexOf(a.to) - order.indexOf(b.to));
         }
@@ -284,4 +302,29 @@ export const getHomeSections = (role) => {
     }
     return sectionsByRole.get(role);
 };
+
+// Student: the next step of the internship search, one at a time
+//   contract to sign > hired (nothing) > offer to answer > no usable CV > internships to apply to and interviews to answer
+const studentSpotlight = (colorsByPage) => {
+    const has = (page, color) => Array.isArray(colorsByPage[page]) && colorsByPage[page].includes(color);
+    const loaded = [PATHS.STUDENT_PORTFOLIO, PATHS.STUDENT_OFFERS, PATHS.STUDENT_CONTRACTS]
+        .every((page) => Array.isArray(colorsByPage[page]));
+
+    if (!loaded) return [];
+    if (has(PATHS.STUDENT_CONTRACTS, COLOR.YELLOW)) return [PATHS.STUDENT_CONTRACTS];
+    if (has(PATHS.STUDENT_OFFERS, COLOR.GREEN)) return [];
+    if (has(PATHS.STUDENT_OFFERS, COLOR.YELLOW)) return [PATHS.STUDENT_OFFERS];
+    if (!has(PATHS.STUDENT_PORTFOLIO, COLOR.GREEN) && !has(PATHS.STUDENT_PORTFOLIO, COLOR.YELLOW)) {
+        return [PATHS.STUDENT_PORTFOLIO];
+    }
+
+    return [[PATHS.STUDENT_INTERNSHIPS, COLOR.RED], [PATHS.STUDENT_INTERVIEWS, COLOR.YELLOW]]
+        .filter(([page, color]) => has(page, color))
+        .map(([page]) => page);
+};
+
+const SPOTLIGHT_BY_ROLE = {STUDENT: studentSpotlight};
+
+/** Pages whose card stands out for the role: none while the colors load or after a failure. */
+export const getSpotlightPages = (role, colorsByPage) => SPOTLIGHT_BY_ROLE[role]?.(colorsByPage) ?? [];
 // endregion

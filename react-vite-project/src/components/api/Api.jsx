@@ -1,4 +1,4 @@
-import fetcher from '../../utils/fetcher.js';
+import fetcher from "../../utils/fetcher.js";
 
 // region Shared response handling
 // Maps an HTTP status to a translation KEY (translated at render time, never here).
