@@ -5,7 +5,7 @@ import {
     getEmployerInterviews,
     updateInterview,
     cancelInterview,
-} from "../components/api/Api.jsx";
+} from "../components/core/api/Api.jsx";
 
 export const INTERVIEW_ROLES = {
     STUDENT: {

@@ -13,7 +13,7 @@ import {
     getApplicationTranscript,
     getEmployerInterviewsByApplicationId,
     updateInterview
-} from "../api/Api.jsx";
+} from "../core/api/Api.jsx";
 import {blobUrlFromFile} from "../../utils/Documents.js";
 import {useToggleSet} from "../../utils/useToggleSet.js";
 import {ALL, borderStatusOf} from "../../utils/StatusColor.js";

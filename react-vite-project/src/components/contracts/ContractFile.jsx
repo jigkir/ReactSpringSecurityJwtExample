@@ -25,7 +25,7 @@
 
 import {useMemo} from "react";
 import {useOutletContext, useParams} from "react-router-dom";
-import {getContractFile} from "../api/Api.jsx";
+import {getContractFile} from "../core/api/Api.jsx";
 import {TARGET_TYPE, useCloseShownNotifications} from "../notification/NotificationsProvider.jsx";
 import {getContractRole} from "../../utils/ContractRole.js";
 import PdfFilePage from "../documents/PdfFilePage.jsx";

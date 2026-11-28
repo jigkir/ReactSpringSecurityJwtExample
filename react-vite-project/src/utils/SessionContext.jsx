@@ -1,6 +1,6 @@
 // src/utils/SessionContext.jsx
 import {createContext, useCallback, useEffect, useMemo, useState} from "react";
-import {getSessions} from "../components/api/Api.jsx";
+import {getSessions} from "../components/core/api/Api.jsx";
 import {usePolling} from "./usePolling.js";
 
 export const SessionContext = createContext(null);

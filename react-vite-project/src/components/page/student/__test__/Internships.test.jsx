@@ -6,12 +6,12 @@ import {
     getStudentCvs,
     getStudentAppliedInternships,
     markInternshipsAsViewed
-} from "../../../api/Api.jsx";
+} from "../../../core/api/Api.jsx";
 import i18n from "../../../../i18next.jsx";
 import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
 import {useSession} from "../../../../utils/useSession.js";
 
-vi.mock("../../../api/Api.jsx", () => ({
+vi.mock("../../../core/api/Api.jsx", () => ({
     getStudentInternships: vi.fn(),
     getStudentCvs: vi.fn(),
     getStudentAppliedInternships: vi.fn(),

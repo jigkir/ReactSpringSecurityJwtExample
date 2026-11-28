@@ -1,7 +1,7 @@
 import {Outlet, useLocation} from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
-import {DevModeToggle} from "./dev/DevMode.jsx";
+import {DevModeToggle} from "./core/dev/DevMode.jsx";
 import {NotificationsProvider} from "./notification/NotificationsProvider.jsx";
 import {useEffect} from "react";
 

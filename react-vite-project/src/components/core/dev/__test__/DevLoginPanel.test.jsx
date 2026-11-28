@@ -2,7 +2,7 @@ import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {beforeEach, describe, expect, it, vi} from "vitest";
 import DevLoginPanel, {roleHeader} from "../DevLoginPanel.jsx";
 import {getDevUsers} from "../../api/DevApi.jsx";
-import i18n from "../../../i18next.jsx";
+import i18n from "../../../../i18next.jsx";
 
 vi.mock('../../api/DevApi.jsx', () => ({
     getDevUsers: vi.fn(),

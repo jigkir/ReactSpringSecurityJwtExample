@@ -15,7 +15,7 @@ import {
     getEmployerInternships,
     updateInternship,
     getInternshipIdsWithContract
-} from "../api/Api.jsx";
+} from "../core/api/Api.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {useSession} from "../../utils/useSession.js";
 import {TARGET_TYPE, useCloseShownNotifications} from "../notification/NotificationsProvider.jsx";

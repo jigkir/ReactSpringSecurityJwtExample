@@ -33,7 +33,7 @@ import {createPortal} from "react-dom";
 import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
 import {getSelectClass} from "../../styles/FormControls.jsx";
-import {getDocumentFile, getMaxCvSize, hideDocument, uploadDocument} from "../api/Api.jsx";
+import {getDocumentFile, getMaxCvSize, hideDocument, uploadDocument} from "../core/api/Api.jsx";
 import {ACCEPTED_EXT, base64ToFile, bytesToMb, FALLBACK_MAX_BYTES, validateFile} from "../../utils/Documents.js";
 import {DOC_TYPE_KEYS, DOC_TYPES} from "../../utils/DocumentTypes.js";
 import {translateWarning} from "../../utils/CommonFields.jsx";

@@ -1,5 +1,5 @@
 import mergeHeaders from "./mergeheader";
-import BASE_URL from "../components/config/Config.jsx";
+import BASE_URL from "../components/core/config/Config.jsx";
 import i18n from "../i18next.jsx"
 
 async function fetcher(input, options) {

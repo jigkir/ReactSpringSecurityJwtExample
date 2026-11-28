@@ -2,10 +2,10 @@ import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {BrowserRouter} from "react-router-dom";
 import NotificationMenu from "../NotificationMenu.jsx";
 import {NotificationsProvider} from "../NotificationsProvider.jsx";
-import {getNotifications, markNotificationsAsRead} from "../../api/Api.jsx";
+import {getNotifications, markNotificationsAsRead} from "../../core/api/Api.jsx";
 import i18n from "../../../i18next.jsx";
 
-vi.mock("../../api/Api.jsx", () => ({
+vi.mock("../../core/api/Api.jsx", () => ({
     getNotifications: vi.fn(),
     markNotificationsAsRead: vi.fn(),
 }));

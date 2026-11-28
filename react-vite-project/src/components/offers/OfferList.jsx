@@ -3,7 +3,7 @@ import {useLocation, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getInternshipCardClasses, getPostInternshipClasses} from "../../styles/AppStyles.jsx";
 import Icon from "../../styles/Icon.jsx";
-import {acceptOffer, denyOffer, getStudentOffers} from "../api/Api.jsx";
+import {acceptOffer, denyOffer, getStudentOffers} from "../core/api/Api.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {translateWarning} from "../../utils/CommonFields.jsx";
 import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";

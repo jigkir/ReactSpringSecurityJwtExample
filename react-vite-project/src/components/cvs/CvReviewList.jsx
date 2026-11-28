@@ -30,7 +30,7 @@ import AutoResizeTextarea from "../../styles/AutoResizeTextarea.jsx";
 import {getSelectClass, SearchInput} from "../../styles/FormControls.jsx";
 import DocumentListShell from "../documents/DocumentListShell.jsx";
 import DocumentRow, {getRowListClass, ROW_BTN} from "../documents/DocumentRow.jsx";
-import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from "../api/Api.jsx";
+import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from "../core/api/Api.jsx";
 import {getCvDocumentsClasses} from "../../styles/AppStyles.jsx";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../notification/NotificationsProvider.jsx";
 import {blobUrlFromFile, formatDate} from "../../utils/Documents.js";

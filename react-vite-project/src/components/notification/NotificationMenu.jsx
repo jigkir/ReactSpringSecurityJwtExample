@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {getNavbarClasses, getNotificationMenuClasses} from "../../styles/AppStyles.jsx";
 import Icon from "../../styles/Icon.jsx";
-import {getStudentInterviews} from "../api/Api.jsx";
+import {getStudentInterviews} from "../core/api/Api.jsx";
 import {useNotifications} from "./NotificationsProvider.jsx";
 
 const INTERVIEW_TARGET = "INTERVIEW";

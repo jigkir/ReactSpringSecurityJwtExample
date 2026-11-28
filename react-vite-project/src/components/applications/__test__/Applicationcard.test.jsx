@@ -1,8 +1,8 @@
 import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {beforeEach, describe, expect, it, vi} from "vitest";
-import {getEmployerInterviewsByApplicationId} from "../../api/Api.jsx";
+import {getEmployerInterviewsByApplicationId} from "../../core/api/Api.jsx";
 
-vi.mock('../../api/Api.jsx', () => ({
+vi.mock('../../core/api/Api.jsx', () => ({
     getEmployerInterviewsByApplicationId: vi.fn(),
     createInterview: vi.fn(),
     updateInterview: vi.fn(),

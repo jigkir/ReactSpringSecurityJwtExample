@@ -13,7 +13,7 @@ import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
 import {getAuthClasses} from "../../styles/AppStyles.jsx";
-import {useDevMode} from "../dev/DevMode.jsx";
+import {useDevMode} from "../core/dev/DevMode.jsx";
 import {useLoadedList} from "../../utils/useLoadedList.js";
 import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
 import {matchesColor} from "../../utils/StatusColor.js";

@@ -2,12 +2,12 @@ import React from "react";
 import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {BrowserRouter, MemoryRouter} from "react-router-dom";
 import {NotificationsProvider, useNotifications} from "../NotificationsProvider";
-import * as api from "../../api/Api.jsx";
+import * as api from "../../core/api/Api.jsx";
 import {REFRESH_INTERVAL_MS} from "../../../utils/usePolling.js";
 import {ACCOUNT_STATUS} from "../../../utils/AccountStatus.js";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
-vi.mock('../../api/Api.jsx', () => ({
+vi.mock('../../core/api/Api.jsx', () => ({
     getNotifications: vi.fn(),
     markNotificationsAsRead: vi.fn(),
 }));

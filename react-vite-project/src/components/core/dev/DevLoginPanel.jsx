@@ -13,9 +13,9 @@
 
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../styles/Button.jsx";
-import Icon from "../../styles/Icon.jsx";
-import {getDevClasses} from "../../styles/AppStyles.jsx";
+import Button from "../../../styles/Button.jsx";
+import Icon from "../../../styles/Icon.jsx";
+import {getDevClasses} from "../../../styles/AppStyles.jsx";
 import {getDevUsers} from "../api/DevApi.jsx";
 
 // Same order as the Role enum on the backend

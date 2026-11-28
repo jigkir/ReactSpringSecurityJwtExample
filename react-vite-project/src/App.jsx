@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from "react";
 import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
 import {useDarkMode} from "./styles/DarkMode.jsx";
 import PageLayout from "./components/PageLayout.jsx";
-import {checkUserStatus, getCurrentUser} from "./components/api/Api.jsx";
+import {checkUserStatus, getCurrentUser} from "./components/core/api/Api.jsx";
 import {i18nError} from "./utils/i18nError.jsx";
 import {usePolling} from "./utils/usePolling.js";
 import {SessionProvider} from "./utils/SessionContext.jsx";

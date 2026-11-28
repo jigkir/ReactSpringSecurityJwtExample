@@ -1,11 +1,11 @@
 import {render, screen, waitFor} from "@testing-library/react";
 import {BrowserRouter} from "react-router-dom";
 import ViewApplications from "../InternshipApplicationList.jsx";
-import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from "../../api/Api.jsx";
+import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from "../../core/api/Api.jsx";
 import {employerApplicationPath, PATHS} from "../../../routes/AppRoutes.jsx";
 
 
-vi.mock('../../api/Api.jsx', () => ({
+vi.mock('../../core/api/Api.jsx', () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),

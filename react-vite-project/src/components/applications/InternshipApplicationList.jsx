@@ -6,7 +6,7 @@ import {
     getApplications,
     getEmployerInternships,
     offerInternshipsToStudents
-} from "../api/Api.jsx";
+} from "../core/api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Button from "../../styles/Button.jsx";
 import {base64ToBlobUrl} from "../../utils/Documents.js";

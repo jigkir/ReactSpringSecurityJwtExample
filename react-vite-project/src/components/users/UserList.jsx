@@ -1,6 +1,6 @@
 import {useEffect, useState, useMemo, useCallback} from "react";
 import {useTranslation} from "react-i18next";
-import {getUsers, reactivateUser, denyUser} from "../api/Api.jsx";
+import {getUsers, reactivateUser, denyUser} from "../core/api/Api.jsx";
 import UserCard from "./UserCard.jsx";
 import {useOutletContext} from "react-router-dom";
 import {usePolling} from "../../utils/usePolling.js";

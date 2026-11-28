@@ -48,7 +48,7 @@ import {
     getStudentInterviews,
     getStudentOffers,
     getUsers,
-} from "../api/Api.jsx";
+} from "../core/api/Api.jsx";
 import {EVALUATION_ROLES, evaluationColor} from "../../utils/EvaluationRole.js";
 
 // Colors of a page whose load failed

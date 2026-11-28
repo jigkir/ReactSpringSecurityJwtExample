@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getInternshipTrackings, getAssignableTeachers, assignTeacher} from "../api/Api.jsx";
+import {getInternshipTrackings, getAssignableTeachers, assignTeacher} from "../core/api/Api.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {useOutletContext} from "react-router-dom";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";

@@ -12,7 +12,7 @@ import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
 import Icon from "../../styles/Icon.jsx";
 import PdfPreview from "../documents/PdfPreview.jsx";
-import {getDocumentFile} from "../api/Api.jsx";
+import {getDocumentFile} from "../core/api/Api.jsx";
 import {blobUrlFromFile} from "../../utils/Documents.js";
 import {DOC_TYPES} from "../../utils/DocumentTypes.js";
 import {useToggleSet} from "../../utils/useToggleSet.js";

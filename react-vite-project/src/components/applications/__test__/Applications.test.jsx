@@ -6,10 +6,10 @@ import {
     getApplications,
     getEmployerInterviewsByApplicationId,
     getEmployerInternships
-} from "../../api/Api.jsx";
+} from "../../core/api/Api.jsx";
 import {employerApplicationPath} from "../../../routes/AppRoutes.jsx";
 
-vi.mock('../../api/Api.jsx', () => ({
+vi.mock('../../core/api/Api.jsx', () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),

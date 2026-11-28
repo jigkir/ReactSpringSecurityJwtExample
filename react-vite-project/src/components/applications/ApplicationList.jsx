@@ -21,7 +21,7 @@ import {useTranslation} from "react-i18next";
 import ApplicationCard from "./ApplicationCard.jsx";
 import Icon from "../../styles/Icon.jsx";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
-import {getApplicationCv, getApplications, getEmployerInternships} from "../api/Api.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../core/api/Api.jsx";
 import {base64ToBlobUrl} from "../../utils/Documents.js";
 import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../utils/Sort.jsx";
 import {ALL, colorOf, matchesColor} from "../../utils/StatusColor.js";

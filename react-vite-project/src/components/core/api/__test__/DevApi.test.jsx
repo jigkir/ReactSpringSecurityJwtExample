@@ -1,8 +1,8 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
-import fetcher from "../../../utils/fetcher.js";
+import fetcher from "../../../../utils/fetcher.js";
 import {devLoginAs, getDevUsers} from "../DevApi.jsx";
 
-vi.mock('../../../utils/fetcher.js', () => ({default: vi.fn()}));
+vi.mock('../../../../utils/fetcher.js', () => ({default: vi.fn()}));
 
 const okResponse = (body) => ({ok: true, status: 200, json: async () => body});
 const errorResponse = (status, body = {}) => ({ok: false, status, json: async () => body});

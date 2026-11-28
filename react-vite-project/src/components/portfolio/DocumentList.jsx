@@ -44,7 +44,7 @@ import Button from "../../styles/Button.jsx";
 import ChangeDocType from "./ChangeDocType.jsx";
 import DocumentListShell from "../documents/DocumentListShell.jsx";
 import DocumentRow, {getRowListClass, ROW_BTN} from "../documents/DocumentRow.jsx";
-import {getDocumentFile, getDocuments, hideDocument} from "../api/Api.jsx";
+import {getDocumentFile, getDocuments, hideDocument} from "../core/api/Api.jsx";
 import {getCvDocumentsClasses} from "../../styles/AppStyles.jsx";
 import {blobUrlFromFile, formatBytes, formatDate} from "../../utils/Documents.js";
 import {DOC_TYPE_KEYS, DOC_TYPES} from "../../utils/DocumentTypes.js";

@@ -18,7 +18,7 @@ import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
 import DocumentList from "./DocumentList.jsx";
 import PortfolioUpload from "./PortfolioUpload.jsx";
-import {getMaxCvSize} from "../api/Api.jsx";
+import {getMaxCvSize} from "../core/api/Api.jsx";
 import {FALLBACK_MAX_BYTES} from "../../utils/Documents.js";
 import {DOC_TYPE_KEYS, DOC_TYPES} from "../../utils/DocumentTypes.js";
 

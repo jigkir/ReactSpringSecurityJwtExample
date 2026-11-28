@@ -1,6 +1,6 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation} from "react-router-dom";
-import {getNotifications, markNotificationsAsRead} from "../api/Api.jsx";
+import {getNotifications, markNotificationsAsRead} from "../core/api/Api.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {ACCOUNT_STATUS} from "../../utils/AccountStatus.js";
 import {PATHS} from "../../routes/AppRoutes.jsx";

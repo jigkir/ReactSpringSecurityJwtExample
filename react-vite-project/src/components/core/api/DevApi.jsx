@@ -1,4 +1,4 @@
-import fetcher from "../../utils/fetcher.js";
+import fetcher from "../../../utils/fetcher.js";
 import {handleResponse} from "./Api.jsx";
 
 // GET /api/dev/users -> UserResponseDto[]

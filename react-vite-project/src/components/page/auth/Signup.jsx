@@ -3,7 +3,7 @@ import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
 import {getAuthClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
 import {RoleField, translateWarning} from "../../../utils/CommonFields.jsx";
-import {getRoles} from "../../api/Api.jsx";
+import {getRoles} from "../../core/api/Api.jsx";
 import Student from "./signup/Student.jsx";
 import Employer from "./signup/Employer.jsx";
 import Teacher from "./signup/Teacher.jsx";

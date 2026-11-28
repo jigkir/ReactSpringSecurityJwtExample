@@ -27,7 +27,7 @@ import {
     getManagerInternships,
     rejectInternship,
     updateManagerInternship
-} from "../api/Api.jsx";
+} from "../core/api/Api.jsx";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {useSession} from "../../utils/useSession.js";

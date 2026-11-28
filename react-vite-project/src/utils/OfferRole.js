@@ -1,4 +1,4 @@
-import {acceptOffer, denyOffer, getStudentOffers} from "../components/api/Api.jsx";
+import {acceptOffer, denyOffer, getStudentOffers} from "../components/core/api/Api.jsx";
 
 export const OFFER_ROLES = {
     STUDENT: {

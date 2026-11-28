@@ -11,7 +11,7 @@ import {
     getStudentCvs,
     getStudentInternships,
     markInternshipsAsViewed
-} from "../api/Api.jsx";
+} from "../core/api/Api.jsx";
 import {usePolling} from "../../utils/usePolling.js";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../notification/NotificationsProvider.jsx";
 import {useSession} from "../../utils/useSession.js";

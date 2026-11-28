@@ -7,8 +7,8 @@ import {
     getWorkplaceEvaluationFileManager,
     saveWorkplaceEvaluations,
     signWorkplaceEvaluation,
-} from "../components/api/Api.jsx";
-import {devSignWorkplaceEvaluation} from "../components/api/DevApi.jsx";
+} from "../components/core/api/Api.jsx";
+import {devSignWorkplaceEvaluation} from "../components/core/api/DevApi.jsx";
 import {createInitialEvaluation, validateEvaluation} from "./WorkplaceEvaluation.js";
 
 export const EVALUATION_ROLES = {
