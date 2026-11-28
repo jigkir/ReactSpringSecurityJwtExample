@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import Button from "../../styles/Button.jsx";
 import Icon from "../../styles/Icon.jsx";
-import PortfolioPanel from "../portfolio/PortfolioPanel.jsx";
+import PortfolioPanel from "../documents/portfolio/PortfolioPanel.jsx";
 import {applyForInternship, updateApplicationCV} from "../core/api/Api.jsx";
 import SentDocuments from "./SentDocuments.jsx";
 import {PATHS} from "../../routes/AppRoutes.jsx";

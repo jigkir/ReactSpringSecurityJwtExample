@@ -40,18 +40,18 @@
 
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../styles/Button.jsx";
+import Button from "../../../styles/Button.jsx";
 import ChangeDocType from "./ChangeDocType.jsx";
-import DocumentListShell from "../documents/DocumentListShell.jsx";
-import DocumentRow, {getRowListClass, ROW_BTN} from "../documents/DocumentRow.jsx";
-import {getDocumentFile, getDocuments, hideDocument} from "../core/api/Api.jsx";
-import {getCvDocumentsClasses} from "../../styles/AppStyles.jsx";
-import {blobUrlFromFile, formatBytes, formatDate} from "../../utils/Documents.js";
-import {DOC_TYPE_KEYS, DOC_TYPES} from "../../utils/DocumentTypes.js";
-import {sortCvsNewest, StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
-import {ALL, colorOf, matchesColor} from "../../utils/StatusColor.js";
-import {useLoadedList} from "../../utils/useLoadedList.js";
-import {useToggleSet} from "../../utils/useToggleSet.js";
+import DocumentListShell from "../DocumentListShell.jsx";
+import DocumentRow, {getRowListClass, ROW_BTN} from "../DocumentRow.jsx";
+import {getDocumentFile, getDocuments, hideDocument} from "../../core/api/Api.jsx";
+import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
+import {blobUrlFromFile, formatBytes, formatDate} from "../../../utils/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
+import {sortCvsNewest, StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../../utils/StatusColor.js";
+import {useLoadedList} from "../../../utils/useLoadedList.js";
+import {useToggleSet} from "../../../utils/useToggleSet.js";
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
 const keyOf = (doc) => `${doc.docType}-${doc.id}`;
