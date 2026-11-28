@@ -586,7 +586,7 @@ public class EmployerServiceTest {
         });
 
         // Act
-        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St"));
+        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St", "2124567273"));
 
         // Assert
         verify(interviewRepository).save(interviewArgumentCaptor.capture());
@@ -611,7 +611,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InternshipApplicationNotFoundException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verifyNoInteractions(interviewRepository);
     }
@@ -620,7 +620,7 @@ public class EmployerServiceTest {
     void shouldReturnInterviewsOfEmployer() {
         // Arrange
         LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
         interview.setId(30L);
 
         when(interviewRepository.findByEmployer_Credentials_EmailAndInternshipApplication_Internship_DeletedFalse(EMPLOYER_EMAIL))
@@ -654,7 +654,7 @@ public class EmployerServiceTest {
     @Test
     void shouldUpdateInterview() throws Exception {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Old message", LocalDateTime.now().plusDays(3), MeetingType.ONLINE, "old-link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Old message", LocalDateTime.now().plusDays(3), MeetingType.ONLINE, "old-link");
         interview.setId(30L);
 
         LocalDateTime newDate = LocalDateTime.now().plusDays(10);
@@ -662,7 +662,7 @@ public class EmployerServiceTest {
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
         // Act
-        InterviewEmployerResponseDto response = employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", newDate, MeetingType.IN_PERSON, "123 Main St"));
+        InterviewEmployerResponseDto response = employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", newDate, MeetingType.IN_PERSON, "123 Main St", "2124567273"));
 
         // Assert
         assertEquals("New message", interview.getMessage());
@@ -685,7 +685,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InterviewNotFoundException.class,
-                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -701,7 +701,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(ApplicationRejectedException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -719,7 +719,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(StudentAlreadyEmployedException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
         verifyNoInteractions(notificationService);
@@ -736,7 +736,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InterviewAlreadyExistsException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
     }
@@ -764,7 +764,7 @@ public class EmployerServiceTest {
     void shouldCancelInterviewWhenApplicationIsRejected() throws Exception {
         // Arrange
         InternshipApplication internshipApplication = receivedInternshipApplication();
-        Interview interview = new Interview(employer, internshipApplication, "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, internshipApplication, "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);
 
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
@@ -800,7 +800,7 @@ public class EmployerServiceTest {
     @Test
     void shouldCancelInterview() throws Exception {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
@@ -830,7 +830,7 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowWhenCancellingAlreadyCancelledInterview() {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
@@ -844,14 +844,14 @@ public class EmployerServiceTest {
     @Test
     void shouldThrowWhenUpdatingCancelledInterview() {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
         // Act + Assert
         assertThrows(InterviewCancelledException.class,
-                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         assertEquals("Message", interview.getMessage());
         verify(interviewRepository, never()).save(any(Interview.class));
@@ -860,7 +860,7 @@ public class EmployerServiceTest {
     @Test
     void shouldCancelInterviewsWhenInternshipIsDeleted() throws Exception {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);
 
         when(internshipRepository.findByIdAndPostedBy_Credentials_EmailAndDeletedFalse(10L, EMPLOYER_EMAIL)).thenReturn(Optional.of(internship));
@@ -898,7 +898,7 @@ public class EmployerServiceTest {
         // Arrange
         LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
         InternshipApplication internshipApplication = receivedInternshipApplication();
-        Interview interview = new Interview(employer, internshipApplication, "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
+        Interview interview = new Interview(employer, internshipApplication, "2124567273", "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
         interview.setId(30L);
 
         when(internshipApplicationRepository.findByIdAndInternship_PostedBy_Credentials_EmailAndInternship_DeletedFalse(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL))
@@ -939,7 +939,7 @@ public class EmployerServiceTest {
         });
 
         // Act
-        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St"));
+        employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273"));
 
         // Assert: only the student concerned is notified, and only once
         verify(notificationService).notifyIfAbsent(NotificationType.INTERVIEW_CONVOCATION, 30L, internshipApplication.getStudent());
@@ -957,7 +957,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(ApplicationRejectedException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verifyNoInteractions(notificationService);
     }
@@ -973,7 +973,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InterviewAlreadyExistsException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verifyNoInteractions(notificationService);
     }
@@ -982,13 +982,13 @@ public class EmployerServiceTest {
     void shouldCloseOldNotificationsBeforeNotifyingStudentWhenInterviewIsUpdated() throws Exception {
         // Arrange
         InternshipApplication internshipApplication = receivedInternshipApplication();
-        Interview interview = new Interview(employer, internshipApplication, "Old message", LocalDateTime.now().plusDays(3), MeetingType.ONLINE, "old-link");
+        Interview interview = new Interview(employer, internshipApplication, "2124567273", "Old message", LocalDateTime.now().plusDays(3), MeetingType.ONLINE, "old-link");
         interview.setId(30L);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
 
         // Act
-        employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St"));
+        employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St", "2124567273"));
 
         // Assert: the stale convocation is closed first, then the student is told about the update
         InOrder inOrder = inOrder(notificationService);
@@ -999,7 +999,7 @@ public class EmployerServiceTest {
     @Test
     void shouldNotNotifyStudentWhenUpdatingCancelledInterview() {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);
         interview.cancel(InterviewCancellationReason.CANCELLED_BY_EMPLOYER);
 
@@ -1007,7 +1007,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InterviewCancelledException.class,
-                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verifyNoInteractions(notificationService);
     }
@@ -1015,7 +1015,7 @@ public class EmployerServiceTest {
     @Test
     void shouldCloseInterviewNotificationsWithoutNotifyingStudentWhenInterviewIsCancelled() throws Exception {
         // Arrange
-        Interview interview = new Interview(employer, receivedInternshipApplication(), "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
+        Interview interview = new Interview(employer, receivedInternshipApplication(), "2124567273", "Message", LocalDateTime.now().plusDays(7), MeetingType.ONLINE, "link");
         interview.setId(30L);
 
         when(interviewRepository.findByIdAndEmployer_Credentials_Email(30L, EMPLOYER_EMAIL)).thenReturn(Optional.of(interview));
@@ -1098,7 +1098,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InternshipAlreadyOfferedException.class,
-                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.createInterview(INTERNSHIP_APPLICATION_ID, EMPLOYER_EMAIL, new InterviewRequestDto("Message", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         verify(interviewRepository, never()).save(any(Interview.class));
         assertEquals(EmployerDecision.INTERNSHIP_OFFERED, application.getEmployerDecision());
@@ -1112,7 +1112,7 @@ public class EmployerServiceTest {
 
         LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
 
-        Interview interview = new Interview(employer, application, "Old message",
+        Interview interview = new Interview(employer, application, "2124567273", "Old message",
                 interviewDate, MeetingType.ONLINE, "old-link");
         interview.setId(30L);
 
@@ -1121,7 +1121,7 @@ public class EmployerServiceTest {
 
         // Act + Assert
         assertThrows(InternshipAlreadyOfferedException.class,
-                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St")));
+                () -> employerService.updateInterview(30L, EMPLOYER_EMAIL, new InterviewRequestDto("New message", LocalDateTime.now().plusDays(10), MeetingType.IN_PERSON, "123 Main St", "2124567273")));
 
         assertEquals("Old message", interview.getMessage());
         assertEquals(interviewDate, interview.getInterviewDate());

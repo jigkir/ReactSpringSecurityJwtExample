@@ -1,13 +1,15 @@
 import {getInternshipFormClasses} from "../../../../styles/AppStyles.jsx";
 import Button from "../../../../styles/Button.jsx";
 import {useTranslation} from "react-i18next";
-import {Field, translateWarning} from "../../../../utils/CommonFields.jsx";
+import {Field, PhoneNumberField, translateWarning} from "../../../../utils/CommonFields.jsx";
 import {useState} from "react";
 import AutoResizeTextarea from "../../../../styles/AutoResizeTextarea.jsx";
+import Icon from "../../../../styles/Icon.jsx";
 
 const INITIAL_FORM = {
     interviewDate: "",
     message: "",
+    phoneNumber: "",
     meetingType: "",
     meetingDetails: "",
 };
@@ -15,6 +17,7 @@ const INITIAL_FORM = {
 const toForm = (i) => i ? {
     interviewDate: i.interviewDate ?? "",
     message: i.message ?? "",
+    phoneNumber: i.phoneNumber ?? "",
     meetingType: i.meetingType ?? "",
     meetingDetails: i.meetingDetails ?? "",
 } : INITIAL_FORM;
@@ -48,6 +51,11 @@ function buildPayload(formData, interview) {
         return {error: {key: "interview.errorMeetingType"}};
     }
 
+    const isPhone = formData.meetingType === "PHONE";
+    if (isPhone && !/^[1-9]\d{9}$/.test(formData.phoneNumber)) {
+        return {error: {key: "interview.errorPhoneNumber"}};   // add this key to fr/en
+    }
+
     if (message.length < MESSAGE_MIN || meetingDetails.length < 1) {
         return {error: {key: "interview.errorTooShort"}};
     }
@@ -56,12 +64,15 @@ function buildPayload(formData, interview) {
         return {error: {key: "interview.errorTooLong"}};
     }
 
+
+
     return {
         payload: {
             message,
             interviewDate: formData.interviewDate,
             meetingType: formData.meetingType,
             meetingDetails,
+            ...(isPhone && {interviewPhoneNumber: formData.phoneNumber}),
         },
     };
 }
@@ -94,6 +105,14 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
     const handleChange = (e) => {
         const {name, value} = e.target;
         setFormData((prev) => ({...prev, [name]: value}));
+    };
+
+    const handlePhoneChange = (e) => {
+        const digits = e.target.value
+            .replace(/\D/g, "")
+            .replace(/^0+/, "")
+            .slice(0, 10);
+        setFormData((prev) => ({...prev, phoneNumber: digits}));
     };
 
     return (
@@ -140,7 +159,16 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
                         ))}
                     </select>
                 </Field>
-
+                {formData.meetingType === "PHONE" && (
+                    <PhoneNumberField
+                        value={formData.phoneNumber}
+                        onChange={handlePhoneChange}
+                        warning={translateWarning(t, error)}
+                        labelClass={s.label}
+                        fieldClass={s.input}
+                        errorClass="mt-1 text-xs text-red-500"
+                    />
+                )}
                 {/* Meeting Details: grows with its content */}
                 <Field id="meetingDetails" label={t("interview.meetingDetailsLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
@@ -152,11 +180,11 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
 
                 {/* Footer */}
                 <div className={s.footer}>
-                    <Button type="button" tone="neutral" size="lg" dark={dark} onClick={onClose}
+                    <Button type="button" icon="close" tone="neutral" size="lg" dark={dark} onClick={onClose}
                             className="w-full sm:w-auto">
                         {t("interview.cancelBtn")}
                     </Button>
-                    <Button type="submit" tone="primary" size="lg" dark={dark} className="w-full sm:w-auto">
+                    <Button type="submit" icon="send" tone="primary" size="lg" dark={dark} className="w-full sm:w-auto">
                         {isEdit ? t("interview.saveChanges") : t("interview.submitBtn")}
                     </Button>
                 </div>

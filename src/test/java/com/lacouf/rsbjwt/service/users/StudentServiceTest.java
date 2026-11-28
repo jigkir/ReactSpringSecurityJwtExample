@@ -1420,7 +1420,7 @@ public class StudentServiceTest {
         application.setId(20L);
 
         LocalDateTime interviewDate = LocalDateTime.now().plusDays(7);
-        Interview interview = new Interview(employer, application, "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
+        Interview interview = new Interview(employer, application, "2124567273", "Please come to our office", interviewDate, MeetingType.IN_PERSON, "123 Main St");
         interview.setId(30L);
 
         when(studentRepository.findByCredentialsEmail(STUDENT_EMAIL)).thenReturn(Optional.of(dummyStudent));
@@ -1899,7 +1899,7 @@ public class StudentServiceTest {
         InternshipApplication application = new InternshipApplication(internship, new CV(), dummyStudent);
         application.setId(applicationId);
 
-        Interview interview = new Interview(employer, application, "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
+        Interview interview = new Interview(employer, application, "2124567273", "Please come to our office", LocalDateTime.now().plusDays(7), MeetingType.IN_PERSON, "123 Main St");
         interview.setId(interviewId);
 
         return interview;

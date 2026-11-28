@@ -696,6 +696,7 @@
     "errorMeetingType": "Choose how the interview will take place.",
     "errorTooShort": "Add a message and the meeting details (link, phone number or address).",
     "errorTooLong": "The message can have up to 500 characters and the details up to 255.",
+    "errorInvalidPhoneNumber": "Invalid phone number",
     "loading": "Loading interview...",
     "loadError": "Unable to load interview. Please try again.",
     "meetingTypes": {

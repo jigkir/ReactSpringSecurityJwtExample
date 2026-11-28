@@ -20,6 +20,15 @@ public record InterviewRequestDto (
 
     @NotNull
     @Size(min = 2, max = 255)
-    String meetingDetails
+    String meetingDetails,
+
+    @Pattern(regexp = "^[0-9]{10}$", message = "phone number must contain exactly 10 digits")
+    String interviewPhoneNumber
 ) {
+    public InterviewRequestDto {
+        if (interviewPhoneNumber != null) {
+            interviewPhoneNumber = interviewPhoneNumber.trim();
+            if (interviewPhoneNumber.isEmpty()) interviewPhoneNumber = null;
+        }
+    }
 }

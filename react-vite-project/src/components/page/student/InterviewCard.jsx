@@ -89,7 +89,7 @@ export default function InterviewCard({
                 {interview.meetingType === "PHONE" &&
                     <span className={`${cardS.detailBadge} max-w-full flex-wrap gap-1.5`}>
                         <span className="font-semibold">{t("studentInterviews.phoneNumber")}:</span>
-                        <span>{interview.employerPhoneNumber}</span>
+                        <span>{interview.interviewPhoneNumber}</span>
                     </span>
                 }
             </div>

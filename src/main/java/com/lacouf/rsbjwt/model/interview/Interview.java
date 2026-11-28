@@ -25,6 +25,9 @@ public class Interview {
     @Column(nullable = false)
     private String message;
 
+    @Column
+    private String interviewPhoneNumber;
+
     @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,9 +60,10 @@ public class Interview {
     public Interview() {
     }
 
-    public Interview(Employer employer, InternshipApplication internshipApplication, String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {
+    public Interview(Employer employer, InternshipApplication internshipApplication, String interviewPhoneNumber, String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {
         this.employer = employer;
         this.internshipApplication = internshipApplication;
+        this.interviewPhoneNumber = interviewPhoneNumber;
         this.studentDecision = StudentDecision.PENDING;
         this.message = message;
         this.interviewDate = interviewDate;
@@ -69,8 +73,10 @@ public class Interview {
         this.rejectionMessage = "";
     }
 
-    public void update(String message, LocalDateTime interviewDate, MeetingType meetingType, String meetingDetails) {
+    public void update(String message, String interviewPhoneNumber, LocalDateTime interviewDate,
+                       MeetingType meetingType, String meetingDetails) {
         this.message = message;
+        this.interviewPhoneNumber = interviewPhoneNumber;
         this.interviewDate = interviewDate;
         this.meetingType = meetingType;
         this.meetingDetails = meetingDetails;
