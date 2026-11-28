@@ -6,7 +6,7 @@ import {useOutletContext} from "react-router-dom";
 import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
 import {COLOR, matchesColor} from "../../utils/StatusColor.js";
 import {StatusColorSelect, useColorFilter} from "../../utils/Sort.jsx";
-import UserCard from "./UserCard.jsx";
+import UserCard from "../users/UserCard.jsx";
 import Button from "../../styles/Button.jsx";
 
 const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
