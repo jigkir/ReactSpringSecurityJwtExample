@@ -31,7 +31,7 @@ vi.mock("../../../../utils/usePolling.js", () => ({
     usePolling: vi.fn(),
 }));
 
-vi.mock("../ApplyControls.jsx", () => ({
+vi.mock("../../../internships/ApplyControls.jsx", () => ({
     default: ({internshipId, onChanged}) => <button onClick={onChanged}>{`apply-${internshipId}`}</button>,
 }));
 

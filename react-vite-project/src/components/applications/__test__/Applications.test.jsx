@@ -9,7 +9,7 @@ import {
 } from "../../api/Api.jsx";
 import {employerApplicationPath} from "../../../routes/AppRoutes.jsx";
 
- () => ({
+vi.mock('../../api/Api.jsx', () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),

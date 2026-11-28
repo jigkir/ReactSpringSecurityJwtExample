@@ -1,7 +1,7 @@
 import {useTranslation} from "react-i18next";
-import Icon from "../../../styles/Icon.jsx";
-import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/AppStyles.jsx";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import Icon from "../../styles/Icon.jsx";
+import {getCvDocumentsClasses, getStatusBorder} from "../../styles/AppStyles.jsx";
+import {ALL, borderStatusOf} from "../../utils/StatusColor.js";
 
 const ACCOUNT_TONES = {
     PENDING: "PENDING",

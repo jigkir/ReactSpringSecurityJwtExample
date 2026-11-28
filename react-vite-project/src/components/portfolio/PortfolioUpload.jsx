@@ -20,14 +20,14 @@
 
 import {useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import {getSelectClass} from "../../../styles/FormControls.jsx";
-import {getCvUploadClasses} from "../../../styles/AppStyles.jsx";
-import {uploadDocument} from "../../api/Api.jsx";
-import {ACCEPTED_EXT, bytesToMb, validateFile} from "../../../utils/Documents.js";
-import {DOC_TYPE_KEYS, DOC_TYPES, guessDocType} from "../../../utils/DocumentTypes.js";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
+import Button from "../../styles/Button.jsx";
+import Icon from "../../styles/Icon.jsx";
+import {getSelectClass} from "../../styles/FormControls.jsx";
+import {getCvUploadClasses} from "../../styles/AppStyles.jsx";
+import {uploadDocument} from "../api/Api.jsx";
+import {ACCEPTED_EXT, bytesToMb, validateFile} from "../../utils/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES, guessDocType} from "../../utils/DocumentTypes.js";
+import {translateWarning} from "../../utils/CommonFields.jsx";
 
 const canUpload = (item) => item.status === "ready" || item.status === "failed";
 

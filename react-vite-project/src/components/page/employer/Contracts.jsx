@@ -1,19 +1,19 @@
 /**
- * Student page: internship contracts to sign.
+ * Employer page: internship contracts to sign.
  *
- * Route /student/contracts
+ * Route /employer/contracts
  *
- * Location: components/page/student/contracts/Contracts.jsx
+ * Location: components/page/employer/contracts/Contracts.jsx
  * The role (signature field, base route of the contract page) is read from the user
  * by ContractReviewList: see utils/ContractRole.js.
  *
- * Access control is handled by <RequireRole roles={["STUDENT"]}/> in App.jsx,
+ * Access control is handled by <RequireRole roles={["EMPLOYER"]}/> in App.jsx,
  * and enforced again by the backend.
  */
 
 import {useOutletContext} from "react-router-dom";
-import ContractReviewList from "../../../contracts/ContractReviewList.jsx";
-import {getAuthClasses} from "../../../../styles/AppStyles.jsx";
+import ContractReviewList from "../../contracts/ContractReviewList.jsx";
+import {getAuthClasses} from "../../../styles/AppStyles.jsx";
 
 const Contracts = () => {
     const {dark, user} = useOutletContext();

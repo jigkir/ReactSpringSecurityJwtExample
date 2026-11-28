@@ -33,7 +33,7 @@ import {
 } from "../../utils/interviewStatus.js";
 import {canSign, getContractRole} from "../../utils/ContractRole.js";
 import {PATHS, ROUTES} from "../../routes/AppRoutes.jsx";
-import {MOCK_STUDENTS} from "../page/manager/StudentStatusMock.js";
+import {MOCK_STUDENTS} from "../student-statuses/StudentStatusMock.js";
 import {
     getApplications,
     getContracts,
