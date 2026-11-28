@@ -4,7 +4,7 @@ import {getInternshipCardClasses} from "../../styles/AppStyles.jsx";
 import Icon from "../../styles/Icon.jsx";
 import Button from "../../styles/Button.jsx";
 import AutoResizeTextarea from "../../styles/AutoResizeTextarea.jsx";
-import InterviewStatusPill from "../interview/InterviewStatusPill.jsx";
+import InterviewStatusPill from "./InterviewStatusPill.jsx";
 import InterviewActions from "./InterviewActions.jsx";
 import InterviewPicker from "./InterviewPicker.jsx";
 import {useNotifications} from "../notification/NotificationsProvider.jsx";
