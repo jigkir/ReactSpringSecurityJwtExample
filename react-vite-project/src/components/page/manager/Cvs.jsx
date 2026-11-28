@@ -8,7 +8,7 @@
  */
 
 import {useOutletContext} from "react-router-dom";
-import CvReviewList from "../../cvs/CvReviewList.jsx";
+import CvReviewList from "../../features/cvs/CvReviewList.jsx";
 import {getAuthClasses} from "../../../styles/AppStyles.jsx";
 
 const Cv = () => {

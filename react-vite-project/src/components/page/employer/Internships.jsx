@@ -1,5 +1,5 @@
 import {useOutletContext} from "react-router-dom";
-import EmployerInternshipList from "../../internships/EmployerInternshipList.jsx";
+import EmployerInternshipList from "../../features/internships/EmployerInternshipList.jsx";
 
 export default function Internships({user}) {
     const {dark} = useOutletContext();

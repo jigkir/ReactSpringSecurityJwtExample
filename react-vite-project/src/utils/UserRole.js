@@ -1,4 +1,4 @@
-import {getUsers, reactivateUser, denyUser} from "../components/core/api/Api.jsx";
+import {getUsers, reactivateUser, denyUser} from "../components/shared/core/api/Api.jsx";
 
 export const USER_ROLES = {
     MANAGER: {

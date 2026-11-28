@@ -1,5 +1,5 @@
 import {useOutletContext} from "react-router-dom";
-import UserList from "../../users/UserList.jsx";
+import UserList from "../../features/users/UserList.jsx";
 
 export default function Users({user}) {
     const {dark} = useOutletContext();

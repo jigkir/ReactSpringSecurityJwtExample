@@ -1,5 +1,5 @@
 import {useOutletContext} from "react-router-dom";
-import OfferList from "../../offers/OfferList.jsx";
+import OfferList from "../../features/offers/OfferList.jsx";
 
 export default function Offers() {
     const {dark, user} = useOutletContext();

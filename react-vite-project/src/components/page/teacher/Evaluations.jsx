@@ -1,5 +1,5 @@
 import {useOutletContext} from "react-router-dom";
-import EvaluationList from "../../evaluations/EvaluationList.jsx";
+import EvaluationList from "../../features/evaluations/EvaluationList.jsx";
 
 export default function Evaluations() {
     const {dark, user} = useOutletContext();

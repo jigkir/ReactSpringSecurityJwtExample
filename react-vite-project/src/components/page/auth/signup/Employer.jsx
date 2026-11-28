@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {PATHS} from "../../../../routes/AppRoutes.jsx";
-import {getDisciplines, signupEmployer} from "../../../core/api/Api.jsx";
+import {getDisciplines, signupEmployer} from "../../../shared/core/api/Api.jsx";
 import {
     ConfirmPasswordField,
     DisciplineField,

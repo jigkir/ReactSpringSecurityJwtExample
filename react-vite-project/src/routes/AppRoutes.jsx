@@ -12,7 +12,7 @@
  *   nav      optional          {ROLE: "translation.key"} -> the page shows up in the navbar of that role.
  *                              The ORDER of ROUTES is the order of the navbar links.
  *   home     optional          [ROLE] -> the page gets a card on the Home of that role
- *                              (its config lives in components/home/HomeSections.js, keyed by `path`).
+ *                              (its config lives in components/features/home/HomeSections.js, keyed by `path`).
  *
  * App.jsx    -> <Route element={<PageLayout/>}>{appRoutes(ctx)}</Route>
  * Navbar.jsx -> getNavLinks(role)
@@ -28,17 +28,17 @@
 
 import {generatePath, Navigate, Outlet, Route, useOutletContext} from "react-router-dom";
 import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
-import Home from "../components/Home.jsx";
-import About from "../components/About.jsx";
+import Home from "../components/page/Home.jsx";
+import About from "../components/page/About.jsx";
 import Login from "../components/page/auth/Login.jsx";
 import Signup from "../components/page/auth/Signup.jsx";
 import Logout from "../components/page/auth/Logout.jsx";
-import ErrorPage from "../components/ErrorPage.jsx";
+import ErrorPage from "../components/page/ErrorPage.jsx";
 import ExpiredUser from "../components/page/ExpiredUser.jsx";
 import Users from "../components/page/manager/Users.jsx";
 import Tracking from "../components/page/manager/Tracking.jsx";
 import Portfolio from "../components/page/student/Portfolio.jsx";
-import ContractFile from "../components/contracts/ContractFile.jsx";
+import ContractFile from "../components/features/contracts/ContractFile.jsx";
 import StudentInternships from "../components/page/student/Internships.jsx";
 import StudentInterviews from "../components/page/student/Interviews.jsx";
 import StudentOffers from "../components/page/student/Offers.jsx";
@@ -52,7 +52,7 @@ import Applications from "../components/page/employer/Applications.jsx";
 import ViewApplications from "../components/page/employer/ApplicationsOfInternship.jsx";
 import EmployerInterviews from "../components/page/employer/Interviews.jsx";
 import EmployerContracts from "../components/page/employer/Contracts.jsx";
-import EvaluationFile from "../components/evaluations/EvaluationFile.jsx";
+import EvaluationFile from "../components/features/evaluations/EvaluationFile.jsx";
 import WorkplaceEvaluationsManager from "../components/page/manager/Evaluations.jsx";
 import WorkplaceEvaluations from "../components/page/teacher/Evaluations.jsx";
 

@@ -1,5 +1,5 @@
 import {useOutletContext} from "react-router-dom";
-import PortfolioPanel from "../../documents/portfolio/Portfolio.jsx";
+import PortfolioPanel from "../../features/portfolio/Portfolio.jsx";
 
 export default function Portfolio() {
     const {dark} = useOutletContext();

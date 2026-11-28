@@ -1,11 +1,11 @@
 import {act, render, screen, waitFor, within} from "@testing-library/react";
 import {MemoryRouter, Outlet, Route, Routes} from "react-router-dom";
 import StudentInterviews from "../Interviews.jsx";
-import {getStudentInterviews} from "../../../core/api/Api.jsx";
+import {getStudentInterviews} from "../../../shared/core/api/Api.jsx";
 import {usePolling} from "../../../../utils/usePolling.js";
 import i18n from "../../../../i18next.jsx";
 
-vi.mock("../../../core/api/Api.jsx", () => ({
+vi.mock("../../../shared/core/api/Api.jsx", () => ({
     getStudentInterviews: vi.fn(),
 }));
 

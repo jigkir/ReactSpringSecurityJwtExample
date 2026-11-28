@@ -2,8 +2,8 @@ import {useState} from "react";
 import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
 import {getAuthClasses} from "../../../styles/AppStyles.jsx";
 import Button from "../../../styles/Button.jsx";
-import {getCurrentUser, getCvCount, login} from "../../core/api/Api.jsx";
-import {devLoginAs} from "../../core/api/DevApi.jsx";
+import {getCurrentUser, getCvCount, login} from "../../shared/core/api/Api.jsx";
+import {devLoginAs} from "../../shared/core/api/DevApi.jsx";
 import {
     EmailField,
     PasswordField,
@@ -13,8 +13,8 @@ import {
 } from "../../../utils/CommonFields.jsx";
 import {useTranslation} from "react-i18next";
 import {i18nError} from "../../../utils/i18nError.jsx";
-import {useDevMode} from "../../core/dev/DevMode.jsx";
-import DevLoginPanel from "../../core/dev/DevLoginPanel.jsx";
+import {useDevMode} from "../../shared/core/dev/DevMode.jsx";
+import DevLoginPanel from "../../shared/core/dev/DevLoginPanel.jsx";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 const DEFAULT_WARNINGS = {email: "", password: ""};

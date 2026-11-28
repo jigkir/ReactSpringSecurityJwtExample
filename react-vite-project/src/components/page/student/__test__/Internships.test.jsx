@@ -6,19 +6,19 @@ import {
     getStudentCvs,
     getStudentAppliedInternships,
     markInternshipsAsViewed
-} from "../../../core/api/Api.jsx";
+} from "../../../shared/core/api/Api.jsx";
 import i18n from "../../../../i18next.jsx";
-import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
+import {useNotifications} from "../../../shared/notification/NotificationsProvider.jsx";
 import {useSession} from "../../../../utils/useSession.js";
 
-vi.mock("../../../core/api/Api.jsx", () => ({
+vi.mock("../../../shared/core/api/Api.jsx", () => ({
     getStudentInternships: vi.fn(),
     getStudentCvs: vi.fn(),
     getStudentAppliedInternships: vi.fn(),
     markInternshipsAsViewed: vi.fn(),
 }));
 
-vi.mock("../../../notification/NotificationsProvider.jsx", async (importOriginal) => ({
+vi.mock("../../../shared/notification/NotificationsProvider.jsx", async (importOriginal) => ({
     ...await importOriginal(),
     useNotifications: vi.fn(),
 }));
@@ -31,7 +31,7 @@ vi.mock("../../../../utils/usePolling.js", () => ({
     usePolling: vi.fn(),
 }));
 
-vi.mock("../../../internships/ApplyControls.jsx", () => ({
+vi.mock("../../../features/internships/ApplyControls.jsx", () => ({
     default: ({internshipId, onChanged}) => <button onClick={onChanged}>{`apply-${internshipId}`}</button>,
 }));
 

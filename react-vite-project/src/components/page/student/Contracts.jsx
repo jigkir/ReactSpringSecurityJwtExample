@@ -12,7 +12,7 @@
  */
 
 import {useOutletContext} from "react-router-dom";
-import ContractReviewList from "../../contracts/ContractReviewList.jsx";
+import ContractReviewList from "../../features/contracts/ContractReviewList.jsx";
 import {getAuthClasses} from "../../../styles/AppStyles.jsx";
 
 const Contracts = () => {
