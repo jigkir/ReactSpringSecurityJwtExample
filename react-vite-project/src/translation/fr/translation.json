@@ -833,6 +833,7 @@
     "loadError": "Impossible de charger les entrevues.",
     "empty": "Vous n’avez encore planifié aucune entrevue.",
     "noMatch": "Aucune entrevue ne correspond à ce filtre.",
+    "confirmCancel": "Voulez-vous vraiment annuler cette entrevue ?",
     "statusAria": "Filtrer par statut",
     "invalidDate": "Date non valide",
     "message": "Message de la rencontre",

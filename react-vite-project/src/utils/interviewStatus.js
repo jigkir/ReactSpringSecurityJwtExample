@@ -49,3 +49,16 @@ export const getInterviewStatus = (interview) => {
 
 /** awaiting = YELLOW, upcoming = GREEN, rejected / cancelled = RED, past = null (no color). */
 export const getInterviewColor = (interview) => INTERVIEW_COLOR[getInterviewStatus(interview)] ?? null;
+
+export const sortInterviews = (list) => {
+    const now = Date.now();
+    const group = (item) => isCancelled(item) ? 2 : (getInterviewTime(item) ?? 0) >= now ? 0 : 1;
+    return [...(list ?? [])].sort((a, b) => {
+        const ga = group(a);
+        const gb = group(b);
+        if (ga !== gb) return ga - gb;
+        const ta = getInterviewTime(a) ?? 0;
+        const tb = getInterviewTime(b) ?? 0;
+        return ga === 0 ? ta - tb : tb - ta;
+    });
+};

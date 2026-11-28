@@ -1,16 +1,20 @@
+import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import Button from "../../../styles/Button.jsx";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import InterviewStatusPill from "../../interview/InterviewStatusPill.jsx";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import {getInternshipCardClasses} from "../../styles/AppStyles.jsx";
+import Icon from "../../styles/Icon.jsx";
+import Button from "../../styles/Button.jsx";
+import AutoResizeTextarea from "../../styles/AutoResizeTextarea.jsx";
+import InterviewStatusPill from "../interview/InterviewStatusPill.jsx";
+import InterviewActions from "./InterviewActions.jsx";
+import InterviewPicker from "./InterviewPicker.jsx";
+import {useNotifications} from "../notification/NotificationsProvider.jsx";
+import {ALL, borderStatusOf} from "../../utils/StatusColor.js";
 import {
     getInterviewStatus,
     getInterviewTime,
     INTERVIEW_STATUS,
     INTERVIEW_STATUS_ACCENT
-} from "../../../utils/interviewStatus.js";
+} from "../../utils/interviewStatus.js";
 
 const getMeetingUrl = (details) => {
     try {
@@ -35,8 +39,18 @@ export default function InterviewCard({
                                           onStartReject,
                                           onDeny,
                                           onCloseForm
+                                          , role, reload
                                       }) {
     const {t} = useTranslation();
+    const {refresh: refreshNotifications} = useNotifications();
+    const [localRejecting, setLocalRejecting] = useState(false);
+    const [rejectCommentLocal, setRejectCommentLocal] = useState("");
+    const [busyLocal, setBusyLocal] = useState(false);
+    const [editingLocal, setEditingLocal] = useState(false);
+    const [actionError, setActionError] = useState(null);
+    const effectiveRejecting = rejecting ?? localRejecting;
+    const effectiveRejectComment = rejectComment ?? rejectCommentLocal;
+    const effectiveBusy = busy ?? busyLocal;
     // While a status color is selected, the card gets a full border of that color
     const filtered = filterColor !== ALL;
     const cardS = getInternshipCardClasses(dark, borderStatusOf(filterColor));
@@ -89,7 +103,7 @@ export default function InterviewCard({
                 {interview.meetingType === "PHONE" &&
                     <span className={`${cardS.detailBadge} max-w-full flex-wrap gap-1.5`}>
                         <span className="font-semibold">{t("studentInterviews.phoneNumber")}:</span>
-                        <span>{interview.interviewPhoneNumber}</span>
+                        <span>{interview.employerPhoneNumber ?? interview.interviewPhoneNumber}</span>
                     </span>
                 }
             </div>
@@ -132,7 +146,7 @@ export default function InterviewCard({
                 )}
 
                 {/* --- Rejection reason (required) --- */}
-                {rejecting && (
+                {effectiveRejecting && (
                     <div className="space-y-1 pt-2">
                         <label htmlFor={`rejectComment-${interview.id}`}
                                className={`block text-sm font-semibold ${muted}`}>
@@ -140,8 +154,8 @@ export default function InterviewCard({
                         </label>
                         <AutoResizeTextarea
                             id={`rejectComment-${interview.id}`}
-                            value={rejectComment}
-                            onChange={(e) => onRejectCommentChange(e.target.value)}
+                            value={effectiveRejectComment}
+                            onChange={(e) => onRejectCommentChange ? onRejectCommentChange(e.target.value) : setRejectCommentLocal(e.target.value)}
                             rows={2}
                             autoFocus
                             placeholder={t("studentInterviews.rejectPlaceholder")}
@@ -150,32 +164,46 @@ export default function InterviewCard({
                     </div>
                 )}
 
-                {/* --- Action Buttons: only while the student has not answered --- */}
-                {awaitingResponse && (
-                    <div className="flex justify-end gap-3 pt-2">
-                        {rejecting ? (
-                            <>
-                                <Button dark={dark} tone="danger" icon="check"
-                                        disabled={busy || !rejectComment.trim()}
-                                        onClick={() => onDeny(interview.id)}>
-                                    {t("studentInterviews.confirmRejection")}
-                                </Button>
-                                <Button dark={dark} tone="neutral" icon="close" disabled={busy} onClick={onCloseForm}>
-                                    {t("studentInterviews.cancel")}
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                <Button dark={dark} tone="success" icon="check" disabled={busy}
-                                        onClick={() => onAccept(interview.id)}>
-                                    {t("studentInterviews.accept")}
-                                </Button>
-                                <Button dark={dark} tone="danger" icon="close" disabled={busy}
-                                        onClick={() => onStartReject(interview.id)}>
-                                    {t("studentInterviews.reject")}
-                                </Button>
-                            </>
-                        )}
+                {actionError && <p className="text-sm text-red-500" role="alert">{t(actionError.key, actionError.options)}</p>}
+                <InterviewActions
+                    dark={dark} role={role} isStudentAwaiting={awaitingResponse}
+                    isEmployerEditable={role?.can.edit && status !== INTERVIEW_STATUS.CANCELLED && status !== INTERVIEW_STATUS.PAST}
+                    busy={effectiveBusy} rejecting={effectiveRejecting}
+                    onAccept={async () => {
+                        if (onAccept) return onAccept(interview.id);
+                        setBusyLocal(true); setActionError(null);
+                        try { await role.accept(interview.id); await reload(); await refreshNotifications(); }
+                        catch (err) { setActionError(err.i18n ?? {key: "postInternship.createGenericError"}); }
+                        finally { setBusyLocal(false); }
+                    }}
+                    onStartReject={() => onStartReject ? onStartReject(interview.id) : setLocalRejecting(true)}
+                    onDeny={async () => {
+                        if (onDeny) return onDeny(interview.id);
+                        if (!effectiveRejectComment.trim()) return;
+                        setBusyLocal(true); setActionError(null);
+                        try { await role.reject(interview.id, effectiveRejectComment.trim()); setLocalRejecting(false); await reload(); await refreshNotifications(); }
+                        catch (err) { setActionError(err.i18n ?? {key: "postInternship.createGenericError"}); }
+                        finally { setBusyLocal(false); }
+                    }}
+                    onCloseForm={() => onCloseForm ? onCloseForm() : setLocalRejecting(false)}
+                    onEdit={() => setEditingLocal((value) => !value)}
+                    onCancel={async () => {
+                        if (!window.confirm(t("employerInterviews.confirmCancel"))) return;
+                        setBusyLocal(true); setActionError(null);
+                        try { await role.cancel(interview.id); await reload(); await refreshNotifications(); }
+                        catch (err) { setActionError(err.i18n ?? {key: "postInternship.createGenericError"}); }
+                        finally { setBusyLocal(false); }
+                    }}
+                    editing={editingLocal}
+                />
+                {role?.can.edit && editingLocal && (
+                    <div className="w-full pt-4 mt-4">
+                        <InterviewPicker key={interview.id} dark={dark} interview={interview}
+                                         onClose={() => setEditingLocal(false)}
+                                         onSendOffer={async (payload) => {
+                                             try { await role.update(interview.id, payload); await reload(); await refreshNotifications(); return {success: true}; }
+                                             catch (err) { return {success: false, message: err.i18n ?? {key: "postInternship.createGenericError"}}; }
+                                         }}/>
                     </div>
                 )}
             </div>

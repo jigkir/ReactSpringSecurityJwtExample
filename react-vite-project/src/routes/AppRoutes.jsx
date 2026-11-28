@@ -50,7 +50,7 @@ import ManagerStudentStatuses from "../components/page/manager/StudentStatuses.j
 import PostInternship from "../components/page/employer/internship/PostInternship.jsx";
 import Applications from "../components/page/employer/application/Applications.jsx";
 import ViewApplications from "../components/page/employer/application/ViewApplications.jsx";
-import EmployerInterviews from "../components/page/employer/interview/EmployerInterviews.jsx";
+import EmployerInterviews from "../components/page/employer/Interviews.jsx";
 import EmployerContracts from "../components/page/employer/contracts/Contracts.jsx";
 import EvaluationFile from "../components/evaluations/EvaluationFile.jsx";
 import WorkplaceEvaluationsManager from "../components/page/manager/Evaluations.jsx";

@@ -833,6 +833,7 @@
     "loadError": "Could not load interviews.",
     "empty": "You have not scheduled any interviews yet.",
     "noMatch": "No interviews match this filter.",
+    "confirmCancel": "Do you really want to cancel this interview?",
     "statusAria": "Filter by status",
     "invalidDate": "Invalid date",
     "message": "Meeting message",

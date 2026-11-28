@@ -5,7 +5,7 @@ import Icon from "../../../../styles/Icon.jsx";
 import Button from "../../../../styles/Button.jsx";
 import Badge from "../../../../styles/Badge.jsx";
 import PdfPreview from "../../../documents/PdfPreview.jsx";
-import InterviewPicker from "../interview/InterviewPicker.jsx";
+import InterviewPicker from "../../../interviews/InterviewPicker.jsx";
 import {
     cancelInterview,
     createInterview,
