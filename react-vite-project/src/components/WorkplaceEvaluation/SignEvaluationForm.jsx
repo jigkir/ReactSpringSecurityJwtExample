@@ -16,11 +16,11 @@
  *   onClose   function  closes the form
  */
 
-import {useId, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import Button from '../../styles/Button.jsx';
-import {getAuthClasses, getInternshipFormClasses} from '../../styles/AppStyles.jsx';
-import {PasswordField, translateWarning} from '../../utils/CommonFields.jsx';
+import {useId, useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
+import {getAuthClasses, getInternshipFormClasses} from "../../styles/AppStyles.jsx";
+import {PasswordField, translateWarning} from "../../utils/CommonFields.jsx";
 
 function SignEvaluationForm({dark, devMode = false, onSubmit, onClose}) {
     const {t} = useTranslation();

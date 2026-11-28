@@ -1,10 +1,11 @@
-import React from 'react';
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {BrowserRouter, MemoryRouter} from 'react-router-dom';
-import {NotificationsProvider, useNotifications} from '../NotificationsProvider';
-import * as api from '../../api/Api.jsx';
+import React from "react";
+import {fireEvent, render, screen, waitFor} from "@testing-library/react";
+import {BrowserRouter, MemoryRouter} from "react-router-dom";
+import {NotificationsProvider, useNotifications} from "../NotificationsProvider";
+import * as api from "../../api/Api.jsx";
 import {REFRESH_INTERVAL_MS} from "../../../utils/usePolling.js";
 import {ACCOUNT_STATUS} from "../../../utils/AccountStatus.js";
+import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 vi.mock('../../api/Api.jsx', () => ({
     getNotifications: vi.fn(),
@@ -90,7 +91,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
         ]);
 
         // Act
-        renderManagerNotificationsAt('/manager/internships');
+        renderManagerNotificationsAt(PATHS.MANAGER_INTERNSHIPS);
 
         // Assert
         await waitFor(() => expect(screen.getByTestId('internship-count').textContent).toBe('1'));
@@ -109,7 +110,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
             {id: 11, notificationType: 'INTERNSHIP_SUBMITTED_FOR_REVIEW', targetType: 'INTERNSHIP_OFFER', targetId: 41}
         ]);
         api.markNotificationsAsRead.mockResolvedValueOnce();
-        renderManagerNotificationsAt('/manager/internships');
+        renderManagerNotificationsAt(PATHS.MANAGER_INTERNSHIPS);
         await waitFor(() => expect(screen.getByTestId('internship-count').textContent).toBe('2'));
 
         // Act
@@ -149,9 +150,9 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
 });
 
 const EMPLOYER = {id: 2, role: 'EMPLOYER'};
-const INTERNSHIPS_PAGE_PATH = '/employer/internships';
-const APPLICATIONS_PAGE_PATH = '/employer/applications';
-const STUDENT_INTERVIEWS_PAGE_PATH = '/student/interviews';
+const INTERNSHIPS_PAGE_PATH = PATHS.EMPLOYER_INTERNSHIPS;
+const APPLICATIONS_PAGE_PATH = PATHS.EMPLOYER_APPLICATIONS;
+const STUDENT_INTERVIEWS_PAGE_PATH = PATHS.STUDENT_INTERVIEWS;
 const NEW_INTERNSHIP_APPLICATION = 'NEW_INTERNSHIP_APPLICATION';
 
 const SHOWN_APPLICATION_ID = 30;

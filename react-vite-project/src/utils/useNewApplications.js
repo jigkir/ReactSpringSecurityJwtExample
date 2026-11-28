@@ -1,5 +1,5 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {getApplicationCv} from '../components/api/Api.jsx';
+import {useCallback, useEffect, useRef, useState} from "react";
+import {getApplicationCv} from "../components/api/Api.jsx";
 
 const UNREAD = "UNREAD";
 

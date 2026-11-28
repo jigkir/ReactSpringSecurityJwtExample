@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useLayoutEffect, useReducer, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useReducer, useState} from "react";
 
 // 0 = everything, 1 = icon-only buttons, 2 = account in a dropdown, 3 = burger menu
 export const LAST_LEVEL = 3;

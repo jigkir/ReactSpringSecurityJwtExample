@@ -1,9 +1,9 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import InternshipCard from "../employer/internship/InternshipCard.jsx";
-import InternshipFilters, {useInternshipFilters} from '../employer/internship/InternshipFilters.jsx';
+import InternshipFilters, {useInternshipFilters} from "../employer/internship/InternshipFilters.jsx";
 import ApplyControls from "./ApplyControls.jsx";
 import {
     getDocuments,

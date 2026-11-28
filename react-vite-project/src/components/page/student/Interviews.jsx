@@ -4,7 +4,7 @@ import {useTranslation} from "react-i18next";
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import {acceptInterviews, denyInterviews, getStudentInterviews} from "../../api/Api.jsx";
 import {usePolling} from "../../../utils/usePolling.js";
-import {StatusColorSelect, useColorParam} from "../../../utils/Sort.jsx";
+import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
 import {ALL, matchesColor} from "../../../utils/StatusColor.js";
 import InterviewCard from "./InterviewCard.jsx";
 import {getInterviewColor, getInterviewTime, isCancelled} from "../../../utils/interviewStatus.js";
@@ -20,9 +20,8 @@ function Interviews() {
     const {hash} = useLocation();
 
     // Filter states (the status filter is a color: ALL | RED | YELLOW | GREEN, initial value from ?status=)
-    const initialStatus = useColorParam("status");
     const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState(initialStatus);
+    const [statusFilter, setStatusFilter] = useColorFilter("status");
     const [typeFilter, setTypeFilter] = useState(ALL);
 
     // Form / Action states

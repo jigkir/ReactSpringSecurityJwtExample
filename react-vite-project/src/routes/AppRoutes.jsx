@@ -26,35 +26,35 @@
  * module (no `const X = PATHS.FOO;` outside a function): at load time it does not exist yet.
  */
 
-import {generatePath, Navigate, Outlet, Route, useOutletContext} from 'react-router-dom';
-import {ACCOUNT_STATUS} from '../utils/AccountStatus.js';
-import Home from '../components/Home.jsx';
-import About from '../components/About.jsx';
-import Login from '../components/page/auth/Login.jsx';
-import Signup from '../components/page/auth/Signup.jsx';
-import Logout from '../components/page/auth/Logout.jsx';
-import ErrorPage from '../components/ErrorPage.jsx';
-import ExpiredUser from '../components/page/ExpiredUser.jsx';
-import Users from '../components/page/Users.jsx';
-import Tracking from '../components/page/Tracking.jsx';
-import WorkplaceEvaluations from '../components/page/teacher/WorkplaceEvaluations.jsx';
-import Portfolio from '../components/page/portfolio/Portfolio.jsx';
-import ContractFile from '../components/contracts/ContractFile.jsx';
-import StudentInternships from '../components/page/student/Internships.jsx';
-import StudentInterviews from '../components/page/student/Interviews.jsx';
-import StudentOffers from '../components/page/student/Offers.jsx';
-import StudentContracts from '../components/page/student/contracts/Contracts.jsx';
-import ManagerCv from '../components/page/manager/Cv.jsx';
-import ManagerInternships from '../components/page/manager/Internships.jsx';
-import ManagerContracts from '../components/page/manager/Contracts.jsx';
-import ManagerStudentStatuses from '../components/page/manager/StudentStatuses.jsx';
-import PostInternship from '../components/page/employer/internship/PostInternship.jsx';
-import Applications from '../components/page/employer/application/Applications.jsx';
-import ViewApplications from '../components/page/employer/application/ViewApplications.jsx';
-import EmployerInterviews from '../components/page/employer/interview/EmployerInterviews.jsx';
-import EmployerContracts from '../components/page/employer/contracts/Contracts.jsx';
+import {generatePath, Navigate, Outlet, Route, useOutletContext} from "react-router-dom";
+import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
+import Home from "../components/Home.jsx";
+import About from "../components/About.jsx";
+import Login from "../components/page/auth/Login.jsx";
+import Signup from "../components/page/auth/Signup.jsx";
+import Logout from "../components/page/auth/Logout.jsx";
+import ErrorPage from "../components/ErrorPage.jsx";
+import ExpiredUser from "../components/page/ExpiredUser.jsx";
+import Users from "../components/page/Users.jsx";
+import Tracking from "../components/page/Tracking.jsx";
+import Portfolio from "../components/page/portfolio/Portfolio.jsx";
+import ContractFile from "../components/contracts/ContractFile.jsx";
+import StudentInternships from "../components/page/student/Internships.jsx";
+import StudentInterviews from "../components/page/student/Interviews.jsx";
+import StudentOffers from "../components/page/student/Offers.jsx";
+import StudentContracts from "../components/page/student/contracts/Contracts.jsx";
+import ManagerCv from "../components/page/manager/Cv.jsx";
+import ManagerInternships from "../components/page/manager/Internships.jsx";
+import ManagerContracts from "../components/page/manager/Contracts.jsx";
+import ManagerStudentStatuses from "../components/page/manager/StudentStatuses.jsx";
+import PostInternship from "../components/page/employer/internship/PostInternship.jsx";
+import Applications from "../components/page/employer/application/Applications.jsx";
+import ViewApplications from "../components/page/employer/application/ViewApplications.jsx";
+import EmployerInterviews from "../components/page/employer/interview/EmployerInterviews.jsx";
+import EmployerContracts from "../components/page/employer/contracts/Contracts.jsx";
 import WorkplaceEvaluationFile from "../components/WorkplaceEvaluation/WorkplaceEvaluationFile.jsx";
 import WorkplaceEvaluationsManager from "../components/page/manager/WorkplaceEvaluation/WorkplaceEvaluation.jsx";
+import WorkplaceEvaluations from "../components/page/teacher/WorkplaceEvaluations.jsx";
 
 export const ROLE = {
     STUDENT: "STUDENT",
@@ -92,7 +92,6 @@ export const PATHS = {
     TEACHER_EVALUATIONS: "/teacher/evaluations",
     TEACHER_EVALUATION: "/teacher/evaluations/:id",
 
-
     // Manager
     MANAGER_EVALUATIONS: "/manager/evaluations",
     MANAGER_EVALUATION: "/manager/evaluations/:id",
@@ -102,6 +101,7 @@ export const PATHS = {
     MANAGER_CONTRACT: "/manager/contracts/:id",
     MANAGER_USERS: "/manager/users",
     MANAGER_TRACKING: "/manager/tracking",
+    MANAGER_STUDENT_STATUSES: "/manager/student-statuses",
 
     // Employer
     EMPLOYER_INTERNSHIPS: "/employer/internships",
@@ -170,7 +170,8 @@ export const ROUTES = [
 
     // ───────── Teacher ─────────
     {
-        path: PATHS.TEACHER_EVALUATIONS, roles: [ROLE.TEACHER], nav: {TEACHER: "navbar.evaluations"}, home: [ROLE.TEACHER],
+        path: PATHS.TEACHER_EVALUATIONS, roles: [ROLE.TEACHER], nav: {TEACHER: "navbar.evaluations"},
+        home: [ROLE.TEACHER],
         element: () => <WorkplaceEvaluations/>
     },
     {path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <WorkplaceEvaluationFile/>},
@@ -192,7 +193,8 @@ export const ROUTES = [
     },
     {path: PATHS.MANAGER_CONTRACT, roles: [ROLE.MANAGER], element: () => <ContractFile/>},
     {
-        path: PATHS.MANAGER_EVALUATIONS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.evaluations"}, home: [ROLE.MANAGER],
+        path: PATHS.MANAGER_EVALUATIONS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.evaluations"},
+        home: [ROLE.MANAGER],
         element: () => <WorkplaceEvaluationsManager/>
     },
     {path: PATHS.MANAGER_EVALUATION, roles: [ROLE.MANAGER], element: () => <WorkplaceEvaluationFile/>},
@@ -206,9 +208,8 @@ export const ROUTES = [
         element: () => <Tracking/>
     },
     {
-        path: "/manager/student-statuses",
-        roles: [ROLE.MANAGER],
-        nav: {MANAGER: "navbar.studentStatuses"},
+        path: PATHS.MANAGER_STUDENT_STATUSES, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.studentStatuses"},
+        home: [ROLE.MANAGER],
         element: () => <ManagerStudentStatuses/>
     },
 

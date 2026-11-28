@@ -1,7 +1,8 @@
-import {render, screen, waitFor} from '@testing-library/react';
-import {BrowserRouter} from 'react-router-dom';
-import ViewApplications from '../ViewApplications.jsx';
-import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from '../../../../api/Api.jsx';
+import {render, screen, waitFor} from "@testing-library/react";
+import {BrowserRouter} from "react-router-dom";
+import ViewApplications from "../ViewApplications.jsx";
+import {getApplications, getEmployerInterviewsByApplicationId, getEmployerInternships} from "../../../../api/Api.jsx";
+import {employerApplicationPath, PATHS} from "../../../../../routes/AppRoutes.jsx";
 
 
 vi.mock('../../../../api/Api.jsx', () => ({
@@ -30,8 +31,9 @@ vi.mock('react-router-dom', async () => {
 });
 
 // t returns the key, so assertions check translation keys, not any language
-vi.mock('react-i18next', () => ({
-    useTranslation: () => ({t: (key) => key})
+vi.mock('react-i18next', async (importOriginal) => ({
+    ...await importOriginal(),
+    useTranslation: () => ({t: (key) => key}),
 }));
 
 const MockViewApplications = ({user}) => (<BrowserRouter>
@@ -44,7 +46,7 @@ describe('ViewApplications Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         getEmployerInterviewsByApplicationId.mockResolvedValue([]);
-        window.history.pushState({}, '', '/employer/applications/10');
+        window.history.pushState({}, '', employerApplicationPath(10));
     });
 
     it('renders loading state initially', () => {
@@ -117,7 +119,7 @@ describe('ViewApplications Component', () => {
         render(<MockViewApplications user={loggedInUser}/>);
 
         await waitFor(() => {
-            expect(window.location.pathname).toBe('/employer/internships');
+            expect(window.location.pathname).toBe(PATHS.EMPLOYER_INTERNSHIPS);
         });
         expect(screen.queryByText('viewApplication.empty')).not.toBeInTheDocument();
     });
@@ -129,7 +131,7 @@ describe('ViewApplications Component', () => {
         render(<MockViewApplications user={loggedInUser}/>);
 
         await waitFor(() => {
-            expect(window.location.pathname).toBe('/employer/internships');
+            expect(window.location.pathname).toBe(PATHS.EMPLOYER_INTERNSHIPS);
         });
         expect(getApplications).not.toHaveBeenCalled();
     });

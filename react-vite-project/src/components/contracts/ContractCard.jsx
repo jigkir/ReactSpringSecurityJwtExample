@@ -19,15 +19,16 @@
  *   onSign        function  async (contract, {termsAccepted, password}) => {success, message?}
  */
 
-import {useState} from 'react';
-import {Link} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import Button from '../../styles/Button.jsx';
-import Icon from '../../styles/Icon.jsx';
-import {getCvDocumentsClasses, getInternshipCardClasses} from '../../styles/AppStyles.jsx';
-import {CONTRACT_ROLES, canSign} from '../../utils/ContractRole.js';
-import {ALL, borderStatusOf} from '../../utils/StatusColor.js';
-import SignContractForm from './SignContractForm.jsx';
+import {useState} from "react";
+import {Link} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import Button from "../../styles/Button.jsx";
+import Icon from "../../styles/Icon.jsx";
+import {getCvDocumentsClasses, getInternshipCardClasses} from "../../styles/AppStyles.jsx";
+import {CONTRACT_ROLES, canSign} from "../../utils/ContractRole.js";
+import {ALL, borderStatusOf} from "../../utils/StatusColor.js";
+import SignContractForm from "./SignContractForm.jsx";
+import {contractFilePath} from "../../routes/AppRoutes.jsx";
 
 const COMMITMENT_PARTIES = ["college", "employer", "student"];
 const CURRENCY = "CAD";
@@ -293,7 +294,7 @@ function ContractCard({
                     {fullySigned && (
                         <Button
                             as={Link}
-                            to={`${contractRole.basePath}/${contract.id}`}
+                            to={contractFilePath(contractRole.filePath, contract.id)}
                             state={{studentName: contract.studentName}}
                             tone="accent"
                             lockTone

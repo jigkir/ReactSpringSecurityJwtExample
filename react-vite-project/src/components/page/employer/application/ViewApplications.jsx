@@ -15,8 +15,8 @@ import {translateWarning} from "../../../../utils/CommonFields.jsx";
 import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
 import {usePolling} from "../../../../utils/usePolling.js";
 import {useNewApplications} from "../../../../utils/useNewApplications.js";
+import {PATHS} from "../../../../routes/AppRoutes.jsx";
 
-const INTERNSHIPS_PATH = "/employer/internships";
 
 const canHireApplication = (application) => application.employerDecision !== "INTERNSHIP_OFFERED" && application.employerDecision !== "REJECTED";
 
@@ -220,7 +220,7 @@ function ViewApplications({user}) {
     }, [clearNew, refresh]);
 
     if (allowed === false) {
-        return <Navigate to={INTERNSHIPS_PATH} replace/>;
+        return <Navigate to={PATHS.EMPLOYER_INTERNSHIPS} replace/>;
     }
 
     if (error) {
@@ -242,7 +242,7 @@ function ViewApplications({user}) {
         <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
             <Button
                 as={NavLink}
-                to={INTERNSHIPS_PATH}
+                to={PATHS.EMPLOYER_INTERNSHIPS}
                 tone="primary"
                 dark={dark}
                 icon="arrow_back"

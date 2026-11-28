@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState} from "react";
 
 export const DEFAULT_ZOOM = 1;
 export const MIN_ZOOM = 0.5;

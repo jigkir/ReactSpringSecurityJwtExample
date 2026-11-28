@@ -13,23 +13,23 @@
  * Access control: <RequireRole roles={["MANAGER"]}/> in App.jsx + backend.
  */
 
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import InternshipCard from '../employer/internship/InternshipCard.jsx';
-import InternshipFilters, {useInternshipFilters} from '../employer/internship/InternshipFilters.jsx';
-import InternshipForm from '../employer/internship/InternshipForm.jsx';
-import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
-import Button from '../../../styles/Button.jsx';
-import {getPostInternshipClasses} from '../../../styles/AppStyles.jsx';
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import InternshipCard from "../employer/internship/InternshipCard.jsx";
+import InternshipFilters, {useInternshipFilters} from "../employer/internship/InternshipFilters.jsx";
+import InternshipForm from "../employer/internship/InternshipForm.jsx";
+import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
+import Button from "../../../styles/Button.jsx";
+import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
 import {
     approveInternship,
     getManagerInternships,
     rejectInternship,
     updateManagerInternship
-} from '../../api/Api.jsx';
-import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
-import {usePolling} from '../../../utils/usePolling.js';
+} from "../../api/Api.jsx";
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
+import {usePolling} from "../../../utils/usePolling.js";
 import {useSession} from "../../../utils/useSession.js";
 
 const ManagerInternships = () => {

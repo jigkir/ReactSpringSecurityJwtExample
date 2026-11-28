@@ -23,21 +23,21 @@
  *   dark     boolean
  */
 
-import {useCallback, useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import Button from '../../../styles/Button.jsx';
-import AutoResizeTextarea from '../../../styles/AutoResizeTextarea.jsx';
-import {getSelectClass, SearchInput} from '../../../styles/FormControls.jsx';
-import DocumentListShell from '../../documents/DocumentListShell.jsx';
-import DocumentRow, {getRowListClass, ROW_BTN} from '../../documents/DocumentRow.jsx';
-import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from '../../api/Api.jsx';
-import {getCvDocumentsClasses} from '../../../styles/AppStyles.jsx';
-import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from '../../notification/NotificationsProvider.jsx';
-import {blobUrlFromFile, formatDate} from '../../../utils/Documents.js';
-import {CV_SORT_OPTIONS, StatusColorSelect, useCvFilters} from '../../../utils/Sort.jsx';
-import {ALL} from '../../../utils/StatusColor.js';
-import {useLoadedList} from '../../../utils/useLoadedList.js';
-import {useToggleSet} from '../../../utils/useToggleSet.js';
+import {useCallback, useMemo, useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "../../../styles/Button.jsx";
+import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
+import {getSelectClass, SearchInput} from "../../../styles/FormControls.jsx";
+import DocumentListShell from "../../documents/DocumentListShell.jsx";
+import DocumentRow, {getRowListClass, ROW_BTN} from "../../documents/DocumentRow.jsx";
+import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from "../../api/Api.jsx";
+import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
+import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../notification/NotificationsProvider.jsx";
+import {blobUrlFromFile, formatDate} from "../../../utils/Documents.js";
+import {CV_SORT_OPTIONS, StatusColorSelect, useCvFilters} from "../../../utils/Sort.jsx";
+import {ALL} from "../../../utils/StatusColor.js";
+import {useLoadedList} from "../../../utils/useLoadedList.js";
+import {useToggleSet} from "../../../utils/useToggleSet.js";
 import {useSession} from "../../../utils/useSession.js";
 
 // Module-level: a stable reference, so an open PDF preview is never reloaded by a re-render

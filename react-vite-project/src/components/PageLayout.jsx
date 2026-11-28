@@ -1,8 +1,8 @@
-import {Outlet, useLocation} from 'react-router-dom';
-import Navbar from './Navbar.jsx';
-import Footer from './Footer.jsx';
-import {DevModeToggle} from './dev/DevMode.jsx';
-import {NotificationsProvider} from './notification/NotificationsProvider.jsx';
+import {Outlet, useLocation} from "react-router-dom";
+import Navbar from "./Navbar.jsx";
+import Footer from "./Footer.jsx";
+import {DevModeToggle} from "./dev/DevMode.jsx";
+import {NotificationsProvider} from "./notification/NotificationsProvider.jsx";
 import {useEffect} from "react";
 
 function PageLayout({user, accountStatus, dark, toggleDark}) {

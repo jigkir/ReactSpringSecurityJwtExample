@@ -1,5 +1,5 @@
-import {NavLink} from 'react-router-dom';
-import Icon from '../styles/Icon.jsx';
+import {NavLink} from "react-router-dom";
+import Icon from "../styles/Icon.jsx";
 import {forwardRef} from "react";
 import SessionSelect from "./session/SessionSelect.jsx";
 

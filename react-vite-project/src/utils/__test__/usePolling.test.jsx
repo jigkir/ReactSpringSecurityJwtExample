@@ -1,5 +1,5 @@
-import {renderHook} from '@testing-library/react';
-import {REFRESH_INTERVAL_MS, usePolling} from '../usePolling.js';
+import {renderHook} from "@testing-library/react";
+import {REFRESH_INTERVAL_MS, usePolling} from "../usePolling.js";
 
 const ALIGNED_TIME = REFRESH_INTERVAL_MS * 1000;
 const DELAY_BEFORE_NEXT_TICK_MS = REFRESH_INTERVAL_MS / 4;

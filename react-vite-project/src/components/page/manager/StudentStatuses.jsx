@@ -1,7 +1,7 @@
 import {useTranslation} from "react-i18next";
 import {useOutletContext} from "react-router-dom";
 import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {useStudentStatusFilters} from "../../../utils/Sort.jsx";
+import {StatusColorSelect, useStudentStatusFilters} from "../../../utils/Sort.jsx";
 import {ALL} from "../../../utils/StatusColor.js";
 import StudentStatusCard from "./StudentStatusCard.jsx";
 import {ACCOUNT_STATUSES, INTERNSHIP_STATUSES, MOCK_STUDENTS} from "./StudentStatusMock.js";
@@ -28,6 +28,8 @@ function StudentStatuses() {
         setAccountStatus,
         internshipStatus,
         setInternshipStatus,
+        progress,
+        setProgress,
         visible,
     } = useStudentStatusFilters(students);
 
@@ -36,7 +38,7 @@ function StudentStatuses() {
             <div className={s.listSection}>
 
                 {/* Filters */}
-                <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
                     <div>
                         <label
                             htmlFor="student-search"
@@ -103,6 +105,23 @@ function StudentStatuses() {
                             ))}
                         </select>
                     </div>
+
+                    <div>
+                        <label
+                            htmlFor="student-progress"
+                            className="mb-1 block text-sm font-medium"
+                        >
+                            {t("studentStatuses.progressLabel")}
+                        </label>
+                        <StatusColorSelect
+                            id="student-progress"
+                            dark={dark}
+                            value={progress}
+                            onChange={setProgress}
+                            page="managerStudentStatuses"
+                            className="w-full"
+                        />
+                    </div>
                 </div>
 
                 {/* Student count */}
@@ -124,6 +143,7 @@ function StudentStatuses() {
                                 key={student.id}
                                 student={student}
                                 dark={dark}
+                                filterColor={progress}
                             />
                         ))
                     )}

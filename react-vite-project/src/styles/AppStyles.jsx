@@ -262,6 +262,11 @@ export function getHomeSectionClasses(dark) {
     return {
         card: `flex min-w-0 flex-col rounded-2xl border shadow-sm transition-shadow hover:shadow-md ${
             dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`,
+        spotlightCard: `relative flex min-w-0 flex-col rounded-2xl border-2 border-spotlight shadow-md animate-spotlight motion-reduce:animate-none ${
+            dark ? "bg-slate-800" : "bg-white"}`,
+        spotlightTag: "absolute -top-3 left-5 inline-flex items-center gap-2 rounded-full bg-spotlight px-3 py-1 text-xs font-bold uppercase tracking-wide text-spotlight-text shadow",
+        spotlightDot: "relative flex h-2 w-2 rounded-full bg-spotlight-text",
+        spotlightPing: "absolute inline-flex h-full w-full rounded-full bg-spotlight-text opacity-60 animate-ping motion-reduce:animate-none",
         header: "flex items-start gap-3 p-5 pb-4",
         icon: `flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
             dark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`,

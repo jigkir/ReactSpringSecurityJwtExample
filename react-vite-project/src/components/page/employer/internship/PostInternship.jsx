@@ -1,13 +1,13 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import InternshipForm from './InternshipForm.jsx';
-import InternshipCard from './InternshipCard.jsx';
-import InternshipFilters, {useInternshipFilters} from './InternshipFilters.jsx';
-import Button from '../../../../styles/Button.jsx';
-import {translateWarning} from '../../../../utils/CommonFields.jsx';
-import {EMPLOYER_INTERNSHIP_STATUS_RANK} from '../../../../utils/Sort.jsx';
-import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import InternshipForm from "./InternshipForm.jsx";
+import InternshipCard from "./InternshipCard.jsx";
+import InternshipFilters, {useInternshipFilters} from "./InternshipFilters.jsx";
+import Button from "../../../../styles/Button.jsx";
+import {translateWarning} from "../../../../utils/CommonFields.jsx";
+import {EMPLOYER_INTERNSHIP_STATUS_RANK} from "../../../../utils/Sort.jsx";
+import {getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
 import {
     createInternship,
     deleteInternship,
@@ -15,7 +15,7 @@ import {
     getEmployerInternships,
     updateInternship,
     getInternshipIdsWithContract
-} from '../../../api/Api.jsx';
+} from "../../../api/Api.jsx";
 import {usePolling} from "../../../../utils/usePolling.js";
 import {useSession} from "../../../../utils/useSession.js";
 import {TARGET_TYPE, useCloseShownNotifications} from "../../../notification/NotificationsProvider.jsx";

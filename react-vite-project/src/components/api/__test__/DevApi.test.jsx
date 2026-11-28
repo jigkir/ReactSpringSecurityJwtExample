@@ -1,6 +1,6 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-import fetcher from '../../../utils/fetcher.js';
-import {devLoginAs, getDevUsers} from '../DevApi.jsx';
+import {beforeEach, describe, expect, it, vi} from "vitest";
+import fetcher from "../../../utils/fetcher.js";
+import {devLoginAs, getDevUsers} from "../DevApi.jsx";
 
 vi.mock('../../../utils/fetcher.js', () => ({default: vi.fn()}));
 

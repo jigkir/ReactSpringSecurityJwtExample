@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { getInternshipCardClasses } from "../../styles/AppStyles.jsx";
+import {useState} from "react";
+import {useTranslation} from "react-i18next";
+import {getInternshipCardClasses} from "../../styles/AppStyles.jsx";
 import {
     createInitialEvaluation,
     EVALUATION_CRITERIA,
@@ -10,6 +10,7 @@ import WorkplaceEvaluationForm from "./WorkplaceEvaluationForm";
 import SignEvaluationForm from "./SignEvaluationForm";
 import Button from "../../styles/Button.jsx";
 import {Link} from "react-router-dom";
+import {ALL, borderStatusOf} from "../../utils/StatusColor.js";
 
 export default function WorkplaceEvaluationCard({
                                                     evaluation = {},
@@ -17,8 +18,9 @@ export default function WorkplaceEvaluationCard({
                                                     onSign,
                                                     dark = false,
                                                     devMode = false,
+                                                    filterColor = ALL,
                                                 }) {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
     const [isSigning, setIsSigning] = useState(false);
 
@@ -28,12 +30,15 @@ export default function WorkplaceEvaluationCard({
     const isSigned = Boolean(source.signedAt);
     const isCompleted =
         Object.keys(
-            validateEvaluation(normalizedEvaluation, { requireComplete: true })
+            validateEvaluation(normalizedEvaluation, {requireComplete: true})
         ).length === 0;
     const statusKey = isSigned || isCompleted ? "APPROVED" : "PENDING";
-    const cardClasses = getInternshipCardClasses(dark, statusKey);
+    // The card only gets a colored border while a status filter is selected (color of the filter)
+    const cardClasses = getInternshipCardClasses(dark, borderStatusOf(filterColor));
+    // The status badge keeps its own color
+    const badgeClasses = getInternshipCardClasses(dark, statusKey);
 
-    const answeredCriteriaCount = EVALUATION_CRITERIA.filter(({ key }) =>
+    const answeredCriteriaCount = EVALUATION_CRITERIA.filter(({key}) =>
         Boolean(normalizedEvaluation.criteria?.[key])
     ).length;
 
@@ -52,7 +57,7 @@ export default function WorkplaceEvaluationCard({
         t("workplaceEvaluation.card.unassignedSupervisor");
 
     const periodLabel = source.week
-        ? t("workplaceEvaluation.card.weekLabel", { week: source.week })
+        ? t("workplaceEvaluation.card.weekLabel", {week: source.week})
         : source.evaluationDate || t("workplaceEvaluation.card.pendingPeriod");
 
     const handleSave = async (payload) => {
@@ -63,8 +68,8 @@ export default function WorkplaceEvaluationCard({
         setIsEditing(false);
     };
 
-    const handleSignSubmit = async ({ termsAccepted, password }) => {
-        if (!onSign) return { success: false };
+    const handleSignSubmit = async ({termsAccepted, password}) => {
+        if (!onSign) return {success: false};
 
         return onSign(
             source.id ?? normalizedEvaluation.id,
@@ -72,7 +77,7 @@ export default function WorkplaceEvaluationCard({
                 ...normalizedEvaluation,
                 id: source.id ?? normalizedEvaluation.id,
             },
-            { termsAccepted, password }
+            {termsAccepted, password}
         );
     };
 
@@ -117,7 +122,7 @@ export default function WorkplaceEvaluationCard({
                     </p>
                 </div>
 
-                <span className={cardClasses.statusBadge(statusKey)}>
+                <span className={badgeClasses.statusBadge(statusKey)}>
                     {isSigned
                         ? t("workplaceEvaluation.status.signed")
                         : isCompleted
@@ -193,7 +198,7 @@ export default function WorkplaceEvaluationCard({
                 {isSigned && (<Button
                     as={Link}
                     to={`${evaluation.id}`}
-                     state={{studentName: evaluation.studentName}}
+                    state={{studentName: evaluation.studentName}}
                     tone="accent"
                     lockTone
                     dark={dark}

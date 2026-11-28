@@ -1,6 +1,7 @@
 import {useTranslation} from "react-i18next";
 import Icon from "../../../styles/Icon.jsx";
-import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
+import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/AppStyles.jsx";
+import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
 
 const ACCOUNT_TONES = {
     PENDING: "PENDING",
@@ -51,12 +52,19 @@ function StatusPill({label, tone, dark}) {
     );
 }
 
-function StudentStatusCard({student, dark}) {
+function StudentStatusCard({student, dark, filterColor = ALL}) {
     const {t} = useTranslation();
     const s = getCvDocumentsClasses(dark);
 
+    // The card only gets a colored border while a progress color is selected in the filter
+    const statusBorder = getStatusBorder(borderStatusOf(filterColor), dark);
+    const cardBorder = statusBorder
+        ? `border-2 ${statusBorder}`
+        : `border ${dark ? "border-slate-700" : "border-gray-200"}`;
+
     return (
-        <div className={`${s.card} p-4 space-y-3`}>
+        <div className={`w-full rounded-xl shadow-sm p-4 space-y-3 ${cardBorder} ${
+            dark ? "bg-slate-800" : "bg-white"}`}>
             <div>
                 <h3 className={s.title}>
                     {student.firstName} {student.lastName}

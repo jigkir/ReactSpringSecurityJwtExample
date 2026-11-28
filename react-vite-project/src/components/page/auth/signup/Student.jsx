@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useTranslation} from 'react-i18next';
+import {useTranslation} from "react-i18next";
+import {PATHS} from "../../../../routes/AppRoutes.jsx";
 import {getDisciplines, getRegistrationSession, signupStudent} from "../../../api/Api.jsx";
 import {
     ConfirmPasswordField,
@@ -102,7 +103,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 email: form.email.trim().toLowerCase(),
                 password: form.password,
             });
-            navigate("/login");
+            navigate(PATHS.LOGIN);
         } catch (err) {
             // Map known server error codes to field-level or page-level messages
             switch (err.status) {

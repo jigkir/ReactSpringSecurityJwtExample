@@ -15,24 +15,25 @@
  * Access control: <RequireRole roles={["EMPLOYER"]}/> in App.jsx + backend.
  */
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
-import {NavLink, useOutletContext} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import ApplicationCard from './ApplicationCard.jsx';
-import Icon from '../../../../styles/Icon.jsx';
-import {getPostInternshipClasses} from '../../../../styles/AppStyles.jsx';
-import {getApplicationCv, getApplications, getEmployerInternships} from '../../../api/Api.jsx';
-import {base64ToBlobUrl} from '../../../../utils/Documents.js';
-import {matchesSearch, StatusColorSelect, toNum, useColorParam} from '../../../../utils/Sort.jsx';
-import {ALL, colorOf, matchesColor} from '../../../../utils/StatusColor.js';
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {NavLink, useOutletContext} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import ApplicationCard from "./ApplicationCard.jsx";
+import Icon from "../../../../styles/Icon.jsx";
+import {getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../../../api/Api.jsx";
+import {base64ToBlobUrl} from "../../../../utils/Documents.js";
+import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../../../utils/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../../../utils/StatusColor.js";
 import {
     TARGET_TYPE,
     useCloseShownNotifications,
     useNotifications
-} from '../../../notification/NotificationsProvider.jsx';
-import {usePolling} from '../../../../utils/usePolling.js';
+} from "../../../notification/NotificationsProvider.jsx";
+import {usePolling} from "../../../../utils/usePolling.js";
 import {useSession} from "../../../../utils/useSession.js";
 import {useNewApplications} from "../../../../utils/useNewApplications.js";
+import {employerApplicationPath} from "../../../../routes/AppRoutes.jsx";
 
 // New first (state frozen at first appearance), then newest (highest id) first
 const compareApplications = (isNew) => (a, b) =>
@@ -48,12 +49,11 @@ function Applications({user}) {
     const {selectedSession} = useSession();
     const {register, isNew: isNewApp, clear: clearNew, markAsSeen, version: newVersion} = useNewApplications();
 
-    const initialStatus = useColorParam("status");
     const [applications, setApplications] = useState(null); // null = loading
     const [internships, setInternships] = useState([]);
     const [loadFailed, setLoadFailed] = useState(false);
     const [search, setSearch] = useState("");
-    const [status, setStatus] = useState(initialStatus);
+    const [status, setStatus] = useColorFilter("status");
     const [internshipFilter, setInternshipFilter] = useState(ALL);
     const [openPreviewIds, setOpenPreviewIds] = useState([]);
 
@@ -188,7 +188,7 @@ function Applications({user}) {
                         {t("applicationsPage.applicationCount", {count: group.total})}
                     </span>
                     <NavLink
-                        to={`/employer/applications/${group.id}`}
+                        to={employerApplicationPath(group.id)}
                         className="px-3 py-1.5 text-sm rounded-lg font-medium flex items-center gap-1 transition-colors bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
                     >
                         {t("applicationsPage.openInternship")}
