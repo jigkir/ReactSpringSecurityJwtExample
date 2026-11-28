@@ -29,13 +29,18 @@ export function useNewApplications() {
         [],
     );
 
-    const clear = useCallback((id) => {
-        markAsRead(id);
+    // Hides the badge only: the server already knows (opening the CV marks the application as read)
+    const markAsSeen = useCallback((id) => {
         if (unreadAtLoad.current.get(id)) {
             unreadAtLoad.current.set(id, false);
             setVersion((v) => v + 1);
         }
-    }, [markAsRead]);
+    }, []);
+
+    const clear = useCallback((id) => {
+        markAsRead(id);
+        markAsSeen(id);
+    }, [markAsRead, markAsSeen]);
 
     // Leaving the page: everything still "new" becomes read
     useEffect(() => () => {
@@ -44,5 +49,5 @@ export function useNewApplications() {
         }
     }, [markAsRead]);
 
-    return {register, isNew, clear, version};
+    return {register, isNew, clear, markAsSeen, version};
 }
