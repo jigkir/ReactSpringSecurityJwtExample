@@ -36,6 +36,9 @@ import com.lacouf.rsbjwt.repository.interview.InterviewRepository;
 import com.lacouf.rsbjwt.repository.users.ManagerRepository;
 import com.lacouf.rsbjwt.repository.users.StudentRepository;
 import com.lacouf.rsbjwt.repository.users.TeacherRepository;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.ManagerStudentStatusCalculator;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.StudentCount;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.StudentCvCount;
 import com.lacouf.rsbjwt.service.dto.request.internship.InternshipRequestDto;
 import com.lacouf.rsbjwt.service.dto.response.document.DocumentFileResponseDto;
 import com.lacouf.rsbjwt.service.dto.response.document.student.cv.ManagerCvResponseDto;
@@ -55,7 +58,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus;
-import static com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus.*;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.ManagerStudentStatusCalculator.StudentActivity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -290,45 +293,51 @@ public class ManagerService {
 
     @Transactional(readOnly = true)
     public List<ManagerStudentSummaryDto> getStudentsStatus() throws UserNotFoundException {
+        LocalDateTime now = LocalDateTime.now();
+
+        Map<Long, Long> applications  = toMap(applicationRepository.countApplicationsGroupedByStudent());
+        Map<Long, Long> offersPending = toMap(applicationRepository.countByDecisionAndConsentGroupedByStudent(
+                EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING));
+        Map<Long, Long> upcoming      = toMap(interviewRepository.countUpcomingGroupedByStudent(now));
+        Map<Long, Long> awaiting      = toMap(interviewRepository.countAwaitingGroupedByStudent(
+                EmployerDecision.INTERVIEW_OFFERED, now));
+        Map<Long, Long> toSign        = toMap(contractRepository.countToSignGroupedByStudent());
+        Map<Long, Long> signed        = toMap(contractRepository.countSignedGroupedByStudent());
+
+        Map<Long, Map<ReviewStatus, Long>> cvs = cvRepository
+                .countByStatusGroupedByStudent(DocumentVisibility.VISIBLE).stream()
+                .collect(Collectors.groupingBy(StudentCvCount::getStudentId,
+                        Collectors.toMap(StudentCvCount::getStatus, StudentCvCount::getTotal)));
+
         List<ManagerStudentSummaryDto> summaries = new ArrayList<>();
 
         for (Student student : studentRepository.findAll()) {
-            summaries.add(toSummary(student));
+            long id = student.getId();
+            Map<ReviewStatus, Long> cvByStatus = cvs.getOrDefault(id, Map.of());
+
+            StudentActivity activity = new StudentActivity(
+                    cvByStatus.values().stream().mapToLong(Long::longValue).sum(),
+                    cvByStatus.getOrDefault(ReviewStatus.APPROVED, 0L),
+                    cvByStatus.getOrDefault(ReviewStatus.PENDING, 0L),
+                    applications.getOrDefault(id, 0L),
+                    upcoming.getOrDefault(id, 0L),
+                    awaiting.getOrDefault(id, 0L),
+                    offersPending.getOrDefault(id, 0L),
+                    toSign.getOrDefault(id, 0L),
+                    signed.getOrDefault(id, 0L));
+
+            summaries.add(new ManagerStudentSummaryDto(
+                    student.getId(), student.getStudentId(),
+                    student.getFirstName(), student.getLastName(),
+                    accountAccessService.getAccountStatus(student.getEmail()),
+                    ManagerStudentStatusCalculator.computeStatus(activity)));
         }
 
         return summaries;
     }
 
-    private ManagerStudentSummaryDto toSummary(Student student) throws UserNotFoundException {
-        List<CV> cvs = cvRepository.findByUser(student).stream()
-                .filter(cv -> cv.getVisibility() == DocumentVisibility.VISIBLE).toList();
-        long cvApproved = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.APPROVED).count();
-        long cvPending = cvs.stream().filter(cv -> cv.getStatus() == ReviewStatus.PENDING).count();
-
-        long applications = applicationRepository.countByStudent(student);
-        long upcoming = interviewRepository.countByInternshipApplication_StudentAndInterviewDateAfter(student, LocalDateTime.now());
-        long awaiting = interviewRepository.countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(student, EmployerDecision.INTERVIEW_OFFERED, LocalDateTime.now());
-        long offersPending = applicationRepository.countByStudentAndEmployerDecisionAndStudentInternshipConsent(student, EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING);
-        long contractsToSign = contractRepository.countByStudentAndStudentSignedAtIsNull(student);
-        long signedContracts = contractRepository.countByStudentAndStudentSignedAtIsNotNull(student);
-
-        InternshipStatus status;
-        if (signedContracts > 0)       status = CONTRACT_SIGNED;
-        else if (contractsToSign > 0)  status = CONTRACT_PENDING;
-        else if (offersPending > 0)    status = OFFER_PENDING;
-        else if (awaiting > 0)         status = AWAITING_DECISION;
-        else if (upcoming > 0)         status = UPCOMING_INTERVIEW;
-        else if (applications > 0)     status = NO_INTERVIEW;
-        else if (cvApproved > 0)       status = NO_APPLICATION;
-        else if (cvPending > 0)        status = CV_PENDING;
-        else if (!cvs.isEmpty())       status = CV_REJECTED;
-        else                           status = NO_CV;
-
-        return new ManagerStudentSummaryDto(
-                student.getId(), student.getStudentId(),
-                student.getFirstName(), student.getLastName(),
-                accountAccessService.getAccountStatus(student.getEmail()),
-                status);
+    private static Map<Long, Long> toMap(List<StudentCount> counts) {
+        return counts.stream().collect(Collectors.toMap(StudentCount::getStudentId, StudentCount::getTotal));
     }
 
     private InternshipTracking findTracking(long trackingId) throws InternshipTrackingNotFoundException {

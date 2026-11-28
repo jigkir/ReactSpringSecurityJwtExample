@@ -7,6 +7,7 @@ import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.internship.Internship;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.StudentCount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,7 +46,21 @@ public interface InternshipApplicationRepository extends JpaRepository<Internshi
 
     List<InternshipApplication> findByStudentAndStudentInternshipConsent(Student student, StudentInternshipConsent studentInternshipConsent);
 
-    long countByStudent (Student student);
+    @Query("""
+    select a.student.id as studentId, count(a) as total
+    from InternshipApplication a
+    group by a.student.id
+    """)
+    List<StudentCount> countApplicationsGroupedByStudent();
 
-    long countByStudentAndEmployerDecisionAndStudentInternshipConsent(Student student, EmployerDecision employerDecision, StudentInternshipConsent studentInternshipConsent);
+    @Query("""
+    select a.student.id as studentId, count(a) as total
+    from InternshipApplication a
+    where a.employerDecision = :decision
+      and a.studentInternshipConsent = :consent
+    group by a.student.id
+    """)
+    List<StudentCount> countByDecisionAndConsentGroupedByStudent(
+            @Param("decision") EmployerDecision decision,
+            @Param("consent") StudentInternshipConsent consent);
 }

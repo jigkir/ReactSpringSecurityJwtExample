@@ -27,7 +27,9 @@ import com.lacouf.rsbjwt.model.notification.TargetType;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.session.Season;
 import com.lacouf.rsbjwt.model.user.*;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.*;
 import com.lacouf.rsbjwt.repository.application.InternshipApplicationRepository;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.StudentCvCount;
 import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto;
 import static com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus.*;
 import com.lacouf.rsbjwt.repository.contract.ContractRepository;
@@ -1085,107 +1087,106 @@ public class ManagerServiceTest {
 
     // ---------- Students summary ----------
 
+    private record Count(Long getStudentId, Long getTotal) implements StudentCount {}
+
+    private record CvCount(Long getStudentId, ReviewStatus getStatus, Long getTotal) implements StudentCvCount {}
+
     @Test
     void shouldReturnNoCvWhenStudentHasNoCv() throws Exception {
-        Student student = givenStudentWithCvs(List.of());
+        givenStudent();
 
-        assert NO_CV.equals(statusOf(student));
+        assert NO_CV.equals(statusOf());
     }
 
     @Test
     void shouldReturnCvPendingWhenOnlyPendingCv() throws Exception {
-        Student student = givenStudentWithCvs(List.of(cv)); // new CV is PENDING
+        givenStudentWithCv(ReviewStatus.PENDING);
 
-        assert CV_PENDING.equals(statusOf(student));
+        assert CV_PENDING.equals(statusOf());
     }
 
     @Test
     void shouldReturnCvRejectedWhenOnlyRejectedCv() throws Exception {
-        cv.setStatus(ReviewStatus.REJECTED);
-        Student student = givenStudentWithCvs(List.of(cv));
+        givenStudentWithCv(ReviewStatus.REJECTED);
 
-        assert CV_REJECTED.equals(statusOf(student));
-    }
-
-    @Test
-    void shouldIgnoreHiddenCvs() throws Exception {
-        cv.setStatus(ReviewStatus.APPROVED);
-        cv.setVisibility(DocumentVisibility.HIDDEN);
-        Student student = givenStudentWithCvs(List.of(cv));
-
-        assert NO_CV.equals(statusOf(student));
+        assert CV_REJECTED.equals(statusOf());
     }
 
     @Test
     void shouldReturnNoApplicationWhenCvApprovedButNeverApplied() throws Exception {
-        cv.setStatus(ReviewStatus.APPROVED);
-        Student student = givenStudentWithCvs(List.of(cv));
+        givenStudentWithCv(ReviewStatus.APPROVED);
 
-        assert NO_APPLICATION.equals(statusOf(student));
+        assert NO_APPLICATION.equals(statusOf());
     }
 
     @Test
     void shouldReturnNoInterviewWhenAppliedButNoInterview() throws Exception {
-        cv.setStatus(ReviewStatus.APPROVED);
-        Student student = givenStudentWithCvs(List.of(cv));
-        when(applicationRepository.countByStudent(student)).thenReturn(2L);
+        givenStudentWithCv(ReviewStatus.APPROVED);
+        when(applicationRepository.countApplicationsGroupedByStudent())
+                .thenReturn(List.of(new Count(STUDENT_ID, 2L)));
 
-        assert NO_INTERVIEW.equals(statusOf(student));
+        assert NO_INTERVIEW.equals(statusOf());
     }
 
     @Test
     void shouldReturnUpcomingInterview() throws Exception {
-        cv.setStatus(ReviewStatus.APPROVED);
-        Student student = givenStudentWithCvs(List.of(cv));
-        when(applicationRepository.countByStudent(student)).thenReturn(1L);
-        when(interviewRepository.countByInternshipApplication_StudentAndInterviewDateAfter(eq(student), any(LocalDateTime.class)))
-                .thenReturn(1L);
+        givenStudentWithCv(ReviewStatus.APPROVED);
+        when(interviewRepository.countUpcomingGroupedByStudent(any(LocalDateTime.class)))
+                .thenReturn(List.of(new Count(STUDENT_ID, 1L)));
 
-        assert UPCOMING_INTERVIEW.equals(statusOf(student));
+        assert UPCOMING_INTERVIEW.equals(statusOf());
     }
 
     @Test
     void shouldReturnAwaitingDecision() throws Exception {
-        cv.setStatus(ReviewStatus.APPROVED);
-        Student student = givenStudentWithCvs(List.of(cv));
-        when(applicationRepository.countByStudent(student)).thenReturn(1L);
-        when(interviewRepository.countByInternshipApplication_StudentAndInternshipApplication_EmployerDecisionAndInterviewDateBefore(
-                eq(student), eq(EmployerDecision.INTERVIEW_OFFERED), any(LocalDateTime.class))).thenReturn(1L);
+        givenStudentWithCv(ReviewStatus.APPROVED);
+        when(interviewRepository.countAwaitingGroupedByStudent(eq(EmployerDecision.INTERVIEW_OFFERED), any(LocalDateTime.class)))
+                .thenReturn(List.of(new Count(STUDENT_ID, 1L)));
 
-        assert AWAITING_DECISION.equals(statusOf(student));
+        assert AWAITING_DECISION.equals(statusOf());
     }
 
     @Test
     void shouldReturnOfferPending() throws Exception {
-        cv.setStatus(ReviewStatus.APPROVED);
-        Student student = givenStudentWithCvs(List.of(cv));
-        when(applicationRepository.countByStudentAndEmployerDecisionAndStudentInternshipConsent(
-                student, EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING)).thenReturn(1L);
+        givenStudentWithCv(ReviewStatus.APPROVED);
+        when(applicationRepository.countByDecisionAndConsentGroupedByStudent(
+                EmployerDecision.INTERNSHIP_OFFERED, StudentInternshipConsent.PENDING))
+                .thenReturn(List.of(new Count(STUDENT_ID, 1L)));
 
-        assert OFFER_PENDING.equals(statusOf(student));
+        assert OFFER_PENDING.equals(statusOf());
     }
 
     @Test
     void shouldReturnContractPending() throws Exception {
-        Student student = givenStudentWithCvs(List.of(cv));
-        when(contractRepository.countByStudentAndStudentSignedAtIsNull(student)).thenReturn(1L);
+        givenStudentWithCv(ReviewStatus.PENDING);
+        when(contractRepository.countToSignGroupedByStudent())
+                .thenReturn(List.of(new Count(STUDENT_ID, 1L)));
 
-        assert CONTRACT_PENDING.equals(statusOf(student));
+        assert CONTRACT_PENDING.equals(statusOf());
     }
 
     @Test
     void shouldReturnContractSignedAndPreferItOverOtherStates() throws Exception {
-        Student student = givenStudentWithCvs(List.of(cv));
-        when(contractRepository.countByStudentAndStudentSignedAtIsNotNull(student)).thenReturn(1L);
-        when(contractRepository.countByStudentAndStudentSignedAtIsNull(student)).thenReturn(1L);
-        when(applicationRepository.countByStudent(student)).thenReturn(3L);
+        givenStudentWithCv(ReviewStatus.PENDING);
+        when(contractRepository.countSignedGroupedByStudent()).thenReturn(List.of(new Count(STUDENT_ID, 1L)));
+        when(contractRepository.countToSignGroupedByStudent()).thenReturn(List.of(new Count(STUDENT_ID, 1L)));
+        when(applicationRepository.countApplicationsGroupedByStudent()).thenReturn(List.of(new Count(STUDENT_ID, 3L)));
 
-        assert CONTRACT_SIGNED.equals(statusOf(student));
+        assert CONTRACT_SIGNED.equals(statusOf());
+    }
+
+    @Test
+    void shouldNotMixCountsBetweenStudents() throws Exception {
+        givenStudent();
+        when(contractRepository.countSignedGroupedByStudent())
+                .thenReturn(List.of(new Count(999L, 1L))); // another student
+
+        assert NO_CV.equals(statusOf());
     }
 
     @Test
     void shouldReturnOneSummaryPerStudentWithIdentity() throws Exception {
-        Student student = givenStudentWithCvs(List.of());
+        givenStudent();
 
         ManagerStudentSummaryDto dto = managerService.getStudentsStatus().getFirst();
 
@@ -1225,13 +1226,23 @@ public class ManagerServiceTest {
         return Arrays.stream(Discipline.values()).filter(discipline -> discipline != Discipline.COMPUTER_SCIENCE).findFirst().orElseThrow();
     }
 
-    private Student givenStudentWithCvs(List<CV> cvs) {
-        Student student = cv.getStudent();
+    private static final long STUDENT_ID = 2L;
 
-        when(studentRepository.findAll()).thenReturn(List.of(student));
-        when(cvRepository.findByUser(student)).thenReturn(cvs);
+    private void givenStudent() {
+        when(studentRepository.findAll()).thenReturn(List.of(cv.getStudent()));
+    }
 
-        return student;
+    private void givenStudentWithCv(ReviewStatus status) {
+        givenStudent();
+
+        List<StudentCvCount> rows = List.of(new CvCount(STUDENT_ID, status, 1L));
+
+        when(cvRepository.countByStatusGroupedByStudent(DocumentVisibility.VISIBLE))
+                .thenReturn(rows);
+    }
+
+    private ManagerStudentSummaryDto.InternshipStatus statusOf() throws Exception {
+        return managerService.getStudentsStatus().getFirst().internshipStatus();
     }
 
     private ManagerStudentSummaryDto.InternshipStatus statusOf(Student student) throws Exception {

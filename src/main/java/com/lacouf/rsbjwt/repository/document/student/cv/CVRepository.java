@@ -7,6 +7,9 @@ import com.lacouf.rsbjwt.model.document.student.cv.CV;
 import com.lacouf.rsbjwt.model.session.AcademicSession;
 import com.lacouf.rsbjwt.model.user.Student;
 import com.lacouf.rsbjwt.repository.document.DocumentRepository;
+import com.lacouf.rsbjwt.service.StudentStatusCalculator.StudentCvCount;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,4 +32,12 @@ public interface CVRepository extends DocumentRepository<CV> {
     List<CV> findByUser_Credentials_EmailAndStatusAndVisibility(String email, ReviewStatus status, DocumentVisibility visibility);
 
     List<CV> findByTranslationStatusAndVisibility(TranslationStatus status, DocumentVisibility visibility);
+
+    @Query("""
+    select c.user.id as studentId, c.status as status, count(c) as total
+    from CV c
+    where c.visibility = :visibility
+    group by c.user.id, c.status
+    """)
+    List<StudentCvCount> countByStatusGroupedByStudent(@Param("visibility") DocumentVisibility visibility);
 }
