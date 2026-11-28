@@ -234,18 +234,22 @@ public class EmployerService {
     }
 
     @Transactional
-    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException {
+    public void createInterview(long applicationId, String email, InterviewRequestDto interviewRequestDto) throws InternshipApplicationNotFoundException, InterviewAlreadyExistsException, ApplicationRejectedException, InternshipAlreadyOfferedException, StudentAlreadyEmployedException, InterviewPhoneNumberRequiredException {
+        verifyPhoneNumberForMeetingType(interviewRequestDto);
+
         InternshipApplication internshipApplication = findApplicationOpenToDecision(applicationId, email);
 
         if (interviewRepository.existsByInternshipApplicationAndInterviewStatus(internshipApplication, InterviewStatus.SCHEDULED)) {
             throw new InterviewAlreadyExistsException(applicationId);
         }
 
+
         Employer employer = internshipApplication.getInternship().getPostedBy();
 
         Interview interview = new Interview(
                 employer,
                 internshipApplication,
+                formatOptionalPhone(interviewRequestDto.interviewPhoneNumber()),
                 interviewRequestDto.message(),
                 interviewRequestDto.interviewDate(),
                 interviewRequestDto.meetingType(),
@@ -306,7 +310,8 @@ public class EmployerService {
     }
 
     @Transactional
-    public InterviewEmployerResponseDto updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException {
+    public InterviewEmployerResponseDto updateInterview(long interviewId, String email, InterviewRequestDto interviewRequestDto) throws InterviewNotFoundException, InterviewCancelledException, InterviewAlreadyPassedException, InternshipAlreadyOfferedException, InterviewPhoneNumberRequiredException {
+        verifyPhoneNumberForMeetingType(interviewRequestDto);
         Interview interview = findModifiableInterview(interviewId, email);
         InternshipApplication application = interview.getInternshipApplication();
 
@@ -316,6 +321,7 @@ public class EmployerService {
 
         interview.update(
                 interviewRequestDto.message(),
+                formatOptionalPhone(interviewRequestDto.interviewPhoneNumber()),
                 interviewRequestDto.interviewDate(),
                 interviewRequestDto.meetingType(),
                 interviewRequestDto.meetingDetails()
@@ -454,11 +460,21 @@ public class EmployerService {
         notificationService.closeNotificationsOfType(NotificationType.NEW_INTERNSHIP_APPLICATION, applicationId);
     }
 
+    private String formatOptionalPhone(String phone) {
+        return phone == null ? null : userAppService.formatPhoneNumber(phone);
+    }
+
     private boolean isVisibleToEmployer(InternshipApplication application) {
         Student student = application.getStudent();
         boolean employed = student.isEmployed();
         boolean wasOffered = application.getStudentInternshipConsent() != StudentInternshipConsent.NOT_APPLICABLE;
 
         return !employed || wasOffered;
+    }
+
+    private void verifyPhoneNumberForMeetingType(InterviewRequestDto dto) throws InterviewPhoneNumberRequiredException {
+        if (dto.meetingType() == MeetingType.PHONE && dto.interviewPhoneNumber() == null) {
+            throw new InterviewPhoneNumberRequiredException();
+        }
     }
 }
