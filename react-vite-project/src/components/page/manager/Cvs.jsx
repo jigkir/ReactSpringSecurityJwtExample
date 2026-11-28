@@ -1,15 +1,9 @@
-/**
- * Manager page: review student CVs pending validation.
- *
- * Route /manager/cvs
- *
- * Access control is handled by <RequireRole roles={["MANAGER"]}/> in App.jsx,
- * and enforced again by the backend.
- */
+
+
 
 import {useOutletContext} from "react-router-dom";
 import CvReviewList from "../../features/cvs/CvReviewList.jsx";
-import {getAuthClasses} from "../../../styles/AppStyles.jsx";
+import {getAuthClasses} from "../../../styles/theme/AppStyles.jsx";
 
 const Cv = () => {
     const {dark} = useOutletContext();

@@ -1,41 +1,27 @@
-/**
- * Employer page: every application received, grouped by the internship offer it comes from.
- * Location: src/components/page/application/Applications.jsx
- *
- * - One section per internship (title + number of applications).
- * - A dropdown lets the employer pick which internship to look at ("All internships" by default).
- * - A status color filter (ALL | RED | YELLOW | GREEN) on the employer decision
- *   (PENDING = YELLOW, ACCEPTED / INTERNSHIP_OFFERED = GREEN, REJECTED = RED); initial value from `?status=`.
- *   While a color is selected, every application card gets a border of that color.
- * - Search by student / email / CV name.
- * - "New" badge: removed as soon as one of the student's documents is opened or the interview
- *   invitation is sent, and every application still new becomes read when the page is left
- *   (see useNewApplications).
- * - The cards do not show the CV file name here (the preview buttons are enough).
- * Access control: <RequireRole roles={["EMPLOYER"]}/> in App.jsx + backend.
- */
+
+
 
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {NavLink, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import ApplicationCard from "./ApplicationCard.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
 import {getApplicationCv, getApplications, getEmployerInternships} from "../../shared/core/api/Api.jsx";
-import {base64ToBlobUrl} from "../../../utils/Documents.js";
-import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../../utils/Sort.jsx";
-import {ALL, colorOf, matchesColor} from "../../../utils/StatusColor.js";
+import {base64ToBlobUrl} from "../../../utils/documents/Documents.js";
+import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../../utils/sorting/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../../utils/status/StatusColor.js";
 import {
     TARGET_TYPE,
     useCloseShownNotifications,
     useNotifications
 } from "../../shared/notification/NotificationsProvider.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
-import {useSession} from "../../../utils/useSession.js";
-import {useNewApplications} from "../../../utils/useNewApplications.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {useSession} from "../../../utils/session/useSession.js";
+import {useNewApplications} from "../../../utils/hooks/useNewApplications.js";
 import {employerApplicationPath} from "../../../routes/AppRoutes.jsx";
 
-// New first (state frozen at first appearance), then newest (highest id) first
+
 const compareApplications = (isNew) => (a, b) =>
     Number(isNew(b)) - Number(isNew(a)) || (toNum(b.id) ?? 0) - (toNum(a.id) ?? 0);
 
@@ -49,7 +35,7 @@ function Applications({user}) {
     const {selectedSession} = useSession();
     const {register, isNew: isNewApp, clear: clearNew, markAsSeen, version: newVersion} = useNewApplications();
 
-    const [applications, setApplications] = useState(null); // null = loading
+    const [applications, setApplications] = useState(null);
     const [internships, setInternships] = useState([]);
     const [loadFailed, setLoadFailed] = useState(false);
     const [search, setSearch] = useState("");
@@ -67,7 +53,7 @@ function Applications({user}) {
     }`;
 
     const load = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!selectedSession) return;
         const sessionId = selectedSession.id;
         try {
             const [apps, offers] = await Promise.all([getApplications(sessionId), getEmployerInternships(sessionId)]);
@@ -85,7 +71,7 @@ function Applications({user}) {
 
     usePolling(load, isLoggedIn);
 
-    // internshipId -> title (the application's own title wins when the API provides one)
+
     const titleById = useMemo(
         () => new Map(internships.map((i) => [i.id, i.title])),
         [internships],
@@ -98,12 +84,12 @@ function Applications({user}) {
     const sessionApps = useMemo(() => {
         if (!applications) return [];
 
-        // Freeze the "new" state the first time an application is seen
+
         register(applications);
         return applications;
     }, [applications, register]);
 
-    // One group per internship that has at least one application: [{id, title, apps, unread}]
+
     const groups = useMemo(() => {
         if (!sessionApps) return [];
         const byInternship = new Map();
@@ -122,7 +108,7 @@ function Applications({user}) {
             .sort((a, b) => Number(b.unread > 0) - Number(a.unread > 0) || a.title.localeCompare(b.title));
     }, [sessionApps, titleOf, isNewApp, newVersion]);
 
-    // Apply the internship filter + status color + search, then drop empty groups
+
     const visibleGroups = useMemo(() => groups
             .filter((g) => internshipFilter === ALL || String(g.id) === internshipFilter)
             .map((g) => ({
@@ -141,8 +127,8 @@ function Applications({user}) {
     const togglePreview = (id) =>
         setOpenPreviewIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
 
-    // Opening the CV marks the application as read on the server (and closes its notification):
-    // the "New" badge goes away right now
+
+
     const getUrl = useCallback(async (appId) => {
         const cv = await getApplicationCv(appId);
         if (!cv?.content) throw new Error("missing content");
@@ -153,7 +139,7 @@ function Applications({user}) {
         return base64ToBlobUrl(cv.content);
     }, [markAsSeen, refresh]);
 
-    // Cover letter or transcript opened, or interview invitation sent: the badge goes away right now
+
     const handleApplicationSeen = useCallback((appId) => {
         clearNew(appId);
         void refresh();
@@ -174,7 +160,7 @@ function Applications({user}) {
     } else {
         body = visibleGroups.map((group) => (
             <section key={group.id} className="space-y-3" aria-label={group.title}>
-                {/* Which internship these applications come from */}
+
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="min-w-48 flex-1">
                         <p className={`text-xs font-bold uppercase tracking-wide ${mutedText}`}>
@@ -194,7 +180,7 @@ function Applications({user}) {
                         {t("applicationsPage.openInternship")}
                     </NavLink>
                 </div>
-                {/*This is the big page*/}
+
                 {group.apps.map((application) => (
                     <ApplicationCard
                         key={application.id}
@@ -226,7 +212,7 @@ function Applications({user}) {
             <div className={s.listSection}>
                 {applications && applications.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 mb-4">
-                        {/* Pick the internship */}
+
                         <select
                             value={internshipFilter}
                             onChange={(e) => setInternshipFilter(e.target.value)}

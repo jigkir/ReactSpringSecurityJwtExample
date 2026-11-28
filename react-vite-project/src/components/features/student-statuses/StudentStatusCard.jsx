@@ -1,7 +1,7 @@
 import {useTranslation} from "react-i18next";
-import Icon from "../../../styles/Icon.jsx";
-import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/AppStyles.jsx";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/theme/AppStyles.jsx";
+import {ALL, borderStatusOf} from "../../../utils/status/StatusColor.js";
 
 const ACCOUNT_TONES = {
     PENDING: "PENDING",
@@ -56,7 +56,7 @@ function StudentStatusCard({student, dark, filterColor = ALL}) {
     const {t} = useTranslation();
     const s = getCvDocumentsClasses(dark);
 
-    // The card only gets a colored border while a progress color is selected in the filter
+
     const statusBorder = getStatusBorder(borderStatusOf(filterColor), dark);
     const cardBorder = statusBorder
         ? `border-2 ${statusBorder}`

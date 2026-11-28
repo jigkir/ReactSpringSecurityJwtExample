@@ -12,7 +12,7 @@ vi.mock("../../core/api/Api.jsx", () => ({
 
 const EMPLOYER = {id: 1, role: "EMPLOYER"};
 
-// Labels come from the translations, so rewording them never breaks these tests
+
 const approvedLabel = (amount) => i18n.t("navbar.internshipApprovedNotification", {amount});
 const rejectedLabel = (amount) => i18n.t("navbar.internshipRejectedNotification", {amount});
 
@@ -34,7 +34,7 @@ beforeEach(() => {
 describe("NotificationMenu shows employer internship offer review decisions", () => {
 
     it("shouldShowReviewDecisionsWhenEmployerOpensMenu", async () => {
-        // Arrange
+
         getNotifications.mockResolvedValue([
             {notificationType: "INTERNSHIP_OFFER_APPROVED"},
             {notificationType: "INTERNSHIP_OFFER_REJECTED"},
@@ -43,30 +43,30 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         render(<MockNotificationMenu/>);
         await screen.findByText("3");
 
-        // Act
+
         openMenu();
 
-        // Assert
+
         expect(screen.getByRole("link", {name: approvedLabel(1)})).toBeInTheDocument();
         expect(screen.getByRole("link", {name: rejectedLabel(2)})).toBeInTheDocument();
     });
 
     it("shouldShowNoNotificationsWhenEmployerHasNoReviewDecision", async () => {
-        // Arrange
+
         getNotifications.mockResolvedValue([]);
         render(<MockNotificationMenu/>);
         await waitFor(() => expect(getNotifications).toHaveBeenCalled());
 
-        // Act
+
         openMenu();
 
-        // Assert
+
         expect(screen.getByText(i18n.t("navbar.noNotifications"))).toBeInTheDocument();
         expect(screen.queryByRole("link")).not.toBeInTheDocument();
     });
 
     it("shouldKeepReviewDecisionUnreadWhenEmployerOpensInternshipsPage", async () => {
-        // Arrange
+
         getNotifications.mockResolvedValue([
             {id: 4, notificationType: "INTERNSHIP_OFFER_APPROVED", targetType: "INTERNSHIP_OFFER", targetId: 9},
         ]);
@@ -74,10 +74,10 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
         await screen.findByText("1");
         openMenu();
 
-        // Act
+
         fireEvent.click(screen.getByRole("link", {name: approvedLabel(1)}));
 
-        // Assert
+
         await waitFor(() => expect(getNotifications).toHaveBeenCalledTimes(2));
         expect(screen.getByText("1")).toBeInTheDocument();
         expect(markNotificationsAsRead).not.toHaveBeenCalled();
@@ -87,15 +87,15 @@ describe("NotificationMenu shows employer internship offer review decisions", ()
 describe("NotificationMenu handles employer notification errors", () => {
 
     it("shouldShowErrorWhenNotificationsFailToLoad", async () => {
-        // Arrange
+
         getNotifications.mockRejectedValue(new Error("network error"));
         render(<MockNotificationMenu/>);
         await waitFor(() => expect(getNotifications).toHaveBeenCalled());
 
-        // Act
+
         openMenu();
 
-        // Assert
+
         expect(await screen.findByRole("alert")).toHaveTextContent(i18n.t("navbar.notificationLoadError"));
     });
 });

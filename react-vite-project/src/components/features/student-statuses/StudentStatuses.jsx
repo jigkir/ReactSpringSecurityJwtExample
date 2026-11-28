@@ -1,8 +1,8 @@
 import {useTranslation} from "react-i18next";
 import {useOutletContext} from "react-router-dom";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {StatusColorSelect, useStudentStatusFilters} from "../../../utils/Sort.jsx";
-import {ALL} from "../../../utils/StatusColor.js";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import {StatusColorSelect, useStudentStatusFilters} from "../../../utils/sorting/Sort.jsx";
+import {ALL} from "../../../utils/status/StatusColor.js";
 import StudentStatusCard from "./StudentStatusCard.jsx";
 import {ACCOUNT_STATUSES, INTERNSHIP_STATUSES, MOCK_STUDENTS} from "./StudentStatusMock.js";
 
@@ -18,7 +18,7 @@ function StudentStatuses() {
             : "bg-white border-slate-300 text-slate-900"
     }`;
 
-    // Temporary data until the backend is implemented.
+
     const students = MOCK_STUDENTS;
 
     const {
@@ -37,7 +37,7 @@ function StudentStatuses() {
         <div className={s.page}>
             <div className={s.listSection}>
 
-                {/* Filters */}
+
                 <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
                     <div>
                         <label
@@ -124,14 +124,14 @@ function StudentStatuses() {
                     </div>
                 </div>
 
-                {/* Student count */}
+
                 <p className={`${s.subtitle} mb-3`}>
                     {t("studentStatuses.count", {
                         count: visible.length
                     })}
                 </p>
 
-                {/* Student list */}
+
                 <div className={s.scrollArea}>
                     {visible.length === 0 ? (
                         <p className={s.emptyText}>

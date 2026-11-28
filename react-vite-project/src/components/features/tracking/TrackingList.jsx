@@ -1,17 +1,17 @@
 import {useCallback, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {getInternshipTrackings, getAssignableTeachers, assignTeacher} from "../../shared/core/api/Api.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
 import {useOutletContext} from "react-router-dom";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {COLOR, matchesColor} from "../../../utils/StatusColor.js";
-import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import {COLOR, matchesColor} from "../../../utils/status/StatusColor.js";
+import {StatusColorSelect, useColorFilter} from "../../../utils/sorting/Sort.jsx";
 import UserCard from "../users/UserCard.jsx";
-import Button from "../../../styles/Button.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 
 const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
 
-// Teacher assigned = GREEN, still to assign = YELLOW (no red)
+
 const TRACKING_COLORS = ["ALL", COLOR.YELLOW, COLOR.GREEN];
 const trackingColor = (internship) => (internship.teacher ? COLOR.GREEN : COLOR.YELLOW);
 
@@ -22,16 +22,16 @@ function Tracking() {
     const [internships, setInternships] = useState([]);
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(true);
-    // Initial filter comes from the Home buttons (?status=GREEN|YELLOW)
+
     const [status, setStatus] = useColorFilter("status", TRACKING_COLORS);
 
-    // Store teachers per trackingId: { [trackingId]: TeacherAssignmentDto[] }
+
     const [teachersByTracking, setTeachersByTracking] = useState({});
-    // Store selected teacherId per trackingId: { [trackingId]: string }
+
     const [selectedTeachers, setSelectedTeachers] = useState({});
-    // Track which trackingId is currently loading teachers
+
     const [loadingTeachersFor, setLoadingTeachersFor] = useState(null);
-    // Track which trackingId is currently submitting an assignment
+
     const [assigningTrackingId, setAssigningTrackingId] = useState(null);
 
     const loadInternships = useCallback(async () => {

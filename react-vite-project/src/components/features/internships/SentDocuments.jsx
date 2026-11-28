@@ -1,23 +1,16 @@
-/**
- * SentDocuments.jsx — The documents a student sent with an application (CV, cover letter,
- * transcript), each one previewable inline (all at the same time if wanted).
- * Always visible once the student has applied. The preview button is RED while its preview is open.
- *
- * Props
- *   application  {cv, coverLetter, academicTranscript}  each {id, fileName?}
- *   dark         boolean
- */
+
+
 
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import PdfPreview from "../../shared/documents/PdfPreview.jsx";
 import {getDocumentFile} from "../../shared/core/api/Api.jsx";
-import {blobUrlFromFile} from "../../../utils/Documents.js";
-import {DOC_TYPES} from "../../../utils/DocumentTypes.js";
-import {useToggleSet} from "../../../utils/useToggleSet.js";
+import {blobUrlFromFile} from "../../../utils/documents/Documents.js";
+import {DOC_TYPES} from "../../../utils/documents/DocumentTypes.js";
+import {useToggleSet} from "../../../utils/hooks/useToggleSet.js";
 
-// One stable function per type, so an open preview is never reloaded by a re-render
+
 
 const urlGetters = {};
 const getUrlFor = (type) =>

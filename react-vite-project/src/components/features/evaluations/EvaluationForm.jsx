@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import RadioGroup from "../../../styles/RadioGroup.jsx";
-import {getInternshipFormClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import RadioGroup from "../../../styles/ui/RadioGroup.jsx";
+import {getInternshipFormClasses} from "../../../styles/theme/AppStyles.jsx";
 import {
     EVALUATION_CRITERIA,
     EVALUATION_RATINGS,
@@ -13,9 +13,9 @@ import {
     createInitialEvaluation,
     hasDisagreement,
     validateEvaluation,
-} from "../../../utils/WorkplaceEvaluation.js";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
+} from "../../../utils/evaluations/WorkplaceEvaluation.js";
+import AutoResizeTextarea from "../../../styles/ui/AutoResizeTextarea.jsx";
+import {translateWarning} from "../../../utils/forms/CommonFields.jsx";
 
 function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
     const {t} = useTranslation();
@@ -28,7 +28,7 @@ function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
 
     const commentRequired = hasDisagreement(formData.criteria);
 
-    // --- State Update Helpers ---
+
 
     const updateCriterion = (key, value) => {
         setFormData((prev) => ({
@@ -92,7 +92,7 @@ function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
         }));
     };
 
-    // --- Submit ---
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -126,9 +126,9 @@ function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
                 </div>
             )}
 
-            {/* SECTION 1: Evaluation Criteria */}
+
             <section className="space-y-2">
-                {/* Shared rating column labels once at the top */}
+
                 <div
                     style={gridColsStyle}
                     className={`grid items-center gap-2 border-b pb-2 text-center text-xs font-semibold sm:gap-3 ${
@@ -266,7 +266,7 @@ function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
                 </div>
             </section>
 
-            {/* SECTION 2: Comments */}
+
             <section className="space-y-2">
                 <label htmlFor="evaluation-comments" className={s.label}>
                     {t("workplaceEvaluation.comments.label")}
@@ -302,7 +302,7 @@ function EvaluationForm({dark, initialData, onSubmit, onCancel}) {
                 )}
             </section>
 
-            {/* SECTION 3: General Observations */}
+
             <section className="space-y-5">
                 <RadioGroup
                     dark={dark}

@@ -1,7 +1,7 @@
-import fetcher from "../../../../utils/fetcher.js";
+import fetcher from "../../../../utils/api/fetcher.js";
 
-// region Shared response handling
-// Maps an HTTP status to a translation KEY (translated at render time, never here).
+
+
 const STATUS_I18N_KEYS = {
     400: "error.badRequest",
     401: "error.unauthorized",
@@ -23,7 +23,7 @@ async function toError(response) {
     try {
         body = await response.json();
     } catch {
-        // non-JSON body
+
     }
     const i18n = statusToI18n(response.status);
     const error = new Error(i18n.key);
@@ -33,18 +33,18 @@ async function toError(response) {
     return error;
 }
 
-// For endpoints that return a JSON body
+
 export async function handleResponse(response) {
     if (!response.ok) throw await toError(response);
     return response.json();
 }
 
-// For endpoints that return no body (PUT scope/hide/main, signups)
+
 async function handleEmpty(response) {
     if (!response.ok) throw await toError(response);
 }
 
-// POST a JSON payload to an endpoint that returns no useful body
+
 async function postJson(path, payload) {
     const response = await fetcher(path, {
         method: "POST",
@@ -57,12 +57,12 @@ async function postJson(path, payload) {
     return handleEmpty(response);
 }
 
-// Without a session, the backend returns the lists of the target session
+
 const withSession = (path, sessionId) => sessionId ? `${path}?sessionId=${sessionId}` : path;
 
-// endregion
 
-// region Login
+
+
 export async function login(email, password) {
     const response = await fetcher("login", {
         method: "POST",
@@ -75,18 +75,18 @@ export async function login(email, password) {
     return handleResponse(response);
 }
 
-// endregion
 
-// region Current User
+
+
 export async function getCurrentUser() {
     const response = await fetcher("users/current", {});
     return handleResponse(response);
 }
 
-// endregion
 
-// region Reference data (public)
-// Returns [{value, label}], accepting ["A","B"] or {disciplines: [...]} from the backend
+
+
+
 export async function getDisciplines() {
     const response = await fetcher("disciplines", {});
     const data = await handleResponse(response);
@@ -97,7 +97,7 @@ export async function getDisciplines() {
     }));
 }
 
-// Returns string[], accepting ["STUDENT",...] or {roles: [...]} from the backend
+
 export async function getRoles() {
     const response = await fetcher("roles", {});
     const data = await handleResponse(response);
@@ -105,28 +105,28 @@ export async function getRoles() {
     return list.map((r) => String(typeof r === "string" ? r : (r.value ?? r)));
 }
 
-// endregion
 
-// region Signup
-// All reject with an Error carrying .status and .body (e.g. body.field on 409)
+
+
+
 export const signupStudent = (payload) => postJson("student/signup", payload);
 export const signupTeacher = (payload) => postJson("teacher/signup", payload);
 export const signupEmployer = (payload) => postJson("employer/signup", payload);
 
-// Public: the winter session a new student signs up for, the one their access is for
+
 export async function getRegistrationSession() {
     return handleResponse(await fetcher("sessions/registration", {method: "GET"}));
 }
 
-// endregion
 
-// region Student CVs
+
+
 export async function getCvCount() {
     const response = await fetcher(`student/cvs/count`, {});
     return handleResponse(response);
 }
 
-// Returns the max CV size in bytes (public endpoint)
+
 export async function getMaxCvSize() {
     const response = await fetcher("max-cv-size", {method: "GET"});
     return handleResponse(response);
@@ -137,10 +137,10 @@ export async function getStudentCvs() {
     return handleResponse(response);
 }
 
-//endregion
 
-// region Manager CVs
-// VISIBLE CVs of the students of a session (visible as soon as a student uploads). Returns ManagerCvResponseDto[] -> {id, fileName, uploadedAt, status, rejectionComment, student: {id, firstName, lastName, email, studentId, discipline}}
+
+
+
 export async function getPublicCvs(sessionId) {
     const response = await fetcher(withSession("manager/cvs", sessionId), {method: "GET"});
     return handleResponse(response);
@@ -151,19 +151,19 @@ export async function getPendingCvs() {
     return handleResponse(response);
 }
 
-// Returns {id, fileName, content (Base64)}
+
 export async function getManagerCvFile(cvId) {
     const response = await fetcher(`manager/cvs/${cvId}/file`, {method: "GET"});
     return handleResponse(response);
 }
 
-// Returns the updated ManagerCvResponseDto (with the new status)
+
 export async function approveCv(cvId) {
     const response = await fetcher(`manager/cvs/${cvId}/approve`, {method: "PUT"});
     return handleResponse(response);
 }
 
-// The backend requires a non-empty comment (CvRejectionDto)
+
 export async function rejectCv(cvId, comment) {
     const response = await fetcher(`manager/cvs/${cvId}/reject`, {
         method: "PUT",
@@ -173,23 +173,23 @@ export async function rejectCv(cvId, comment) {
     return handleResponse(response);
 }
 
-// endregion
 
-// region Contracts (shared by every party: /api/contracts, the backend finds the user from the JWT)
-// Contracts of a session where the user is a party (the target session when no sessionId).
-// Returns ContractResponseDto[]
+
+
+
+
 export async function getContracts(sessionId) {
     const response = await fetcher(withSession("contracts", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 
-// Contracts the connected user has not signed yet, every session. Returns ContractResponseDto[]
+
 export async function getPendingContracts() {
     const response = await fetcher("contracts/to-sign", {method: "GET"});
     return handleResponse(response);
 }
 
-// Returns the updated ContractResponseDto. 400 = terms/password problem, 409 = already signed
+
 export async function signContract(contractId, termsAccepted, password) {
     const response = await fetcher(`contracts/${contractId}/signature`, {
         method: "PUT",
@@ -199,15 +199,15 @@ export async function signContract(contractId, termsAccepted, password) {
     return handleResponse(response);
 }
 
-// language: "FR" | "EN". Returns {id, fileName, content (Base64)}
+
 export async function getContractFile(contractId, language) {
     const response = await fetcher(`contracts/${contractId}/file?language=${language}`, {method: "GET"});
     return handleResponse(response);
 }
 
-// endregion
 
-// region Internship
+
+
 
 export async function getEmployerInternships(sessionId) {
     const response = await fetcher(withSession("employer/internships", sessionId), {});
@@ -228,7 +228,7 @@ export async function createInternship(internship) {
     return handleResponse(response);
 }
 
-// Edit an existing offer. Returns the updated InternshipResponseDto.
+
 export async function updateInternship(internshipId, internship) {
     const response = await fetcher(`employer/internships/${internshipId}`, {
         method: "PUT",
@@ -243,10 +243,10 @@ export async function deleteInternship(internshipId) {
     return handleEmpty(response);
 }
 
-// endregion
 
-// region Student internships
-// Optional documents sent with an application: ?coverLetterId=&transcriptId=
+
+
+
 const withDocs = (path, coverLetterId, transcriptId) => {
     const params = new URLSearchParams();
     if (coverLetterId) params.set("coverLetterId", coverLetterId);
@@ -289,22 +289,22 @@ export async function updateApplicationCV(applicationId, cvId, coverLetterId, tr
 }
 
 
-// endregion
 
-// region Manager internships
-// Returns InternshipResponseDto[] (ALL statuses: pending, approved, rejected)
+
+
+
 export async function getManagerInternships(sessionId) {
     const response = await fetcher(withSession("manager/internships", sessionId), {method: "GET"});
     return handleResponse(response);
 }
 
-// Returns the updated InternshipResponseDto.
+
 export async function approveInternship(internshipId) {
     const response = await fetcher(`manager/internships/${internshipId}/approve`, {method: "PUT"});
     return handleResponse(response);
 }
 
-// A non-empty comment is required. Returns the updated InternshipResponseDto.
+
 export async function rejectInternship(internshipId, comment) {
     const response = await fetcher(`manager/internships/${internshipId}/reject`, {
         method: "PUT",
@@ -314,7 +314,7 @@ export async function rejectInternship(internshipId, comment) {
     return handleResponse(response);
 }
 
-// The manager corrects an offer (same payload as the employer edit). Returns the updated InternshipResponseDto.
+
 export async function updateManagerInternship(internshipId, internship) {
     const response = await fetcher(`manager/internships/${internshipId}`, {
         method: "PUT",
@@ -324,9 +324,9 @@ export async function updateManagerInternship(internshipId, internship) {
     return handleResponse(response);
 }
 
-// endregion
 
-//region EmployerInterviews
+
+
 
 export async function updateInterview(interviewId, interviewRequest) {
     const response = await fetcher(`employer/interviews/${interviewId}`, {
@@ -359,15 +359,15 @@ export async function getEmployerInterviewsByApplicationId(applicationId) {
     return handleResponse(response);
 }
 
-//endregion
 
-//region Notifications
+
+
 export async function getNotifications() {
     const response = await fetcher("notifications", {method: "GET"});
     return handleResponse(response);
 }
 
-// The backend only closes the user's own notifications
+
 export async function markNotificationsAsRead(notificationIds) {
     const response = await fetcher("notifications/read", {
         method: "PUT",
@@ -377,9 +377,9 @@ export async function markNotificationsAsRead(notificationIds) {
     return handleEmpty(response);
 }
 
-//endregion
 
-//region Application
+
+
 export async function getApplications(sessionId) {
     const response = await fetcher(withSession("employer/applications", sessionId), {method: "GET"});
     return handleResponse(response);
@@ -409,9 +409,9 @@ export async function getInternshipIdsWithContract() {
     return handleResponse(response);
 }
 
-//endregion
 
-//region Student EmployerInterviews
+
+
 
 export async function getStudentInterviews() {
     const response = await fetcher("student/interviews", {method: "GET"});
@@ -434,17 +434,17 @@ export async function denyInterviews(interviewId, comment) {
     return handleEmpty(response);
 }
 
-//endregion
 
-//region Student offers
-// -> InternshipApplicationResponseDto[] (opening this list closes the INTERNSHIP_OFFERED notifications)
+
+
+
 export async function getStudentOffers() {
     const response = await fetcher("student/applications/offers", {method: "GET"});
     return handleResponse(response);
 }
 
-// Creates the contract. 200 without body; 409 when a contract already exists, the application was
-// rejected, has no offer, or the student is already employed
+
+
 export async function acceptOffer(applicationId) {
     const response = await fetcher(`student/applications/offers/${applicationId}/accept`, {method: "PUT"});
     return handleEmpty(response);
@@ -455,16 +455,16 @@ export async function denyOffer(applicationId) {
     return handleEmpty(response);
 }
 
-//endregion
 
-//region Employer EmployerInterviews
+
+
 export async function getEmployerInterviews() {
     return handleResponse(await fetcher("employer/interviews", {method: "GET"}));
 }
 
-//endregion
 
-// region Student documents (generic: CV, cover letters, transcripts)
+
+
 const DOC_PATH = {
     CV: "cvs",
     COVER_LETTER: "cover-letters",
@@ -482,12 +482,12 @@ export async function uploadDocument(type, file) {
     return handleEmpty(response);
 }
 
-// CV -> StudentCvResponseDto[], others -> DocumentResponseDto[] {id, fileName, sizeBytes, uploadedAt}
+
 export async function getDocuments(type) {
     return handleResponse(await fetcher(`student/${DOC_PATH[type]}`, {method: "GET"}));
 }
 
-// Returns {id, fileName, content (Base64)}
+
 export async function getDocumentFile(type, id) {
     return handleResponse(await fetcher(`student/${DOC_PATH[type]}/${id}`, {method: "GET"}));
 }
@@ -496,7 +496,7 @@ export async function hideDocument(type, id) {
     return handleEmpty(await fetcher(`student/${DOC_PATH[type]}/${id}/hide`, {method: "PUT"}));
 }
 
-// Employer side: the cover letter / transcript sent with an application. Returns {id, fileName, content (Base64)}
+
 export async function getApplicationCoverLetter(applicationId) {
     return handleResponse(await fetcher(`employer/applications/${applicationId}/cover-letter`, {method: "GET"}));
 }
@@ -505,9 +505,9 @@ export async function getApplicationTranscript(applicationId) {
     return handleResponse(await fetcher(`employer/applications/${applicationId}/transcript`, {method: "GET"}));
 }
 
-// endregion
 
-//region Expired Session
+
+
 export async function getSessions() {
     const sessions = await handleResponse(await fetcher("sessions", {method: "GET"}));
     return {sessions};
@@ -529,9 +529,9 @@ export async function denyUser(studentId) {
     return handleResponse(await fetcher(`manager/students/${studentId}/deny`, {method: "PUT"}));
 }
 
-//endregion
 
-//region Internship Tracking
+
+
 export async function getInternshipTrackings(){
     return handleResponse(await fetcher(`manager/internship-trackings`, {method:"GET"}));
 }
@@ -543,10 +543,10 @@ export async function getAssignableTeachers(trackingId){
 export async function assignTeacher(trackingId,teacherId){
     return handleEmpty(await fetcher(`manager/internship-trackings/${trackingId}/teacher/${teacherId}`, {method: "PUT"}));
 }
-//endregion
 
 
-// region Workplace evaluations
+
+
 export async function fetchWorkplaceEvaluations(sessionId) {
     return handleResponse(await fetcher(`teacher/workplace-evaluations?sessionId=${sessionId}`,{method:"GET"}));
 }
@@ -574,4 +574,3 @@ export async function fetchWorkplaceEvaluationsManager(sessionId){
 export async function getWorkplaceEvaluationFileManager(evaluationId, language){
     return handleResponse(await fetcher(`manager/workplace-evaluations/${evaluationId}/file?language=${language}`))
 }
-// endregion

@@ -1,5 +1,5 @@
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 
 export default function InterviewActions({
     dark, role, isStudentAwaiting, isEmployerEditable, busy, rejecting,

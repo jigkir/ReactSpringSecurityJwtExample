@@ -1,4 +1,4 @@
-// Temporary data until the student status tracking API is available.
+
 
 export const ACCOUNT_STATUSES = [
     "PENDING",

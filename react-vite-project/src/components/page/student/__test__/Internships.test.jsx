@@ -9,7 +9,7 @@ import {
 } from "../../../shared/core/api/Api.jsx";
 import i18n from "../../../../i18next.jsx";
 import {useNotifications} from "../../../shared/notification/NotificationsProvider.jsx";
-import {useSession} from "../../../../utils/useSession.js";
+import {useSession} from "../../../../utils/session/useSession.js";
 
 vi.mock("../../../shared/core/api/Api.jsx", () => ({
     getStudentInternships: vi.fn(),
@@ -23,11 +23,11 @@ vi.mock("../../../shared/notification/NotificationsProvider.jsx", async (importO
     useNotifications: vi.fn(),
 }));
 
-vi.mock("../../../../utils/useSession.js", () => ({
+vi.mock("../../../../utils/session/useSession.js", () => ({
     useSession: vi.fn(),
 }));
 
-vi.mock("../../../../utils/usePolling.js", () => ({
+vi.mock("../../../../utils/hooks/usePolling.js", () => ({
     usePolling: vi.fn(),
 }));
 
@@ -93,76 +93,76 @@ beforeEach(() => {
 describe("StudentInternships displays available internship offers", () => {
 
     it("shouldDisplayApprovedInternships", async () => {
-        // Arrange
+
         renderStudentInternships();
 
-        // Assert
+
         expect(await screen.findByText("Développeur Java")).toBeInTheDocument();
         expect(screen.getByText("Développeur React")).toBeInTheDocument();
         expect(getStudentInternships).toHaveBeenCalledTimes(1);
     });
 
     it("shouldHidePendingAndRejectedInternships", async () => {
-        // Arrange
+
         getStudentInternships.mockResolvedValue([
             internship1,
             {...internship2, id: 3, title: "Stage en attente", status: "PENDING"},
             {...internship2, id: 4, title: "Stage refusé", status: "REJECTED"},
         ]);
 
-        // Act
+
         renderStudentInternships();
         await screen.findByText("Développeur Java");
 
-        // Assert
+
         expect(screen.queryByText("Stage en attente")).not.toBeInTheDocument();
         expect(screen.queryByText("Stage refusé")).not.toBeInTheDocument();
     });
 
     it("shouldSortInternshipsNewestFirstByDefault", async () => {
-        // Arrange
+
         renderStudentInternships();
 
-        // Act
+
         await screen.findByText("Développeur React");
 
-        // Assert
+
         const titles = screen.getAllByRole("heading", {level: 3});
         expect(titles[0]).toHaveTextContent("Développeur React");
         expect(titles[1]).toHaveTextContent("Développeur Java");
     });
 
     it("shouldShowLoadingMessageWhileInternshipsLoad", () => {
-        // Arrange
+
         getStudentInternships.mockReturnValue(new Promise(() => {
         }));
 
-        // Act
+
         renderStudentInternships();
 
-        // Assert
+
         expect(screen.getByText(i18n.t("studentInternship.loading"))).toBeInTheDocument();
     });
 
     it("shouldShowEmptyMessageWhenNoInternshipsExist", async () => {
-        // Arrange
+
         getStudentInternships.mockResolvedValue([]);
 
-        // Act
+
         renderStudentInternships();
 
-        // Assert
+
         expect(await screen.findByText(i18n.t("studentInternship.empty"))).toBeInTheDocument();
     });
 
     it("shouldShowErrorWhenInternshipsFailToLoad", async () => {
-        // Arrange
+
         getStudentInternships.mockRejectedValue(new Error("Network error"));
 
-        // Act
+
         renderStudentInternships();
 
-        // Assert
+
         expect(await screen.findByText(i18n.t("studentInternship.loadError"))).toBeInTheDocument();
     });
 });
@@ -170,10 +170,10 @@ describe("StudentInternships displays available internship offers", () => {
 describe("StudentInternships shows offers expanded", () => {
 
     it("shouldShowDescriptionsWithoutAPreviewButton", async () => {
-        // Arrange + Act
+
         renderStudentInternships();
 
-        // Assert
+
         expect(await screen.findByText(/Développement backend avec Spring Boot/)).toBeInTheDocument();
         expect(screen.getByText(/Développement frontend React/)).toBeInTheDocument();
         expect(screen.queryByRole("button", {name: i18n.t("studentInternship.preview")})).not.toBeInTheDocument();
@@ -183,14 +183,14 @@ describe("StudentInternships shows offers expanded", () => {
 describe("StudentInternships orders NEW, then OLD, then APPLIED", () => {
 
     it("shouldListNewOffersBeforeAppliedOffers", async () => {
-        // Arrange: Java (id 1) already applied to, React (id 2) is new and not applied to
+
         getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 1, cv: {id: 1}}]);
 
-        // Act
+
         renderStudentInternships();
         await screen.findByText("Développeur React");
 
-        // Assert
+
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3});
             expect(titles[0]).toHaveTextContent("Développeur React");
@@ -199,18 +199,18 @@ describe("StudentInternships orders NEW, then OLD, then APPLIED", () => {
     });
 
     it("shouldListOldOffersBeforeAppliedOffers", async () => {
-        // Arrange: both viewed. Java (id 1) is OLD, React (id 2) is APPLIED
+
         getStudentInternships.mockResolvedValue([
             {...internship1, viewed: true},
             {...internship2, viewed: true},
         ]);
         getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 2, cv: {id: 1}}]);
 
-        // Act
+
         renderStudentInternships();
         await screen.findByText("Développeur React");
 
-        // Assert
+
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3});
             expect(titles[0]).toHaveTextContent("Développeur Java");
@@ -219,7 +219,7 @@ describe("StudentInternships orders NEW, then OLD, then APPLIED", () => {
     });
 
     it("shouldPutNewThenOldThenApplied", async () => {
-        // Arrange
+
         getStudentInternships.mockResolvedValue([
             {...internship1, id: 1, title: "Old offer", viewed: true},
             {...internship1, id: 2, title: "Applied offer", viewed: true},
@@ -227,11 +227,11 @@ describe("StudentInternships orders NEW, then OLD, then APPLIED", () => {
         ]);
         getStudentAppliedInternships.mockResolvedValue([{id: 50, internshipId: 2, cv: {id: 1}}]);
 
-        // Act
+
         renderStudentInternships();
         await screen.findByText("New offer");
 
-        // Assert
+
         await waitFor(() => {
             const titles = screen.getAllByRole("heading", {level: 3}).map((h) => h.textContent);
             expect(titles).toEqual(["New offer", "Old offer", "Applied offer"]);
@@ -242,25 +242,25 @@ describe("StudentInternships orders NEW, then OLD, then APPLIED", () => {
 describe("StudentInternships shows the application badge and status", () => {
 
     it("shouldShowAppliedBadgeWhenStudentHasApplied", async () => {
-        // Arrange
+
         getStudentAppliedInternships.mockResolvedValue([
             {id: 50, internshipId: 1, cv: {id: 1}, internshipApplicationStatus: "UNREAD"},
         ]);
 
-        // Act
+
         renderStudentInternships();
 
-        // Assert
+
         expect(await screen.findByText(i18n.t("studentInternship.appliedBadge"))).toBeInTheDocument();
         expect(screen.getAllByText(i18n.t("studentInternship.appliedBadge"))).toHaveLength(1);
     });
 
     it("shouldShowNoAppliedBadgeWhenNothingWasApplied", async () => {
-        // Arrange + Act
+
         renderStudentInternships();
         await screen.findByText("Développeur Java");
 
-        // Assert
+
         expect(screen.queryByText(i18n.t("studentInternship.appliedBadge"))).not.toBeInTheDocument();
     });
 });
@@ -268,29 +268,29 @@ describe("StudentInternships shows the application badge and status", () => {
 describe("StudentInternships viewed state", () => {
 
     it("shouldKeepNewBadgeWhileOnThePageAndNotMarkViewedYet", async () => {
-        // Arrange + Act
+
         renderStudentInternships();
         await screen.findByText("Développeur Java");
 
-        // Assert
+
         expect(screen.getAllByText(i18n.t("studentInternship.new"))).toHaveLength(2);
         expect(markInternshipsAsViewed).not.toHaveBeenCalled();
     });
 
     it("shouldMarkOffersAsViewedWhenLeavingThePage", async () => {
-        // Arrange
+
         const {unmount} = renderStudentInternships();
         await screen.findByText("Développeur Java");
 
-        // Act
+
         unmount();
 
-        // Assert
+
         expect(markInternshipsAsViewed).toHaveBeenCalledWith(expect.arrayContaining([1, 2]));
     });
 
     it("shouldNotCallTheApiWhenLeavingAPageWithNoNewOffers", async () => {
-        // Arrange
+
         getStudentInternships.mockResolvedValue([
             {...internship1, viewed: true},
             {...internship2, viewed: true},
@@ -298,10 +298,10 @@ describe("StudentInternships viewed state", () => {
         const {unmount} = renderStudentInternships();
         await screen.findByText("Développeur Java");
 
-        // Act
+
         unmount();
 
-        // Assert
+
         expect(markInternshipsAsViewed).not.toHaveBeenCalled();
     });
 });
@@ -309,62 +309,62 @@ describe("StudentInternships viewed state", () => {
 describe("StudentInternships supports searching and sorting", () => {
 
     it("shouldSearchInternshipsByLocation", async () => {
-        // Arrange
+
         renderStudentInternships();
         await screen.findByText("Développeur React");
 
-        // Act
+
         fireEvent.change(screen.getByRole("searchbox"), {
             target: {value: "Montréal"}
         });
 
-        // Assert
+
         expect(screen.getByText("Développeur Java")).toBeInTheDocument();
         expect(screen.queryByText("Développeur React")).not.toBeInTheDocument();
     });
 
     it("shouldSearchInternshipsByRequiredSkills", async () => {
-        // Arrange
+
         renderStudentInternships();
         await screen.findByText("Développeur React");
 
-        // Act
+
         fireEvent.change(screen.getByRole("searchbox"), {
             target: {value: "Spring"}
         });
 
-        // Assert
+
         expect(screen.getByText("Développeur Java")).toBeInTheDocument();
         expect(screen.queryByText("Développeur React")).not.toBeInTheDocument();
     });
 
     it("shouldShowNoMatchesWhenSearchHasNoResults", async () => {
-        // Arrange
+
         renderStudentInternships();
         await screen.findByText("Développeur React");
 
-        // Act
+
         fireEvent.change(screen.getByRole("searchbox"), {
             target: {value: "Python Django"}
         });
 
-        // Assert
+
         expect(screen.getByText(i18n.t("internshipFilters.noMatch"))).toBeInTheDocument();
         expect(screen.queryByText("Développeur Java")).not.toBeInTheDocument();
         expect(screen.queryByText("Développeur React")).not.toBeInTheDocument();
     });
 
     it("shouldSortInternshipsByOldestFirst", async () => {
-        // Arrange
+
         renderStudentInternships();
         await screen.findByText("Développeur React");
 
-        // Act
+
         fireEvent.change(screen.getByLabelText(i18n.t("internshipFilters.sortAria")), {
             target: {value: "OLDEST"}
         });
 
-        // Assert
+
         const titles = screen.getAllByRole("heading", {level: 3});
         expect(titles[0]).toHaveTextContent("Développeur Java");
         expect(titles[1]).toHaveTextContent("Développeur React");
@@ -374,13 +374,13 @@ describe("StudentInternships supports searching and sorting", () => {
 describe("StudentInternships refreshes notifications", () => {
 
     it("shouldRefreshNotificationsAfterApplying", async () => {
-        // Arrange
+
         renderStudentInternships();
 
-        // Act
+
         fireEvent.click(await screen.findByRole("button", {name: "apply-1"}));
 
-        // Assert
+
         await waitFor(() => expect(refreshNotifications).toHaveBeenCalledTimes(1));
         expect(getStudentAppliedInternships).toHaveBeenCalledTimes(2);
     });
@@ -388,40 +388,40 @@ describe("StudentInternships refreshes notifications", () => {
 
 describe("StudentInternships follows the chosen session", () => {
     it("shouldNotLoadOffersWhileSessionsAreLoading", async () => {
-        // Arrange
+
         useSession.mockReturnValue({selectedSession: null});
 
-        // Act
+
         renderStudentInternships();
 
-        // Assert
+
         await waitFor(() => expect(getStudentCvs).toHaveBeenCalled());
         expect(getStudentInternships).not.toHaveBeenCalled();
         expect(getStudentAppliedInternships).not.toHaveBeenCalled();
     });
 
     it("shouldLoadOffersAndApplicationsOfChosenSession", async () => {
-        // Arrange
+
         useSession.mockReturnValue({selectedSession: PAST_SESSION});
 
-        // Act
+
         renderStudentInternships();
 
-        // Assert
+
         await waitFor(() => expect(getStudentInternships).toHaveBeenCalledWith(PAST_SESSION.id));
         expect(getStudentAppliedInternships).toHaveBeenCalledWith(PAST_SESSION.id);
     });
 
     it("shouldReloadOffersWhenStudentChoosesAnotherSession", async () => {
-        // Arrange
+
         const {rerender} = renderStudentInternships();
         await waitFor(() => expect(getStudentInternships).toHaveBeenCalledWith(CURRENT_SESSION.id));
 
-        // Act
+
         useSession.mockReturnValue({selectedSession: PAST_SESSION});
         rerender(studentInternshipsPage());
 
-        // Assert
+
         await waitFor(() => expect(getStudentInternships).toHaveBeenCalledWith(PAST_SESSION.id));
         expect(getStudentAppliedInternships).toHaveBeenCalledWith(PAST_SESSION.id);
     });

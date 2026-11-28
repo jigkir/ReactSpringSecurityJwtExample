@@ -1,30 +1,12 @@
-/**
- * HomeSection.jsx — One Home card: the page, its total and one tinted row per status.
- * Location: src/components/features/home/HomeSection.jsx
- *
- * Layout
- *   [icon] title ................................. total
- *   [ label ................................... (n) ]   one row per status color
- *   Tout voir ..................................... →
- *
- * All the classes live in AppStyles.jsx (getHomeSectionClasses): this file only holds the layout.
- *
- * "See all" opens the page unfiltered; every row opens it with `?<section.param>=<COLOR>`
- * (read by the page as the initial filter). A row whose count is 0 is grey and not a link.
- * The colors are loaded by Home (one polling for every card).
- *
- * A spotlight card (see getSpotlightPages) has an amber border, a pulsing halo and a "Priority" tag.
- *
- * Props: section (see HomeSections.js), colors (colors of the page's items, LOAD_FAILED, or undefined while loading),
- *        spotlight (the card stands out), dark
- */
+
+
 
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import Icon from "../../../styles/Icon.jsx";
-import Button from "../../../styles/Button.jsx";
-import {getHomeSectionClasses} from "../../../styles/AppStyles.jsx";
-import {ALL, COLOR, statusLabelKey} from "../../../utils/StatusColor.js";
+import Icon from "../../../styles/ui/Icon.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {getHomeSectionClasses} from "../../../styles/theme/AppStyles.jsx";
+import {ALL, COLOR, statusLabelKey} from "../../../utils/status/StatusColor.js";
 import {countColors, countOf, countText, filteredPage, LOAD_FAILED} from "./HomeSections.js";
 
 function HomeSection({section, colors, spotlight = false, dark}) {

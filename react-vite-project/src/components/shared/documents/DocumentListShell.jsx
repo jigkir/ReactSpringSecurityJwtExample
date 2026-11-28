@@ -1,26 +1,9 @@
-/**
- * DocumentListShell.jsx — Loading / error / empty states and card around any document list.
- *
- * Card (+ optional title header, action error, toolbar) with a skeleton, a retry
- * block, an empty message, or the rows.
- *
- * Props
- *   dark
- *   title        optional visible header of the card
- *   headerAction optional node shown on the right of the header
- *   label        aria-label of the card (defaults to title)
- *   items        the list that will be shown: null while loading
- *   failed       loading failed
- *   onRetry      function  retry button
- *   emptyText    string
- *   actionError  translation KEY of the last failed action (translated here, so it follows the language)
- *   toolbar      node  filters
- *   children     the rows (a <ul>)
- */
+
+
 
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {getCvDocumentsClasses} from "../../../styles/theme/AppStyles.jsx";
 
 export default function DocumentListShell({
                                               dark, title, headerAction, label, items, failed, onRetry,

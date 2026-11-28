@@ -1,14 +1,8 @@
-/**
- * RequiredFilesNotice.jsx — Onboarding banner of the student portfolio.
- * Tells the student which documents are required (CV) and which are optional
- * (cover letters, transcripts).
- *
- * Props
- *   dark  boolean
- */
+
+
 
 import {useTranslation} from "react-i18next";
-import Icon from "../../../styles/Icon.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 
 function RequiredFilesNotice({dark}) {
     const {t} = useTranslation();
@@ -27,7 +21,7 @@ function RequiredFilesNotice({dark}) {
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-                {/* Mandatory */}
+
                 <div
                     className={`rounded-lg border p-3 ${dark ? "border-red-500/40 bg-red-500/10" : "border-red-200 bg-red-50"}`}>
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-red-300" : "text-red-700"}`}>
@@ -37,7 +31,7 @@ function RequiredFilesNotice({dark}) {
                     <p className={`text-sm mt-1 ${muted}`}>{t("portfolio.onboarding.requiredHint")}</p>
                 </div>
 
-                {/* Optional */}
+
                 <div
                     className={`rounded-lg border p-3 ${dark ? "border-slate-600 bg-slate-700/40" : "border-gray-200 bg-white"}`}>
                     <p className={`text-xs font-bold uppercase tracking-wide ${dark ? "text-slate-300" : "text-gray-600"}`}>

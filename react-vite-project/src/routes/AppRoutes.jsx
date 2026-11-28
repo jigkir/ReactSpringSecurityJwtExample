@@ -1,33 +1,8 @@
-/**
- * AppRoutes.jsx — THE single place where routes AND their URLs are declared.
- * Location: src/routes/AppRoutes.jsx
- *
- * PATHS holds every URL of the app. No other file writes a route as a string:
- * links, navigate(), <Navigate/>, notifications and Home cards all use PATHS.
- *
- * Each entry of ROUTES describes ONE page:
- *   path     URL of the page (always a PATHS value)
- *   element  (ctx) => JSX      ctx = {user, setUser, setError, error}
- *   roles    optional          roles allowed (guarded by <RequireRole/>). No `roles` = public page.
- *   nav      optional          {ROLE: "translation.key"} -> the page shows up in the navbar of that role.
- *                              The ORDER of ROUTES is the order of the navbar links.
- *   home     optional          [ROLE] -> the page gets a card on the Home of that role
- *                              (its config lives in components/features/home/HomeSections.js, keyed by `path`).
- *
- * App.jsx    -> <Route element={<PageLayout/>}>{appRoutes(ctx)}</Route>
- * Navbar.jsx -> getNavLinks(role)
- *
- * To add a page: add its URL to PATHS, then ONE line in ROUTES. Nothing to change in App.jsx or Navbar.jsx.
- * If the page has a Home card, also add its entry in HomeSections.js (same path),
- * and if it has notifications, its entry in NotificationsProvider.jsx.
- *
- * IMPORTANT: this file imports the pages, and the pages import PATHS from here (a cycle).
- * So PATHS must only be READ when a function or component runs, never at the top level of a
- * module (no `const X = PATHS.FOO;` outside a function): at load time it does not exist yet.
- */
+
+
 
 import {generatePath, Navigate, Outlet, Route, useOutletContext} from "react-router-dom";
-import {ACCOUNT_STATUS} from "../utils/AccountStatus.js";
+import {ACCOUNT_STATUS} from "../utils/status/AccountStatus.js";
 import Home from "../components/page/Home.jsx";
 import About from "../components/page/About.jsx";
 import Login from "../components/page/auth/Login.jsx";
@@ -65,9 +40,9 @@ export const ROLE = {
 
 const ALL_ROLES = Object.values(ROLE);
 
-// region The URLs: the only place where a route is written as a string
+
 export const PATHS = {
-    // Public
+
     ROOT: "/",
     ABOUT: "/about",
     LOGIN: "/login",
@@ -76,10 +51,10 @@ export const PATHS = {
     ERROR: "/error",
     EXPIRED: "/expired",
 
-    // Any logged-in role
+
     HOME: "/home",
 
-    // Student
+
     STUDENT_PORTFOLIO: "/student/portfolio",
     STUDENT_CV: "/student/cv",
     STUDENT_INTERNSHIPS: "/student/internship",
@@ -88,11 +63,11 @@ export const PATHS = {
     STUDENT_CONTRACTS: "/student/contracts",
     STUDENT_CONTRACT: "/student/contracts/:id",
 
-    // Teacher
+
     TEACHER_EVALUATIONS: "/teacher/evaluations",
     TEACHER_EVALUATION: "/teacher/evaluations/:id",
 
-    // Manager
+
     MANAGER_EVALUATIONS: "/manager/evaluations",
     MANAGER_EVALUATION: "/manager/evaluations/:id",
     MANAGER_CVS: "/manager/cvs",
@@ -103,7 +78,7 @@ export const PATHS = {
     MANAGER_TRACKING: "/manager/tracking",
     MANAGER_STUDENT_STATUSES: "/manager/student-statuses",
 
-    // Employer
+
     EMPLOYER_INTERNSHIPS: "/employer/internships",
     EMPLOYER_APPLICATIONS: "/employer/applications",
     EMPLOYER_APPLICATION: "/employer/applications/:id",
@@ -111,22 +86,22 @@ export const PATHS = {
     EMPLOYER_CONTRACTS: "/employer/contracts",
     EMPLOYER_CONTRACT: "/employer/contracts/:id",
 
-    // Anything else
+
     NOT_FOUND: "*",
 };
 
-/** "/employer/applications/12": the applications of one internship offer. */
+
 export const employerApplicationPath = (internshipId) =>
     generatePath(PATHS.EMPLOYER_APPLICATION, {id: internshipId});
 
-/** URL of a contract page from a pattern of PATHS (STUDENT_CONTRACT, MANAGER_CONTRACT, EMPLOYER_CONTRACT). */
+
 export const contractFilePath = (pattern, contractId) => generatePath(pattern, {id: contractId});
 export const evaluationFilePath = (pattern, evaluationId) => generatePath(pattern, {id: evaluationId});
-// endregion
 
-// region The routes (order = order of the navbar links)
+
+
 export const ROUTES = [
-    // ───────── Public ─────────
+
     {path: PATHS.ROOT, element: () => <Home/>},
     {path: PATHS.ABOUT, element: () => <About/>},
     {path: PATHS.LOGIN, element: ({user, setError}) => <Login user={user} setError={setError}/>},
@@ -135,10 +110,10 @@ export const ROUTES = [
     {path: PATHS.ERROR, element: ({error}) => <ErrorPage error={error}/>},
     {path: PATHS.EXPIRED, element: ({user}) => <ExpiredUser user={user}/>},
 
-    // ───────── Any logged-in role ─────────
+
     {path: PATHS.HOME, roles: ALL_ROLES, element: () => <Home/>},
 
-    // ───────── Student ─────────
+
     {
         path: PATHS.STUDENT_PORTFOLIO, roles: [ROLE.STUDENT], nav: {STUDENT: "navbar.portfolio"},
         home: [ROLE.STUDENT],
@@ -169,7 +144,7 @@ export const ROUTES = [
     },
     {path: PATHS.STUDENT_CONTRACT, roles: [ROLE.STUDENT], element: () => <ContractFile/>},
 
-    // ───────── Teacher ─────────
+
     {
         path: PATHS.TEACHER_EVALUATIONS, roles: [ROLE.TEACHER], nav: {TEACHER: "navbar.evaluations"},
         home: [ROLE.TEACHER],
@@ -177,7 +152,7 @@ export const ROUTES = [
     },
     {path: PATHS.TEACHER_EVALUATION, roles: [ROLE.TEACHER], element: () => <EvaluationFile/>},
 
-    // ───────── Manager ─────────
+
     {
         path: PATHS.MANAGER_CVS, roles: [ROLE.MANAGER], nav: {MANAGER: "navbar.cv"}, home: [ROLE.MANAGER],
         element: () => <ManagerCv/>
@@ -214,7 +189,7 @@ export const ROUTES = [
         element: () => <ManagerStudentStatuses/>
     },
 
-    // ───────── Employer ─────────
+
     {
         path: PATHS.EMPLOYER_INTERNSHIPS, roles: [ROLE.EMPLOYER], nav: {EMPLOYER: "navbar.postInternship"},
         home: [ROLE.EMPLOYER],
@@ -241,24 +216,14 @@ export const ROUTES = [
     },
     {path: PATHS.EMPLOYER_CONTRACT, roles: [ROLE.EMPLOYER], element: () => <ContractFile/>},
 
-    // ───────── Anything else ─────────
+
     {path: PATHS.NOT_FOUND, element: () => <Navigate to={PATHS.ROOT} replace/>},
 ];
-// endregion
 
-// region Role guard
-/**
- * Layout route: renders its children only if the user has one of `roles`.
- *   no token          → PATHS.LOGIN
- *   still loading     → blank (avoids a redirect flash)
- *   not logged in     → PATHS.LOGIN
- *   wrong role        → PATHS.HOME
- *   access not active → PATHS.EXPIRED
- * The backend still enforces access; this is UX only.
- *
- * It forwards PageLayout's outlet context ({dark, user, accountStatus}) to the child routes:
- * without `context={ctx}`, children calling useOutletContext() would get `undefined`.
- */
+
+
+
+
 function RequireRole({user, roles}) {
     const ctx = useOutletContext();
 
@@ -275,27 +240,25 @@ function RequireRole({user, roles}) {
     return <Outlet context={ctx}/>;
 }
 
-// endregion
 
-// region Navbar links
-/** [{to, labelKey}] of the role, in the order of ROUTES. */
+
+
+
 export const getNavLinks = (role) =>
     ROUTES
         .filter((route) => route.nav?.[role])
         .map((route) => ({to: route.path, labelKey: route.nav[role]}));
-// endregion
 
-// region Router
-/**
- * The <Route> tree for <Routes>. Public routes first, then one <RequireRole> group per set of roles.
- * `ctx` = {user, setUser, setError, error}
- */
+
+
+
+
 export function appRoutes(ctx) {
     const renderRoute = (route) => <Route key={route.path} path={route.path} element={route.element(ctx)}/>;
 
     const publicRoutes = ROUTES.filter((route) => !route.roles);
 
-    // Group the guarded routes by their roles (insertion order is kept)
+
     const guarded = new Map();
     for (const route of ROUTES.filter((r) => r.roles)) {
         const key = route.roles.join(",");
@@ -314,5 +277,3 @@ export function appRoutes(ctx) {
         </>
     );
 }
-
-// endregion

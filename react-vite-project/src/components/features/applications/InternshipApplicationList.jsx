@@ -8,13 +8,13 @@ import {
     offerInternshipsToStudents
 } from "../../shared/core/api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
-import Button from "../../../styles/Button.jsx";
-import {base64ToBlobUrl} from "../../../utils/Documents.js";
-import {sortApplication} from "../../../utils/Sort.jsx";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {base64ToBlobUrl} from "../../../utils/documents/Documents.js";
+import {sortApplication} from "../../../utils/sorting/Sort.jsx";
+import {translateWarning} from "../../../utils/forms/CommonFields.jsx";
 import {useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
-import {useNewApplications} from "../../../utils/useNewApplications.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {useNewApplications} from "../../../utils/hooks/useNewApplications.js";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 
@@ -44,7 +44,7 @@ function ViewApplications({user}) {
     const {refresh} = useNotifications();
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
-    // Reset selection when navigating to another internship
+
     useEffect(() => {
         setSelectedIds([]);
         setSelectionMode(false);
@@ -89,14 +89,14 @@ function ViewApplications({user}) {
         };
     }, [isLoggedIn, Nid]);
 
-    // Fetch and update the applications list
+
     const fetchApplications = useCallback(async () => {
         const list = sortApplication(await getApplications(), Nid);
 
         register(list);
         setApplications(list);
 
-        // Remove selections that are no longer eligible
+
         setSelectedIds((prev) => prev.filter((applicationId) => list.some((application) => application.id === applicationId && canHireApplication(application))));
 
         return list;
@@ -117,10 +117,10 @@ function ViewApplications({user}) {
         if (isLoggedIn && allowed) void loadApplications();
     }, [isLoggedIn, allowed, loadApplications]);
 
-    // Pause polling while hiring
+
     usePolling(loadApplications, isLoggedIn && allowed === true && !hiring);
 
-    // Eligible applications for hiring
+
     const eligibleApplications = applications.filter(canHireApplication);
     const eligibleIds = eligibleApplications.map((application) => application.id);
 
@@ -173,7 +173,7 @@ function ViewApplications({user}) {
         try {
             await offerInternshipsToStudents(ids);
 
-            // Update the displayed status immediately after success
+
             setApplications((prev) => prev.map((application) => ids.includes(application.id) ? {
                 ...application, employerDecision: "INTERNSHIP_OFFERED"
             } : application));
@@ -182,12 +182,12 @@ function ViewApplications({user}) {
             setSelectionMode(false);
             setHireSuccessCount(ids.length);
 
-            // Synchronize with the backend
+
             try {
                 await fetchApplications();
                 setListError(null);
             } catch {
-                // Hiring succeeded, but refreshing failed
+
                 setListError({key: "viewApplication.refreshError"});
             }
         } catch (err) {
@@ -201,8 +201,8 @@ function ViewApplications({user}) {
         setOpenPreviewIds((prev) => prev.includes(appId) ? prev.filter((item) => item !== appId) : [...prev, appId]);
     };
 
-    // Opening the CV marks the application as read on the server (and closes its notification):
-    // the "New" badge goes away right now
+
+
     const getUrl = useCallback(async (appId) => {
         const cv = await getApplicationCv(appId);
         if (!cv?.content) throw new Error("missing content");
@@ -213,7 +213,7 @@ function ViewApplications({user}) {
         return base64ToBlobUrl(cv.content);
     }, [markAsSeen, refresh]);
 
-    // Cover letter or transcript opened, or interview invitation sent: the badge goes away right now
+
     const handleApplicationSeen = useCallback((appId) => {
         clearNew(appId);
         void refresh();
@@ -238,7 +238,7 @@ function ViewApplications({user}) {
     const hasItems = applications.length > 0;
 
     return (<div className="p-4 sm:p-6 flex flex-col gap-6">
-        {/* Header */}
+
         <div className="flex flex-col gap-2 pb-4 border-b border-gray-200 dark:border-slate-700">
             <Button
                 as={NavLink}
@@ -256,7 +256,7 @@ function ViewApplications({user}) {
             </h1>
         </div>
 
-        {/* Applications */}
+
         <div className="flex flex-col w-full mx-auto max-w-5xl gap-3">
 
             {hasItems && (
@@ -326,7 +326,7 @@ function ViewApplications({user}) {
                 </div>
             )}
 
-            {/* Confirmation */}
+
             {hireSuccessCount > 0 && (<p
                 role="status"
                 className={`font-bold ${dark ? "text-green-400" : "text-green-700"}`}
@@ -340,12 +340,12 @@ function ViewApplications({user}) {
                 {translateWarning(t, hireError)}
             </p>)}
 
-            {/* Loading/refresh error */}
+
             {listError && (<p role="alert" className="text-red-500">
                 {translateWarning(t, listError)}
             </p>)}
 
-            {/* Application cards */}
+
             {hasItems ? (applications.map((application) => {
                 const isPreviewOpen = openPreviewIds.includes(application.id);
 

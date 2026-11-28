@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 import DocumentList from "./DocumentList.jsx";
 import PortfolioUpload from "./PortfolioUpload.jsx";
 import {getMaxCvSize} from "../../shared/core/api/Api.jsx";
-import {FALLBACK_MAX_BYTES} from "../../../utils/Documents.js";
-import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
+import {FALLBACK_MAX_BYTES} from "../../../utils/documents/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/documents/DocumentTypes.js";
 
 const TABS = ["ALL", ...DOC_TYPE_KEYS];
 

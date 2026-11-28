@@ -1,11 +1,11 @@
 import {useCallback, useEffect, useState} from "react";
 import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
-import {useDarkMode} from "./styles/DarkMode.jsx";
+import {useDarkMode} from "./styles/theme/DarkMode.jsx";
 import PageLayout from "./components/shared/layout/PageLayout.jsx";
 import {checkUserStatus, getCurrentUser} from "./components/shared/core/api/Api.jsx";
-import {i18nError} from "./utils/i18nError.jsx";
-import {usePolling} from "./utils/usePolling.js";
-import {SessionProvider} from "./utils/SessionContext.jsx";
+import {i18nError} from "./utils/i18n/i18nError.jsx";
+import {usePolling} from "./utils/hooks/usePolling.js";
+import {SessionProvider} from "./utils/session/SessionContext.jsx";
 import {appRoutes, PATHS} from "./routes/AppRoutes.jsx";
 
 function App() {
@@ -61,13 +61,13 @@ function App() {
         }
     }, [clearSession]);
 
-    // Reload the status whenever another user logs in
+
     useEffect(() => {
         setAccountStatus(null);
         if (user?.email) void fetchStatus();
     }, [user?.email, fetchStatus]);
 
-    // Keep checking until access is granted: the manager can still reactivate a refused account
+
     usePolling(fetchStatus, Boolean(user?.email));
 
     return (
@@ -76,7 +76,7 @@ function App() {
                 <Routes>
                     <Route element={<PageLayout user={user} accountStatus={accountStatus} dark={dark}
                                                 toggleDark={toggleDark}/>}>
-                        {/* Every route lives in routes/AppRoutes.jsx */}
+
                         {appRoutes({user, setUser, setError, error})}
                     </Route>
                 </Routes>

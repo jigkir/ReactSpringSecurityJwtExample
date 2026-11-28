@@ -3,10 +3,10 @@ import {useTranslation} from "react-i18next";
 import {getUsers, reactivateUser, denyUser} from "../../shared/core/api/Api.jsx";
 import UserCard from "./UserCard.jsx";
 import {useOutletContext} from "react-router-dom";
-import {usePolling} from "../../../utils/usePolling.js";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
-import {colorOf, matchesColor} from "../../../utils/StatusColor.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import {StatusColorSelect, useColorFilter} from "../../../utils/sorting/Sort.jsx";
+import {colorOf, matchesColor} from "../../../utils/status/StatusColor.js";
 
 const normalizeStatus = (status) => String(status ?? "").toUpperCase();
 
@@ -21,7 +21,7 @@ const getStatusPriority = (status) => {
 function Users({user}) {
     const {t} = useTranslation();
     const [users, setUsers] = useState([]);
-    // Initial filter comes from the Home buttons (?status=GREEN|YELLOW|RED)
+
     const [status, setStatus] = useColorFilter("status");
     const isLoggedIn = Boolean(user?.isLoggedIn);
     const {dark} = useOutletContext();
@@ -44,7 +44,7 @@ function Users({user}) {
     usePolling(load, isLoggedIn);
 
     const handleReactivate = async (studentId) => {
-        // Optimistic UI update
+
         setUsers((prev) =>
             prev.map((u) => (u.studentId === studentId || u.id === studentId ? {...u, status: "APPROVED"} : u))
         );
@@ -52,12 +52,12 @@ function Users({user}) {
             await reactivateUser(studentId);
         } catch (err) {
             console.error("Failed to reactivate user:", err);
-            void load(); // Revert on failure
+            void load();
         }
     };
 
     const handleDeny = async (studentId) => {
-        // Optimistic UI update
+
         setUsers((prev) =>
             prev.map((u) => (u.studentId === studentId || u.id === studentId ? {...u, status: "REJECTED"} : u))
         );
@@ -65,7 +65,7 @@ function Users({user}) {
             await denyUser(studentId);
         } catch (err) {
             console.error("Failed to deny user:", err);
-            void load(); // Revert on failure
+            void load();
         }
     };
 

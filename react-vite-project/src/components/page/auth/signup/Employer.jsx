@@ -14,7 +14,7 @@ import {
     SubmitButton,
     translateWarning,
     validateField,
-} from "../../../../utils/CommonFields.jsx";
+} from "../../../../utils/forms/CommonFields.jsx";
 
 const DEFAULT_FORM = {
     companyName: "",
@@ -31,7 +31,7 @@ const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [
 
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
-// All validators return "" or {key, options?} — translated at render time.
+
 const validateCompanyName = (value) => {
     const tr = value.trim();
     if (!tr) return {key: "employer.requiredCompanyName"};
@@ -108,7 +108,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
     const handlePhoneChange = (e) => {
         const digits = e.target.value
             .replace(/\D/g, "")
-            .replace(/^0+/, "")   // a phone number can't start with 0
+            .replace(/^0+/, "")
             .slice(0, 10);
         handleChange({target: {name: "phoneNumber", value: digits}});
     };
@@ -143,7 +143,7 @@ const Employer = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClas
                 case 400:
                     setServerError({key: "employer.invalidData"});
                     break;
-                case undefined: // the request itself failed (no HTTP status)
+                case undefined:
                     setServerError({key: "employer.unableToReachServerError"});
                     break;
                 default:

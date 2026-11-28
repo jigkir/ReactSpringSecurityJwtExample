@@ -14,7 +14,7 @@ import {
     SubmitButton,
     translateWarning,
     validateField,
-} from "../../../../utils/CommonFields.jsx";
+} from "../../../../utils/forms/CommonFields.jsx";
 
 const ID_FIELD = "teacherId";
 
@@ -103,7 +103,7 @@ const Teacher = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 case 400:
                     setServerError({key: "teacher.invalidData"});
                     break;
-                case undefined: // the request itself failed (no HTTP status)
+                case undefined:
                     setServerError({key: "teacher.unableToReachServerError"});
                     break;
                 default:

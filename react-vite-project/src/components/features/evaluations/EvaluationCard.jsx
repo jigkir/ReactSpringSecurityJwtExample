@@ -1,18 +1,18 @@
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
+import {getInternshipCardClasses} from "../../../styles/theme/AppStyles.jsx";
 import {
     createInitialEvaluation,
     EVALUATION_CRITERIA,
     validateEvaluation,
-} from "../../../utils/WorkplaceEvaluation.js";
+} from "../../../utils/evaluations/WorkplaceEvaluation.js";
 import EvaluationForm from "./EvaluationForm.jsx";
 import SignForm from "../../shared/documents/SignForm.jsx";
 import EvaluationActions from "./EvaluationActions.jsx";
-import Button from "../../../styles/Button.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 import {Link} from "react-router-dom";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
-import {evaluationColor} from "../../../utils/EvaluationRole.js";
+import {ALL, borderStatusOf} from "../../../utils/status/StatusColor.js";
+import {evaluationColor} from "../../../utils/roles/EvaluationRole.js";
 import {evaluationFilePath} from "../../../routes/AppRoutes.jsx";
 
 export default function EvaluationCard({
@@ -37,9 +37,9 @@ export default function EvaluationCard({
             validateEvaluation(normalizedEvaluation, {requireComplete: true})
         ).length === 0;
     const statusKey = isSigned || isCompleted ? "APPROVED" : "PENDING";
-    // The card only gets a colored border while a status filter is selected (color of the filter)
+
     const cardClasses = getInternshipCardClasses(dark, borderStatusOf(filterColor));
-    // The status badge keeps its own color
+
     const badgeClasses = getInternshipCardClasses(dark, evaluationColor(source) === "GREEN" ? "APPROVED" : "PENDING");
 
     const answeredCriteriaCount = EVALUATION_CRITERIA.filter(({key}) =>

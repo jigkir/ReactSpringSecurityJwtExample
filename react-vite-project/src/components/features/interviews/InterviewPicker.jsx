@@ -1,10 +1,10 @@
-import {getInternshipFormClasses} from "../../../styles/AppStyles.jsx";
-import Button from "../../../styles/Button.jsx";
+import {getInternshipFormClasses} from "../../../styles/theme/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 import {useTranslation} from "react-i18next";
-import {Field, PhoneNumberField, translateWarning} from "../../../utils/CommonFields.jsx";
+import {Field, PhoneNumberField, translateWarning} from "../../../utils/forms/CommonFields.jsx";
 import {useState} from "react";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import AutoResizeTextarea from "../../../styles/ui/AutoResizeTextarea.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 
 const INITIAL_FORM = {
     interviewDate: "",
@@ -30,7 +30,7 @@ const DETAILS_MAX = 255;
 
 const pad = (n) => String(n).padStart(2, "0");
 
-// Local time in the format <input type="datetime-local"> expects: YYYY-MM-DDTHH:mm
+
 const getNow = () => {
     const d = new Date();
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -53,7 +53,7 @@ function buildPayload(formData, interview) {
 
     const isPhone = formData.meetingType === "PHONE";
     if (isPhone && !/^[1-9]\d{9}$/.test(formData.phoneNumber)) {
-        return {error: {key: "interview.errorPhoneNumber"}};   // add this key to fr/en
+        return {error: {key: "interview.errorPhoneNumber"}};
     }
 
     if (message.length < MESSAGE_MIN || meetingDetails.length < 1) {
@@ -95,10 +95,10 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
 
         const result = await onSendOffer(payload);
 
-        // Failure: keep everything the user typed so nothing is lost
+
         if (!result?.success) return setError(result?.message || {key: "postInternship.createGenericError"});
 
-        // Success: close (the parent unmounts the form, which resets it)
+
         onClose();
     };
 
@@ -128,7 +128,7 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
                     </div>
                 )}
 
-                {/* Message: grows with its content */}
+
                 <Field id="message" label={t("interview.messageLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
                         id="message" name="message" rows={3} value={formData.message}
@@ -147,7 +147,7 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
                     </Field>
                 </div>
 
-                {/* Meeting Type */}
+
                 <Field id="meetingType" label={t("interview.meetingTypeLabel")} labelClass={s.label}>
                     <select
                         id="meetingType" name="meetingType" value={formData.meetingType}
@@ -169,7 +169,7 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
                         errorClass="mt-1 text-xs text-red-500"
                     />
                 )}
-                {/* Meeting Details: grows with its content */}
+
                 <Field id="meetingDetails" label={t("interview.meetingDetailsLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
                         id="meetingDetails" name="meetingDetails" rows={3} value={formData.meetingDetails}
@@ -178,7 +178,7 @@ function InterviewPicker({dark, onClose, onSendOffer, interview}) {
                     />
                 </Field>
 
-                {/* Footer */}
+
                 <div className={s.footer}>
                     <Button type="button" icon="close" tone="neutral" size="lg" dark={dark} onClick={onClose}
                             className="w-full sm:w-auto">

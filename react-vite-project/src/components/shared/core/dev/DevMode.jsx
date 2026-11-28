@@ -1,17 +1,10 @@
-/**
- * DevMode.jsx — Dev Mode flag (persisted in localStorage) + the bottom-left toggle.
- * Location: src/components/dev/DevMode.jsx
- *
- * useDevMode() -> {devAvailable, devMode, toggleDevMode}
- * Dev Mode is available only when DEV_MODE_ENABLED (Config.jsx) is true.
- * Otherwise nothing renders and devMode is always false.
- * Without the provider (e.g. in tests) the default context is "off".
- */
+
+
 
 import {createContext, useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Icon from "../../../../styles/Icon.jsx";
-import {getDevClasses} from "../../../../styles/AppStyles.jsx";
+import Icon from "../../../../styles/ui/Icon.jsx";
+import {getDevClasses} from "../../../../styles/theme/AppStyles.jsx";
 import {DEV_MODE_ENABLED} from "../config/Config.jsx";
 
 const DEV_AVAILABLE = DEV_MODE_ENABLED;

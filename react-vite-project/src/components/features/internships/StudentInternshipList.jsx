@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
 import InternshipCard from "./InternshipCard.jsx";
 import InternshipFilters, {useInternshipFilters} from "./InternshipFilters.jsx";
 import ApplyControls from "./ApplyControls.jsx";
@@ -12,15 +12,15 @@ import {
     getStudentInternships,
     markInternshipsAsViewed
 } from "../../shared/core/api/Api.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
-import {useSession} from "../../../utils/useSession.js";
-import {borderStatusOf} from "../../../utils/StatusColor.js";
-import Icon from "../../../styles/Icon.jsx";
+import {useSession} from "../../../utils/session/useSession.js";
+import {borderStatusOf} from "../../../utils/status/StatusColor.js";
+import Icon from "../../../styles/ui/Icon.jsx";
 
 const ACCEPTED_OFFER = "ACCEPTED";
 
-// <StudentInternships />  full page (route /internship)
+
 function StudentInternships() {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
@@ -47,10 +47,10 @@ function StudentInternships() {
         [loading, internships]);
     useCloseShownNotifications(TARGET_TYPE.INTERNSHIP_OFFER, shownInternshipIds);
 
-    // NEW → OLD → APPLIED
+
     const groupOf = (internship) => {
-        if (appliedIds.has(internship.id)) return 2; // APPLIED
-        return internship.viewed ? 1 : 0;            // OLD : NEW
+        if (appliedIds.has(internship.id)) return 2;
+        return internship.viewed ? 1 : 0;
     };
     const shown = [...visible].sort((a, b) => groupOf(a) - groupOf(b));
 
@@ -66,7 +66,7 @@ function StudentInternships() {
     }, []);
 
     const loadInternships = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!selectedSession) return;
         try {
             const data = await getStudentInternships(selectedSession.id);
             setInternships(data
@@ -81,7 +81,7 @@ function StudentInternships() {
     }, [selectedSession, lang]);
 
     const loadAppliedInternships = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!selectedSession) return;
         try {
             setAppliedInternships(await getStudentAppliedInternships(selectedSession.id));
         } catch {
@@ -89,7 +89,7 @@ function StudentInternships() {
         }
     }, [selectedSession]);
 
-    // Only visible, approved CVs can be used to apply
+
     const loadCvs = useCallback(async () => {
         try {
             const all = await getStudentCvs();
@@ -99,7 +99,7 @@ function StudentInternships() {
         }
     }, []);
 
-    // Cover letters are optional: a failure just means an empty list
+
     const loadLetters = useCallback(async () => {
         try {
             const list = await getDocuments("COVER_LETTER");
@@ -128,7 +128,7 @@ function StudentInternships() {
         ]);
     }, [loadInternships, loadAppliedInternships, loadCvs, loadLetters, loadTranscripts]);
 
-    // Applying closes the offer's notification
+
     const handleApplicationChanged = useCallback(async () => {
         await loadAppliedInternships();
         void refreshNotifications();
@@ -195,7 +195,7 @@ function StudentInternships() {
     );
 
     return (<div className={s.page}>
-        {/* Same header layout as the manager page */}
+
         <div className={s.headerSection}>
             <div>
                 <h1 className={s.title}>

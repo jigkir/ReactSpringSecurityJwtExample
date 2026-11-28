@@ -1,7 +1,7 @@
 import {useTranslation} from "react-i18next";
-import {useSession} from "../../../utils/useSession.js";
+import {useSession} from "../../../utils/session/useSession.js";
 
-// Session selector shared by the navbar and the mobile sidebar
+
 export default function SessionSelect({className, errorClassName}) {
     const {t} = useTranslation();
     const {sessions, selectedSession, setSelectedSession, sessionsLoadFailed} = useSession();

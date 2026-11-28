@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080/api/";  // Must terminate with '/'
+const BASE_URL = "http://localhost:8080/api/";
 
  export const DEV_MODE_ENABLED = import.meta.env.VITE_DEV_MODE === "true";
 

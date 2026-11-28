@@ -24,7 +24,7 @@ const MIXED_USERS = [
     {id: 7, email: 'emp2@x.com', firstName: 'Eva', lastName: 'Employer', role: 'EMPLOYER', discipline: 'COMPUTER_SCIENCE'},
 ];
 
-// Every visible text goes through i18n, so these tests survive any rewording of the translations
+
 const tr = (key) => i18n.t(key);
 const discipline = (key) => i18n.t(`disciplines.${key}`);
 

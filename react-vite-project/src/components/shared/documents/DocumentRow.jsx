@@ -1,35 +1,13 @@
-/**
- * DocumentRow.jsx — One row of any document list (student portfolio, manager CV review).
- *
- * Layout (md and up): [ identity ] [ status pill (optional) ] [ actions ]
- * Below md everything stacks vertically. The Preview / Close toggle is always the first
- * action (blue while closed, RED while the preview is open); the inline PDF preview opens
- * under the row.
- *
- * The Preview label names the document: "Preview CV", "Preview cover letter", "Preview transcript"
- * (from doc.docType). Without a docType (manager CV page) it falls back to the generic label.
- *
- * Props
- *   doc        {id, fileName, docType?, rejectionComment?}
- *   dark       boolean
- *   status     "PENDING" | "APPROVED" | "REJECTED" | undefined   (no pill when undefined)
- *   leading    node     optional, shown before the file name (e.g. a checkbox)
- *   details    node     extra lines under the file name
- *   actions    node     buttons under the preview toggle (give them className={ROW_BTN})
- *   busy       boolean  disables the row while an action runs
- *   isOpen     boolean  inline preview open
- *   onToggle   function toggles the preview
- *   getUrl     (id) => Promise<string>   stable reference
- *   bordered   boolean  coloured border from the status (manager, status filter active)
- */
+
+
 
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import PdfPreview from "./PdfPreview.jsx";
-import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/AppStyles.jsx";
+import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/theme/AppStyles.jsx";
 
-// Full-width buttons inside the vertical action stack
+
 export const ROW_BTN = "w-full min-w-0 text-center";
 
 const STATUS_KEY = {
@@ -50,7 +28,7 @@ const STATUS_ICON = {
     REJECTED: "close",
 };
 
-// Class of the <ul> that holds the rows
+
 export const getRowListClass = (dark, {bordered = false} = {}) => {
     if (bordered) return "flex flex-col gap-3 p-4";
     return getCvDocumentsClasses(dark).list;
@@ -80,7 +58,7 @@ function DocumentRow({
     return (
         <li aria-busy={busy} className={itemClass}>
             <div className={rowClass}>
-                {/* Identity */}
+
                 <div className="flex min-w-0 items-start gap-3">
                     {leading}
                     <div className="min-w-0 flex-1">
@@ -95,7 +73,7 @@ function DocumentRow({
                     </div>
                 </div>
 
-                {/* Status pill */}
+
                 {status && (
                     <div className="flex min-w-0 flex-wrap items-center gap-2 @2xl:flex-col @2xl:items-start">
                         <span className={`${th.pillBase} ${th.statusPill(status)} gap-1 text-left`}>
@@ -107,7 +85,7 @@ function DocumentRow({
                     </div>
                 )}
 
-                {/* Actions: one vertical stack, every button the same width */}
+
                 <div className="flex min-w-0 flex-col items-stretch gap-2 @2xl:justify-self-end @2xl:w-full">
                     <Button tone={isOpen ? "danger" : "accent"} lockTone dark={dark}
                             icon={isOpen ? "visibility_off" : "visibility"}

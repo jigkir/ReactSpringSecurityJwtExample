@@ -1,14 +1,14 @@
 import {useCallback, useEffect, useState} from "react";
 import {useLocation, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getInternshipCardClasses, getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import {getInternshipCardClasses, getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import {acceptOffer, denyOffer, getStudentOffers} from "../../shared/core/api/Api.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
-import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
-import {ALL, borderStatusOf, colorOf, matchesColor} from "../../../utils/StatusColor.js";
-import Button from "../../../styles/Button.jsx";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {translateWarning} from "../../../utils/forms/CommonFields.jsx";
+import {StatusColorSelect, useColorFilter} from "../../../utils/sorting/Sort.jsx";
+import {ALL, borderStatusOf, colorOf, matchesColor} from "../../../utils/status/StatusColor.js";
+import Button from "../../../styles/ui/Button.jsx";
 import {useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
 
 const CONSENT_ICON = {PENDING: "schedule", ACCEPTED: "check_circle", REJECTED: "close"};
@@ -28,22 +28,22 @@ const CONSENT_CLASSES = {
     },
 };
 
-// Left accent of each offer while no status color is selected
+
 const CONSENT_ACCENT = {
     PENDING: "border-l-yellow-500",
     ACCEPTED: "border-l-green-500",
     REJECTED: "border-l-red-500",
 };
 
-// Newest offer (highest application id) first
+
 const sortOffers = (list) => [...list].sort((a, b) => b.id - a.id);
 
 const consentOf = (offer) => CONSENT_ICON[offer.studentInternshipConsent] ? offer.studentInternshipConsent : "PENDING";
 
-// Status filter: PENDING = YELLOW, ACCEPTED = GREEN, REJECTED = RED
+
 const offerColor = (offer) => colorOf(consentOf(offer));
 
-// <Offers />  full page (route /offers), filterable by status color (initial value from ?status=)
+
 function Offers() {
     const {dark} = useOutletContext();
     const {t} = useTranslation();
@@ -52,14 +52,14 @@ function Offers() {
     const s = getPostInternshipClasses(dark);
 
     const [status, setStatus] = useColorFilter("status");
-    // While a color is selected, every card gets a full border of that color
+
     const filtered = status !== ALL;
     const cardS = getInternshipCardClasses(dark, borderStatusOf(status));
 
-    const [offers, setOffers] = useState(null); // null = loading
+    const [offers, setOffers] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
-    const [actionError, setActionError] = useState(null); // {key, options?}, translated at render
+    const [actionError, setActionError] = useState(null);
 
     const load = useCallback(async () => {
         try {
@@ -81,14 +81,14 @@ function Offers() {
 
     usePolling(load);
 
-    // Coming from a notification: scroll to the offer
+
     useEffect(() => {
         if (!offers || !hash) return;
         document.getElementById(hash.slice(1))?.scrollIntoView?.({behavior: "smooth", block: "center"});
     }, [hash, offers]);
 
-    // Accepting creates the contract. A 409 (contract already exists, offer rejected, no offer,
-    // student already employed) means the state changed, so the list is always reloaded.
+
+
     const answer = async (offerId, request, fallbackKey) => {
         if (busyId !== null) return;
         setBusyId(offerId);

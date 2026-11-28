@@ -1,24 +1,16 @@
-/**
- * PdfViewer.jsx — Shows every page of a PDF directly in the page, without an inner scrollbar.
- * The pages fit the width of the viewer; Ctrl/Cmd + "+", "-", "0" or Ctrl/Cmd + wheel
- * zooms only the PDF.
- *
- * Props
- *   url    string    blob: URL of the PDF
- *   title  string    accessible name of the viewer
- *   dark   boolean
- */
+
+
 
 import {useEffect, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getCvPreviewClasses} from "../../../styles/AppStyles.jsx";
+import {getCvPreviewClasses} from "../../../styles/theme/AppStyles.jsx";
 import {usePdfDocument} from "../../../utils/pdf/usePdfDocument.js";
 import {useCtrlZoom} from "../../../utils/pdf/useCtrlZoom.js";
 
 const FIRST_PAGE = 1;
 const NATURAL_SCALE = 1;
 
-// Renders one PDF page on a canvas, sharp on high-density screens
+
 function PdfPage({pdf, pageNumber, scale}) {
     const canvasRef = useRef(null);
 
@@ -40,7 +32,7 @@ function PdfPage({pdf, pageNumber, scale}) {
 
             renderTask = page.render({canvasContext: canvas.getContext("2d"), viewport});
             renderTask.promise.catch(() => {
-                // Cancelled when the zoom changes before the page finishes drawing
+
             });
         });
 

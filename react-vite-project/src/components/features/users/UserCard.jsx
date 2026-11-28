@@ -1,8 +1,8 @@
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/AppStyles.jsx";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getCvDocumentsClasses, getStatusBorder} from "../../../styles/theme/AppStyles.jsx";
+import {ALL, borderStatusOf} from "../../../utils/status/StatusColor.js";
 
 const PILL_STATUS = {
     approved: "APPROVED",
@@ -42,7 +42,7 @@ function UserCard({
     return (
         <div
             className={`p-4 rounded-lg ${cardBorder} ${dark ? "bg-slate-800" : "bg-white"} shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4`}>
-            {/* Left: User Info & Status Badge */}
+
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
                     <h3 className={`text-base font-semibold truncate ${dark ? "text-slate-300" : "text-gray-900"}`}>
@@ -65,7 +65,7 @@ function UserCard({
                 )}
             </div>
 
-            {/* Right: Conditional Action Buttons (hidden when footer is present) */}
+
             {!footer && (
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                     {val === "pending" && (

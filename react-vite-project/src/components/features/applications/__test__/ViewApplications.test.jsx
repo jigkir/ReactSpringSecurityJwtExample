@@ -16,7 +16,7 @@ vi.mock('../../../shared/core/api/Api.jsx', () => ({
     getApplicationTranscript: vi.fn(),
 }));
 
-vi.mock('../../../../utils/usePolling.js', () => ({
+vi.mock('../../../../utils/hooks/usePolling.js', () => ({
     usePolling: vi.fn()
 }));
 
@@ -30,7 +30,7 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-// t returns the key, so assertions check translation keys, not any language
+
 vi.mock('react-i18next', async (importOriginal) => ({
     ...await importOriginal(),
     useTranslation: () => ({t: (key) => key}),

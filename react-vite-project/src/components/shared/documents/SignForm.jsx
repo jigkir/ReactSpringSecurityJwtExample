@@ -1,8 +1,8 @@
 import {useId, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import {getAuthClasses, getInternshipFormClasses} from "../../../styles/AppStyles.jsx";
-import {PasswordField, translateWarning} from "../../../utils/CommonFields.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {getAuthClasses, getInternshipFormClasses} from "../../../styles/theme/AppStyles.jsx";
+import {PasswordField, translateWarning} from "../../../utils/forms/CommonFields.jsx";
 
 export default function SignForm({dark, devMode = false, onSubmit, onClose, i18nPrefix, fallbackErrorKey}) {
     const {t} = useTranslation();

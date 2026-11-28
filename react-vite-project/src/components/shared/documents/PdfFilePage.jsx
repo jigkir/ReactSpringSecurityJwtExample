@@ -1,9 +1,9 @@
 import {useCallback, useState} from "react";
 import {Link, useLocation, useParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import {getAuthClasses, getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {blobUrlFromFile, buildFileName, saveFile} from "../../../utils/Documents.js";
+import Button from "../../../styles/ui/Button.jsx";
+import {getAuthClasses, getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import {blobUrlFromFile, buildFileName, saveFile} from "../../../utils/documents/Documents.js";
 import PdfPreview from "./PdfPreview.jsx";
 
 const LANGUAGES = ["FR", "EN"];

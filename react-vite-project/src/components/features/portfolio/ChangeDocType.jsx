@@ -1,46 +1,19 @@
-/**
- * ChangeDocType.jsx — "Edit the document" control of one portfolio document.
- *
- * The button opens a MODAL (rendered in a portal on <body>, with a backdrop). The modal is titled
- * "Edit the document" and offers exactly two actions; nothing else on the page can be used
- * while it is open:
- *   - Change the type: send the file to another type (CV / cover letter / transcript)
- *   - Replace file:    upload a new PDF of the SAME type in place of this one
- *
- * Both work the same way: upload the new document, then hide the original.
- * A CV (moved to CV, or replaced) arrives as a new CV waiting for manager approval.
- *
- * Clicking "Replace file" immediately opens the file picker. The <input> lives inside the modal
- * (always mounted while it is open) so the click can open it synchronously
- * (browsers only allow it inside a user click). Picking a valid PDF replaces the file right away.
- *
- * The modal closes with Cancel, Escape, or a click on the backdrop (not while a request runs).
- *
- * Props
- *   type       "CV" | "COVER_LETTER" | "TRANSCRIPT"   current type of the file
- *   id         number                                  id of the file
- *   fileName   string    optional, shown under the title
- *   dark       boolean
- *   open       boolean   the modal is shown
- *   onOpen     function  opens the modal
- *   onClose    function  closes the modal
- *   onChanged  function  called once the file was moved / replaced (parent reloads its lists)
- *   className  string    optional, applied to the trigger button (e.g. "w-full")
- */
+
+
 
 import {useEffect, useId, useRef, useState} from "react";
 import {createPortal} from "react-dom";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import {getSelectClass} from "../../../styles/FormControls.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {getSelectClass} from "../../../styles/ui/FormControls.jsx";
 import {getDocumentFile, getMaxCvSize, hideDocument, uploadDocument} from "../../shared/core/api/Api.jsx";
-import {ACCEPTED_EXT, base64ToFile, bytesToMb, FALLBACK_MAX_BYTES, validateFile} from "../../../utils/Documents.js";
-import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
+import {ACCEPTED_EXT, base64ToFile, bytesToMb, FALLBACK_MAX_BYTES, validateFile} from "../../../utils/documents/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/documents/DocumentTypes.js";
+import {translateWarning} from "../../../utils/forms/CommonFields.jsx";
 
 const MODE = {MOVE: "move", REPLACE: "replace"};
 
-/** The stored document as a File, ready to be uploaded again. Throws if it has no content. */
+
 async function loadOriginalFile(type, id) {
     const original = await getDocumentFile(type, id);
     if (!original?.content) throw new Error("missing content");
@@ -60,7 +33,7 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
 
     const selectClass = `${getSelectClass(dark)} w-full`;
 
-    // Load the size limit as soon as the modal opens, so it is ready when a file is picked
+
     useEffect(() => {
         if (open) {
             getMaxCvSize().then(setMaxBytes).catch(() => {
@@ -79,7 +52,7 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
         onClose?.();
     };
 
-    // Escape closes the modal and the page behind it does not scroll
+
     useEffect(() => {
         if (!open) return;
         const onKey = (e) => {
@@ -104,13 +77,13 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
         if (busy) return;
         setMode(next);
         setError(null);
-        // Open the file dialog right away (must run synchronously inside the click)
+
         if (next === MODE.REPLACE) openPicker();
     };
 
     const onPicked = async (e) => {
         const picked = e.target.files?.[0] ?? null;
-        e.target.value = ""; // lets the same file be picked again
+        e.target.value = "";
         if (!picked) return;
 
         const invalid = validateFile(picked, maxBytes);
@@ -168,11 +141,11 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
                 className={`w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-xl border p-6 shadow-2xl ${
                     dark ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200 text-gray-900"}`}
             >
-                {/* Always mounted while the modal is open so "Replace file" can open it immediately */}
+
                 <input ref={inputRef} type="file" accept={ACCEPTED_EXT} className="sr-only"
                        tabIndex={-1} aria-hidden="true" onChange={onPicked}/>
 
-                {/* Title: the modal offers two actions on the document */}
+
                 <h2 id={titleId} className="text-xl font-bold">{t("portfolio.changeType.btn")}</h2>
                 {fileName && (
                     <p className={`mt-1 truncate text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}
@@ -181,7 +154,7 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
                     </p>
                 )}
 
-                {/* The two actions */}
+
                 <div role="group" aria-label={t("portfolio.changeType.modeAria")}
                      className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <Button lockTone tone="warning" dark={dark} icon="edit" autoFocus
@@ -200,7 +173,7 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
                     </Button>
                 </div>
 
-                {/* Details of the chosen action */}
+
                 <div className="mt-4 flex flex-col gap-3">
                     {isReplace ? (
                         <span className={`text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
@@ -228,7 +201,7 @@ function ChangeDocType({type, id, fileName, dark, open, onOpen, onClose, onChang
                     )}
                 </div>
 
-                {/* Footer */}
+
                 <div className="mt-6 flex flex-wrap justify-end gap-2">
                     <Button tone="neutral" dark={dark} icon="close" disabled={busy} onClick={close}>
                         {t("cvDocuments.cancelBtn")}

@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
 import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
-import {getAuthClasses} from "../../../styles/AppStyles.jsx";
-import Button from "../../../styles/Button.jsx";
-import {RoleField, translateWarning} from "../../../utils/CommonFields.jsx";
+import {getAuthClasses} from "../../../styles/theme/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {RoleField, translateWarning} from "../../../utils/forms/CommonFields.jsx";
 import {getRoles} from "../../shared/core/api/Api.jsx";
 import Student from "./signup/Student.jsx";
 import Employer from "./signup/Employer.jsx";
@@ -10,11 +10,11 @@ import Teacher from "./signup/Teacher.jsx";
 import {useTranslation} from "react-i18next";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
-// Roles that are allowed to self-register — MANAGER are login-only
+
 const SIGNUP_ROLES = ['student', 'employer', 'teacher'];
 
-// UPDATE THIS MAP when you add a new signup form component:
-// key must match the lowercase role value returned by the backend
+
+
 const ROLE_COMPONENTS = (classes) => ({
     student: <Student {...classes} />,
     employer: <Employer {...classes} />,

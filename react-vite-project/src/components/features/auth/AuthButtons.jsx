@@ -1,18 +1,11 @@
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import Icon from "../../../styles/Icon.jsx";
-import {getMainContainerClasses, getNavbarClasses} from "../../../styles/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getMainContainerClasses, getNavbarClasses} from "../../../styles/theme/AppStyles.jsx";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
-/**
- * AuthButtons.jsx: the "Log in" and "Sign up" buttons, shared by the Navbar and the Landing page.
- * Label, icon, route and aria-label are defined ONCE here; only the look changes per variant.
- *
- * Props
- *   variant  "navbar" | "hero"   which surface the buttons sit on
- *   dark     boolean
- *   compact  boolean             navbar only: icon-only buttons
- */
+
+
 
 const getAuthLinks = () => [
     {to: PATHS.LOGIN, labelKey: "navbar.login", icon: "login", role: "login"},

@@ -1,57 +1,20 @@
-/**
- * DocumentList.jsx — The student's documents of ONE type (CV, cover letters or transcripts).
- *
- * CVs also carry a review status (pill + rejection reason), the other types do not:
- * the row simply shows a pill when the document has a `status`.
- *
- * Actions: Preview CV / cover letter / transcript | Edit the document (full page only, opens a modal) |
- * Delete CV / cover letter / transcript (hide, with confirmation).
- * The card header shows the type title and the "Upload documents" / "Close upload panel" button
- * (full page only).
- * The list is refreshed automatically by useLoadedList (polling), and silently when
- * `reloadToken` changes (the old rows stay on screen until the new ones arrive).
- *
- * Order
- *   ALL tab:   rejected CVs → pending CVs → everything else; newest first inside each group.
- *   Other tab: rejected → pending → approved, newest first inside each status.
- *
- * CV tab: a status color filter (ALL | RED | YELLOW | GREEN) sits above the list; its initial
- * value comes from `?status=` (Home buttons). When a color is picked, every row gets a coloured
- * border (red = rejected, yellow = pending, green = approved), like the manager page.
- *
- * `selection` ("pick" mode, used when applying to an internship): only APPROVED CVs are listed,
- * no status pill or status filter, no Edit / Delete; CVs, cover letters and transcripts
- * get a checkbox.
- *
- * `actionError` stores a translation KEY (not text) so it follows the language switch live.
- * `getUrl` only depends on `type`, so an open PDF preview is not reloaded on a language change.
- *
- * Props
- *   type           "ALL" | "CV" | "COVER_LETTER" | "TRANSCRIPT"
- *   dark           boolean
- *   selection      object    optional {cvId, letterId, transcriptId, onPickCv(id), onPickLetter(id),
- *                            onPickTranscript(id), disabled}
- *   reloadToken    number    optional, change it to refetch the list silently
- *   onTypeChanged  function  optional, shows "Edit the document" and is called once a file was moved / replaced
- *   uploadOpen     boolean   the upload panel is open (button shows "Close upload panel")
- *   onAddClick     function  opens the upload panel
- *   onCloseClick   function  closes the upload panel
- */
+
+
 
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 import ChangeDocType from "./ChangeDocType.jsx";
 import DocumentListShell from "../../shared/documents/DocumentListShell.jsx";
 import DocumentRow, {getRowListClass, ROW_BTN} from "../../shared/documents/DocumentRow.jsx";
 import {getDocumentFile, getDocuments, hideDocument} from "../../shared/core/api/Api.jsx";
-import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
-import {blobUrlFromFile, formatBytes, formatDate} from "../../../utils/Documents.js";
-import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/DocumentTypes.js";
-import {sortCvsNewest, StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
-import {ALL, colorOf, matchesColor} from "../../../utils/StatusColor.js";
-import {useLoadedList} from "../../../utils/useLoadedList.js";
-import {useToggleSet} from "../../../utils/useToggleSet.js";
+import {getCvDocumentsClasses} from "../../../styles/theme/AppStyles.jsx";
+import {blobUrlFromFile, formatBytes, formatDate} from "../../../utils/documents/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES} from "../../../utils/documents/DocumentTypes.js";
+import {sortCvsNewest, StatusColorSelect, useColorFilter} from "../../../utils/sorting/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../../utils/status/StatusColor.js";
+import {useLoadedList} from "../../../utils/hooks/useLoadedList.js";
+import {useToggleSet} from "../../../utils/hooks/useToggleSet.js";
 
 const isVisible = (doc) => (doc.visibility ?? "VISIBLE") === "VISIBLE";
 const keyOf = (doc) => `${doc.docType}-${doc.id}`;
@@ -61,7 +24,7 @@ const allViewRank = (doc) =>
     ALL_VIEW_RANK[doc.status ?? (doc.docType === "CV" ? "PENDING" : "")] ?? 2;
 const byStatusThenNewest = (a, b) => allViewRank(a) - allViewRank(b) || byNewest(a, b);
 
-// One stable function per type, so an open PDF preview is never reloaded by a re-render
+
 const urlGetters = {};
 const getUrlFor = (type) => (urlGetters[type] ??= async (id) => blobUrlFromFile(await getDocumentFile(type, id)));
 
@@ -76,9 +39,9 @@ function DocumentList({
     const picking = Boolean(selection);
     const hasStatusFilter = type === "CV" && !picking;
 
-    // ALL: every type merged → rejected, then pending, then the rest; newest first inside each group.
-    // Otherwise: rejected → pending → approved, newest first.
-    // Pick mode: only approved CVs.
+
+
+
     const fetchDocs = useCallback(async () => {
         const types = type === ALL ? DOC_TYPE_KEYS : [type];
         const lists = await Promise.all(types.map(async (k) =>
@@ -89,7 +52,7 @@ function DocumentList({
     }, [type, picking, lang]);
     const {items: docs, failed, reload} = useLoadedList(fetchDocs);
 
-    // Silent refetch when the parent asks for it (after an upload / a type change)
+
     const lastToken = useRef(reloadToken);
     useEffect(() => {
         if (lastToken.current === reloadToken) return;
@@ -149,10 +112,10 @@ function DocumentList({
     };
 
     const renderActions = (doc, busy) => {
-        if (picking) return null; // only Preview (added by DocumentRow)
+        if (picking) return null;
 
         const key = keyOf(doc);
-        // "Delete CV" / "Delete cover letter" / "Delete transcript"
+
         const deleteLabel = t(`portfolio.actions.delete.${doc.docType}`);
 
         if (confirmKey === key) {
@@ -173,7 +136,7 @@ function DocumentList({
 
         return (
             <>
-                {/* The edit control opens a modal: the row itself keeps its normal buttons */}
+
                 {onTypeChanged && (
                     <ChangeDocType type={doc.docType} id={doc.id} fileName={doc.fileName} dark={dark}
                                    open={typeEditKey === key}
@@ -221,7 +184,7 @@ function DocumentList({
         </ul>
     );
 
-    // Status color filter (CV tab only). The border takes the colour of the chosen status.
+
     const toolbar = hasStatusFilter && docs !== null && !failed && (
         <div
             className={`flex flex-wrap items-center gap-2 px-6 py-3 border-b ${dark ? "border-slate-700" : "border-gray-200"}`}>
@@ -230,7 +193,7 @@ function DocumentList({
         </div>
     );
 
-    // Title on the left, "Upload documents" / "Close upload panel" on the right
+
     const headerAction = onAddClick && (
         uploadOpen && onCloseClick ? (
             <Button tone="ghost" dark={dark} icon="close" onClick={onCloseClick}>

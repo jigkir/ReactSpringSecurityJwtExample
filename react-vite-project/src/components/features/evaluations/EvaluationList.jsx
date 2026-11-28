@@ -1,26 +1,19 @@
-/**
- * EvaluationList.jsx — Workplace evaluations for the connected user:
- * list, fill/edit progress, sign when complete.
- *
- * Used by the teacher and manager evaluation wrappers: evaluations of the session chosen
- * in the navbar, unsigned/incomplete first, then newest first.
- *
- * Props: dark, user
- */
+
+
 
 import {useCallback, useMemo} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {getAuthClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import {getAuthClasses} from "../../../styles/theme/AppStyles.jsx";
 import {useDevMode} from "../../shared/core/dev/DevMode.jsx";
-import {useLoadedList} from "../../../utils/useLoadedList.js";
-import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
-import {matchesColor} from "../../../utils/StatusColor.js";
+import {useLoadedList} from "../../../utils/hooks/useLoadedList.js";
+import {StatusColorSelect, useColorFilter} from "../../../utils/sorting/Sort.jsx";
+import {matchesColor} from "../../../utils/status/StatusColor.js";
 import EvaluationCard from "./EvaluationCard.jsx";
-import {useSession} from "../../../utils/useSession.js";
+import {useSession} from "../../../utils/session/useSession.js";
 import {useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
-import {getEvaluationRole, EVALUATION_COLORS, evaluationColor, isEvaluationComplete, sortEvaluations} from "../../../utils/EvaluationRole.js";
+import {getEvaluationRole, EVALUATION_COLORS, evaluationColor, isEvaluationComplete, sortEvaluations} from "../../../utils/roles/EvaluationRole.js";
 
 const EvaluationList = ({dark, user}) => {
     const {t} = useTranslation();
@@ -31,7 +24,7 @@ const EvaluationList = ({dark, user}) => {
     const {selectedSession} = useSession();
     const {refresh: refreshNotifications} = useNotifications();
 
-    // Status color lives in the URL (?status=), so the Home buttons open the page already filtered
+
     const [status, setStatus] = useColorFilter("status", EVALUATION_COLORS);
 
     const loadEvaluations = useCallback(async () => {
@@ -41,7 +34,7 @@ const EvaluationList = ({dark, user}) => {
 
     const {items, setItems, failed, reload} = useLoadedList(loadEvaluations);
 
-    // Filter by status color, then unsigned first / newest first
+
     const shown = useMemo(
         () => (items
             ? sortEvaluations(items.filter((item) => matchesColor(evaluationColor(item), status)))

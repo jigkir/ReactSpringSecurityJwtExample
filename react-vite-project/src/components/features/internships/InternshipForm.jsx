@@ -1,10 +1,10 @@
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getInternshipFormClasses} from "../../../styles/AppStyles.jsx";
-import Button from "../../../styles/Button.jsx";
-import {Field, translateWarning} from "../../../utils/CommonFields.jsx";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import {useSession} from "../../../utils/useSession.js";
+import {getInternshipFormClasses} from "../../../styles/theme/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {Field, translateWarning} from "../../../utils/forms/CommonFields.jsx";
+import AutoResizeTextarea from "../../../styles/ui/AutoResizeTextarea.jsx";
+import {useSession} from "../../../utils/session/useSession.js";
 
 const INITIAL_FORM = {
     title: "",
@@ -33,10 +33,10 @@ const TITLE_MAX = 50;
 const TEXT_MIN = 2;
 const AMOUNT_REGEX = /^\d+(\.\d{1,2})?$/;
 
-// en-CA renders YYYY-MM-DD, which is what <input type="date"> expects
+
 const getTomorrow = () => new Date(Date.now() + 86400000).toLocaleDateString("en-CA");
 
-// YYYY-MM-DD dates compare as strings
+
 const laterDate = (date, otherDate) => (otherDate > date ? otherDate : date);
 
 const isInSession = (isoDate, session) => isoDate >= session.startDate && isoDate <= session.endDate;
@@ -46,7 +46,7 @@ const sessionPeriodOf = (session) => ({session: session.name, startDate: session
 const isUnpaid = (i) =>
     !i.compensationNegotiable && i.compensationAmount != null && Number(i.compensationAmount) === 0;
 
-// Form state from an existing internship (edit mode) or an empty form (create mode)
+
 const toForm = (i) => i ? {
     title: i.title ?? "",
     description: i.description ?? "",
@@ -67,16 +67,12 @@ const toSelection = (i) => {
     return COMPENSATION.AMOUNT;
 };
 
-// "  React ,, Node " -> "React, Node"
+
 const cleanSkills = (raw) =>
     raw.split(",").map((skill) => skill.trim()).filter(Boolean).join(", ");
 
-/**
- * Validates the form and builds the API payload.
- * Returns {error: {key}} on the first problem, or {payload} when everything is valid.
- * In edit mode an unchanged (possibly now past) date is still accepted.
- * Offers can only be posted for the target session (the backend checks it too).
- */
+
+
 function buildPayload(formData, selection, internship, targetSession) {
     const tomorrow = getTomorrow();
     const isPastDate = (value, original) => value < tomorrow && value !== original;
@@ -106,7 +102,7 @@ function buildPayload(formData, selection, internship, targetSession) {
         return {error: {key: "internshipModal.errorStartDateOutsideSession", options: sessionPeriodOf(targetSession)}};
     }
 
-    // Compensation: amount | to be discussed | unpaid (sent as amount 0, not negotiable)
+
     if (selection === COMPENSATION.AMOUNT && !AMOUNT_REGEX.test(formData.compensationAmount)) {
         return {error: {key: "internshipModal.errorCompensation"}};
     }
@@ -145,13 +141,13 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
         setFormData((prev) => ({...prev, [name]: value}));
     };
 
-    // Changing the compensation type clears the typed amount
+
     const handleSelectionChange = (e) => {
         setSelection(e.target.value);
         setFormData((prev) => ({...prev, compensationAmount: ""}));
     };
 
-    // Trim ONLY the spaces/newlines before the first and after the last character.
+
     const handleBlur = (e) => {
         const {name, value} = e.target;
         if (TRIMMED_FIELDS.includes(name) && value !== value.trim()) {
@@ -168,10 +164,10 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
 
         const result = await onSubmitInternship(payload);
 
-        // Failure: keep everything the user typed so nothing is lost
+
         if (!result?.success) return setError(result?.message || {key: "postInternship.createError"});
 
-        // Success: close (the parent unmounts the form, which resets it)
+
         onClose();
     };
 
@@ -188,7 +184,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     </div>
                 )}
 
-                {/* Title */}
+
                 <Field id="title" label={t("internshipModal.titleLabel")} labelClass={s.label}>
                     <input
                         id="title" type="text" name="title" value={formData.title}
@@ -197,7 +193,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     />
                 </Field>
 
-                {/* Description: grows with its content */}
+
                 <Field id="description" label={t("internshipModal.descriptionLabel")} labelClass={s.label}>
                     <AutoResizeTextarea
                         id="description" name="description" rows={3} value={formData.description}
@@ -206,7 +202,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     />
                 </Field>
 
-                {/* Required skills */}
+
                 <div>
                     <Field id="requiredSkills" label={t("internshipModal.skillsLabel")} labelClass={s.label}>
                         <input
@@ -219,7 +215,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     <p className={s.hint}>{t("internshipModal.skillsHint")}</p>
                 </div>
 
-                {/* Duration + Location */}
+
                 <div className={s.grid2}>
                     <Field id="durationInWeeks" label={t("internshipModal.durationLabel")} labelClass={s.label}>
                         <input
@@ -239,7 +235,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     </Field>
                 </div>
 
-                {/* Work mode */}
+
                 <Field id="workMode" label={t("internshipModal.workModeLabel")} labelClass={s.label}>
                     <select
                         id="workMode" name="workMode" value={formData.workMode}
@@ -252,7 +248,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     </select>
                 </Field>
 
-                {/* Start date + Deadline */}
+
                 <div className={s.grid2}>
                     <div>
                         <Field id="startDate" label={t("internshipModal.startDateLabel")} labelClass={s.label}>
@@ -262,7 +258,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                                 className={s.input} required
                             />
                         </Field>
-                        {/* The employer sees the only session offers can be posted for */}
+
                         {targetSession && (
                             <p className={s.hint}>{t("internshipModal.sessionRule", sessionPeriodOf(targetSession))}</p>
                         )}
@@ -276,7 +272,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     </Field>
                 </div>
 
-                {/* Compensation */}
+
                 <Field id="selection" label={t("internshipModal.compensationLabel")} labelClass={s.label}>
                     <select
                         id="selection" name="selection" value={selection}
@@ -301,7 +297,7 @@ function InternshipForm({onClose, onSubmitInternship, internship = null, dark}) 
                     </Field>
                 )}
 
-                {/* Footer */}
+
                 <div className={s.footer}>
                     <Button type="button" icon="close" dark={dark} onClick={onClose} className="w-full sm:w-auto">
                         {t("internshipModal.cancelBtn")}

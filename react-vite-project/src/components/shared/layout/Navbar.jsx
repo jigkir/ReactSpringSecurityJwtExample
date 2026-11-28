@@ -1,14 +1,14 @@
 import {Link, NavLink, useLocation} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {useEffect, useRef, useState} from "react";
-import {getNavbarClasses} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import {getNavbarClasses} from "../../../styles/theme/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import NavbarMobile from "./NavbarMobile.jsx";
 import NotificationMenu from "../notification/NotificationMenu.jsx";
-import {ACCOUNT_STATUS} from "../../../utils/AccountStatus.js";
+import {ACCOUNT_STATUS} from "../../../utils/status/AccountStatus.js";
 import SessionSelect from "../session/SessionSelect.jsx";
-import {useSession} from "../../../utils/useSession.js";
-import {useAdaptiveNavbar} from "../../../utils/useAdaptiveNavbar.js";
+import {useSession} from "../../../utils/session/useSession.js";
+import {useAdaptiveNavbar} from "../../../utils/hooks/useAdaptiveNavbar.js";
 import {getNavLinks, PATHS} from "../../../routes/AppRoutes.jsx";
 import AuthButtons from "../../features/auth/AuthButtons.jsx";
 
@@ -20,7 +20,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const theme = getNavbarClasses(dark);
     const {sessions, selectedSession} = useSession();
 
-    // Mobile dropdowns
+
     const [menuOpen, setMenuOpen] = useState(false);
     const [authMenuOpen, setAuthMenuOpen] = useState(false);
     const menuRef = useRef(null);
@@ -35,26 +35,26 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
     const isEn = (i18n.resolvedLanguage ?? i18n.language ?? "fr").startsWith("en");
     const toggleLang = () => i18n.changeLanguage(isEn ? "fr" : "en");
 
-    // Everything that can change the width of the content: when it changes, the fit is measured again
+
     const signature = [
         i18n.resolvedLanguage, dark, isLoggedIn, isAccessGranted, role,
         user?.firstName, user?.lastName,
         sessions.map((s) => s.name).join(","), selectedSession?.name,
     ].join("|");
 
-    // 0 = everything, 1 = icon-only buttons, 2 = account in a dropdown, 3 = burger menu
+
     const level = useAdaptiveNavbar(rowRef, signature);
     const compact = level >= 1;
     const accountCollapsed = level >= 2;
     const burger = level >= 3;
 
-    // Close both on route change
+
     useEffect(() => {
         setMenuOpen(false);
         setAuthMenuOpen(false);
     }, [location.pathname]);
 
-    // The sidebar only exists in burger mode
+
     useEffect(() => {
         if (!burger) setMenuOpen(false);
     }, [burger]);
@@ -63,7 +63,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         if (!accountCollapsed) setAuthMenuOpen(false);
     }, [accountCollapsed]);
 
-    // Close on outside click / Escape
+
     useEffect(() => {
         if (!menuOpen && !authMenuOpen) return;
         const onPointerDown = (e) => {
@@ -94,7 +94,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
         return translated !== key ? translated : name.charAt(0).toUpperCase() + name.slice(1);
     };
 
-    // Order: Home, role links (from routes/AppRoutes.jsx), then About always last (right before the notification bell)
+
     const navItems = [
         {to: homePath, label: t("navbar.accueil"), end: true},
         ...(isLoggedIn && isAccessGranted ? getNavLinks(role) : []).map(({to, labelKey}) => ({
@@ -105,7 +105,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
 
     const linkClass = ({isActive}) => `${theme.linkBase} ${isActive ? theme.linkActive : theme.linkIdle}`;
 
-    // Mobile dropdown styling
+
     const dropdownPanel = `absolute mt-2 w-48 rounded-xl shadow-xl border py-2 z-50 ${dark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`;
     const mobileLinkClass = ({isActive}) => `block px-4 py-2 text-lg pl-8 ${isActive ? (dark ? "bg-slate-700 text-white" : "bg-violet-200 text-indigo-700") : (dark ? "text-slate-300 hover:bg-slate-700/50" : "text-gray-700 hover:bg-gray-100")}`;
 
@@ -116,9 +116,9 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
             <div className="w-full max-w-full mx-auto px-2 sm:px-6 xl:px-8">
                 <div ref={rowRef} className="flex items-center justify-between h-14 w-full max-w-full">
 
-                    {/* ───────── Left side ───────── */}
+
                     <div className="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-3 shrink-0 justify-start">
-                        {/* Desktop brand */}
+
                         {!burger && (
                             <Link to={homePath}
                                   className={`flex items-center gap-2 font-bold text-lg tracking-tight shrink-0 transition-colors duration-150 ${theme.brand}`}>
@@ -130,7 +130,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </Link>
                         )}
 
-                        {/* Desktop nav (bell always visible) */}
+
                         {!burger && (
                             <nav className="flex items-center gap-1">
                                 {navItems.map(({to, label, end}) => (
@@ -141,7 +141,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </nav>
                         )}
 
-                        {/* Burger mode: app name doubles as the pages dropdown button */}
+
                         {burger && (
                             <div ref={menuRef}>
                                 <div
@@ -173,11 +173,11 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </div>
                         )}
 
-                        {/* Burger mode: bell in the top bar */}
+
                         {burger && isLoggedIn && isAccessGranted && <NotificationMenu dark={dark}/>}
                     </div>
 
-                    {/* ───────── Center: the session selector takes the leftover space ───────── */}
+
                     {isLoggedIn && isAccessGranted ? (
                         <div className="hidden sm:flex grow shrink-0 justify-center px-2">
                             <SessionSelect
@@ -187,13 +187,13 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                         </div>
                     ) : <div className="grow"/>}
 
-                    {/* ───────── Right side ───────── */}
+
                     <div className="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-2 shrink-0 justify-end">
                         <button onClick={toggleLang}
                                 className={`${theme.toggleBase} ${theme.toggleBtn} text-xs px-2 py-1`}
                                 aria-label={isEn ? t("navbar.switchToFrench") : t("navbar.switchToEnglish")}>
                             <Icon name="language" size={16}/>
-                            {/* Icon only on very narrow screens (320px) */}
+
                             <span className="max-[379px]:hidden">
                                 {isEn ? t("navbar.switchFench") : t("navbar.switchEnglish")}
                             </span>
@@ -206,7 +206,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             {!compact && <span>{dark ? t("navbar.lightmode") : t("navbar.darkmode")}</span>}
                         </button>
 
-                        {/* Full account area: greeting + auth + logout */}
+
                         {!accountCollapsed && (
                             <div className="flex items-center gap-3 ml-2">
                                 {isLoggedIn && (
@@ -228,7 +228,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                                     </div>
                                 )}
 
-                                {/* Log in / Sign up: same component as the home page */}
+
                                 {!isLoggedIn && <AuthButtons variant="navbar" dark={dark} compact={compact}/>}
 
                                 {isLoggedIn && (
@@ -243,7 +243,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
                             </div>
                         )}
 
-                        {/* Collapsed account: person icon (name + role, then logout, in a dropdown) */}
+
                         {accountCollapsed && (
                             <div ref={authRef} className="relative">
                                 {isLoggedIn ? (<button
@@ -295,7 +295,7 @@ function Navbar({user, accountStatus, dark, toggleDark}) {
             </div>
         </header>
 
-        {/* Side Menu Drawer & Backdrop (burger mode only) */}
+
         {burger && (
             <NavbarMobile
                 ref={sidebarRef}

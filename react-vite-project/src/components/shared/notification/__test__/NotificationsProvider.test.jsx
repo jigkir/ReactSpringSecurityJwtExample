@@ -3,8 +3,8 @@ import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {BrowserRouter, MemoryRouter} from "react-router-dom";
 import {NotificationsProvider, useNotifications} from "../NotificationsProvider";
 import * as api from "../../core/api/Api.jsx";
-import {REFRESH_INTERVAL_MS} from "../../../../utils/usePolling.js";
-import {ACCOUNT_STATUS} from "../../../../utils/AccountStatus.js";
+import {REFRESH_INTERVAL_MS} from "../../../../utils/hooks/usePolling.js";
+import {ACCOUNT_STATUS} from "../../../../utils/status/AccountStatus.js";
 import {PATHS} from "../../../../routes/AppRoutes.jsx";
 
 vi.mock('../../core/api/Api.jsx', () => ({
@@ -49,7 +49,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
     });
 
     it('should correctly count and display internship submitted for review notifications for a manager', async () => {
-        // Arrange
+
         const mockNotifications = [
             {id: 10, notificationType: 'INTERNSHIP_SUBMITTED_FOR_REVIEW'},
             {id: 11, notificationType: 'INTERNSHIP_SUBMITTED_FOR_REVIEW'},
@@ -58,7 +58,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
         api.getNotifications.mockResolvedValueOnce(mockNotifications);
         const managerUser = {id: 1, role: 'MANAGER'};
 
-        // Act
+
         render(
             <BrowserRouter>
                 <NotificationsProvider user={managerUser}>
@@ -67,7 +67,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
             </BrowserRouter>
         );
 
-        // Assert
+
         await waitFor(() => {
             expect(screen.getByTestId('internship-count').textContent).toBe('2');
         });
@@ -80,7 +80,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
     });
 
     it('should keep internship notifications unread when manager opens the internships page of another session', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {
                 id: 10,
@@ -90,16 +90,16 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
             }
         ]);
 
-        // Act
+
         renderManagerNotificationsAt(PATHS.MANAGER_INTERNSHIPS);
 
-        // Assert
+
         await waitFor(() => expect(screen.getByTestId('internship-count').textContent).toBe('1'));
         expect(api.markNotificationsAsRead).not.toHaveBeenCalled();
     });
 
     it('should close internship notification when manager internships page shows its offer', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {
                 id: 10,
@@ -113,23 +113,23 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
         renderManagerNotificationsAt(PATHS.MANAGER_INTERNSHIPS);
         await waitFor(() => expect(screen.getByTestId('internship-count').textContent).toBe('2'));
 
-        // Act
+
         fireEvent.click(screen.getByText('showInternships'));
 
-        // Assert
+
         await waitFor(() => expect(screen.getByTestId('internship-count').textContent).toBe('1'));
         expect(api.markNotificationsAsRead).toHaveBeenCalledWith([10]);
     });
 
     it('should display a count of 1 when there is a single internship notification', async () => {
-        // Arrange
+
         const mockNotifications = [
             {id: 10, notificationType: 'INTERNSHIP_SUBMITTED_FOR_REVIEW'}
         ];
         api.getNotifications.mockResolvedValueOnce(mockNotifications);
         const managerUser = {id: 1, role: 'MANAGER'};
 
-        // Act
+
         render(
             <BrowserRouter>
                 <NotificationsProvider user={managerUser}>
@@ -138,7 +138,7 @@ describe('NotificationsProvider - Manager Internship Review Notification', () =>
             </BrowserRouter>
         );
 
-        // Assert
+
         await waitFor(() => {
             expect(screen.getByTestId('internship-count').textContent).toBe('1');
         });
@@ -195,17 +195,17 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
     });
 
     it('should count only new internship application notifications when employer has unread notifications', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {id: 20, notificationType: NEW_INTERNSHIP_APPLICATION},
             {id: 21, notificationType: NEW_INTERNSHIP_APPLICATION},
             {id: 22, notificationType: 'INTERNSHIP_OFFER_APPROVED'}
         ]);
 
-        // Act
+
         renderEmployerNotificationsAt();
 
-        // Assert
+
         await waitFor(() => {
             expect(screen.getByTestId('new-application-count').textContent).toBe('2');
         });
@@ -214,15 +214,15 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
     });
 
     it('should keep new internship application notifications unread when employer opens internships page', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {id: 20, notificationType: NEW_INTERNSHIP_APPLICATION}
         ]);
 
-        // Act
+
         renderEmployerNotificationsAt(INTERNSHIPS_PAGE_PATH);
 
-        // Assert
+
         await waitFor(() => {
             expect(screen.getByTestId('new-application-count').textContent).toBe('1');
         });
@@ -231,13 +231,13 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
     });
 
     it('should show load error and no new application when employer notifications fail to load', async () => {
-        // Arrange
+
         api.getNotifications.mockRejectedValueOnce(new Error('Network error'));
 
-        // Act
+
         renderEmployerNotificationsAt();
 
-        // Assert
+
         await waitFor(() => {
             expect(screen.getByTestId('notification-error').textContent).toBe('navbar.notificationLoadError');
         });
@@ -246,7 +246,7 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
     });
 
     it('should increment new internship application count when a student applies while employer stays on the page', async () => {
-        // Arrange
+
         vi.useFakeTimers({shouldAdvanceTime: true});
 
         api.getNotifications
@@ -262,17 +262,17 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
             expect(screen.getByTestId('new-application-count').textContent).toBe('1');
         });
 
-        // Act
+
         await vi.advanceTimersByTimeAsync(REFRESH_INTERVAL_MS);
 
-        // Assert
+
         await waitFor(() => {
             expect(screen.getByTestId('new-application-count').textContent).toBe('2');
         });
     });
 
     it('should keep new internship application notifications unread when employer opens applications page of another session', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {
                 id: 20,
@@ -282,10 +282,10 @@ describe('NotificationsProvider - Employer New Internship Application Notificati
             }
         ]);
 
-        // Act
+
         renderEmployerNotificationsAt(APPLICATIONS_PAGE_PATH);
 
-        // Assert
+
         await waitFor(() => expect(screen.getByTestId('new-application-count').textContent).toBe('1'));
         expect(api.markNotificationsAsRead).not.toHaveBeenCalled();
     });
@@ -303,7 +303,7 @@ describe('NotificationsProvider - Student interview notifications', () => {
     });
 
     it('should count interview convocations and updates for a student', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {id: 1, notificationType: 'INTERVIEW_CONVOCATION', targetType: 'INTERVIEW', targetId: 7},
             {id: 2, notificationType: 'INTERVIEW_UPDATED', targetType: 'INTERVIEW', targetId: 8},
@@ -318,7 +318,7 @@ describe('NotificationsProvider - Student interview notifications', () => {
             );
         }
 
-        // Act
+
         render(
             <MemoryRouter>
                 <NotificationsProvider user={{id: 3, role: 'STUDENT'}} accountStatus={ACCOUNT_STATUS.APPROVED}>
@@ -327,18 +327,18 @@ describe('NotificationsProvider - Student interview notifications', () => {
             </MemoryRouter>
         );
 
-        // Assert
+
         await waitFor(() => expect(screen.getByTestId('counts').textContent).toBe('1,1'));
     });
 
     it('should close interview notifications when the student opens the interviews page', async () => {
-        // Arrange
+
         api.getNotifications.mockResolvedValueOnce([
             {id: 1, notificationType: 'INTERVIEW_CONVOCATION', targetType: 'INTERVIEW', targetId: 7},
         ]);
         api.markNotificationsAsRead.mockResolvedValueOnce();
 
-        // Act
+
         render(
             <MemoryRouter initialEntries={[STUDENT_INTERVIEWS_PAGE_PATH]}>
                 <NotificationsProvider user={{id: 3, role: 'STUDENT'}} accountStatus={ACCOUNT_STATUS.APPROVED}>
@@ -347,7 +347,7 @@ describe('NotificationsProvider - Student interview notifications', () => {
             </MemoryRouter>
         );
 
-        // Assert
+
         await waitFor(() => expect(api.markNotificationsAsRead).toHaveBeenCalledWith([1]));
     });
 });

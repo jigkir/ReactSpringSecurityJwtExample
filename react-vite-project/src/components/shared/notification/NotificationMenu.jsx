@@ -1,8 +1,8 @@
 import {useEffect, useRef, useState} from "react";
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getNavbarClasses, getNotificationMenuClasses} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import {getNavbarClasses, getNotificationMenuClasses} from "../../../styles/theme/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import {getStudentInterviews} from "../core/api/Api.jsx";
 import {useNotifications} from "./NotificationsProvider.jsx";
 
@@ -12,7 +12,7 @@ export const interviewAnchor = (id) => `interview-${id}`;
 const OFFER_TYPE = "INTERNSHIP_OFFERED";
 export const offerAnchor = (id) => `offer-${id}`;
 
-// Company, title and date of the student's interviews, loaded only while the menu is open
+
 function useInterviewsById(enabled, version) {
     const [byId, setById] = useState({});
 
@@ -26,7 +26,7 @@ function useInterviewsById(enabled, version) {
                 }
             })
             .catch(() => {
-                // Without details, the row simply shows the generic title
+
             });
         return () => {
             cancelled = true;
@@ -59,7 +59,7 @@ export default function NotificationMenu({dark}) {
             : new Intl.DateTimeFormat(locale, {dateStyle: "long", timeStyle: "short"}).format(date);
     };
 
-    // Regular items: one line with a counter. "detailed" items: one line per notification.
+
     const rows = active.flatMap((item) => item.detailed
         ? notifications
             .filter((n) => n.notificationType === item.notificationType)

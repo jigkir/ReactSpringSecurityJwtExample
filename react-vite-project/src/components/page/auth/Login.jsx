@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Navigate, useNavigate, useOutletContext} from "react-router-dom";
-import {getAuthClasses} from "../../../styles/AppStyles.jsx";
-import Button from "../../../styles/Button.jsx";
+import {getAuthClasses} from "../../../styles/theme/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
 import {getCurrentUser, getCvCount, login} from "../../shared/core/api/Api.jsx";
 import {devLoginAs} from "../../shared/core/api/DevApi.jsx";
 import {
@@ -10,9 +10,9 @@ import {
     SubmitButton,
     translateWarning,
     validateField,
-} from "../../../utils/CommonFields.jsx";
+} from "../../../utils/forms/CommonFields.jsx";
 import {useTranslation} from "react-i18next";
-import {i18nError} from "../../../utils/i18nError.jsx";
+import {i18nError} from "../../../utils/i18n/i18nError.jsx";
 import {useDevMode} from "../../shared/core/dev/DevMode.jsx";
 import DevLoginPanel from "../../shared/core/dev/DevLoginPanel.jsx";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
@@ -55,8 +55,8 @@ const Login = ({user, setError}) => {
         return !updatedWarnings.email && !updatedWarnings.password;
     };
 
-    // region Api.jsx communication
-    // Shared by the normal login and the Dev Mode login: store the token, load the user, redirect by role
+
+
     const finishLogin = async (data) => {
         localStorage.setItem("token", data.accessToken);
 
@@ -86,13 +86,13 @@ const Login = ({user, setError}) => {
         try {
             await finishLogin(await login(email.toLowerCase(), password));
         } catch (err) {
-            // Wrong credentials: stay on the login page and show the inline error
+
             if (err.status === 401 || err.status === 403) {
                 setServerError({key: "login.invalidCredentials"});
                 return;
             }
 
-            // Everything else is a real failure (server down, user fetch failed, etc.)
+
             if (err.status === 404) {
                 setError(i18nError("login.noServer"));
             } else if (err.i18n) {
@@ -105,9 +105,9 @@ const Login = ({user, setError}) => {
             setSubmitting(false);
         }
     };
-    // endregion
 
-    // Dev Mode: picking any mock user (any role) logs in instantly with just their email
+
+
     const loginAsDevUser = async (devUser) => {
         if (!devUser) return;
         setServerError("");
@@ -138,7 +138,7 @@ const Login = ({user, setError}) => {
             <div className={cardClass}>
                 <h1 className={titleClass}>{t("login.title")}</h1>
 
-                {/* Dev Mode only: pick a mock user and log in instantly */}
+
                 {devMode && (
                     <DevLoginPanel
                         dark={dark}
@@ -183,7 +183,7 @@ const Login = ({user, setError}) => {
                         onToggleShow={() => setShowPassword((p) => !p)}
                     />
 
-                    {/* Same button as the signup forms: disabled until every field is filled */}
+
                     <SubmitButton
                         disabled={!email || !password || submitting}
                         loading={submitting}

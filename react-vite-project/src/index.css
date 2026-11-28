@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-    /* Color of the priority cards: border, halo and tag background, then the tag text */
+
     --color-spotlight: var(--color-rose-800);
     --color-spotlight-text: var(--color-white);
 

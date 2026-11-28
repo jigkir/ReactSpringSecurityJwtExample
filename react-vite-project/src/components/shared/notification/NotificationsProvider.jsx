@@ -1,8 +1,8 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {useLocation} from "react-router-dom";
 import {getNotifications, markNotificationsAsRead} from "../core/api/Api.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
-import {ACCOUNT_STATUS} from "../../../utils/AccountStatus.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {ACCOUNT_STATUS} from "../../../utils/status/AccountStatus.js";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 const ROLE = {
@@ -49,9 +49,9 @@ export const TARGET_TYPE = {
     CONTRACT: "CONTRACT",
 };
 
-// A notification closes when its page is opened (clicking it opens that page).
-// A `sessionScoped` notification targets an item listed by session: it closes only once its page
-// shows that item, so opening the page on another session keeps it.
+
+
+
 const buildNotificationItems = () => ({
     [ROLE.MANAGER]: [
         {
@@ -125,7 +125,7 @@ const buildNotificationItems = () => ({
             targetType: TARGET_TYPE.INTERVIEW,
             labelKey: "navbar.interviewConvocationNotification",
             to: PATHS.STUDENT_INTERVIEWS,
-            detailed: true, // one menu line per convocation (company, title, date)
+            detailed: true,
         },
         {
             id: "interviewUpdated",
@@ -141,7 +141,7 @@ const buildNotificationItems = () => ({
             targetType: TARGET_TYPE.INTERNSHIP_APPLICATION,
             labelKey: "navbar.internshipOfferedNotification",
             to: PATHS.STUDENT_OFFERS,
-            detailed: true, // one menu line per offer (company, title)
+            detailed: true,
         },
         {
             id: "contractToSign",
@@ -211,7 +211,7 @@ const buildNotificationItems = () => ({
     [ROLE.TEACHER]: []
 });
 
-// Built on first use: PATHS does not exist yet while the modules load (circular import)
+
 let notificationItems = null;
 const getNotificationItems = () => (notificationItems ??= buildNotificationItems());
 
@@ -241,13 +241,8 @@ const NotificationsContext = createContext({
     },
 });
 
-/**
- * Owns all notification data (fetching, counts, mark-as-read).
- * Consumers (NotificationMenu, any page) call useNotifications().
- *
- * items: [{id, count, labelKey, to, notificationType, targetType, sessionScoped}] — labels are translated by the consumer,
- * so they follow the language switch without refetching.
- */
+
+
 export function NotificationsProvider({user, children, accountStatus}) {
     const {pathname} = useLocation();
     const role = normalizeRole(user);
@@ -256,7 +251,7 @@ export function NotificationsProvider({user, children, accountStatus}) {
     const roleItems = getNotificationItems()[role] ?? NO_ITEMS;
     const [notifications, setNotifications] = useState([]);
     const [errorKey, setErrorKey] = useState(null);
-    const requestId = useRef(0); // ignore responses from outdated requests
+    const requestId = useRef(0);
 
     const refresh = useCallback(async () => {
         const id = ++requestId.current;
@@ -279,12 +274,12 @@ export function NotificationsProvider({user, children, accountStatus}) {
         }
     }, [userId]);
 
-    // Refetch on login/role change and on every route change
+
     useEffect(() => {
         void refresh();
     }, [refresh, pathname]);
 
-    // Keeps counts up to date while the user stays on the same page
+
     usePolling(refresh, Boolean(userId) && accountStatus === ACCOUNT_STATUS.APPROVED);
 
     const items = useMemo(() => roleItems.map((item) => ({
@@ -302,7 +297,7 @@ export function NotificationsProvider({user, children, accountStatus}) {
         }
     }, []);
 
-    // Opening a notification's page closes it, whether reached from the menu or the navbar
+
     useEffect(() => {
         const typesClosedByPage = new Set(roleItems
             .filter((item) => item.to === pathname && !item.sessionScoped)
@@ -317,7 +312,7 @@ export function NotificationsProvider({user, children, accountStatus}) {
         [roleItems],
     );
 
-    // A page closes the session-scoped notifications of the items it shows
+
     const closeShownNotifications = useCallback((targetType, shownTargetIds) => {
         const shownIds = new Set(shownTargetIds);
         const notificationIds = toNotificationIds(notifications.filter((notification) =>
@@ -343,11 +338,8 @@ export function useNotifications() {
     return useContext(NotificationsContext);
 }
 
-/**
- * Closes the session-scoped notifications whose target the page shows.
- * shownTargetIds: ids of the listed items, or null while nothing is shown (loading, Home preview).
- * It must be memoized, otherwise the check runs on every render.
- */
+
+
 export function useCloseShownNotifications(targetType, shownTargetIds) {
     const {closeShownNotifications} = useNotifications();
 

@@ -14,9 +14,9 @@ import {
     SubmitButton,
     translateWarning,
     validateField,
-} from "../../../../utils/CommonFields.jsx";
+} from "../../../../utils/forms/CommonFields.jsx";
 
-// The student-specific ID field name — single source of truth for all references below
+
 const ID_FIELD = "studentId";
 
 const DEFAULT_FORM = {
@@ -29,10 +29,10 @@ const DEFAULT_FORM = {
     confirmPassword: "",
 };
 
-// Mirror DEFAULT_FORM shape with empty strings — one warning slot per field
+
 const DEFAULT_WARNINGS = Object.fromEntries(Object.keys(DEFAULT_FORM).map(k => [k, ""]));
 
-// Submit button stays disabled until every field has a value
+
 const isAllFilled = (form) => Object.values(form).every(v => v !== "");
 
 const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass, passwordHintClass, submitClass}) => {
@@ -52,7 +52,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const [registrationSession, setRegistrationSession] = useState(null);
     const [registrationSessionError, setRegistrationSessionError] = useState("");
 
-    // Fetch discipline options once on mount
+
     useEffect(() => {
         getDisciplines()
             .then(setDisciplines)
@@ -60,14 +60,14 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
             .finally(() => setDisciplinesLoading(false));
     }, []);
 
-    // The backend gives the session from the signup date: the student only sees which one
+
     useEffect(() => {
         getRegistrationSession()
             .then(setRegistrationSession)
             .catch(() => setRegistrationSessionError({key: "student.registrationSessionError"}));
     }, []);
 
-    // Clear the field's inline warning as soon as the user starts correcting it
+
     const handleChange = (e) => {
         const {name, value} = e.target;
         setForm(prev => ({...prev, [name]: value}));
@@ -75,7 +75,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         if (warnings[name]) setWarnings(prev => ({...prev, [name]: ""}));
     };
 
-    // Run every field through validateField and collect error messages
+
     const validateAll = () => {
         const newWarnings = {};
         let valid = true;
@@ -91,7 +91,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError("");
-        if (!validateAll()) return; // stop early if any field is invalid
+        if (!validateAll()) return;
 
         setSubmitting(true);
         try {
@@ -105,7 +105,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
             });
             navigate(PATHS.LOGIN);
         } catch (err) {
-            // Map known server error codes to field-level or page-level messages
+
             switch (err.status) {
                 case 409: {
                     const {field: conflictField = ""} = err.body ?? {};
@@ -121,7 +121,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
                 case 400:
                     setServerError({key: "student.invalidData"});
                     break;
-                case undefined: // the request itself failed (no HTTP status)
+                case undefined:
                     setServerError({key: "student.unableToReachServerError"});
                     break;
                 default:
@@ -132,7 +132,7 @@ const Student = ({fieldClass, labelClass, errorClass, eyeClass, serverErrorClass
         }
     };
 
-    // Props shared by every field component — spread with {...sharedProps} to avoid repetition
+
     const sharedProps = {labelClass, errorClass, fieldClass, onChange: handleChange};
     const serverErrorText = translateWarning(t, serverError) || translateWarning(t, registrationSessionError);
 

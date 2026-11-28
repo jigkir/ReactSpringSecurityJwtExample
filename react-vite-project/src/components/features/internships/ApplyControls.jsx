@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import PortfolioPanel from "../portfolio/PortfolioPanel.jsx";
 import {applyForInternship, updateApplicationCV} from "../../shared/core/api/Api.jsx";
 import SentDocuments from "./SentDocuments.jsx";
@@ -28,9 +28,9 @@ function ApplyControls({
     const {t} = useTranslation();
     const [open, setOpen] = useState(false);
     const [cvId, setCvId] = useState(null);
-    const [letterId, setLetterId] = useState(null); // "" = no letter
+    const [letterId, setLetterId] = useState(null);
     const [transcriptId, setTranscriptId] = useState(null);
-    const [status, setStatus] = useState("idle"); // idle | sending | applied | cvUpdated | error
+    const [status, setStatus] = useState("idle");
     const [errorKey, setErrorKey] = useState(null);
 
     if (cvs.length === 0) {
@@ -57,7 +57,7 @@ function ApplyControls({
         return application ? <SentDocuments application={application} dark={dark}/> : null;
     }
 
-    // The CV picked by the student, otherwise the CV already sent, otherwise the first approved CV
+
     const selectedCvId = cvId ?? application?.cv.id ?? cvs[0].id;
 
     const sentLetterId = application?.coverLetter?.id != null ? String(application.coverLetter.id) : "";
@@ -98,7 +98,7 @@ function ApplyControls({
         : submit(() => applyForInternship(internshipId, selectedCvId, letterArg, transcriptArg),
             "applied", "studentInternship.applyConflict");
 
-    // After an upload: reload the letters and transcripts, and tick the new ones
+
     const handleUploaded = async () => {
         const [lettersBefore, transcriptsBefore] = [maxId(letters), maxId(transcripts)];
         const [letterList, transcriptList] = await Promise.all([
@@ -142,7 +142,7 @@ function ApplyControls({
         return (
             <>
                 {application && <SentDocuments application={application} dark={dark}/>}
-                {/* Separator between the sent documents ("Preview CV"...) and the apply / edit button */}
+
                 {application ? (
                     <div className={`flex w-full flex-wrap items-center justify-end gap-2 pt-3 border-t ${
                         dark ? "border-slate-700" : "border-gray-200"}`}>
@@ -163,7 +163,7 @@ function ApplyControls({
         <div className="flex w-full flex-col gap-4 text-left">
             {messages}
 
-            {/* The portfolio view, without its title: pick one CV (approved only), and optionally one letter and one transcript */}
+
             <PortfolioPanel
                 dark={dark}
                 uploadTypes={UPLOAD_TYPES}
@@ -177,12 +177,12 @@ function ApplyControls({
                         setCvId(id);
                         resetFeedback();
                     },
-                    // Ticking the ticked letter again removes it
+
                     onPickLetter: (id) => {
                         setLetterId(selectedLetterId === String(id) ? "" : String(id));
                         resetFeedback();
                     },
-                    // Ticking the ticked transcript again removes it
+
                     onPickTranscript: (id) => {
                         setTranscriptId(selectedTranscriptId === String(id) ? "" : String(id));
                         resetFeedback();

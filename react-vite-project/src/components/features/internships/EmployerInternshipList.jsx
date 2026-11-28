@@ -4,10 +4,10 @@ import {useTranslation} from "react-i18next";
 import InternshipForm from "./InternshipForm.jsx";
 import InternshipCard from "./InternshipCard.jsx";
 import InternshipFilters, {useInternshipFilters} from "./InternshipFilters.jsx";
-import Button from "../../../styles/Button.jsx";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
-import {EMPLOYER_INTERNSHIP_STATUS_RANK} from "../../../utils/Sort.jsx";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {translateWarning} from "../../../utils/forms/CommonFields.jsx";
+import {EMPLOYER_INTERNSHIP_STATUS_RANK} from "../../../utils/sorting/Sort.jsx";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
 import {
     createInternship,
     deleteInternship,
@@ -16,13 +16,13 @@ import {
     updateInternship,
     getInternshipIdsWithContract
 } from "../../shared/core/api/Api.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
-import {useSession} from "../../../utils/useSession.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {useSession} from "../../../utils/session/useSession.js";
 import {TARGET_TYPE, useCloseShownNotifications} from "../../shared/notification/NotificationsProvider.jsx";
 
 const HTTP_CONFLICT = 409;
 
-// <PostInternship user />  full page (route /internships)
+
 function PostInternship({user}) {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
@@ -36,11 +36,11 @@ function PostInternship({user}) {
     const [internshipIdsWithContract, setInternshipIdsWithContract] = useState(new Set());
     const formRef = useRef(null);
     const {selectedSession} = useSession();
-    const canEditOffers = Boolean(selectedSession?.target); // offers of past sessions are archives
+    const canEditOffers = Boolean(selectedSession?.target);
 
-    // An offer with applications is locked: students applied to its current content
+
     const canEdit = (internship) => canEditOffers && !applicationCount[internship.id];
-    // An offer with a contract is kept: the contract refers to it
+
     const canDelete = (internship) => !internshipIdsWithContract.has(internship.id);
 
     const s = getPostInternshipClasses(dark);
@@ -57,7 +57,7 @@ function PostInternship({user}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const load = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!selectedSession) return;
         try {
             setInternships(await getEmployerInternships(selectedSession.id));
             setError("");
@@ -90,7 +90,7 @@ function PostInternship({user}) {
 
     usePolling(load, isLoggedIn);
 
-    // Bring the inline form into view (page scroll only) when it opens
+
     useEffect(() => {
         if (formOpen) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
     }, [formOpen, editing]);
@@ -110,7 +110,7 @@ function PostInternship({user}) {
         setEditing(null);
     };
 
-    // Create or update depending on `editing`
+
     const handleSaveInternship = async (payload) => {
         try {
             if (editing) {
@@ -169,9 +169,9 @@ function PostInternship({user}) {
     );
 
     return (
-        // No fixed height and no inner scroll: the page scroll bar is the only one
+
         <div className={s.page}>
-            {/* Title + button */}
+
             <div className={s.headerSection}>
                 <div>
                     <h1 className={s.title}>{t("postInternship.pageTitle")}</h1>
@@ -184,7 +184,7 @@ function PostInternship({user}) {
                 )}
             </div>
 
-            {/* Inline create / edit form: between the title and the sort bar */}
+
             {formOpen && (
                 <div ref={formRef} className="scroll-mt-20">
                     <InternshipForm
@@ -197,7 +197,7 @@ function PostInternship({user}) {
                 </div>
             )}
 
-            {/* Internship list */}
+
             <div className={s.listSection}>
                 <h2 className={s.listHeading}>{t("postInternship.listTitle")}</h2>
 

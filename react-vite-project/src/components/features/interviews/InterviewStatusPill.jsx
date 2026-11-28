@@ -1,6 +1,6 @@
-import Icon from "../../../styles/Icon.jsx";
-import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
-import {INTERVIEW_STATUS} from "../../../utils/interviewStatus.js";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getCvDocumentsClasses} from "../../../styles/theme/AppStyles.jsx";
+import {INTERVIEW_STATUS} from "../../../utils/status/interviewStatus.js";
 
 const PILL = {
     [INTERVIEW_STATUS.AWAITING_RESPONSE]: {icon: "schedule", reviewStatus: "PENDING"},

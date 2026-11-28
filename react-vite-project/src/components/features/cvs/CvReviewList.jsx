@@ -1,46 +1,24 @@
-/**
- * CvReviewList.jsx — Manager view of every visible student CV.
- *
- * Filter / sort (status color, discipline, search, date, student), preview, approve and refuse
- * (with a mandatory reason). A decision can be changed at any time.
- * A CV is visible to the manager as soon as the student uploads it.
- *
- * The backend returns the CVs of the students of the selected session.
- *
- * Filtering / sorting logic lives in utils/Sort.jsx (useCvFilters). The status filter is a color
- * (ALL | RED | YELLOW | GREEN, see StatusColor.js); its initial value comes from `?status=`.
- *
- * The backend returns the updated DTO after a decision: it is patched into the list so the row
- * stays visible with its new status (and is re-filtered by the status filter automatically).
- *
- * `actionError` stores a translation KEY (not text) so it follows the language switch live.
- *
- * List fields: id, fileName, uploadedAt, status, rejectionComment,
- *              student {id, firstName, lastName, email, studentId, discipline}
- * The PDF itself (Base64 `content`) is fetched on demand: GET manager/cvs/{cvId}/file
- *
- * Props
- *   dark     boolean
- */
+
+
 
 import {useCallback, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import {getSelectClass, SearchInput} from "../../../styles/FormControls.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import AutoResizeTextarea from "../../../styles/ui/AutoResizeTextarea.jsx";
+import {getSelectClass, SearchInput} from "../../../styles/ui/FormControls.jsx";
 import DocumentListShell from "../../shared/documents/DocumentListShell.jsx";
 import DocumentRow, {getRowListClass, ROW_BTN} from "../../shared/documents/DocumentRow.jsx";
 import {approveCv, getManagerCvFile, getPublicCvs, rejectCv} from "../../shared/core/api/Api.jsx";
-import {getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
+import {getCvDocumentsClasses} from "../../../styles/theme/AppStyles.jsx";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
-import {blobUrlFromFile, formatDate} from "../../../utils/Documents.js";
-import {CV_SORT_OPTIONS, StatusColorSelect, useCvFilters} from "../../../utils/Sort.jsx";
-import {ALL} from "../../../utils/StatusColor.js";
-import {useLoadedList} from "../../../utils/useLoadedList.js";
-import {useToggleSet} from "../../../utils/useToggleSet.js";
-import {useSession} from "../../../utils/useSession.js";
+import {blobUrlFromFile, formatDate} from "../../../utils/documents/Documents.js";
+import {CV_SORT_OPTIONS, StatusColorSelect, useCvFilters} from "../../../utils/sorting/Sort.jsx";
+import {ALL} from "../../../utils/status/StatusColor.js";
+import {useLoadedList} from "../../../utils/hooks/useLoadedList.js";
+import {useToggleSet} from "../../../utils/hooks/useToggleSet.js";
+import {useSession} from "../../../utils/session/useSession.js";
 
-// Module-level: a stable reference, so an open PDF preview is never reloaded by a re-render
+
 const getUrl = async (id) => blobUrlFromFile(await getManagerCvFile(id));
 
 const statusOf = (doc) => doc.status ?? "PENDING";
@@ -66,18 +44,18 @@ function CvReviewList({dark}) {
 
     const previews = useToggleSet();
     const [busyId, setBusyId] = useState(null);
-    const [confirmId, setConfirmId] = useState(null); // CV whose refuse form is open
+    const [confirmId, setConfirmId] = useState(null);
     const [refuseComment, setRefuseComment] = useState("");
     const [actionError, setActionError] = useState("");
 
     const selectClass = getSelectClass(dark);
     const textareaClass = `${selectClass} w-full md:w-64`;
-    // Rows get a coloured border only while a status color is selected
+
     const bordered = filters.status !== ALL;
 
     const shown = docs === null ? null : filters.visible;
 
-    // ── Decision ──────────────────────────────────────────────────────────────
+
 
     const decide = async (doc, action) => {
         setBusyId(doc.id);
@@ -102,7 +80,7 @@ function CvReviewList({dark}) {
         }
     };
 
-    // Opens the refuse form. When editing an existing rejection, the old reason is pre-filled.
+
     const startRefuse = (doc) => {
         setConfirmId(doc.id);
         setRefuseComment(doc.rejectionComment ?? "");
@@ -145,7 +123,7 @@ function CvReviewList({dark}) {
 
         return (
             <>
-                {/* Decision can be changed at any time */}
+
                 {status !== "APPROVED" && (
                     <Button tone="success" dark={dark} icon="check_circle" disabled={busy} className={ROW_BTN}
                             onClick={() => decide(doc, "approve")}
@@ -160,7 +138,7 @@ function CvReviewList({dark}) {
                         {t("cvDocuments.editCommentBtn")}
                     </Button>
                 ) : !doc.usedInApplication && (
-                    // A CV used in an application stays approved
+
                     <Button tone="danger" dark={dark} icon="close" disabled={busy} className={ROW_BTN}
                             onClick={() => startRefuse(doc)}
                             aria-label={`${t("cvDocuments.refuseBtn")} : ${doc.fileName}`}>
@@ -171,7 +149,7 @@ function CvReviewList({dark}) {
         );
     };
 
-    // ── Toolbar (once the list is loaded) ─────────────────────────────────────
+
 
     const toolbar = docs !== null && !failed && (
         <div
@@ -202,7 +180,7 @@ function CvReviewList({dark}) {
         </div>
     );
 
-    // ── Rows ──────────────────────────────────────────────────────────────────
+
 
     const rows = shown?.length > 0 && (
         <ul className={getRowListClass(dark, {bordered})}>

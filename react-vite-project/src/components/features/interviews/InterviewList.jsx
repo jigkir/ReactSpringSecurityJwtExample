@@ -1,12 +1,12 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useLocation, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
-import {useLoadedList} from "../../../utils/useLoadedList.js";
-import {ALL, matchesColor} from "../../../utils/StatusColor.js";
-import {StatusColorSelect, useColorFilter} from "../../../utils/Sort.jsx";
-import {getInterviewColor, sortInterviews} from "../../../utils/interviewStatus.js";
-import {getInterviewRole, INTERVIEW_ROLES} from "../../../utils/InterviewRole.js";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
+import {useLoadedList} from "../../../utils/hooks/useLoadedList.js";
+import {ALL, matchesColor} from "../../../utils/status/StatusColor.js";
+import {StatusColorSelect, useColorFilter} from "../../../utils/sorting/Sort.jsx";
+import {getInterviewColor, sortInterviews} from "../../../utils/status/interviewStatus.js";
+import {getInterviewRole, INTERVIEW_ROLES} from "../../../utils/roles/InterviewRole.js";
 import InterviewCard from "./InterviewCard.jsx";
 
 export default function InterviewList({user, audience}) {

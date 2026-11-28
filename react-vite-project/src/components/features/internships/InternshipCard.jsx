@@ -1,10 +1,10 @@
 import {useTranslation} from "react-i18next";
 import {NavLink} from "react-router-dom";
-import {getCvDocumentsClasses, getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import Badge from "../../../styles/Badge.jsx";
-import {formatDate} from "../../../utils/Documents.js";
+import {getCvDocumentsClasses, getInternshipCardClasses} from "../../../styles/theme/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import Badge from "../../../styles/ui/Badge.jsx";
+import {formatDate} from "../../../utils/documents/Documents.js";
 import {employerApplicationPath} from "../../../routes/AppRoutes.jsx";
 
 const STATUS_KEY_MAP = {
@@ -97,14 +97,14 @@ function InternshipCard({
 
     return (
         <div className={s.card}>
-            {/* MOBILE ONLY: Status badge at the very top of card */}
+
             {statusBadge && (
                 <div className="mb-2 block md:hidden">
                     {statusBadge}
                 </div>
             )}
 
-            {/* Header: title + badges share one row, the description below takes the full width */}
+
             <div className="min-w-0">
                 <div className={s.topRow}>
                     <div className="min-w-0 flex-1">
@@ -127,7 +127,7 @@ function InternshipCard({
                             )}
                         </div>
                     )}
-                    {/* DESKTOP ONLY: Status badge aligned on top-right */}
+
                     {statusBadge && (
                         <div className="hidden md:block shrink-0">
                             {statusBadge}
@@ -135,13 +135,13 @@ function InternshipCard({
                     )}
                 </div>
 
-                {/* The description is always visible, full card width */}
+
                 <p className={`${s.description} w-full wrap-break-word`} style={{whiteSpace: "pre-wrap"}}>
                     {internship.description}
                 </p>
             </div>
 
-            {/* Rejection reason (visible to employer and manager) */}
+
             {isRejected && internship.rejectionComment && (
                 <div
                     className={`rounded-lg border-l-4 px-3 py-2 ${dark ? "border-red-500 bg-red-900/30" : "border-red-500 bg-red-50"}`}
@@ -156,7 +156,7 @@ function InternshipCard({
                 </div>
             )}
 
-            {/* Required skills: one chip per skill */}
+
             {skills.length > 0 && (
                 <div className={`${s.skillsRow} flex flex-wrap items-center gap-1.5`}>
                     <span className="font-semibold mr-1">{t("internshipCard.requiredSkills")}</span>
@@ -166,15 +166,15 @@ function InternshipCard({
                 </div>
             )}
 
-            {/* Detail badges */}
+
             <div className={s.detailsRow}>
-                {/* Location */}
+
                 <span className={s.detailBadge}>
                     <Icon name="location_on" size={20}/>
                     {internship.location}
                 </span>
 
-                {/* Work mode: in person / hybrid / remote */}
+
                 {internship.workMode && (
                     <span className={s.detailBadge}>
                         <Icon name="work" size={20}/>
@@ -182,32 +182,32 @@ function InternshipCard({
                     </span>
                 )}
 
-                {/* Duration */}
+
                 <span className={s.detailBadge}>
                     <Icon name="timer" size={20}/>
                     {t("internshipCard.durationWeeks", {count: internship.durationInWeeks})}
                 </span>
 
-                {/* Compensation */}
+
                 <span className={s.detailBadge}>
                     <Icon name="payments" size={20}/>
                     {compensationText}
                 </span>
 
-                {/* Start date */}
+
                 <span className={s.detailBadge} title={t("internshipCard.startsTitle")}>
                     <Icon name="play_circle" size={20}/>
                     <span className="font-medium">{t("internshipCard.starts")}</span> {internship.startDate}
                 </span>
 
-                {/* Deadline */}
+
                 <span className={s.detailBadge} title={t("internshipCard.applyByTitle")}>
                     <Icon name="hourglass_bottom" size={20}/>
                     <span className="font-medium">{t("internshipCard.applyBy")}</span> {internship.applicationDeadline}
                 </span>
             </div>
 
-            {/* Employer actions */}
+
             {(OnEdit || OnDelete) && (
                 <div
                     className={`flex flex-wrap items-center justify-between gap-3 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
@@ -259,7 +259,7 @@ function InternshipCard({
                 </div>
             )}
 
-            {/* Footer */}
+
             {hasFooter && (
                 <div
                     className={`flex flex-wrap items-center gap-2 pt-3 border-t ${dark ? "border-slate-700" : "border-gray-100"}`}>
@@ -280,7 +280,7 @@ function InternshipCard({
                 </div>
             )}
 
-            {/* Bottom row */}
+
             {bottomFooter && (
                 <div
                     className={`flex flex-wrap items-center justify-end gap-2 pt-3 border-t ${

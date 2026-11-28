@@ -1,15 +1,15 @@
 import {useTranslation} from "react-i18next";
-import Icon from "../../../styles/Icon.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
 import {
     INTERNSHIP_SORT_OPTIONS, StatusColorSelect, useInternshipFilters
-} from "../../../utils/Sort.jsx";
-import {ALL, COLOR} from "../../../utils/StatusColor.js";
+} from "../../../utils/sorting/Sort.jsx";
+import {ALL, COLOR} from "../../../utils/status/StatusColor.js";
 
 export {useInternshipFilters};
 
 const APPLIED_COLORS = [ALL, COLOR.GREEN, COLOR.RED];
 
-// ── Toolbar ──────────────────────────────────────────────────────────────────
+
 
 function InternshipFilters({
                                dark,
@@ -53,7 +53,7 @@ function InternshipFilters({
                 )}
             </div>
 
-            {/* statusPage: wording of the status colors on this page (STATUS_LABEL_KEYS in utils/StatusColor.js) */}
+
             {showStatus && (
                 <StatusColorSelect dark={dark} value={status} onChange={setStatus} page={statusPage}
                                    ariaLabel={t("internshipFilters.statusAria")}/>
@@ -71,7 +71,7 @@ function InternshipFilters({
                 </select>
             )}
 
-            {/* GREEN = applied, RED = not applied */}
+
             {showApplied && (
                 <StatusColorSelect dark={dark} value={applied} onChange={setApplied} colors={APPLIED_COLORS}
                                    page="studentApplied"

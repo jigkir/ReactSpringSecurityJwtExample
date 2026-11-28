@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getApplicationCardClasses, getCvDocumentsClasses} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import Button from "../../../styles/Button.jsx";
-import Badge from "../../../styles/Badge.jsx";
+import {getApplicationCardClasses, getCvDocumentsClasses} from "../../../styles/theme/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import Badge from "../../../styles/ui/Badge.jsx";
 import PdfPreview from "../../shared/documents/PdfPreview.jsx";
 import InterviewPicker from "../interviews/InterviewPicker.jsx";
 import {
@@ -14,9 +14,9 @@ import {
     getEmployerInterviewsByApplicationId,
     updateInterview
 } from "../../shared/core/api/Api.jsx";
-import {blobUrlFromFile} from "../../../utils/Documents.js";
-import {useToggleSet} from "../../../utils/useToggleSet.js";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import {blobUrlFromFile} from "../../../utils/documents/Documents.js";
+import {useToggleSet} from "../../../utils/hooks/useToggleSet.js";
+import {ALL, borderStatusOf} from "../../../utils/status/StatusColor.js";
 
 const COVER_LETTER = "COVER_LETTER";
 const TRANSCRIPT = "TRANSCRIPT";
@@ -167,7 +167,7 @@ function ApplicationCard({
                 )}
 
                 <div className="min-w-0 flex-1 flex flex-col">
-                    {/* Top row: Student Info on the left, View button on the right */}
+
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
                             <div>
@@ -225,7 +225,7 @@ function ApplicationCard({
                                     )}
                                 </>
                             )}
-                            {/* Each preview button is blue while closed and red while its preview is open */}
+
                             {hasCoverLetter && (
                                 <Button
                                     tone={isCoverLetterOpen ? "danger" : "accent"}
@@ -266,7 +266,7 @@ function ApplicationCard({
                         </div>
                     </div>
 
-                    {/* Inline Interview Time Selector */}
+
                     {!isHired && isInterviewSelectOpen && (
                         <div className="w-full pt-4 mt-4">
                             {interviewLoading ? (
@@ -287,7 +287,7 @@ function ApplicationCard({
                         </div>
                     )}
 
-                    {/* Inline cover letter preview */}
+
                     {hasCoverLetter && isCoverLetterOpen && (
                         <div className="w-full pt-4 mt-4">
                             <PdfPreview
@@ -298,7 +298,7 @@ function ApplicationCard({
                         </div>
                     )}
 
-                    {/* Inline transcript preview */}
+
                     {hasTranscript && isTranscriptOpen && (
                         <div className="w-full pt-4 mt-4">
                             <PdfPreview
@@ -309,7 +309,7 @@ function ApplicationCard({
                         </div>
                     )}
 
-                    {/* Inline CV preview */}
+
                     {isPreviewOpen && (
                         <div className="w-full pt-4 mt-4">
                             <PdfPreview

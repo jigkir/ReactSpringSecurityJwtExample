@@ -1,27 +1,17 @@
-/**
- * DevLoginPanel.jsx — Dev Mode block on the login page: pick a mock user to log in instantly.
- * Location: src/components/dev/DevLoginPanel.jsx
- *
- * Users are grouped (<optgroup>) by role only. The role header is padded with dashes
- * on both sides so it fills the row, e.g. "--------------- STUDENT ---------------".
- * Groups follow the backend Role order. Inside a role, users are sorted by discipline
- * (so all users of the same discipline sit together), then by last name, then first name.
- * Each option reads "First Last (Discipline)". Managers have no discipline: just "First Last".
- * Calls onSelect(user), or onSelect(null) when the selection is cleared.
- * Mounted by Login.jsx only while Dev Mode is on.
- */
+
+
 
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../../styles/Button.jsx";
-import Icon from "../../../../styles/Icon.jsx";
-import {getDevClasses} from "../../../../styles/AppStyles.jsx";
+import Button from "../../../../styles/ui/Button.jsx";
+import Icon from "../../../../styles/ui/Icon.jsx";
+import {getDevClasses} from "../../../../styles/theme/AppStyles.jsx";
 import {getDevUsers} from "../api/DevApi.jsx";
 
-// Same order as the Role enum on the backend
+
 const ROLE_ORDER = ["MANAGER", "STUDENT", "TEACHER", "EMPLOYER"];
 
-// Approximate header length in characters. Raise it for more dashes, lower it for fewer.
+
 const HEADER_WIDTH = 36;
 
 const roleRank = (role) => {
@@ -29,13 +19,13 @@ const roleRank = (role) => {
     return i === -1 ? ROLE_ORDER.length : i;
 };
 
-// "STUDENT" -> "--------------- STUDENT ---------------"
+
 export const roleHeader = (role) => {
     const dashes = "-".repeat(Math.max(3, Math.round((HEADER_WIDTH - role.length) / 2)));
     return `${dashes} ${role} ${dashes}`;
 };
 
-// Sort by last name, then first name
+
 const compareNames = (a, b) =>
     (a.lastName ?? "").localeCompare(b.lastName ?? "") ||
     (a.firstName ?? "").localeCompare(b.firstName ?? "");
@@ -43,11 +33,11 @@ const compareNames = (a, b) =>
 export default function DevLoginPanel({dark, fieldClass, labelClass, errorClass, onSelect}) {
     const {t} = useTranslation();
     const s = getDevClasses(dark);
-    const [users, setUsers] = useState(null); // null = loading
+    const [users, setUsers] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [selectedEmail, setSelectedEmail] = useState("");
 
-    // [{role, users}] — one group per role, users sorted by discipline, then name
+
     const groups = useMemo(() => {
         if (!users) return null;
 

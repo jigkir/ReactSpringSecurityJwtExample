@@ -1,17 +1,5 @@
-/**
- * Manager page: review internship offers.
- *  - Approve directly.
- *  - Reject only with a mandatory reason (comment).
- *  - A decision can be changed at any time (approve a rejected offer, reject an approved one,
- *    or edit the rejection reason).
- *
- * <ManagerInternships />  full page (route /manager/internships)
- *
- * `actionError` stores a translation KEY (not text) and is translated at render,
- * so it follows the language switch live.
- *
- * Access control: <RequireRole roles={["MANAGER"]}/> in App.jsx + backend.
- */
+
+
 
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useOutletContext} from "react-router-dom";
@@ -19,9 +7,9 @@ import {useTranslation} from "react-i18next";
 import InternshipCard from "./InternshipCard.jsx";
 import InternshipFilters, {useInternshipFilters} from "./InternshipFilters.jsx";
 import InternshipForm from "./InternshipForm.jsx";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
-import Button from "../../../styles/Button.jsx";
-import {getPostInternshipClasses} from "../../../styles/AppStyles.jsx";
+import AutoResizeTextarea from "../../../styles/ui/AutoResizeTextarea.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import {getPostInternshipClasses} from "../../../styles/theme/AppStyles.jsx";
 import {
     approveInternship,
     getManagerInternships,
@@ -29,25 +17,25 @@ import {
     updateManagerInternship
 } from "../../shared/core/api/Api.jsx";
 import {TARGET_TYPE, useCloseShownNotifications, useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
-import {usePolling} from "../../../utils/usePolling.js";
-import {useSession} from "../../../utils/useSession.js";
+import {usePolling} from "../../../utils/hooks/usePolling.js";
+import {useSession} from "../../../utils/session/useSession.js";
 
 const ManagerInternships = () => {
     const {dark} = useOutletContext();
     const {t, i18n} = useTranslation();
     const {refresh: refreshNotifications} = useNotifications();
     const {selectedSession} = useSession();
-    // Offers of past sessions are archives
+
     const canChangeOffers = Boolean(selectedSession?.target);
     const s = getPostInternshipClasses(dark);
 
-    const [internships, setInternships] = useState(null); // null = loading
+    const [internships, setInternships] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [busyId, setBusyId] = useState(null);
-    const [confirmId, setConfirmId] = useState(null); // offer whose reject form is open
+    const [confirmId, setConfirmId] = useState(null);
     const [rejectComment, setRejectComment] = useState("");
     const [actionError, setActionError] = useState("");
-    const [editing, setEditing] = useState(null); // offer currently being edited by the manager
+    const [editing, setEditing] = useState(null);
     const formRef = useRef(null);
 
     const filters = useInternshipFilters(internships);
@@ -66,7 +54,7 @@ const ManagerInternships = () => {
     }`;
 
     const load = useCallback(async () => {
-        if (!selectedSession) return; // sessions still loading
+        if (!selectedSession) return;
         setLoadFailed(false);
         try {
             setInternships(await getManagerInternships(selectedSession.id));
@@ -81,7 +69,7 @@ const ManagerInternships = () => {
 
     usePolling(load);
 
-    // Bring the inline edit form into view (page scroll only) when it opens
+
     useEffect(() => {
         if (editing) formRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
     }, [editing]);
@@ -91,14 +79,14 @@ const ManagerInternships = () => {
         setRejectComment("");
     };
 
-    // Opens the inline edit form (closes any open reject form first)
+
     const openEdit = (internship) => {
         closeForm();
         setActionError("");
         setEditing(internship);
     };
 
-    // Same contract as the employer form: returns {success} or {success: false, message: {key}}
+
     const handleSaveEdit = async (payload) => {
         try {
             const updated = await updateManagerInternship(editing.id, payload);
@@ -109,7 +97,7 @@ const ManagerInternships = () => {
         }
     };
 
-    // The backend returns the updated offer; patch it into the list so the card stays visible.
+
     const decide = async (internship, action) => {
         setBusyId(internship.id);
         setActionError("");
@@ -135,7 +123,7 @@ const ManagerInternships = () => {
 
     const startReject = (internship) => {
         setConfirmId(internship.id);
-        // When editing an existing rejection, pre-fill the old reason
+
         setRejectComment(internship.rejectionComment ?? "");
     };
 
@@ -177,7 +165,7 @@ const ManagerInternships = () => {
 
         return (
             <>
-                {/* Once approved, the manager can correct the offer himself */}
+
                 {isApproved && !internship.hasApplications && (
                     <Button tone="warning" dark={dark} icon="edit" disabled={busy}
                             onClick={() => openEdit(internship)}
@@ -186,7 +174,7 @@ const ManagerInternships = () => {
                     </Button>
                 )}
 
-                {/* Decision can be changed at any time */}
+
                 {!isApproved && (
                     <Button tone="success" dark={dark} icon="check" disabled={busy}
                             onClick={() => decide(internship, "approve")}
@@ -254,7 +242,7 @@ const ManagerInternships = () => {
                 </div>
             </div>
 
-            {/* Inline edit form: between the title and the list */}
+
             {editing && (
                 <div ref={formRef} className="scroll-mt-20">
                     <InternshipForm

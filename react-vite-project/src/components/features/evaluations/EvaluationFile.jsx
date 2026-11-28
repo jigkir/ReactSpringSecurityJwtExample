@@ -1,5 +1,5 @@
 import {useOutletContext, useParams} from "react-router-dom";
-import {getEvaluationRole} from "../../../utils/EvaluationRole.js";
+import {getEvaluationRole} from "../../../utils/roles/EvaluationRole.js";
 import PdfFilePage from "../../shared/documents/PdfFilePage.jsx";
 
 export default function EvaluationFile() {

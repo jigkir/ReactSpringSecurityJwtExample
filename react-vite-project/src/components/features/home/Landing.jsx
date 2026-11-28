@@ -1,14 +1,14 @@
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getMainContainerClasses, REVEAL_FROM} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import Reveal from "../../../styles/Reveal.jsx";
+import {getMainContainerClasses, REVEAL_FROM} from "../../../styles/theme/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import Reveal from "../../../styles/ui/Reveal.jsx";
 import AuthButtons from "../auth/AuthButtons.jsx";
 import {PATHS} from "../../../routes/AppRoutes.jsx";
 
 const WAVE_PATH = "M0,0 H1440 V40 C1200,80 960,80 720,48 C480,16 240,16 0,48 Z";
 
-// Home page of a visitor who is not logged in
+
 function Landing({dark}) {
     const {t} = useTranslation();
     const classes = getMainContainerClasses(dark);

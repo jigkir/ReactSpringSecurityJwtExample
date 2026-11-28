@@ -11,8 +11,8 @@ const RESET_ZOOM_KEY = "0";
 
 const clampZoom = (zoom) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
 
-// Ctrl/Cmd + "+", "-", "0" and Ctrl/Cmd + wheel zoom only the element of containerRef
-// (when the pointer is over it or it has the focus) instead of the whole page.
+
+
 export function useCtrlZoom(containerRef) {
     const [zoom, setZoom] = useState(DEFAULT_ZOOM);
 

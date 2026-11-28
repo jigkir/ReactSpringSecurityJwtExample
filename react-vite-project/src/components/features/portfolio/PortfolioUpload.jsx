@@ -1,33 +1,16 @@
-/**
- * PortfolioUpload.jsx — Upload several PDFs at once, each with its own document type.
- * Files are added by drag & drop or with the file picker (click / Enter / Space on the dropzone).
- * The type of each file is preselected from the tab the student is looking at (`defaultType`).
- * On the "All" tab it is guessed from the file name. It can be changed before uploading.
- *
- * Item status: ready → uploading → done | failed (server error, can be retried)
- *              invalid (rejected by validateFile, never sent; remove it)
- *
- * Props
- *   dark         boolean
- *   maxBytes     number    max size of one file
- *   types        string[]  optional, document types offered (default: all). The preselected type
- *                          falls back to the first one when it is not allowed.
- *   defaultType  string    optional, type of the tab being viewed ("CV" | "COVER_LETTER" |
- *                          "TRANSCRIPT"). "ALL" or undefined → guess from the file name.
- *   onUploaded   function  called after every upload attempt (parent reloads its lists)
- *   onClose      function  called when everything was uploaded, or when the Close button is clicked
- */
+
+
 
 import {useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import {getSelectClass} from "../../../styles/FormControls.jsx";
-import {getCvUploadClasses} from "../../../styles/AppStyles.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getSelectClass} from "../../../styles/ui/FormControls.jsx";
+import {getCvUploadClasses} from "../../../styles/theme/AppStyles.jsx";
 import {uploadDocument} from "../../shared/core/api/Api.jsx";
-import {ACCEPTED_EXT, bytesToMb, validateFile} from "../../../utils/Documents.js";
-import {DOC_TYPE_KEYS, DOC_TYPES, guessDocType} from "../../../utils/DocumentTypes.js";
-import {translateWarning} from "../../../utils/CommonFields.jsx";
+import {ACCEPTED_EXT, bytesToMb, validateFile} from "../../../utils/documents/Documents.js";
+import {DOC_TYPE_KEYS, DOC_TYPES, guessDocType} from "../../../utils/documents/DocumentTypes.js";
+import {translateWarning} from "../../../utils/forms/CommonFields.jsx";
 
 const canUpload = (item) => item.status === "ready" || item.status === "failed";
 
@@ -35,7 +18,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
     const {t} = useTranslation();
     const inputRef = useRef(null);
     const nextKey = useRef(0);
-    const [items, setItems] = useState([]); // {key, file, type, status, error}
+    const [items, setItems] = useState([]);
     const [busy, setBusy] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -45,7 +28,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
     const patch = (key, changes) =>
         setItems((prev) => prev.map((i) => (i.key === key ? {...i, ...changes} : i)));
 
-    // The tab being viewed wins; on the "All" tab the file name decides
+
     const initialTypeFor = (fileName) => {
         if (defaultType && defaultType !== "ALL" && types.includes(defaultType)) return defaultType;
         const guess = guessDocType(fileName);
@@ -66,7 +49,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
         setItems((prev) => [...prev, ...added]);
     };
 
-    // ── Picker + drag & drop ──────────────────────────────────────────────────
+
 
     const openPicker = () => {
         if (!busy) inputRef.current?.click();
@@ -74,7 +57,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
 
     const onPicked = (e) => {
         addFiles(e.target.files);
-        e.target.value = ""; // lets the same file be picked again
+        e.target.value = "";
     };
 
     const onDragOver = (e) => {
@@ -88,7 +71,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
         if (!busy) addFiles(e.dataTransfer.files);
     };
 
-    // ── Upload ────────────────────────────────────────────────────────────────
+
 
     const pending = items.filter(canUpload);
     const hasInvalid = items.some((i) => i.status === "invalid");
@@ -111,7 +94,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
         setBusy(false);
         onUploaded?.();
 
-        // Stay open while something still needs the student's attention
+
         if (!anyFailed && !hasInvalid) onClose?.();
     };
 
@@ -123,7 +106,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
             <input ref={inputRef} type="file" multiple accept={ACCEPTED_EXT} className="sr-only"
                    tabIndex={-1} aria-hidden="true" onChange={onPicked}/>
 
-            {/* Dropzone */}
+
             <div
                 className={u.dropzone}
                 role="button" tabIndex={0} aria-disabled={busy} aria-label={t("portfolio.dropzoneAria")}
@@ -147,7 +130,7 @@ function PortfolioUpload({dark, maxBytes, types = DOC_TYPE_KEYS, defaultType, on
                 </div>
             </div>
 
-            {/* Selected files */}
+
             {items.length > 0 && (
                 <ul className={`space-y-2 ${divider}`}>
                     {items.map((i) => (

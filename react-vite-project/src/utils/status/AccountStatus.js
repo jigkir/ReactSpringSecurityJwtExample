@@ -1,0 +1,6 @@
+
+export const ACCOUNT_STATUS = {
+    PENDING: "PENDING",
+    APPROVED: "APPROVED",
+    REJECTED: "REJECTED",
+};

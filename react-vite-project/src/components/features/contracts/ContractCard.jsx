@@ -1,32 +1,14 @@
-/**
- * ContractCard.jsx — One internship contract, as the connected party (manager, employer or student) sees it.
- *
- * Shows the offer details (position, location, work mode, period, duration, hourly rate,
- * negotiable, description, required skills), the parties (student, employer, company, signing
- * manager), the commitments of the three parties and the signature state of each party with
- * its date and time.
- * Actions: sign (inline form, only while the connected party has not signed) and "Download the
- * contract", which opens the contract page ({basePath}/:id) where the PDF can be read in French or
- * English and downloaded (see ContractFile.jsx). The student name is passed through the link
- * state so the downloaded files are named {language}-contract-{studentName}.pdf.
- *
- * Props
- *   contract      ContractResponseDto
- *   dark          boolean
- *   devMode       boolean   Dev mode: signing needs no password
- *   contractRole  {signedAtField, basePath}  see utils/ContractRole.js (default: manager)
- *   filterColor   ALL | YELLOW | GREEN  selected status filter: the card gets a border of that color
- *   onSign        function  async (contract, {termsAccepted, password}) => {success, message?}
- */
+
+
 
 import {useState} from "react";
 import {Link} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import Button from "../../../styles/Button.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import {getCvDocumentsClasses, getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
-import {CONTRACT_ROLES, canSign} from "../../../utils/ContractRole.js";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import Button from "../../../styles/ui/Button.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import {getCvDocumentsClasses, getInternshipCardClasses} from "../../../styles/theme/AppStyles.jsx";
+import {CONTRACT_ROLES, canSign} from "../../../utils/roles/ContractRole.js";
+import {ALL, borderStatusOf} from "../../../utils/status/StatusColor.js";
 import SignContractForm from "./SignContractForm.jsx";
 import {contractFilePath} from "../../../routes/AppRoutes.jsx";
 
@@ -38,10 +20,10 @@ const getBodyText = (dark) => `text-sm ${dark ? "text-white" : "text-gray-900"}`
 const parseSkills = (raw) =>
     (raw ?? "").split(",").map((skill) => skill.trim()).filter(Boolean);
 
-// "yyyy-MM-dd" alone is read as UTC midnight: the time keeps the same day in the local time zone
+
 const toLocalDate = (isoDate) => new Date(`${isoDate}T00:00`);
 
-// Section title underlined like the headings of the PDF
+
 function SectionHeading({dark, children}) {
     return (
         <h4 className={`border-b-2 pb-1 text-sm font-bold uppercase tracking-wide ${dark ? "border-sky-700 text-sky-300" : "border-[#1f3a5f] text-[#1f3a5f]"}`}>
@@ -50,7 +32,7 @@ function SectionHeading({dark, children}) {
     );
 }
 
-// One party box: role, name, detail (like the three boxes of the PDF)
+
 function PartyBox({dark, role, name, detail}) {
     return (
         <div
@@ -62,7 +44,7 @@ function PartyBox({dark, role, name, detail}) {
     );
 }
 
-// "The College agrees to: …" with its bullet list, like the commitments of the PDF
+
 function CommitmentList({dark, party}) {
     const {t} = useTranslation();
     const items = t(`managerContracts.commitments.${party}.items`, {returnObjects: true});
@@ -84,7 +66,7 @@ function ContractCard({
                           contractRole = CONTRACT_ROLES.MANAGER, filterColor = ALL
                       }) {
     const {t, i18n} = useTranslation();
-    // While a status color is selected, the card gets a full border of that color
+
     const s = getInternshipCardClasses(dark, borderStatusOf(filterColor));
     const th = getCvDocumentsClasses(dark);
     const bodyText = getBodyText(dark);
@@ -92,7 +74,7 @@ function ContractCard({
     const [signOpen, setSignOpen] = useState(false);
 
     const {internship} = contract;
-    // Has the CONNECTED party (manager, employer or student) signed?
+
     const signedByMe = Boolean(contract[contractRole.signedAtField]);
     const fullySigned = Boolean(contract.studentSignedAt && contract.employerSignedAt && contract.managerSignedAt);
     const waitingForOtherParties = !canSign(contract, contractRole);
@@ -106,7 +88,7 @@ function ContractCard({
         timeStyle: "short"
     }).format(date);
 
-    // Same as the PDF: the amount (negotiable or not is a separate term), or "not specified"
+
     const hourlyRate = internship.compensationAmount == null
         ? t("managerContracts.notSpecified")
         : t("managerContracts.terms.hourlyRateValue", {
@@ -138,7 +120,7 @@ function ContractCard({
         },
     ];
 
-    // Same order as the PDF: student, employer, then the college (manager)
+
     const signatures = [
         {key: "student", name: contract.studentName, signedAt: contract.studentSignedAt},
         {key: "employer", name: contract.employerName, signedAt: contract.employerSignedAt},
@@ -172,7 +154,7 @@ function ContractCard({
 
     return (
         <article className={`${s.card} space-y-5!`} aria-label={internship.title}>
-            {/* Header: title band, like the top of the PDF */}
+
             <div
                 className={`flex flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3 text-white ${dark ? "bg-sky-900" : "bg-[#1f3a5f]"}`}>
                 <div className="min-w-0 flex-1">
@@ -192,7 +174,7 @@ function ContractCard({
 
             <p className={bodyText}>{t("managerContracts.document.introduction")}</p>
 
-            {/* Parties */}
+
             <section className="space-y-3" aria-label={t("managerContracts.sections.parties")}>
                 <SectionHeading dark={dark}>{t("managerContracts.sections.parties")}</SectionHeading>
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -217,7 +199,7 @@ function ContractCard({
                 </div>
             </section>
 
-            {/* Internship terms */}
+
             <section className="space-y-3" aria-label={t("managerContracts.sections.terms")}>
                 <SectionHeading dark={dark}>{t("managerContracts.sections.terms")}</SectionHeading>
                 <dl>
@@ -230,7 +212,7 @@ function ContractCard({
                 </dl>
             </section>
 
-            {/* Offer description: same colour and size as the commitments */}
+
             <section className="space-y-3" aria-label={t("managerContracts.sections.description")}>
                 <SectionHeading dark={dark}>{t("managerContracts.sections.description")}</SectionHeading>
                 <p className={`mt-1 w-full wrap-break-word ${bodyText}`} style={{whiteSpace: "pre-wrap"}}>
@@ -246,7 +228,7 @@ function ContractCard({
                 )}
             </section>
 
-            {/* Commitments of the parties (the full contract is on the contract page) */}
+
             <section className="space-y-3" aria-label={t("managerContracts.sections.commitments")}>
                 <SectionHeading dark={dark}>{t("managerContracts.sections.commitments")}</SectionHeading>
                 <div className="space-y-4">
@@ -256,7 +238,7 @@ function ContractCard({
                 </div>
             </section>
 
-            {/* Electronic signatures */}
+
             <section className="space-y-3" aria-label={t("managerContracts.signatures.title")}>
                 <SectionHeading dark={dark}>{t("managerContracts.signatures.title")}</SectionHeading>
                 <p className={bodyText}>{t("managerContracts.signatures.explanation")}</p>
@@ -274,7 +256,7 @@ function ContractCard({
                 </div>
             </section>
 
-            {/* Sign form */}
+
             {!signedByMe && signOpen && (
                 <SignContractForm
                     dark={dark}
@@ -284,7 +266,7 @@ function ContractCard({
                 />
             )}
 
-            {/* Actions */}
+
             {hasActions && (
                 <div
                     role="group"

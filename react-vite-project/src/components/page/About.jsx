@@ -1,8 +1,8 @@
 import {Link, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {getAboutClasses, REVEAL_FROM} from "../../styles/AppStyles.jsx";
-import Icon from "../../styles/Icon.jsx";
-import Reveal from "../../styles/Reveal.jsx";
+import {getAboutClasses, REVEAL_FROM} from "../../styles/theme/AppStyles.jsx";
+import Icon from "../../styles/ui/Icon.jsx";
+import Reveal from "../../styles/ui/Reveal.jsx";
 import {PATHS} from "../../routes/AppRoutes.jsx";
 
 const ROLES = [

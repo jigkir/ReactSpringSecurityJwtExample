@@ -8,7 +8,7 @@ import {useEffect} from "react";
 function PageLayout({user, accountStatus, dark, toggleDark}) {
     const {pathname} = useLocation();
 
-    // BrowserRouter keeps the scroll position between pages: start each new page at the top
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [pathname]);

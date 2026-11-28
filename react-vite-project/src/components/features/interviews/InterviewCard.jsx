@@ -1,20 +1,20 @@
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getInternshipCardClasses} from "../../../styles/AppStyles.jsx";
-import Icon from "../../../styles/Icon.jsx";
-import Button from "../../../styles/Button.jsx";
-import AutoResizeTextarea from "../../../styles/AutoResizeTextarea.jsx";
+import {getInternshipCardClasses} from "../../../styles/theme/AppStyles.jsx";
+import Icon from "../../../styles/ui/Icon.jsx";
+import Button from "../../../styles/ui/Button.jsx";
+import AutoResizeTextarea from "../../../styles/ui/AutoResizeTextarea.jsx";
 import InterviewStatusPill from "./InterviewStatusPill.jsx";
 import InterviewActions from "./InterviewActions.jsx";
 import InterviewPicker from "./InterviewPicker.jsx";
 import {useNotifications} from "../../shared/notification/NotificationsProvider.jsx";
-import {ALL, borderStatusOf} from "../../../utils/StatusColor.js";
+import {ALL, borderStatusOf} from "../../../utils/status/StatusColor.js";
 import {
     getInterviewStatus,
     getInterviewTime,
     INTERVIEW_STATUS,
     INTERVIEW_STATUS_ACCENT
-} from "../../../utils/interviewStatus.js";
+} from "../../../utils/status/interviewStatus.js";
 
 const getMeetingUrl = (details) => {
     try {
@@ -51,7 +51,7 @@ export default function InterviewCard({
     const effectiveRejecting = rejecting ?? localRejecting;
     const effectiveRejectComment = rejectComment ?? rejectCommentLocal;
     const effectiveBusy = busy ?? busyLocal;
-    // While a status color is selected, the card gets a full border of that color
+
     const filtered = filterColor !== ALL;
     const cardS = getInternshipCardClasses(dark, borderStatusOf(filterColor));
 
@@ -126,7 +126,7 @@ export default function InterviewCard({
                     <p className="whitespace-pre-wrap wrap-break-word">{interview.message || t("studentInterviews.notProvided")}</p>
                 </div>
 
-                {/* --- Rejection Banner --- */}
+
                 {cancelled && interview.cancellationReason && (
                     <p className={`text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`} role="note">
                         {t(`studentInterviews.cancellationReasons.${interview.cancellationReason}`)}
@@ -145,7 +145,7 @@ export default function InterviewCard({
                     </div>
                 )}
 
-                {/* --- Rejection reason (required) --- */}
+
                 {effectiveRejecting && (
                     <div className="space-y-1 pt-2">
                         <label htmlFor={`rejectComment-${interview.id}`}

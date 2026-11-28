@@ -29,7 +29,7 @@ vi.mock('react-i18next', () => ({
     })
 }));
 
-vi.mock('../../../../styles/Button.jsx', () => ({
+vi.mock('../../../../styles/ui/Button.jsx', () => ({
     default: ({children, onClick, 'aria-expanded': expanded}) => (
         <button onClick={onClick} aria-expanded={expanded}>{children}</button>)
 }));
