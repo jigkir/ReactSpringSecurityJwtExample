@@ -6,16 +6,16 @@ import {
     getApplications,
     getEmployerInternships,
     offerInternshipsToStudents
-} from "../../../api/Api.jsx";
+} from "../api/Api.jsx";
 import ApplicationCard from "./ApplicationCard.jsx";
-import Button from "../../../../styles/Button.jsx";
-import {base64ToBlobUrl} from "../../../../utils/Documents.js";
-import {sortApplication} from "../../../../utils/Sort.jsx";
-import {translateWarning} from "../../../../utils/CommonFields.jsx";
-import {useNotifications} from "../../../notification/NotificationsProvider.jsx";
-import {usePolling} from "../../../../utils/usePolling.js";
-import {useNewApplications} from "../../../../utils/useNewApplications.js";
-import {PATHS} from "../../../../routes/AppRoutes.jsx";
+import Button from "../../styles/Button.jsx";
+import {base64ToBlobUrl} from "../../utils/Documents.js";
+import {sortApplication} from "../../utils/Sort.jsx";
+import {translateWarning} from "../../utils/CommonFields.jsx";
+import {useNotifications} from "../notification/NotificationsProvider.jsx";
+import {usePolling} from "../../utils/usePolling.js";
+import {useNewApplications} from "../../utils/useNewApplications.js";
+import {PATHS} from "../../routes/AppRoutes.jsx";
 
 
 const canHireApplication = (application) => application.employerDecision !== "INTERNSHIP_OFFERED" && application.employerDecision !== "REJECTED";

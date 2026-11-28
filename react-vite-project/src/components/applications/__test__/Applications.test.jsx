@@ -1,15 +1,15 @@
 import {fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import {BrowserRouter} from "react-router-dom";
-import Applications from "../Applications.jsx";
+import Applications from "../ApplicationList.jsx";
 import {
     getApplicationCv,
     getApplications,
     getEmployerInterviewsByApplicationId,
     getEmployerInternships
-} from "../../../../api/Api.jsx";
-import {employerApplicationPath} from "../../../../../routes/AppRoutes.jsx";
+} from "../../api/Api.jsx";
+import {employerApplicationPath} from "../../../routes/AppRoutes.jsx";
 
-vi.mock('../../../../api/Api.jsx', () => ({
+ () => ({
     getApplications: vi.fn(),
     getEmployerInternships: vi.fn(),
     getApplicationCv: vi.fn(),
@@ -19,11 +19,11 @@ vi.mock('../../../../api/Api.jsx', () => ({
     updateInterview: vi.fn(),
 }));
 
-vi.mock('../../../../../utils/usePolling.js', () => ({
+vi.mock('../../../utils/usePolling.js', () => ({
     usePolling: vi.fn(),
 }));
 
-vi.mock('../../../../../utils/useSession.js', () => ({
+vi.mock('../../../utils/useSession.js', () => ({
     useSession: () => ({selectedSession: {id: 1, name: 'H2027', target: true}}),
 }));
 

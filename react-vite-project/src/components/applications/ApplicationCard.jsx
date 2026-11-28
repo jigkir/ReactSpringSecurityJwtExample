@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getApplicationCardClasses, getCvDocumentsClasses} from "../../../../styles/AppStyles.jsx";
-import Icon from "../../../../styles/Icon.jsx";
-import Button from "../../../../styles/Button.jsx";
-import Badge from "../../../../styles/Badge.jsx";
-import PdfPreview from "../../../documents/PdfPreview.jsx";
-import InterviewPicker from "../../../interviews/InterviewPicker.jsx";
+import {getApplicationCardClasses, getCvDocumentsClasses} from "../../styles/AppStyles.jsx";
+import Icon from "../../styles/Icon.jsx";
+import Button from "../../styles/Button.jsx";
+import Badge from "../../styles/Badge.jsx";
+import PdfPreview from "../documents/PdfPreview.jsx";
+import InterviewPicker from "../interviews/InterviewPicker.jsx";
 import {
     cancelInterview,
     createInterview,
@@ -13,10 +13,10 @@ import {
     getApplicationTranscript,
     getEmployerInterviewsByApplicationId,
     updateInterview
-} from "../../../api/Api.jsx";
-import {blobUrlFromFile} from "../../../../utils/Documents.js";
-import {useToggleSet} from "../../../../utils/useToggleSet.js";
-import {ALL, borderStatusOf} from "../../../../utils/StatusColor.js";
+} from "../api/Api.jsx";
+import {blobUrlFromFile} from "../../utils/Documents.js";
+import {useToggleSet} from "../../utils/useToggleSet.js";
+import {ALL, borderStatusOf} from "../../utils/StatusColor.js";
 
 const COVER_LETTER = "COVER_LETTER";
 const TRANSCRIPT = "TRANSCRIPT";

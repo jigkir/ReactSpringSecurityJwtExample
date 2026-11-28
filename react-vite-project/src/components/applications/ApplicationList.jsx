@@ -19,21 +19,21 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {NavLink, useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import ApplicationCard from "./ApplicationCard.jsx";
-import Icon from "../../../../styles/Icon.jsx";
-import {getPostInternshipClasses} from "../../../../styles/AppStyles.jsx";
-import {getApplicationCv, getApplications, getEmployerInternships} from "../../../api/Api.jsx";
-import {base64ToBlobUrl} from "../../../../utils/Documents.js";
-import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../../../utils/Sort.jsx";
-import {ALL, colorOf, matchesColor} from "../../../../utils/StatusColor.js";
+import Icon from "../../styles/Icon.jsx";
+import {getPostInternshipClasses} from "../../styles/AppStyles.jsx";
+import {getApplicationCv, getApplications, getEmployerInternships} from "../api/Api.jsx";
+import {base64ToBlobUrl} from "../../utils/Documents.js";
+import {matchesSearch, StatusColorSelect, toNum, useColorFilter} from "../../utils/Sort.jsx";
+import {ALL, colorOf, matchesColor} from "../../utils/StatusColor.js";
 import {
     TARGET_TYPE,
     useCloseShownNotifications,
     useNotifications
-} from "../../../notification/NotificationsProvider.jsx";
-import {usePolling} from "../../../../utils/usePolling.js";
-import {useSession} from "../../../../utils/useSession.js";
-import {useNewApplications} from "../../../../utils/useNewApplications.js";
-import {employerApplicationPath} from "../../../../routes/AppRoutes.jsx";
+} from "../notification/NotificationsProvider.jsx";
+import {usePolling} from "../../utils/usePolling.js";
+import {useSession} from "../../utils/useSession.js";
+import {useNewApplications} from "../../utils/useNewApplications.js";
+import {employerApplicationPath} from "../../routes/AppRoutes.jsx";
 
 // New first (state frozen at first appearance), then newest (highest id) first
 const compareApplications = (isNew) => (a, b) =>
