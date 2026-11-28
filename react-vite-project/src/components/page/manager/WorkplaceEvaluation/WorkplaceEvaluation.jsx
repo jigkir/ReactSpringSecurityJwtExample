@@ -9,11 +9,11 @@
 
 import {useOutletContext} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import WorkplaceEvaluationList from "../WorkplaceEvaluation/WorkplaceEvaluationList.jsx";
-import {getAuthClasses} from "../../styles/AppStyles.jsx";
-import {useSession} from "../../utils/useSession.js";
+import WorkplaceEvaluationList from "../../../WorkplaceEvaluation/WorkplaceEvaluationList.jsx";
+import {getAuthClasses} from "../../../../styles/AppStyles.jsx";
+import {useSession} from "../../../../utils/useSession.js";
 
-const WorkplaceEvaluations = () => {
+const WorkplaceEvaluationsManager = () => {
     const {dark, user} = useOutletContext();
     const {t} = useTranslation();
     const {pageClass} = getAuthClasses(dark);
@@ -36,7 +36,7 @@ const WorkplaceEvaluations = () => {
                                 dark ? "text-slate-400" : "text-gray-600"
                             }`}
                         >
-                            {t("workplaceEvaluation.subtitle")}
+                            {t("workplaceEvaluation.subtitlemanager")}
                         </p>
                     </div>
                 </div>
@@ -47,4 +47,4 @@ const WorkplaceEvaluations = () => {
     );
 };
 
-export default WorkplaceEvaluations;
+export default WorkplaceEvaluationsManager;

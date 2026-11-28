@@ -181,7 +181,33 @@
     "registrationSessionError": "Unable to load the registration session. Refresh the page to try again."
   },
   "studentStatuses": {
-    "title": "Student Status Tracking"
+    "title": "Student Statuses",
+    "search": "Search",
+    "searchPlaceholder": "Name or student ID...",
+    "account": "Account status",
+    "internship": "Internship search",
+    "count_one": "{{count}} student",
+    "count_other": "{{count}} students",
+    "empty": "No students found.",
+    "unknown": "Unavailable",
+    "accountStatuses": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "INACTIVE": "Expired or disabled access"
+    },
+    "internshipStatuses": {
+      "NO_CV": "No CV",
+      "CV_PENDING": "CV awaiting approval",
+      "CV_REJECTED": "CV rejected",
+      "NO_APPLICATION": "No applications",
+      "NO_INTERVIEW": "No interview invitations",
+      "UPCOMING_INTERVIEW": "Upcoming interview",
+      "AWAITING_DECISION": "Interview completed, awaiting hiring decision",
+      "OFFER_PENDING": "Offer received, awaiting student response",
+      "CONTRACT_PENDING": "Internship secured: contract to sign",
+      "CONTRACT_SIGNED": "Internship secured: contract signed"
+    }
   },
   "commonFields": {
     "firstName": "First name",
@@ -545,7 +571,7 @@
       "back": "Back to contracts",
       "languageGroup": "Language of the contract",
       "language": {
-        "fr": "Français",
+        "fr": "French",
         "en": "English"
       },
       "downloadCurrent": "Download the PDF ({{language}})",
@@ -955,6 +981,7 @@
     "clearSelection": "Clear",
     "title": "Workplace Evaluations",
     "subtitle": "Review, complete, and sign workplace evaluations for your active session.",
+    "subtitlemanager": "Review workplace evaluations for your active session.",
     "loading": "Loading workplace evaluations...",
     "empty": "No workplace evaluations found for this session.",
     "noMatch": "No workplace evaluations match this filter.",
@@ -972,7 +999,7 @@
       "unassignedSupervisor": "Supervisor not specified",
       "weekLabel": "Week {{week}}",
       "pendingPeriod": "Period not specified",
-      "supervisorLabel": "Supervisor: {{supervisor}}",
+      "supervisorLabel": "Teacher assigned : {{supervisor}}",
       "noCommentsYet": "No comments recorded yet.",
       "criteriaProgress": "{{answered}} / {{total}} criteria filled",
       "hourlySalary": "${{rate}}/hr",
@@ -997,6 +1024,11 @@
       "errorTerms": "Please confirm that you accept the evaluation before signing.",
       "errorPassword": "Please enter your password to sign.",
       "errorFailed": "Unable to sign the workplace evaluation right now."
+    },
+    "file": {
+      "subtitle": "Read the workplace evaluation as a PDF, in French or in English, and download it.",
+      "back": "Back to evaluations",
+      "open": "View evaluation"
     }
   }
 }

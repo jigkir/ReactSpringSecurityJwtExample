@@ -39,6 +39,7 @@ function ApplicationCard({
                              getUrl,
                              internshipTitle,
                              onInterviewSent,
+                             onDocumentOpened,
                              selected = false,
                              onSelect,
                              selectionMode = false,
@@ -71,6 +72,11 @@ function ApplicationCard({
     const hasTranscript = application.transcriptId != null;
     const isCoverLetterOpen = openDocs.has(COVER_LETTER);
     const isTranscriptOpen = openDocs.has(TRANSCRIPT);
+
+    const toggleDocument = (document) => {
+        if (!openDocs.has(document)) onDocumentOpened?.(application.id);
+        openDocs.toggle(document);
+    };
 
     useEffect(() => {
         let active = true;
@@ -227,7 +233,7 @@ function ApplicationCard({
                                     dark={dark}
                                     className="w-full"
                                     icon={isCoverLetterOpen ? "visibility_off" : "visibility"}
-                                    onClick={() => openDocs.toggle(COVER_LETTER)}
+                                    onClick={() => toggleDocument(COVER_LETTER)}
                                     aria-expanded={isCoverLetterOpen}
                                 >
                                     {t("applicationCard.coverLetter")}
@@ -240,7 +246,7 @@ function ApplicationCard({
                                     dark={dark}
                                     className="w-full"
                                     icon={isTranscriptOpen ? "visibility_off" : "visibility"}
-                                    onClick={() => openDocs.toggle(TRANSCRIPT)}
+                                    onClick={() => toggleDocument(TRANSCRIPT)}
                                     aria-expanded={isTranscriptOpen}
                                 >
                                     {t("applicationCard.transcript")}

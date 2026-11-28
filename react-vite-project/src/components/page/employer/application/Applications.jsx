@@ -8,8 +8,8 @@
  *   (PENDING = YELLOW, ACCEPTED / INTERNSHIP_OFFERED = GREEN, REJECTED = RED); initial value from `?status=`.
  *   While a color is selected, every application card gets a border of that color.
  * - Search by student / email / CV name.
- * - "New" badge: frozen while the employer is on the page (previewing a CV does not remove it).
- *   It is removed when the interview invitation is sent, and when the page is left
+ * - "New" badge: removed as soon as one of the student's documents is opened or the interview
+ *   invitation is sent, and every application still new becomes read when the page is left
  *   (see useNewApplications).
  * - The cards do not show the CV file name here (the preview buttons are enough).
  * Access control: <RequireRole roles={["EMPLOYER"]}/> in App.jsx + backend.
@@ -46,7 +46,7 @@ function Applications({user}) {
     const isLoggedIn = Boolean(user?.isLoggedIn);
 
     const {selectedSession} = useSession();
-    const {register, isNew: isNewApp, clear: clearNew, version: newVersion} = useNewApplications();
+    const {register, isNew: isNewApp, clear: clearNew, markAsSeen, version: newVersion} = useNewApplications();
 
     const initialStatus = useColorParam("status");
     const [applications, setApplications] = useState(null); // null = loading
@@ -141,19 +141,20 @@ function Applications({user}) {
     const togglePreview = (id) =>
         setOpenPreviewIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
 
-    // Opening the CV marks the application as read on the server (and closes its notification),
-    // but the "New" badge stays until the invitation is sent or the page is left.
+    // Opening the CV marks the application as read on the server (and closes its notification):
+    // the "New" badge goes away right now
     const getUrl = useCallback(async (appId) => {
         const cv = await getApplicationCv(appId);
         if (!cv?.content) throw new Error("missing content");
 
+        markAsSeen(appId);
         void refresh();
 
         return base64ToBlobUrl(cv.content);
-    }, [refresh]);
+    }, [markAsSeen, refresh]);
 
-    // Interview invitation sent: the badge goes away right now
-    const handleInterviewSent = useCallback((appId) => {
+    // Cover letter or transcript opened, or interview invitation sent: the badge goes away right now
+    const handleApplicationSeen = useCallback((appId) => {
         clearNew(appId);
         void refresh();
     }, [clearNew, refresh]);
@@ -204,7 +205,8 @@ function Applications({user}) {
                         isPreviewOpen={openPreviewIds.includes(application.id)}
                         onTogglePreview={() => togglePreview(application.id)}
                         getUrl={getUrl}
-                        onInterviewSent={handleInterviewSent}
+                        onInterviewSent={handleApplicationSeen}
+                        onDocumentOpened={handleApplicationSeen}
                         showCvFileName={false}
                     />
                 ))}

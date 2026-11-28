@@ -292,3 +292,44 @@ export function useCvFilters(docs) {
 export function sortApplication(applications, id) {
     return applications.filter(app => app.internshipId === id);
 }
+
+// ─── 5. Manager student statuses ─────────────────────────────────────────────
+
+export function filterStudentStatuses(list, {
+    search = "",
+    accountStatus = ALL,
+    internshipStatus = ALL,
+} = {}) {
+    return list.filter((student) => {
+        if (
+            accountStatus !== ALL &&
+            student.accountStatus !== accountStatus
+        ) return false;
+
+        if (
+            internshipStatus !== ALL &&
+            student.internshipStatus !== internshipStatus
+        ) return false;
+
+        return matchesSearch([student.firstName, student.lastName, student.studentId,], search);
+    });
+}
+
+export function useStudentStatusFilters(list) {
+    const [search, setSearch] = useState("");
+    const [accountStatus, setAccountStatus] = useState(ALL);
+    const [internshipStatus, setInternshipStatus] = useState(ALL);
+
+    const visible = useMemo(() => {
+        return filterStudentStatuses(list, {
+            search,
+            accountStatus,
+            internshipStatus,
+        }).sort((a, b) =>
+            compareText("lastName")(a, b) ||
+            compareText("firstName")(a, b)
+        );
+    }, [list, search, accountStatus, internshipStatus]);
+
+    return {search, setSearch, accountStatus, setAccountStatus, internshipStatus, setInternshipStatus, visible,};
+}

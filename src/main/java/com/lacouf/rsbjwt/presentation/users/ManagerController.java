@@ -133,8 +133,8 @@ public class ManagerController {
         return ResponseEntity.ok(managerService.assignTeacher(trackingId, teacherId));
     }
 
-    @GetMapping("/student-summary")
-    public ResponseEntity<List<ManagerStudentSummaryDto>> getStudentSummary() throws UserNotFoundException {
-        return ResponseEntity.ok(managerService.getStudentsSummary());
+    @GetMapping("/student-status")
+    public ResponseEntity<List<ManagerStudentSummaryDto>> getStudentStasus() throws UserNotFoundException {
+        return ResponseEntity.ok(managerService.getStudentsStatus());
     }
 }

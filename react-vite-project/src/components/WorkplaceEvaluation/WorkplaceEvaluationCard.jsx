@@ -8,6 +8,8 @@ import {
 } from "../../utils/WorkplaceEvaluation.js";
 import WorkplaceEvaluationForm from "./WorkplaceEvaluationForm";
 import SignEvaluationForm from "./SignEvaluationForm";
+import Button from "../../styles/Button.jsx";
+import {Link} from "react-router-dom";
 
 export default function WorkplaceEvaluationCard({
                                                     evaluation = {},
@@ -155,52 +157,50 @@ export default function WorkplaceEvaluationCard({
                         })
                         : t("workplaceEvaluation.card.variableShiftsMissing")}
                 </span>
-
-                <span className={cardClasses.detailBadge}>
-                    {isSigned
-                        ? t("workplaceEvaluation.card.signedOn", {
-                            date: source.signedAt,
-                        })
-                        : t("workplaceEvaluation.card.notSignedYet")}
-                </span>
             </div>
 
             <div className={`${cardClasses.detailsRow} justify-end`}>
                 {!isSigned && (
-                    <button
-                        type="button"
+                    <Button
+                        tone="warning"
+                        icon="edit"
+                        dark={dark}
                         onClick={() => {
                             setIsSigning(false);
                             setIsEditing(true);
                         }}
-                        className={`px-3.5 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                            dark
-                                ? "bg-slate-700/70 text-slate-200 border-slate-600 hover:bg-slate-700"
-                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                        }`}
                     >
                         {isCompleted
                             ? t("workplaceEvaluation.card.reviewOrEdit")
                             : t("workplaceEvaluation.card.fillEvaluation")}
-                    </button>
+                    </Button>
                 )}
 
                 {isCompleted && !isSigned && onSign && (
-                    <button
-                        type="button"
+                    <Button
+                        dark={dark}
+                        lockTone
+                        icon="edit"
+                        tone="success"
                         onClick={() => {
                             setIsEditing(false);
                             setIsSigning(true);
                         }}
-                        className={`px-3.5 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                            dark
-                                ? "bg-green-900/40 text-green-300 border-green-700 hover:bg-green-900/60"
-                                : "bg-green-600 text-white border-green-600 hover:bg-green-700"
-                        }`}
                     >
                         {t("workplaceEvaluation.card.sign")}
-                    </button>
+                    </Button>
                 )}
+                {isSigned && (<Button
+                    as={Link}
+                    to={`${evaluation.id}`}
+                     state={{studentName: evaluation.studentName}}
+                    tone="accent"
+                    lockTone
+                    dark={dark}
+                    icon="download"
+                >
+                    {t("workplaceEvaluation.file.open")}
+                </Button>)}
             </div>
         </article>
     );
