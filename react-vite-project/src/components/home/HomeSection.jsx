@@ -13,7 +13,10 @@
  * (read by the page as the initial filter). A row whose count is 0 is grey and not a link.
  * The colors are loaded by Home (one polling for every card).
  *
- * Props: section (see HomeSections.js), colors (colors of the page's items, LOAD_FAILED, or undefined while loading), dark
+ * A spotlight card (see getSpotlightPages) has an amber border, a pulsing halo and a "Priority" tag.
+ *
+ * Props: section (see HomeSections.js), colors (colors of the page's items, LOAD_FAILED, or undefined while loading),
+ *        spotlight (the card stands out), dark
  */
 
 import {Link} from "react-router-dom";
@@ -24,7 +27,7 @@ import {getHomeSectionClasses} from "../../styles/AppStyles.jsx";
 import {ALL, COLOR, statusLabelKey} from "../../utils/StatusColor.js";
 import {countColors, countOf, countText, filteredPage, LOAD_FAILED} from "./HomeSections.js";
 
-function HomeSection({section, colors, dark}) {
+function HomeSection({section, colors, spotlight = false, dark}) {
     const {t} = useTranslation();
     const s = getHomeSectionClasses(dark);
     const counts = countColors(colors, section.colors);
@@ -52,7 +55,15 @@ function HomeSection({section, colors, dark}) {
     };
 
     return (
-        <section aria-label={title} className={s.card}>
+        <section aria-label={title} className={spotlight ? s.spotlightCard : s.card}>
+            {spotlight && (
+                <span className={s.spotlightTag}>
+                    <span className={s.spotlightDot}>
+                        <span className={s.spotlightPing}/>
+                    </span>
+                    {t("home.spotlight")}
+                </span>
+            )}
             <header className={s.header}>
                 <span className={s.icon}>
                     <Icon name={section.icon} size={24}/>

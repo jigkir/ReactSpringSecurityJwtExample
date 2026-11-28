@@ -276,10 +276,10 @@ const sectionsByRole = new Map();
 
 const getHomeOrderByRole = () => ({
     STUDENT: [
-        PATHS.STUDENT_PORTFOLIO,
+        PATHS.STUDENT_INTERNSHIPS,
         PATHS.STUDENT_INTERVIEWS,
         PATHS.STUDENT_OFFERS,
-        PATHS.STUDENT_INTERNSHIPS,
+        PATHS.STUDENT_PORTFOLIO,
         PATHS.STUDENT_CONTRACTS,
     ],
 });
@@ -302,4 +302,29 @@ export const getHomeSections = (role) => {
     }
     return sectionsByRole.get(role);
 };
+
+// Student: the next step of the internship search, one at a time
+//   contract to sign > hired (nothing) > offer to answer > no usable CV > internships to apply to and interviews to answer
+const studentSpotlight = (colorsByPage) => {
+    const has = (page, color) => Array.isArray(colorsByPage[page]) && colorsByPage[page].includes(color);
+    const loaded = [PATHS.STUDENT_PORTFOLIO, PATHS.STUDENT_OFFERS, PATHS.STUDENT_CONTRACTS]
+        .every((page) => Array.isArray(colorsByPage[page]));
+
+    if (!loaded) return [];
+    if (has(PATHS.STUDENT_CONTRACTS, COLOR.YELLOW)) return [PATHS.STUDENT_CONTRACTS];
+    if (has(PATHS.STUDENT_OFFERS, COLOR.GREEN)) return [];
+    if (has(PATHS.STUDENT_OFFERS, COLOR.YELLOW)) return [PATHS.STUDENT_OFFERS];
+    if (!has(PATHS.STUDENT_PORTFOLIO, COLOR.GREEN) && !has(PATHS.STUDENT_PORTFOLIO, COLOR.YELLOW)) {
+        return [PATHS.STUDENT_PORTFOLIO];
+    }
+
+    return [[PATHS.STUDENT_INTERNSHIPS, COLOR.RED], [PATHS.STUDENT_INTERVIEWS, COLOR.YELLOW]]
+        .filter(([page, color]) => has(page, color))
+        .map(([page]) => page);
+};
+
+const SPOTLIGHT_BY_ROLE = {STUDENT: studentSpotlight};
+
+/** Pages whose card stands out for the role: none while the colors load or after a failure. */
+export const getSpotlightPages = (role, colorsByPage) => SPOTLIGHT_BY_ROLE[role]?.(colorsByPage) ?? [];
 // endregion

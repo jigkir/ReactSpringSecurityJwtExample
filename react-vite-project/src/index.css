@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+    /* Color of the priority cards: border, halo and tag background, then the tag text */
+    --color-spotlight: var(--color-rose-800);
+    --color-spotlight-text: var(--color-white);
+
+    --animate-spotlight: spotlight 2.4s ease-out infinite;
+
+    @keyframes spotlight {
+        0% {
+            box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-spotlight) 60%, transparent);
+        }
+        70% {
+            box-shadow: 0 0 0 14px color-mix(in oklab, var(--color-spotlight) 0%, transparent);
+        }
+        100% {
+            box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-spotlight) 0%, transparent);
+        }
+    }
+}
+
 html,
 body {
     width: 100%;
