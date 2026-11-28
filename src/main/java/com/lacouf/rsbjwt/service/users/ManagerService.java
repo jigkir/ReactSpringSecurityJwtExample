@@ -57,7 +57,6 @@ import com.lacouf.rsbjwt.service.traduction.cv.CVChangedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.lacouf.rsbjwt.service.dto.response.user.ManagerStudentSummaryDto.InternshipStatus;
 import com.lacouf.rsbjwt.service.StudentStatusCalculator.ManagerStudentStatusCalculator.StudentActivity;
 
 import java.time.LocalDate;
